@@ -12,7 +12,7 @@
 
 <br /><br />
 
-**Part of the [InfoDot Ecosystem](https://github.com/sakhileb/InfoDot)** &nbsp;·&nbsp; `infodot.app`
+**Part of the [InfoDot Ecosystem](https://github.com/sakhilebhayi/InfoDot)** &nbsp;·&nbsp; `infodot.app`
 
 </div>
 
@@ -20,7 +20,9 @@
 
 ## What is InfoDot?
 
-InfoDot is the central identity hub for the Dot ecosystem — a unified gateway giving users single sign-on access to 21 micro-platforms built for seamless business operations. Authenticate once and move freely between every connected Dot platform without re-entering credentials.
+InfoDot is the central identity hub for the Dot Ecosystem — a unified gateway giving users single sign-on access to every connected Dot platform. Authenticate once and move freely between them without re-entering credentials.
+
+**Platform registry:** 27 entries in `config/ecosystem.php` — the 20 real, built platforms tracked by [Dot.Brain's `os/Appendix.md`](https://github.com/sakhilebhayi/Dot.Brain/blob/main/os/Appendix.md) (verified: each implements the identical `/auth/ecosystem` token contract this hub issues), plus 7 platforms from InfoDot's original, earlier plan (Dot.Files, Dot.Docs, Dot.Forms, Dot.Sheet, Dot.Engage, Dot.Press, Dot.Tutor) that haven't yet been verified against that same contract. See `CLAUDE.md` for the full reconciliation notes.
 
 ## Core Features
 
@@ -31,7 +33,7 @@ InfoDot is the central identity hub for the Dot ecosystem — a unified gateway 
 - Real-time notifications via Laravel Reverb
 - Full-text search across solutions, questions, and users
 - Social graph — follow users, build your network
-- Dot Switcher — navigate all 21 platforms from one sidebar widget
+- Ecosystem widget — one-click launch into any registered platform, grouped by category
 - File uploads backed by AWS S3 or local disk
 
 ## Domain Models
@@ -61,7 +63,7 @@ InfoDot is the central identity hub for the Dot ecosystem — a unified gateway 
 ## Quick Start
 
 ```bash
-git clone https://github.com/sakhileb/InfoDot.git
+git clone https://github.com/sakhilebhayi/InfoDot.git
 cd InfoDot
 cp .env.example .env
 composer install
@@ -75,8 +77,8 @@ php artisan serve
 
 ## Ecosystem
 
-**InfoDot** is one of **21 platforms** in the InfoDot ecosystem, connected via shared PostgreSQL and Sanctum SSO. Visit [InfoDot](https://github.com/sakhileb/InfoDot) to explore the full platform map.
+**InfoDot** is the hub connecting the Dot Ecosystem's 20 real platforms (plus 7 from an earlier, not-yet-reconciled plan — see above) via shared PostgreSQL and Sanctum SSO. Visit [Dot.Brain](https://github.com/sakhilebhayi/Dot.Brain) for the authoritative ecosystem map and engineering state.
 
 ## License
 
-MIT © [SK Digital / BluPin Incorporated](https://github.com/sakhileb)
+MIT © [SK Digital / BluPin Incorporated](https://github.com/sakhilebhayi)
