@@ -46,7 +46,7 @@ class EcosystemWidget extends Component
         $token = $user->createToken(
             'ecosystem-handoff',
             ['ecosystem:read'],
-            now()->addMinutes(config('ecosystem.handoff_ttl', 5))
+            now()->addMinutes((int) config('ecosystem.handoff_ttl', 5))
         )->plainTextToken;
 
         $this->redirect(rtrim($platform['url'], '/') . '/auth/ecosystem?token=' . $token);

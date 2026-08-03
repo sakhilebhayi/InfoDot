@@ -34,7 +34,7 @@ class DotSwitcher extends Component
         $tokenResult = $user->createToken(
             'ecosystem-handoff',
             ['ecosystem:read'],
-            now()->addMinutes(config('ecosystem.handoff_ttl', 5))
+            now()->addMinutes((int) config('ecosystem.handoff_ttl', 5))
         );
 
         $token = $tokenResult->plainTextToken;

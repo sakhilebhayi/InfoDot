@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Livewire\EcosystemWidget;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,6 +30,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Analytics Controller
     // -------------------------------------------------------
     Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
+
+    // -------------------------------------------------------
+    // Ecosystem Platform Switcher
+    // -------------------------------------------------------
+    Route::get('/platforms', EcosystemWidget::class)->name('ecosystem.widget');
 
     // // -------------------------------------------------------
     // Solutions Controller
@@ -67,7 +73,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 // -------------------------------------------------------
 // Outside Pages
 // -------------------------------------------------------
-Route::get('/home', 'App\Http\Controllers\HomeController@index')->name('home');
+Route::get('/home', 'App\Http\Controllers\HomeController@index')->name('dashboard');
 Route::get('/about', 'App\Http\Controllers\PagesController@about')->name('about');
 Route::get('/contact', 'App\Http\Controllers\PagesController@contact')->name('contact');
 Route::post('/contact-send', 'App\Http\Controllers\PagesController@contactSend')->name('send-contact');

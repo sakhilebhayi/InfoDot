@@ -76,7 +76,7 @@
     <script defer src="https://unpkg.com/alpinejs@3.10.2/dist/cdn.min.js"></script>
 </head>
 <body>
-    <x-banner />
+    <x-jet-banner />
 
     <aside class="sidebar">
         <div class="sidebar-brand">
@@ -105,7 +105,7 @@
                 All Platforms
             </a>
             <div class="sidebar-divider" style="margin:10px 0;"></div>
-            <a href="{{ route('profile.show') }}" class="nav-item {{ request()->routeIs('profile.show') ? 'active' : '' }}">
+            <a href="{{ route('profile.show', auth()->id()) }}" class="nav-item {{ request()->routeIs('profile.show') ? 'active' : '' }}">
                 <span class="material-symbols-rounded nav-icon">manage_accounts</span>
                 Profile & Settings
             </a>
@@ -132,7 +132,7 @@
         @auth
         <span class="topbar-team">{{ Auth::user()->currentTeam->name ?? 'Personal' }}</span>
         @endauth
-        <a href="{{ route('profile.show') }}" class="topbar-btn" title="Profile">
+        <a href="{{ route('profile.show', auth()->id()) }}" class="topbar-btn" title="Profile">
             <span class="material-symbols-rounded">account_circle</span>
         </a>
     </header>

@@ -13,7 +13,7 @@ class EcosystemTokenController extends Controller
     {
         $user = $request->user();
 
-        $ttlMinutes = config('ecosystem.handoff_ttl', 5);
+        $ttlMinutes = (int) config('ecosystem.handoff_ttl', 5);
 
         $token = $user->createToken(
             'ecosystem-handoff',
