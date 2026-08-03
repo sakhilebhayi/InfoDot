@@ -110,7 +110,8 @@
     </nav>
 <main>
     <div class="relative pt-16 pb-32 flex content-center items-center justify-center" style="min-height: 95vh;">
-        <div class="absolute top-0 w-full h-full bg-center bg-cover" style='background-image: url("./img/background.jpg");'>
+        <!-- Photographic Background: real network-cable/infrastructure photo by Taylor Vick (@tvick), unsplash.com/photos/cable-network-M5tzZtFCOfs -->
+        <div class="absolute top-0 w-full h-full bg-center bg-cover" style='background-image: url("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2400&auto=format&fit=crop");'>
             <span id="blackOverlay" class="w-full h-full absolute opacity-50 bg-black"></span>
         </div>
         <div class="container relative mx-auto">
