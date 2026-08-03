@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/logo.svg" alt="InfoDot" width="320" />
+<img src="public/img/logo1.png" alt="InfoDot" width="220" />
 
 <br /><br />
 
