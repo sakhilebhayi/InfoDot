@@ -65,8 +65,9 @@ class PagesController extends Controller
     {
         $results = [];
         $search_term = request()->search;
+        $driver = \DB::connection()->getDriverName();
 
-        if (\DB::connection()->getDriverName() === 'sqlite') {
+        if ($driver === 'sqlite') {
             $solutions = Solutions::where(function ($query) use ($search_term) {
                 $query->where('solution_title', 'like', "%{$search_term}%")
                     ->orWhere('solution_description', 'like', "%{$search_term}%")
@@ -77,7 +78,23 @@ class PagesController extends Controller
                 $query->where('question', 'like', "%{$search_term}%")
                     ->orWhere('description', 'like', "%{$search_term}%");
             })->orderBy('id', 'DESC')->paginate(5);
+        } elseif ($driver === 'pgsql') {
+            // No FULLTEXT index exists on Postgres (the migrations only create one when the driver is
+            // mysql — see create_solutions_table.php / create_questions_table.php), and MySQL's
+            // MATCH()...AGAINST() syntax used below isn't valid Postgres SQL at all. ILIKE is Postgres's
+            // native case-insensitive LIKE, so this mirrors the sqlite branch above.
+            $solutions = Solutions::where(function ($query) use ($search_term) {
+                $query->where('solution_title', 'ilike', "%{$search_term}%")
+                    ->orWhere('solution_description', 'ilike', "%{$search_term}%")
+                    ->orWhere('tags', 'ilike', "%{$search_term}%");
+            })->orderBy('id', 'DESC')->paginate(5);
+
+            $questions = Questions::where(function ($query) use ($search_term) {
+                $query->where('question', 'ilike', "%{$search_term}%")
+                    ->orWhere('description', 'ilike', "%{$search_term}%");
+            })->orderBy('id', 'DESC')->paginate(5);
         } else {
+            // mysql — a real FULLTEXT index backs these columns for this driver only.
             $solutions = Solutions::whereRaw('MATCH (solution_title, solution_description, tags) AGAINST (?)', array($search_term))->orderBy('id', 'DESC')->paginate(5);
             $questions = Questions::whereRaw('MATCH (question, description) AGAINST (?)', array($search_term))->orderBy('id', 'DESC')->paginate(5);
         }
