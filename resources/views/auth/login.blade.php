@@ -44,7 +44,7 @@
 
             @if (Route::has('password.request'))
                 <div class="mt-4 text-center">
-                    <a class="underline text-sm text-[var(--blue)] hover:text-[var(--blue-deep)]" href="{{ route('password.request') }}">
+                    <a class="underline text-sm text-[var(--ink-soft)] hover:text-[var(--gold-deep)]" href="{{ route('password.request') }}">
                         {{ __('Forgot your password?') }}
                     </a>
                 </div>

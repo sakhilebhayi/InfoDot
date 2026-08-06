@@ -22,9 +22,9 @@
             --paper-soft: #eceef1;
             --ink: #16212c;
             --ink-soft: #4c5c6c;
-            --blue: #2487d4;
-            --blue-deep: #1a6bad;
-            --silver: #bcbec0;
+            --charcoal: #24272b;
+            --gold: #f0bc2e;
+            --gold-deep: #d9a30f;
             --line: rgba(22, 33, 44, 0.11);
             --font-display: 'Baloo 2', system-ui, sans-serif;
             --font-body: 'DM Sans', system-ui, sans-serif;
