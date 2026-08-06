@@ -9,6 +9,8 @@ use App\Models\Solutions;
 use App\Models\Questions;
 use App\Models\Associates;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Laravel\Jetstream\Jetstream;
 
 class PagesController extends Controller
 {
@@ -56,9 +58,33 @@ class PagesController extends Controller
         return view('features');
     }
 
+    /**
+     * Legal pages read their content from a Markdown source file (resources/markdown/*.md), the
+     * same convention Jetstream's own termsAndPrivacyPolicy feature uses (see
+     * vendor/laravel/jetstream/src/Http/Controllers/Livewire/TermsOfServiceController.php).
+     * Keeping content in Markdown rather than inline Blade HTML is what makes it centrally
+     * maintainable: editing the wording is a one-file content change, no markup to touch, and the
+     * same file can be copied to another platform's resources/markdown/ directory unchanged.
+     */
     public function terms(Request $request)
     {
-        return view('terms');
+        return view('terms', [
+            'terms' => Str::markdown(file_get_contents(Jetstream::localizedMarkdownPath('terms.md'))),
+        ]);
+    }
+
+    public function policy(Request $request)
+    {
+        return view('policy', [
+            'policy' => Str::markdown(file_get_contents(Jetstream::localizedMarkdownPath('policy.md'))),
+        ]);
+    }
+
+    public function cookies(Request $request)
+    {
+        return view('cookies', [
+            'cookies' => Str::markdown(file_get_contents(Jetstream::localizedMarkdownPath('cookies.md'))),
+        ]);
     }
 
     public function solution_search_results()

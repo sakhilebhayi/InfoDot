@@ -345,6 +345,8 @@
                         <a href="{{ route('about') }}" class="link-underline hover:text-[var(--paper)] pb-0.5">About</a>
                         <a href="{{ route('features') }}" class="link-underline hover:text-[var(--paper)] pb-0.5">Features</a>
                         <a href="{{ route('contact') }}" class="link-underline hover:text-[var(--paper)] pb-0.5">Contact</a>
+                        <a href="{{ route('policy') }}" class="link-underline hover:text-[var(--paper)] pb-0.5">Privacy</a>
+                        <a href="{{ route('cookies') }}" class="link-underline hover:text-[var(--paper)] pb-0.5">Cookies</a>
                         <a href="{{ route('terms') }}" class="link-underline hover:text-[var(--paper)] pb-0.5">Terms</a>
                     </div>
 

@@ -80,7 +80,16 @@ Route::post('/contact-send', 'App\Http\Controllers\PagesController@contactSend')
 Route::get('/faqs', 'App\Http\Controllers\PagesController@faqs')->name('faqs');
 Route::get('/complains', 'App\Http\Controllers\PagesController@complains')->name('complains');
 Route::get('/features', 'App\Http\Controllers\PagesController@features')->name('features');
+// Nicer, canonical URLs for the legal pages. Jetstream's termsAndPrivacyPolicy feature also
+// auto-registers /terms-of-service and /privacy-policy under route names terms.show/policy.show
+// (see vendor/laravel/jetstream/routes/livewire.php) — registering those same names again here
+// on a different URI would silently evict one of the two from Laravel's route name lookup table
+// (RouteCollection keys allRoutes by method+URI, so same-name-different-URI routes fight over the
+// name; see Illuminate\Routing\RouteCollection::refreshNameLookups()). Keeping distinct names
+// avoids the collision; both URIs render the same resources/markdown/*.md source either way.
 Route::get('/terms', 'App\Http\Controllers\PagesController@terms')->name('terms');
+Route::get('/policy', 'App\Http\Controllers\PagesController@policy')->name('policy');
+Route::get('/cookies', 'App\Http\Controllers\PagesController@cookies')->name('cookies');
 Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_search_results')->name('solution_search_results');
 
 // ===============================================================

@@ -47,7 +47,7 @@ class AuthenticationFlowSmokeTest extends TestCase
     {
         $this->get('/login')
             ->assertOk()
-            ->assertSee('Sign in with credentials')
+            ->assertSee('Sign in with your credentials')
             ->assertSee(route('register'), false);
 
         $this->get('/register')
@@ -130,6 +130,7 @@ class AuthenticationFlowSmokeTest extends TestCase
             'email' => 'smoke@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'terms' => 'on',
         ]);
 
         $this->assertAuthenticated();
