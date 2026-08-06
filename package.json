@@ -8,6 +8,7 @@
         "@tailwindcss/typography": "^0.5.13",
         "alpinejs": "^3.14.1",
         "apexcharts": "^3.54.0",
+        "autoprefixer": "^10.5.4",
         "axios": "^1.7.2",
         "chart.js": "^4.4.3",
         "daisyui": "^5.0.0",

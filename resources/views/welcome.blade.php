@@ -1,404 +1,315 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
     <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#000000" />
-        <link rel="shortcut icon" href="./img/icons/icon.png" />
-        <link rel="apple-touch-icon" sizes="76x76" href="./img/icons/icon.png" />
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
-        <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>InfoDot — The hub of the Dot Ecosystem</title>
+        <meta name="description" content="InfoDot is the central identity provider for the Dot Ecosystem — sign in once and move between every connected platform. It also carries a public Q&amp;A hub, a Solutions how-to library, and team workspaces.">
+
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+
         <style>
-            .input-group button {
-                background-color: Transparent !important;
-                border-top: 1px solid #E3E3E3;
-                border-bottom: 1px solid #E3E3E3;
-                border-right: 1px solid #E3E3E3;
-                border-top-right-radius: 30px !important;
-                border-bottom-right-radius: 30px !important;
-                border-left: 0px;
-                height: 50px;
+            :root {
+                --paper: #f6f7f9;
+                --paper-soft: #eceef1;
+                --ink: #16212c;
+                --ink-soft: #4c5c6c;
+                --blue: #2487d4;
+                --blue-deep: #1a6bad;
+                --silver: #bcbec0;
+                --line: rgba(22, 33, 44, 0.11);
+                --font-display: 'Baloo 2', system-ui, sans-serif;
+                --font-body: 'DM Sans', system-ui, sans-serif;
+                --font-mono: 'Space Mono', ui-monospace, monospace;
+                --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
             }
-            .input-group button:focus {
-                outline: none;
+            html { background: var(--paper); }
+            body { font-family: var(--font-body); background: var(--paper); color: var(--ink); }
+            .font-display { font-family: var(--font-display); }
+            .font-mono { font-family: var(--font-mono); }
+
+            .press { transition: transform 160ms var(--ease-out); }
+            .press:active { transform: scale(0.97); }
+
+            @media (prefers-reduced-motion: no-preference) {
+                .reveal {
+                    opacity: 0;
+                    transform: translateY(14px);
+                    transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+                }
+                .reveal.is-visible { opacity: 1; transform: translateY(0); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .reveal { opacity: 1; transform: none; }
             }
 
-            .input-group input {
-                height: 50px !important;
-                align-self: center;
-                border-left: 1px solid #E3E3E3 !important;
-                border-right: 1px solid #E3E3E3 !important;
-                border-top: 1px solid #E3E3E3 !important;
-                border-bottom: 1px solid #E3E3E3 !important;
-                border-top-left-radius: 30px !important;
-                border-bottom-left-radius: 30px !important;
-                border-top-right-radius: 30px !important;
-                border-bottom-right-radius: 30px !important;
-                background-color: Transparent !important;
-                outline: transparent;
-                color: #fff;
-                min-width: 80% !important;
-                max-width: 85% !important;
+            @media (hover: hover) and (pointer: fine) {
+                .row-hover:hover { background: rgba(22, 33, 44, 0.025); }
+                .link-underline { background-size: 0% 1px; }
+                .link-underline:hover { background-size: 100% 1px; }
             }
-            .input-group input:focus {
-                border-right: 1px solid #f96332 !important;
-                border-left: 1px solid #f96332 !important;
-                border-top: 1px solid #f96332 !important;
-                border-bottom: 1px solid #f96332 !important;
+            .link-underline {
+                background-image: linear-gradient(currentColor, currentColor);
+                background-position: 0 100%;
+                background-repeat: no-repeat;
+                transition: background-size 220ms var(--ease-out);
             }
         </style>
-        @livewireStyles
-        <title>InfoDot</title>
     </head>
-    <body class="text-gray-800 antialiased">
-        <nav class="top-0 absolute z-50 w-full flex flex-wrap items-center justify-between px-2 py-3 navbar-expand-lg">
-            @if (Route::has('login'))
-                <div class="container px-4 mx-auto flex flex-wrap items-center justify-between">
-                    <div class="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start">
-                        @auth
-                            <a href="{{ url('/questions') }}" class="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white">
+    <body class="antialiased">
 
+        <!-- Nav -->
+        <header
+            x-data="{ scrolled: false, mobileMenuOpen: false }"
+            @scroll.window="scrolled = window.pageYOffset > 24"
+            :class="scrolled ? 'bg-[#f6f7f9]/95 backdrop-blur-md border-b border-[var(--line)]' : 'border-b border-transparent'"
+            class="fixed top-0 left-0 right-0 z-50 transition-colors duration-300"
+        >
+            <nav class="max-w-[1400px] mx-auto px-5 sm:px-8 py-3 flex items-center justify-between">
+                <a href="/" class="flex items-center gap-2.5 press">
+                    <img src="{{ asset('img/logo.png') }}" alt="InfoDot" class="h-16 sm:h-20 w-auto">
+                </a>
+
+                <div class="hidden md:flex items-center gap-8 font-mono text-[13px] tracking-wide uppercase text-[var(--ink-soft)]">
+                    <a href="#capabilities" class="link-underline hover:text-[var(--ink)] pb-0.5">Platform</a>
+                    <a href="#features" class="link-underline hover:text-[var(--ink)] pb-0.5">Community</a>
+                </div>
+
+                @if (Route::has('login'))
+                    <div class="flex items-center gap-3">
+                        @auth
+                            <a href="{{ route('dashboard') }}" class="press flex items-center gap-2 px-5 py-2.5 bg-[var(--blue)] hover:bg-[var(--blue-deep)] text-white text-sm font-display font-semibold rounded-lg transition-colors">
+                                Dashboard
                             </a>
                         @else
-                    <button class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none" type="button" onclick="toggleNavbar('example-collapse-navbar')">
-                        <i class="text-white fas fa-bars"></i>
-                    </button>
-                </div>
-                <div class="lg:flex flex-grow items-center bg-white lg:bg-transparent lg:shadow-none hidden" id="example-collapse-navbar">
-                    <ul class="flex flex-col lg:flex-row list-none lg:ml-auto">
-                        <li class="flex items-center">
-                            <a class="lg:text-white lg:hover:text-gray-300 text-gray-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold" href="https://web.facebook.com/infodotbusinesses" target="_blank">
-                                <i class="lg:text-gray-300 text-gray-500 fab fa-facebook text-lg leading-lg"></i>
-                                <span class="lg:hidden inline-block ml-2">Share</span>
+                            <a href="{{ route('login') }}" class="hidden sm:block text-sm font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] transition-colors">
+                                Sign in
                             </a>
-                        </li>
-                        <li class="flex items-center">
-                            <a class="lg:text-white lg:hover:text-gray-300 text-gray-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold" href="https://twitter.com/InfoDot3" target="_blank">
-                                <i class="lg:text-gray-300 text-gray-500 fab fa-twitter text-lg leading-lg"></i>
-                                <span class="lg:hidden inline-block ml-2">Tweet</span>
-                            </a>
-                        </li>
-                        <li class="flex items-center">
-                            <a class="lg:text-white lg:hover:text-gray-300 text-gray-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold" href="https://www.instagram.com/infodot_businesses_official/" target="_blank">
-                                <i class="lg:text-gray-300 text-gray-500 fab fa-instagram text-lg leading-lg"></i>
-                                <span class="lg:hidden inline-block ml-2">Follow</span>
-                            </a>
-                        </li>
-                        <li class="flex items-center">
-                            <a class="lg:text-white lg:hover:text-gray-300 text-gray-800 px-3 py-4 lg:py-2 flex items-center text-xs uppercase font-bold" href="https://www.linkedin.com/company/infodot/"target="_blank">
-                                <i class="lg:text-gray-300 text-gray-500 fab fa-linkedin-in text-lg leading-lg"></i>
-                                <span class="lg:hidden inline-block ml-2">Connect</span>
-                            </a>
-                        </li>
-                        <li class="flex items-center">
-                            @if (Route::has('login'))
-                                <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign in
-                                </a>
-                            @endif
-                            @endauth
-                        </li>
-                        {{-- <li class="flex items-center">
                             @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign Up
+                                <a href="{{ route('register') }}" class="press px-5 py-2.5 bg-[var(--blue)] hover:bg-[var(--blue-deep)] text-white text-sm font-display font-semibold rounded-lg transition-colors">
+                                    Create account
                                 </a>
                             @endif
-                        </li> --}}
-                    </ul>
-                </div>
-            </div>
-        @endif
-    </nav>
-<main>
-    <div class="relative pt-16 pb-32 flex content-center items-center justify-center" style="min-height: 95vh;">
-        <!-- Photographic Background: real network-cable/infrastructure photo by Taylor Vick (@tvick), unsplash.com/photos/cable-network-M5tzZtFCOfs -->
-        <div class="absolute top-0 w-full h-full bg-center bg-cover" style='background-image: url("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2400&auto=format&fit=crop");'>
-            <span id="blackOverlay" class="w-full h-full absolute opacity-50 bg-black"></span>
-        </div>
-        <div class="container relative mx-auto">
-            <div class="items-center flex flex-wrap">
-                <div class="w-full lg:w-6/12 px-4 ml-auto mr-auto text-center">
-                    <div class="ml-auto mr-auto text-center">
-                        <div class="flex flex-wrap justify-center">
-                            <img src="./img/logo_white.png" alt="logo" class="m-auto pl-5 mb-5 w-full lg:w-8/12">
-                        </div>
-                        <livewire:search/>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="top-auto bottom-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden" style="height: 70px; transform: translateZ(0px);">
-            <svg class="absolute bottom-0 overflow-hidden" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" version="1.1" viewBox="0 0 2560 100" x="0" y="0">
-                <polygon class="text-gray-300 fill-current" points="2560 0 2560 100 0 100"></polygon>
-            </svg>
-        </div>
-    </div>
-    <section class="pb-20 bg-gray-300 -mt-24 z-0">
-        <div class="container mx-auto px-4 z-0">
-            <div class="flex flex-wrap z-0">
-                <div class="lg:pt-12 pt-6 w-full md:w-4/12 px-4 text-center z-0">
-                    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-8 shadow-lg rounded-lg">
-                        <div class="px-4 py-5 flex-auto">
-                            <div class="text-white p-3 text-center inline-flex items-center justify-center w-12 h-12 mb-5 shadow-lg rounded-full bg-red-400">
-                                <i class="fas fa-award"></i>
-                            </div>
-                            <h6 class="text-xl font-semibold">Reliable Content & Resources</h6>
-                            <p class="mt-2 mb-4 text-gray-600">
-                                Get insite about business strategies from our curated content and resources provided by our Industry Leading partners.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="w-full md:w-4/12 px-4 text-center z-0">
-                    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-8 shadow-lg rounded-lg">
-                        <div class="px-4 py-5 flex-auto">
-                            <div class="text-white p-3 text-center inline-flex items-center justify-center w-12 h-12 mb-5 shadow-lg rounded-full bg-blue-400">
-                                <i class="fas fa-retweet"></i>
-                            </div>
-                            <h6 class="text-xl font-semibold">Value For Value</h6>
-                            <p class="mt-2 mb-4 text-gray-600">
-                                Find endorsed service providers or partnerships, and get found by potential partners or customers.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="pt-6 w-full md:w-4/12 px-4 text-center z-0">
-                    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-8 shadow-lg rounded-lg">
-                        <div class="px-4 py-5 flex-auto">
-                            <div class="text-white p-3 text-center inline-flex items-center justify-center w-12 h-12 mb-5 shadow-lg rounded-full bg-green-400">
-                                <i class="fas fa-fingerprint"></i>
-                            </div>
-                            <h6 class="text-xl font-semibold">Verified Partners</h6>
-                            <p class="mt-2 mb-4 text-gray-600">
-                                Increase your visibility & credibility by sharing or providing winning strategies to struggling entrepreneurs.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-          </div>
-          <div class="flex flex-wrap items-center mt-32 z-0">
-                <div class="w-full md:w-5/12 px-4 mr-auto ml-auto">
-                    <div class="text-blue-600 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-gray-100">
-                        <i class="fas fa-user-friends text-xl"></i>
-                    </div>
-                    <h3 class="text-3xl mb-2 font-semibold leading-normal">We love Entrepreneurship....</h3>
-                    <p class="text-lg font-light leading-relaxed mt-4 mb-4 text-gray-700">
-                        InfoDot is an open community. It was built to empower entrepreneurs &amp; people who are in business. We connect them to strategies, solutions &amp; and service providers that enable problem solving, productivity, growth, and discovery.
-                    </p>
-                    <p class="text-lg font-light leading-relaxed mt-0 mb-4 text-gray-700">
-                        We help you get answers to your toughest business questions, By providing &amp; organizing the various approaches to business &amp; making them universally accessible to you.
-                    </p>
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="font-bold text-gray-800 mt-8">Get Started</a>
-                    @endif
-                </div>
-                <div class="w-full md:w-4/12 px-4 mr-auto ml-auto">
-                    <div class="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded-lg bg-blue-600">
-                        <img alt="infodot" src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=1051&amp;q=80" class="w-full align-middle rounded-t-lg"/>
-                        <blockquote class="relative p-8 mb-4">
-                            <svg preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 583 95" class="absolute left-0 w-full block" style="height: 95px; top: -94px;">
-                                <polygon points="-30,95 583,95 583,65" class="text-blue-600 fill-current"></polygon>
+                        @endauth
+
+                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden press p-2 -mr-2 text-[var(--ink)]" aria-label="Toggle menu">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 7h16M4 12h16M4 17h16"></path>
+                                <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
-                            <h4 class="text-xl font-bold text-white">See How Much Trouble We Could Save You.</h4>
-                            <p class="text-md font-light mt-2 text-white">
-                                We can help you scale even to a global level while enjoying an environment with a unique entrepreneurial spirit.
-                            </p>
-                        </blockquote>
+                        </button>
                     </div>
+                @endif
+            </nav>
+
+            <div x-show="mobileMenuOpen"
+                 x-transition:enter="transition ease-out duration-150"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-100"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="md:hidden border-t border-[var(--line)] bg-[#f6f7f9]"
+                 style="display: none;">
+                <div class="flex flex-col px-5 py-4 gap-1 font-mono text-sm uppercase tracking-wide">
+                    <a href="#capabilities" class="px-3 py-2.5 text-[var(--ink-soft)] hover:text-[var(--ink)]">Platform</a>
+                    <a href="#features" class="px-3 py-2.5 text-[var(--ink-soft)] hover:text-[var(--ink)]">Community</a>
+                    @guest
+                        <a href="{{ route('login') }}" class="px-3 py-2.5 text-[var(--ink-soft)] hover:text-[var(--ink)]">Sign in</a>
+                    @endguest
                 </div>
             </div>
-        </div>
-    </section>
-    <section class="relative py-20">
-        <div class="bottom-auto top-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden -mt-20" style="height: 80px; transform: translateZ(0px);">
-            <svg class="absolute bottom-0 overflow-hidden" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" version="1.1" viewBox="0 0 2560 100" x="0" y="0">
-                <polygon class="text-white fill-current" points="2560 0 2560 100 0 100"></polygon>
+        </header>
+
+        <!-- Hero -->
+        <section class="relative min-h-[100dvh] flex items-end overflow-hidden">
+            <!-- Photo: network/server cabling, already used as InfoDot's own hero image (credited to Taylor Vick, @tvick, unsplash.com/photos/cable-network-M5tzZtFCOfs) — kept because it maps directly onto InfoDot's real role as the connective layer between platforms -->
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2400&auto=format&fit=crop');"></div>
+            <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(246,247,249,0.62) 0%, rgba(246,247,249,0.82) 45%, #f6f7f9 92%);"></div>
+            <div class="absolute inset-0" style="background: linear-gradient(90deg, #f6f7f9 0%, rgba(246,247,249,0.62) 38%, transparent 68%);"></div>
+
+            <!-- Signature mark — large line-art echo of the real logo's own icon geometry: an outer ring, an offset inner dot, and the forward chevron -->
+            <svg class="hidden lg:block absolute right-[6%] bottom-[6%] h-[62%] w-auto opacity-[0.16] pointer-events-none" viewBox="0 0 280 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <circle cx="110" cy="110" r="92" stroke="#16212c" stroke-width="3"/>
+                <circle cx="110" cy="150" r="10" fill="#2487d4"/>
+                <path d="M230 60L280 110L230 160" stroke="#16212c" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-        </div>
-        <div class="container mx-auto px-4">
-            <div class="items-center flex flex-wrap">
-                <div class="w-full md:w-4/12 ml-auto mr-auto px-4">
-                    <img alt="infodot" class="max-w-full rounded-lg shadow-lg" src="https://images.unsplash.com/photo-1555212697-194d092e3b8f?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=634&amp;q=80"/>
-                </div>
-                <div class="w-full md:w-5/12 ml-auto mr-auto px-4">
-                    <div class="md:pr-12">
-                        <div class="text-blue-600 p-3 text-center inline-flex items-center justify-center w-16 h-16 mb-6 shadow-lg rounded-full bg-blue-300">
-                            <i class="fas fa-rocket text-xl"></i>
+
+            <div class="relative z-10 max-w-[1400px] mx-auto px-5 sm:px-8 pt-32 pb-16 sm:pb-20 w-full">
+                <div class="max-w-2xl reveal" data-reveal>
+                    <p class="font-mono text-xs tracking-[0.18em] uppercase text-[var(--blue)] mb-6">
+                        Ecosystem hub &amp; knowledge base
+                    </p>
+
+                    <h1 class="font-display font-bold text-4xl sm:text-5xl lg:text-6xl leading-[1.05] tracking-tight text-[var(--ink)] mb-6">
+                        One login.<br>Every Dot platform.
+                    </h1>
+
+                    <p class="text-lg text-[var(--ink-soft)] leading-relaxed max-w-xl mb-10">
+                        InfoDot is the front door to the Dot Ecosystem — sign in once and move to any connected platform without logging in again. It's also where the community asks questions, shares Solutions, and keeps the conversation attached to the answer.
+                    </p>
+
+                    @guest
+                        <div class="flex flex-wrap items-center gap-4">
+                            <a href="{{ route('register') }}" class="press px-7 py-3.5 bg-[var(--blue)] hover:bg-[var(--blue-deep)] text-white font-display font-semibold rounded-lg transition-colors">
+                                Create account
+                            </a>
+                            <a href="#features" class="press flex items-center gap-2 px-7 py-3.5 text-[var(--ink)] font-medium rounded-lg border border-[var(--line)] hover:border-[var(--silver)] transition-colors">
+                                See what's inside
+                            </a>
                         </div>
-                        <h3 class="text-3xl font-semibold">
-                            Building Not Just A Community, But A Way To Successful Businesses.
-                        </h3>
-                        <p class="mt-4 text-lg leading-relaxed text-gray-600">
-                            Join Thousands Of Entrepreneurs Improving Their Businesses With Us Everyday. Build confidence in knowing that you are not alone and meet new associates who can help you grow your business.
+                    @endguest
+                </div>
+            </div>
+
+            <!-- Live capability strip — a list of what's actually built, not a fabricated metric -->
+            <div class="relative z-10 w-full border-t border-[var(--line)] bg-[#f6f7f9]/70 backdrop-blur-sm">
+                <div class="max-w-[1400px] mx-auto px-5 sm:px-8 py-4 flex flex-wrap gap-x-8 gap-y-2 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-soft)]">
+                    <span>Single sign-on</span>
+                    <span class="text-[var(--blue)]">·</span>
+                    <span>Q&amp;A knowledge base</span>
+                    <span class="text-[var(--blue)]">·</span>
+                    <span>Solutions &amp; how-to guides</span>
+                    <span class="text-[var(--blue)]">·</span>
+                    <span>Team workspaces</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section id="features" class="py-24 sm:py-28 px-5 sm:px-8">
+            <div class="max-w-[1400px] mx-auto">
+                <div class="max-w-xl mb-16 reveal" data-reveal>
+                    <p class="font-mono text-xs tracking-[0.18em] uppercase text-[var(--blue)] mb-4">What it does</p>
+                    <h2 class="font-display font-semibold text-3xl sm:text-4xl text-[var(--ink)] leading-tight">
+                        One account, and the community built on top of it
+                    </h2>
+                </div>
+
+                <div class="grid md:grid-cols-2 border-t border-[var(--line)]">
+                    @php
+                        $features = [
+                            ['tag' => 'SSO', 'title' => 'One login, every platform', 'body' => 'A short-lived, one-time handoff token moves you from InfoDot straight into any connected Dot platform — no separate password to remember or re-enter.'],
+                            ['tag' => 'Questions', 'title' => 'Ask, and get a real answer', 'body' => 'Post a question, get answers from people who\'ve actually solved it, and browse what the rest of the ecosystem has already asked.'],
+                            ['tag' => 'Solutions', 'title' => 'Solutions &amp; how-to guides', 'body' => 'Step-by-step Solutions built from ordered Steps, written by members for the problems they\'ve run into themselves.'],
+                            ['tag' => 'Comments', 'title' => 'Threaded discussion on everything', 'body' => 'Every question and Solution carries its own comment thread, with likes on both, so context stays attached to the content.'],
+                            ['tag' => 'Associates', 'title' => 'A social graph, not a follower count', 'body' => 'Associates connects you to the people you actually work with across the ecosystem — tracked in both directions, not just who you follow.'],
+                            ['tag' => 'Teams', 'title' => 'Team workspaces', 'body' => 'Jetstream-powered teams with invitations, so an account on InfoDot isn\'t just one person signing in alone.'],
+                        ];
+                    @endphp
+                    @foreach ($features as $i => $f)
+                        <div class="row-hover border-b border-[var(--line)] {{ $i % 2 === 0 ? 'md:border-r' : '' }} px-1 py-8 sm:py-10 transition-colors reveal" data-reveal>
+                            <p class="font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--blue)] mb-3">{{ $f['tag'] }}</p>
+                            <h3 class="font-display font-semibold text-xl text-[var(--ink)] mb-2.5">{{ $f['title'] }}</h3>
+                            <p class="text-[var(--ink-soft)] leading-relaxed max-w-md">{{ $f['body'] }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <!-- Capabilities -->
+        <section id="capabilities" class="py-24 sm:py-28 px-5 sm:px-8 bg-[var(--paper-soft)] border-y border-[var(--line)]">
+            <div class="max-w-[1400px] mx-auto">
+                <div class="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-12 lg:gap-20">
+                    <div class="reveal" data-reveal>
+                        <p class="font-mono text-xs tracking-[0.18em] uppercase text-[var(--blue)] mb-4">How it connects</p>
+                        <h2 class="font-display font-semibold text-3xl sm:text-4xl text-[var(--ink)] leading-tight mb-5">
+                            One account, one shared database, every Dot platform
+                        </h2>
+                        <p class="text-[var(--ink-soft)] leading-relaxed max-w-sm">
+                            Every platform in the Dot Ecosystem points at the same PostgreSQL instance and trusts the identity InfoDot issues. Sign in here once, and the handoff to any connected platform is instant.
                         </p>
-                        <ul class="list-none mt-6">
-                            <li class="py-2">
-                                <div class="flex items-center">
-                                    <div>
-                                        <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200 mr-3">
-                                            <i class="fas fa-fingerprint"></i>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-gray-600">Build Useful &amp; Beneficial Networks,</h4>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="py-2">
-                                <div class="flex items-center">
-                                    <div>
-                                        <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200 mr-3">
-                                            <i class="fas fa-retweet"></i>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-gray-600">Exchange A Service For A Service,</h4>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="py-2">
-                                <div class="flex items-center">
-                                    <div>
-                                        <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200 mr-3">
-                                            <i class="far fa-paper-plane"></i>
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-gray-600">Learn, Share Knowledge &amp; Grow Your Business.</h4>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
+                    </div>
+
+                    <div class="grid sm:grid-cols-2 gap-x-10">
+                        @php
+                            $capabilities = [
+                                ['title' => 'Livewire, real time', 'body' => 'Interface updates without full page reloads, built on Livewire 3 components.'],
+                                ['title' => 'One-time handoff tokens', 'body' => 'Each SSO token is single-use, expires in five minutes, and is scoped to exactly one ability — issued by Sanctum, not a shared session cookie.'],
+                                ['title' => 'Full-text search', 'body' => 'Solutions and comments are indexed with Laravel Scout, so answers surface by more than an exact keyword match.'],
+                                ['title' => 'Public by design', 'body' => 'Questions and Solutions are shared across the whole community — not walled off per account or per team.'],
+                                ['title' => 'Team invitations', 'body' => 'Jetstream Teams with invitations, so a workspace can hold more than one person from day one.'],
+                                ['title' => 'Shared PostgreSQL schema', 'body' => 'The same users, teams, and tokens tables that every connected platform reads from directly.'],
+                            ];
+                        @endphp
+                        @foreach ($capabilities as $c)
+                            <div class="py-6 border-t border-[var(--line)] reveal" data-reveal>
+                                <h3 class="font-display font-medium text-base text-[var(--ink)] mb-1.5">{{ $c['title'] }}</h3>
+                                <p class="text-sm text-[var(--ink-soft)] leading-relaxed">{{ $c['body'] }}</p>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-    <section class="pb-20 relative block bg-gray-900">
-        <div class="bottom-auto top-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden -mt-20" style="height: 80px; transform: translateZ(0px);">
-            <svg class="absolute bottom-0 overflow-hidden" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-            version="1.1" viewBox="0 0 2560 100" x="0" y="0">
-                <polygon class="text-gray-900 fill-current" points="2560 0 2560 100 0 100"></polygon>
-            </svg>
-        </div>
-        <div class="container mx-auto px-4 lg:pt-24 lg:pb-24">
-            <div class="flex flex-wrap text-center justify-center">
-                <div class="w-full lg:w-6/12 px-4">
-                    <h2 class="text-4xl font-semibold text-white">Business Development Tools for Business Intelligence</h2>
-                    <p class="text-lg leading-relaxed mt-4 mb-4 text-gray-500">
-                        Our unique technique turns your normal learning experience into an incredible business adventure.
-                    </p>
-                </div>
-            </div>
-            <div class="flex flex-wrap mt-12 justify-center">
-                <div class="w-full lg:w-3/12 px-4 text-center">
-                    <div class="text-gray-900 p-3 w-12 h-12 shadow-lg rounded-full bg-white inline-flex items-center justify-center">
-                        <i class="fas fa-medal text-xl"></i>
+        </section>
+
+        <!-- CTA -->
+        <section class="relative py-28 sm:py-36 px-5 sm:px-8 overflow-hidden">
+            <!-- Photo: business/community meeting, already an InfoDot brand asset used elsewhere in this app -->
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2400&auto=format&fit=crop');"></div>
+            <div class="absolute inset-0" style="background: linear-gradient(180deg, #f6f7f9 0%, rgba(246,247,249,0.88) 50%, #f6f7f9 100%);"></div>
+
+            <div class="relative z-10 max-w-2xl mx-auto text-center reveal" data-reveal>
+                <h2 class="font-display font-semibold text-3xl sm:text-4xl text-[var(--ink)] leading-tight mb-5">
+                    Every Dot platform starts at this login
+                </h2>
+                <p class="text-[var(--ink-soft)] leading-relaxed mb-10 max-w-lg mx-auto">
+                    Create an account here and you're signed in everywhere the ecosystem connects — no separate registration on each platform.
+                </p>
+
+                @guest
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="{{ route('register') }}" class="press px-8 py-3.5 bg-[var(--blue)] hover:bg-[var(--blue-deep)] text-white font-display font-semibold rounded-lg transition-colors">
+                            Create account
+                        </a>
+                        <a href="{{ route('login') }}" class="press px-8 py-3.5 text-[var(--ink)] font-medium rounded-lg border border-[var(--line)] hover:border-[var(--silver)] transition-colors">
+                            Sign in
+                        </a>
                     </div>
-                    <h6 class="text-xl mt-5 font-semibold text-white">Excelent Services</h6>
-                    <p class="mt-2 mb-4 text-gray-500">Built by entrepreneurs for entrepreneurs who want to develop their business.</p>
-                </div>
-                <div class="w-full lg:w-3/12 px-4 text-center">
-                    <div class="text-gray-900 p-3 w-12 h-12 shadow-lg rounded-full bg-white inline-flex items-center justify-center">
-                        <i class="fas fa-poll text-xl"></i>
-                    </div>
-                    <h5 class="text-xl mt-5 font-semibold text-white">Grow Your Business</h5>
-                    <p class="mt-2 mb-4 text-gray-500">Find & get found by providing value-for-value exchange through the InfoDot Platform.</p>
-                </div>
-                <div class="w-full lg:w-3/12 px-4 text-center">
-                    <div class="text-gray-900 p-3 w-12 h-12 shadow-lg rounded-full bg-white inline-flex items-center justify-center">
-                        <i class="fas fa-lightbulb text-xl"></i>
-                    </div>
-                    <h5 class="text-xl mt-5 font-semibold text-white">Business Insights</h5>
-                    <p class="mt-2 mb-4 text-gray-500">
-                        Whichever industry or level your business is in, InfoDot can support you.
-                    </p>
-                </div>
+                @endguest
             </div>
-        </div>
-    </section>
-</main>
-<footer class="relative bg-gray-300 pt-8 pb-6">
-    <div class="bottom-auto top-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden -mt-20" style="height: 80px; transform: translateZ(0px);">
-        <svg class="absolute bottom-0 overflow-hidden" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" version="1.1" viewBox="0 0 2560 100" x="0" y="0">
-            <polygon class="text-gray-300 fill-current" points="2560 0 2560 100 0 100"></polygon>
-        </svg>
-    </div>
-    <div class="container mx-auto px-4">
-        <div class="flex flex-wrap">
-            <div class="w-full lg:w-6/12 px-4">
-                <h4 class="text-3xl font-semibold">Let's keep in touch!</h4>
-                <h5 class="text-lg mt-0 mb-2 text-gray-700">Find us on any of these platforms.</h5>
-                <div class="mt-6">
-                    <a class="bg-white text-blue-600 shadow-lg font-normal p-3 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2" href="https://web.facebook.com/infodotbusinesses" target="_blank" type="button" >
-                        <i class="fab fa-facebook-square"></i>
-                    </a>
-                    <a class="bg-white text-pink-400 shadow-lg font-normal p-3 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2" href="https://www.instagram.com/infodot_businesses_official/" target="_blank" type="button">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                    <a class="bg-white text-blue-400 shadow-lg font-normal p-3 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2" href="https://twitter.com/InfoDot3" target="_blank" type="button">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a class="bg-white text-blue-400 shadow-lg font-normal p-3 items-center justify-center align-center rounded-full outline-none focus:outline-none mr-2" href="https://www.linkedin.com/company/infodot/" target="_blank" type="button">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-14 px-5 sm:px-8 border-t border-[var(--line)]">
+            <div class="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+                <a href="/" class="flex items-center gap-2.5">
+                    <img src="{{ asset('img/logo.png') }}" alt="InfoDot" class="h-11 w-auto">
+                </a>
+
+                <div class="flex items-center gap-6 font-mono text-xs tracking-wide uppercase text-[var(--ink-soft)]">
+                    <a href="{{ route('about') }}" class="link-underline hover:text-[var(--ink)] pb-0.5">About</a>
+                    <a href="{{ route('contact') }}" class="link-underline hover:text-[var(--ink)] pb-0.5">Contact</a>
+                    <a href="{{ route('terms') }}" class="link-underline hover:text-[var(--ink)] pb-0.5">Terms</a>
                 </div>
+
+                <p class="font-mono text-xs tracking-wide text-[var(--ink-soft)]">
+                    &copy; {{ date('Y') }} InfoDot. The hub of the Dot Ecosystem.
+                </p>
             </div>
-            <div class="w-full lg:w-6/12 px-4">
-                <div class="flex flex-wrap items-top mb-6">
-                    <div class="w-full lg:w-4/12 px-4 ml-auto">
-                        <span class="block uppercase text-gray-600 text-sm font-semibold mb-2">Useful Links</span>
-                        <ul class="list-unstyled">
-                            <li>
-                                <a class="text-gray-700 hover:text-gray-900 font-semibold block pb-2 text-sm"href="https://infodot.co.za">Home</a>
-                            </li>
-                            <li>
-                                <a class="text-gray-700 hover:text-gray-900 font-semibold block pb-2 text-sm" href="{{ route('login') }}">Sign In</a>
-                            </li>
-                            <li>
-                                <a class="text-gray-700 hover:text-gray-900 font-semibold block pb-2 text-sm" href="{{ route('register') }}">Create Account</a>
-                            </li>
-                            <li>
-                                <a class="text-gray-700 hover:text-gray-900 font-semibold block pb-2 text-sm" href="https://blupininc.com" target="_blank">BluePin Inc</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="w-full lg:w-4/12 px-4">
-                        <span class="block uppercase text-gray-600 text-sm font-semibold mb-2">Other Resources</span>
-                        <ul class="list-unstyled">
-                            <li>
-                                <a class="text-gray-700 hover:text-gray-900 font-semibold block pb-2 text-sm" href="{{ route('about') }}">About Us
-                                </a>
-                            </li>
-                            <li>
-                                <a class="text-gray-700 hover:text-gray-900 font-semibold block pb-2 text-sm" href="{{ route('features') }}">Features
-                                </a>
-                            </li>
-                            <li>
-                                <a class="text-gray-700 hover:text-gray-900 font-semibold block pb-2 text-sm" href="{{ route('contact') }}">Contact Us
-                                </a>
-                             </li>
-                            <li>
-                                <a class="text-gray-700 hover:text-gray-900 font-semibold block pb-2 text-sm" href="{{ route('terms') }}">Terms &amp; Conditions
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <hr class="my-6 border-gray-400" />
-        <div class="flex flex-wrap items-center md:justify-between justify-center">
-            <div class="w-full md:w-4/12 px-4 mx-auto text-center">
-                <div class="text-sm text-gray-600 font-semibold py-1">
-                    Copyright © 2019 InfoDot
-                    <a href="https://infodot.co.za" class="text-gray-600 hover:text-gray-900">
-                        All Rights Reserved.
-                    </a>.
-                </div>
-            </div>
-        </div>
-    </div>
-</footer>
-@livewireScripts
-</body>
+        </footer>
+
+        <script>
+            if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches && 'IntersectionObserver' in window) {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            io.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+                document.querySelectorAll('[data-reveal]').forEach((el) => io.observe(el));
+            } else {
+                document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible'));
+            }
+        </script>
+    </body>
 </html>
