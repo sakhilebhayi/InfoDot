@@ -1,10 +1,9 @@
-<div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-900" style="background-image: url(./img/register_bg_2.png); background-size: 100%; background-repeat: no-repeat;">
-
+<div class="min-h-screen flex flex-col sm:justify-center items-center pt-10 sm:pt-0 px-5 bg-[var(--paper)]">
     <div>
         {{ $logo }}
     </div>
 
-    <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+    <div class="w-full sm:max-w-md mt-8 px-6 sm:px-8 py-8 bg-white border border-[var(--line)] shadow-lg overflow-hidden sm:rounded-xl">
         {{ $slot }}
     </div>
 </div>
