@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Auth;
-use App\Models\User;
-use App\Models\Steps;
-use App\Models\Solutions;
-use App\Models\Questions;
 use App\Models\Associates;
+use App\Models\Questions;
+use App\Models\Solutions;
+use App\Models\User;
+use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Jetstream;
@@ -36,9 +35,10 @@ class PagesController extends Controller
         $details = [
             'name' => $request->name,
             'email' => $request->email,
-            'message' => $request->message
+            'message' => $request->message,
         ];
-        //Need to fix this email feature
+
+        // Need to fix this email feature
         // \Mail::to('testmail@gmail.com')->send(new \App\Mail\MailContact($details));
         return redirect()->route('contact')->with('success', 'Message Sent Successfully');
     }
@@ -121,13 +121,13 @@ class PagesController extends Controller
             })->orderBy('id', 'DESC')->paginate(5);
         } else {
             // mysql — a real FULLTEXT index backs these columns for this driver only.
-            $solutions = Solutions::whereRaw('MATCH (solution_title, solution_description, tags) AGAINST (?)', array($search_term))->orderBy('id', 'DESC')->paginate(5);
-            $questions = Questions::whereRaw('MATCH (question, description) AGAINST (?)', array($search_term))->orderBy('id', 'DESC')->paginate(5);
+            $solutions = Solutions::whereRaw('MATCH (solution_title, solution_description, tags) AGAINST (?)', [$search_term])->orderBy('id', 'DESC')->paginate(5);
+            $questions = Questions::whereRaw('MATCH (question, description) AGAINST (?)', [$search_term])->orderBy('id', 'DESC')->paginate(5);
         }
 
         $results = [
             'questions' => $questions,
-            'solutions' => $solutions
+            'solutions' => $solutions,
         ];
 
         return view('search_results', ['results' => $results]);
@@ -138,6 +138,7 @@ class PagesController extends Controller
     {
         $get_profile = User::where('id', $id)->first();
         $association = Associates::where('user_id', Auth::id())->where('associate_id', $id)->whereNull('deleted_at')->first();
+
         return view('profile.show', [
             'user' => $get_profile,
             'association' => $association,

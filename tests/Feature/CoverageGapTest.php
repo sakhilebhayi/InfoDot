@@ -23,6 +23,7 @@ class CoverageGapTest extends TestCase
         $user = User::factory()->create(['email_verified_at' => Carbon::now()]);
         $team = Team::factory()->create(['user_id' => $user->id, 'personal_team' => true]);
         $user->forceFill(['current_team_id' => $team->id])->save();
+
         return $user;
     }
 
@@ -38,14 +39,14 @@ class CoverageGapTest extends TestCase
     {
         $user = $this->authUser();
         $question = Questions::create([
-            'user_id'     => $user->id,
-            'question'    => 'How does testing work?',
+            'user_id' => $user->id,
+            'question' => 'How does testing work?',
             'description' => 'Explain PHPUnit basics.',
-            'status'      => 0,
+            'status' => 0,
         ]);
 
         $this->actingAs($user)
-            ->get('/question/view/' . $question->id)
+            ->get('/question/view/'.$question->id)
             ->assertOk();
     }
 
@@ -61,17 +62,17 @@ class CoverageGapTest extends TestCase
     {
         $user = $this->authUser();
         $solution = Solutions::create([
-            'user_id'              => $user->id,
-            'solution_title'       => 'Deploy a Laravel app',
+            'user_id' => $user->id,
+            'solution_title' => 'Deploy a Laravel app',
             'solution_description' => 'Step by step guide.',
-            'tags'                 => 'laravel, deployment',
-            'duration'             => 2,
-            'duration_type'        => 'hours',
-            'steps'                => 0,
+            'tags' => 'laravel, deployment',
+            'duration' => 2,
+            'duration_type' => 'hours',
+            'steps' => 0,
         ]);
 
         $this->actingAs($user)
-            ->get('/solution/view/' . $solution->id)
+            ->get('/solution/view/'.$solution->id)
             ->assertOk();
     }
 
@@ -80,19 +81,19 @@ class CoverageGapTest extends TestCase
     public function test_contact_form_sends_and_redirects(): void
     {
         $this->post('/contact-send', [
-            'name'    => 'Test User',
-            'email'   => 'test@example.com',
+            'name' => 'Test User',
+            'email' => 'test@example.com',
             'message' => 'Hello from the test suite.',
         ])->assertRedirect();
     }
 
     public function test_user_profile_page_renders(): void
     {
-        $user  = $this->authUser();
+        $user = $this->authUser();
         $other = User::factory()->create();
 
         $this->actingAs($user)
-            ->get('/user/profile/' . $other->id)
+            ->get('/user/profile/'.$other->id)
             ->assertOk();
     }
 
@@ -111,13 +112,13 @@ class CoverageGapTest extends TestCase
     {
         $user = $this->authUser();
         Solutions::create([
-            'user_id'              => $user->id,
-            'solution_title'       => 'Docker compose setup',
+            'user_id' => $user->id,
+            'solution_title' => 'Docker compose setup',
             'solution_description' => 'Run Docker containers locally.',
-            'tags'                 => 'docker, containers',
-            'duration'             => 1,
-            'duration_type'        => 'days',
-            'steps'                => 0,
+            'tags' => 'docker, containers',
+            'duration' => 1,
+            'duration_type' => 'days',
+            'steps' => 0,
         ]);
 
         $component = Livewire::test(Search::class)->set('query', 'Docker');
@@ -128,10 +129,10 @@ class CoverageGapTest extends TestCase
     {
         $user = $this->authUser();
         Questions::create([
-            'user_id'     => $user->id,
-            'question'    => 'What is Docker?',
+            'user_id' => $user->id,
+            'question' => 'What is Docker?',
             'description' => 'Container basics.',
-            'status'      => 0,
+            'status' => 0,
         ]);
 
         Livewire::test(Search::class)
@@ -193,10 +194,10 @@ class CoverageGapTest extends TestCase
     {
         $user = $this->authUser();
         $question = Questions::create([
-            'user_id'     => $user->id,
-            'question'    => 'Is this tested?',
+            'user_id' => $user->id,
+            'question' => 'Is this tested?',
             'description' => 'Yes it is.',
-            'status'      => 0,
+            'status' => 0,
         ]);
 
         Livewire::actingAs($user)
@@ -204,8 +205,8 @@ class CoverageGapTest extends TestCase
             ->call('storeLike');
 
         $this->assertDatabaseHas('likes', [
-            'user_id'      => $user->id,
-            'likable_id'   => $question->id,
+            'user_id' => $user->id,
+            'likable_id' => $question->id,
             'likable_type' => 'questions',
         ]);
     }
@@ -214,10 +215,10 @@ class CoverageGapTest extends TestCase
     {
         $user = $this->authUser();
         $question = Questions::create([
-            'user_id'     => $user->id,
-            'question'    => 'Solved yet?',
+            'user_id' => $user->id,
+            'question' => 'Solved yet?',
             'description' => 'Nearly.',
-            'status'      => 0,
+            'status' => 0,
         ]);
 
         Livewire::actingAs($user)
@@ -225,7 +226,7 @@ class CoverageGapTest extends TestCase
             ->call('markedAsSolved');
 
         $this->assertDatabaseHas('questions', [
-            'id'     => $question->id,
+            'id' => $question->id,
             'status' => 1,
         ]);
     }

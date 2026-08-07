@@ -93,16 +93,3 @@ Route::get('/cookies', 'App\Http\Controllers\PagesController@cookies')->name('co
 Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_search_results')->name('solution_search_results');
 
 // ===============================================================
-
-
-
-
-
-
-
-
-
-
-
-
-

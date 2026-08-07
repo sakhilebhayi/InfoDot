@@ -6,7 +6,6 @@ use Laravel\Jetstream\Http\Controllers\Livewire\ApiTokenController;
 use Laravel\Jetstream\Http\Controllers\Livewire\PrivacyPolicyController;
 use Laravel\Jetstream\Http\Controllers\Livewire\TeamController;
 use Laravel\Jetstream\Http\Controllers\Livewire\TermsOfServiceController;
-use Laravel\Jetstream\Http\Controllers\Livewire\UserProfileController;
 use Laravel\Jetstream\Http\Controllers\TeamInvitationController;
 use Laravel\Jetstream\Jetstream;
 
@@ -35,8 +34,8 @@ Route::group(['middleware' => config('jetstream.middleware', ['web'])], function
             Route::put('/current-team', [CurrentTeamController::class, 'update'])->name('current-team.update');
 
             Route::get('/team-invitations/{invitation}', [TeamInvitationController::class, 'accept'])
-                        ->middleware(['signed'])
-                        ->name('team-invitations.accept');
+                ->middleware(['signed'])
+                ->name('team-invitations.accept');
         }
     });
 });

@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use App\Models\Solutions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Steps extends Model
 {
-    use Search;
     use HasFactory;
+    use Search;
 
     protected $table = 'solutions_step';
+
     /**
      * The attributes that should be cast to native types.
      *
@@ -23,7 +23,7 @@ class Steps extends Model
     ];
 
     protected $fillable = [
-        'user_id', 'solution_id', 'solution_heading', 'solution_body'
+        'user_id', 'solution_id', 'solution_heading', 'solution_body',
     ];
 
     protected $searchable = [

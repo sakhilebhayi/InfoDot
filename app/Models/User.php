@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use Laravel\Cashier\Billable;
-use Laravel\Jetstream\HasTeams;
-use Laravel\Sanctum\HasApiTokens;
-use Laravel\Jetstream\HasProfilePhoto;
-use Laravel\Scout\Searchable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Cashier\Billable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Jetstream\HasProfilePhoto;
+use Laravel\Jetstream\HasTeams;
+use Laravel\Sanctum\HasApiTokens;
+use Laravel\Scout\Searchable;
 
 class User extends Authenticatable
 {
@@ -39,14 +38,14 @@ class User extends Authenticatable
     public function toSearchableArray(): array
     {
         return [
-            'name'  => $this->name,
+            'name' => $this->name,
             'email' => $this->email,
         ];
     }
 
     public function avatar(): string
     {
-        return 'https://www.gravatar.com/avatar/' . md5($this->email) . '?d=mp';
+        return 'https://www.gravatar.com/avatar/'.md5($this->email).'?d=mp';
     }
 
     public function likes()

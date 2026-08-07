@@ -3,11 +3,13 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class Question extends Component
 {
     public mixed $model;
+
     public mixed $question = null;
 
     public function storeLike(): void
@@ -28,7 +30,7 @@ class Question extends Component
         $this->model->update(['status' => 1]);
     }
 
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         return view('livewire.question');
     }

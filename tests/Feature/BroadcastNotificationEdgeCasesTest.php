@@ -41,7 +41,7 @@ class BroadcastNotificationEdgeCasesTest extends TestCase
 
         $response = $this->actingAs($user)->post('/broadcasting/auth', [
             'socket_id' => '1234.5678',
-            'channel_name' => 'private-App.Models.User.' . $user->id,
+            'channel_name' => 'private-App.Models.User.'.$user->id,
         ]);
 
         $response->assertOk();
@@ -55,7 +55,7 @@ class BroadcastNotificationEdgeCasesTest extends TestCase
 
         $response = $this->actingAs($user)->post('/broadcasting/auth', [
             'socket_id' => '1234.5678',
-            'channel_name' => 'private-App.Models.User.' . $other->id,
+            'channel_name' => 'private-App.Models.User.'.$other->id,
         ]);
 
         $response->assertStatus(403);
@@ -78,7 +78,7 @@ class BroadcastNotificationEdgeCasesTest extends TestCase
     {
         $notifiable = Mockery::mock();
         $databaseRoute = Mockery::mock();
-        $notification = new DummyDatabaseNotification();
+        $notification = new DummyDatabaseNotification;
         $notification->id = 'notif-edge-001';
 
         $notifiable->shouldReceive('routeNotificationFor')
@@ -96,14 +96,14 @@ class BroadcastNotificationEdgeCasesTest extends TestCase
             }))
             ->andReturnTrue();
 
-        $channel = new DatabaseNotificationChannel();
+        $channel = new DatabaseNotificationChannel;
 
         $this->assertTrue((bool) $channel->send($notifiable, $notification));
     }
 
     public function test_notification_controller_returns_notifications_view(): void
     {
-        $controller = new NotificationController();
+        $controller = new NotificationController;
         $view = $controller->index();
 
         $this->assertSame('notifications.index', $view->name());

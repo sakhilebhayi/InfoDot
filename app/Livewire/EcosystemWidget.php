@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -49,10 +50,10 @@ class EcosystemWidget extends Component
             now()->addMinutes((int) config('ecosystem.handoff_ttl', 5))
         )->plainTextToken;
 
-        $this->redirect(rtrim($platform['url'], '/') . '/auth/ecosystem?token=' . $token);
+        $this->redirect(rtrim($platform['url'], '/').'/auth/ecosystem?token='.$token);
     }
 
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         return view('livewire.ecosystem-widget');
     }

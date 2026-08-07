@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Laravel\Scout\Searchable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 
 class Solutions extends Model
 {
@@ -18,9 +18,9 @@ class Solutions extends Model
     public function toSearchableArray(): array
     {
         return [
-            'solution_title'       => $this->solution_title,
+            'solution_title' => $this->solution_title,
             'solution_description' => $this->solution_description,
-            'tags'                 => $this->tags,
+            'tags' => $this->tags,
         ];
     }
 

@@ -5,12 +5,15 @@ namespace App\Livewire;
 use App\Models\Solutions;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class SolutionList extends Component
 {
     public int $perPage = 2;
+
     public int $page = 1;
+
     public Collection $solutionsCollection;
 
     public function mount(): void
@@ -29,7 +32,7 @@ class SolutionList extends Component
         $this->page++;
     }
 
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         $solutions = new LengthAwarePaginator(
             $this->solutionsCollection,

@@ -43,7 +43,7 @@ return [
             ],
         ],
 
-        //Production
+        // Production
         // 'pusher' => [
         //     'driver' => 'pusher',
         //     'key' => env('PUSHER_APP_KEY'),
@@ -55,7 +55,7 @@ return [
         //     ],
         // ],
 
-        //Local
+        // Local
         'pusher' => [
             'driver' => 'pusher',
             'key' => env('PUSHER_APP_KEY'),
@@ -66,7 +66,7 @@ return [
                 'encrypted' => true,
                 'host' => '127.0.0.1',
                 'port' => 6001,
-                'scheme' => 'https'
+                'scheme' => 'https',
             ],
         ],
 

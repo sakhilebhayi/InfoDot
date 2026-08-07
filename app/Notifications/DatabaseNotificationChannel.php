@@ -2,8 +2,8 @@
 
 namespace App\Notifications;
 
-use ReflectionClass;
 use Illuminate\Notifications\Notification;
+use ReflectionClass;
 
 class DatabaseNotificationChannel
 {

@@ -28,7 +28,7 @@ class CorePlatformFeaturesTest extends TestCase
 
         $team = Team::factory()->create([
             'user_id' => $user->id,
-            'name' => $user->name . "'s Team",
+            'name' => $user->name."'s Team",
             'personal_team' => true,
         ]);
 

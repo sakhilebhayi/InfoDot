@@ -11,28 +11,28 @@ use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class AnalyticsController extends Controller
 {
-    public function dashboard(): \Illuminate\View\View
+    public function dashboard(): View
     {
         // ── Headline counts ───────────────────────────────────────────────
-        $totalUsers     = User::count();
+        $totalUsers = User::count();
         $totalSolutions = Solutions::count();
         $totalQuestions = Questions::count();
-        $totalComments  = Comment::count();
-        $totalLikes     = Like::count();
-        $totalTeams     = Team::count();
-        $totalFollows   = Associates::count();
+        $totalComments = Comment::count();
+        $totalLikes = Like::count();
+        $totalTeams = Team::count();
+        $totalFollows = Associates::count();
         $solvedQuestions = Questions::where('status', 'solved')->count();
 
         // ── Month-over-month deltas (current vs previous month) ───────────
         $thisMonth = now()->startOfMonth();
         $lastMonth = now()->subMonth()->startOfMonth();
 
-        $usersThisMonth     = User::where('created_at', '>=', $thisMonth)->count();
-        $usersLastMonth     = User::whereBetween('created_at', [$lastMonth, $thisMonth])->count();
+        $usersThisMonth = User::where('created_at', '>=', $thisMonth)->count();
+        $usersLastMonth = User::whereBetween('created_at', [$lastMonth, $thisMonth])->count();
         $solutionsThisMonth = Solutions::where('created_at', '>=', $thisMonth)->count();
         $solutionsLastMonth = Solutions::whereBetween('created_at', [$lastMonth, $thisMonth])->count();
         $questionsThisMonth = Questions::where('created_at', '>=', $thisMonth)->count();
@@ -64,9 +64,9 @@ class AnalyticsController extends Controller
             ->get(['id', 'name', 'email']);
 
         // ── Engagement score (0–100) ──────────────────────────────────────
-        $solveRate        = $totalQuestions > 0 ? ($solvedQuestions / $totalQuestions) : 0;
-        $avgCommentsPerQ  = $totalQuestions > 0 ? ($totalComments / $totalQuestions)   : 0;
-        $avgLikesPerItem  = ($totalSolutions + $totalQuestions) > 0
+        $solveRate = $totalQuestions > 0 ? ($solvedQuestions / $totalQuestions) : 0;
+        $avgCommentsPerQ = $totalQuestions > 0 ? ($totalComments / $totalQuestions) : 0;
+        $avgLikesPerItem = ($totalSolutions + $totalQuestions) > 0
             ? ($totalLikes / ($totalSolutions + $totalQuestions))
             : 0;
 
@@ -80,7 +80,7 @@ class AnalyticsController extends Controller
             $engagementScore >= 80 => 'Excellent',
             $engagementScore >= 60 => 'Good',
             $engagementScore >= 40 => 'Fair',
-            default                => 'Growing',
+            default => 'Growing',
         };
 
         // ── Platform registry ─────────────────────────────────────────────

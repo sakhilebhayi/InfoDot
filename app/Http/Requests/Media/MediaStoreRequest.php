@@ -24,6 +24,6 @@ class MediaStoreRequest extends FormRequest
      */
     public function rules()
     {
-        return ['media.*' => 'required|mimetypes:' . implode(',', MimeTypes::all())];
+        return ['media.*' => 'required|mimetypes:'.implode(',', MimeTypes::all())];
     }
 }

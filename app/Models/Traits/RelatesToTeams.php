@@ -2,9 +2,11 @@
 
 namespace App\Models\Traits;
 
+use Illuminate\Database\Eloquent\Model;
+
 trait RelatesToTeams
 {
-    /** @phpstan-require-extends \Illuminate\Database\Eloquent\Model */
+    /** @phpstan-require-extends Model */
 
     /** @property int $id */
     public function scopeForCurrentTeam($query): void

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Solutions;
 
-use App\Models\Steps;
-use App\Models\Solutions;
 use App\Http\Controllers\Controller;
+use App\Models\Solutions;
+use App\Models\Steps;
 use Illuminate\Http\Request;
 
 class SolutionsController extends Controller
@@ -28,18 +28,18 @@ class SolutionsController extends Controller
     public function add_solution(Request $request)
     {
         $request->validate(
-        [ // 1st array is field rules
-            'solution_title' =>'required|min:3|max:255',
-            'solution_description' =>'required|min:3',
-            'tags-input' =>'required|min:3',
-            'duration' =>'required',
-            'duration_type' =>'required'
-        ],
-        [ // 2nd array is the rules custom message
-            'required' => 'The :attribute field is mandatory.'
-        ]);
+            [ // 1st array is field rules
+                'solution_title' => 'required|min:3|max:255',
+                'solution_description' => 'required|min:3',
+                'tags-input' => 'required|min:3',
+                'duration' => 'required',
+                'duration_type' => 'required',
+            ],
+            [ // 2nd array is the rules custom message
+                'required' => 'The :attribute field is mandatory.',
+            ]);
 
-        $solution = new Solutions();
+        $solution = new Solutions;
 
         $solution->user_id = auth()->user()->id;
         $solution->solution_title = $request->input('solution_title');
@@ -50,11 +50,10 @@ class SolutionsController extends Controller
         $solution->steps = $request->input('steps');
         $solution->save();
 
-
         $steps = $request->input('solution_heading');
 
-        foreach ($steps as $key => $n){
-            $solution_step = new Steps();
+        foreach ($steps as $key => $n) {
+            $solution_step = new Steps;
 
             $solution_step->user_id = auth()->user()->id;
             $solution_step->solution_id = $solution->id;
@@ -69,6 +68,7 @@ class SolutionsController extends Controller
     public function view_solution($id)
     {
         $solution = Solutions::where('id', $id)->first();
+
         return view('solutions.view')->with(['solution' => $solution]);
 
     }

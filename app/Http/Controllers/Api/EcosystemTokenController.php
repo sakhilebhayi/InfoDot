@@ -22,7 +22,7 @@ class EcosystemTokenController extends Controller
         );
 
         return response()->json([
-            'token'      => $token->plainTextToken,
+            'token' => $token->plainTextToken,
             'expires_at' => $token->accessToken->expires_at->toISOString(),
         ]);
     }

@@ -3,12 +3,14 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class DotSwitcher extends Component
 {
     public bool $open = false;
+
     public bool $inline = false;
 
     #[Computed]
@@ -40,11 +42,11 @@ class DotSwitcher extends Component
         $token = $tokenResult->plainTextToken;
 
         if ($token) {
-            $this->redirect(rtrim($platform['url'], '/') . '/auth/ecosystem?token=' . $token);
+            $this->redirect(rtrim($platform['url'], '/').'/auth/ecosystem?token='.$token);
         }
     }
 
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         return view('livewire.dot-switcher');
     }

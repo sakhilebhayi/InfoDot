@@ -3,12 +3,15 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class Comments extends Component
 {
     public mixed $model;
+
     public mixed $question = null;
+
     public mixed $solution = null;
 
     public array $newCommentState = ['body' => ''];
@@ -50,7 +53,7 @@ class Comments extends Component
         $this->newCommentState = ['body' => ''];
     }
 
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         $comments = $this->model
             ->comments()

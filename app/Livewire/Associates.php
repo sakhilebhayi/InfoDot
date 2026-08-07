@@ -4,11 +4,13 @@ namespace App\Livewire;
 
 use App\Models\Associates as AssociatesModel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class Associates extends Component
 {
     public mixed $user;
+
     public mixed $model;
 
     public function connect(): void
@@ -22,13 +24,13 @@ class Associates extends Component
             $connect->delete();
         } else {
             AssociatesModel::create([
-                'user_id'      => Auth::id(),
+                'user_id' => Auth::id(),
                 'associate_id' => $this->user->id,
             ]);
         }
     }
 
-    public function render(): \Illuminate\View\View
+    public function render(): View
     {
         return view('livewire.associates');
     }

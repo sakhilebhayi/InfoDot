@@ -10,5 +10,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/ecosystem/token', [EcosystemTokenController::class, 'issue'])
         ->name('api.ecosystem.token');
 });
-
-

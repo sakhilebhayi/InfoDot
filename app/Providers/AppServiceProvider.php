@@ -4,11 +4,11 @@ namespace App\Providers;
 
 use App\Models\File;
 use App\Models\Folder;
-use App\Models\Solutions;
 use App\Models\Questions;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Blade;
+use App\Models\Solutions;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -64,7 +64,7 @@ class AppServiceProvider extends ServiceProvider
             'file' => File::class,
             'folder' => Folder::class,
             'solutions' => Solutions::class,
-            'questions' => Questions::class
+            'questions' => Questions::class,
         ]);
     }
 }
