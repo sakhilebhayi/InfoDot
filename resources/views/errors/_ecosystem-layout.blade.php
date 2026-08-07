@@ -11,14 +11,21 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 
         @php
             $viteManifest = public_path('build/manifest.json');
-            $discover = [
-                ['name' => 'Dot.Files', 'blurb' => 'Team file storage', 'url' => 'https://files.infodot.app'],
-                ['name' => 'Dot.Tasks', 'blurb' => 'Task management', 'url' => 'https://tasks.infodot.app'],
-                ['name' => 'Dot.Pulse', 'blurb' => 'Community & discussion', 'url' => 'https://pulse.infodot.app'],
-            ];
+
+            // Every Dot platform, pulled from the shared ecosystem registry
+            // (config/ecosystem.php, identical across all platforms) rather
+            // than a fixed hand-picked subset -- add a platform to the
+            // registry once and it shows up here automatically everywhere.
+            $currentPlatformName = 'InfoDot';
+            $discover = collect(config('ecosystem.platforms', []))
+                ->reject(fn ($p) => ($p['name'] ?? null) === $currentPlatformName)
+                ->reject(fn ($p) => ($p['active'] ?? true) === false)
+                ->values()
+                ->all();
         @endphp
         @if (file_exists($viteManifest))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -90,17 +97,19 @@
                     @yield('actions')
                 </div>
 
-                <div style="border-top: 1px solid var(--line); padding-top: 32px; text-align: left;">
-                    <p class="font-mono" style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 16px; text-align: center;">While you're here — explore the Dot Ecosystem</p>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
-                        @foreach ($discover ?? [] as $platform)
-                            <a href="{{ $platform['url'] }}" class="press" style="display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; background: #fff; border: 1px solid var(--line); border-radius: 12px; text-decoration: none;">
-                                <span class="font-display" style="font-weight: 600; font-size: 14px; color: var(--ink);">{{ $platform['name'] }}</span>
-                                <span style="font-size: 12.5px; color: var(--ink-soft);">{{ $platform['blurb'] }}</span>
-                            </a>
-                        @endforeach
+                @if (!empty($discover))
+                    <div style="border-top: 1px solid var(--line); padding-top: 28px; text-align: left;">
+                        <p class="font-mono" style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 14px; text-align: center;">While you're here — the rest of the Dot Ecosystem ({{ count($discover) }})</p>
+                        <div style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;">
+                            @foreach ($discover as $platform)
+                                <a href="{{ $platform['url'] }}" class="press" style="flex: 0 0 auto; scroll-snap-align: start; display: flex; align-items: center; gap: 8px; padding: 7px 14px 7px 7px; background: #fff; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; white-space: nowrap;">
+                                    <span class="material-symbols-rounded" aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: {{ $platform['accent'] ?? 'var(--gold)' }}; color: #ffffff; font-size: 16px; flex-shrink: 0;">{{ $platform['icon'] ?? 'apps' }}</span>
+                                    <span class="font-display" style="font-weight: 600; font-size: 13px; color: var(--ink);">{{ $platform['name'] }}</span>
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
-                </div>
+                @endif
             </div>
         </main>
 
