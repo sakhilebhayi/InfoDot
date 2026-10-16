@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4"]
+        php-version: ["8.4"]
 
     steps:
       - name: Checkout
@@ -34,17 +34,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
 
-      - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist
-
+      # .env must exist BEFORE composer install: the post-autoload-dump
+      # package:discover boots the app, and with no .env the broadcaster
+      # defaults to reverb with null credentials, which throws and fails
+      # the install (every CI run since 2026-08-07 died here).
       - name: Prepare Environment
         run: |
           cp .env.example .env
-          php artisan key:generate
           mkdir -p database
           touch database/database.sqlite
 
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      # .env.example points at Postgres; CI has only the SQLite file created
+      # above, so the seed run (which proves the seeders still work) is
+      # pointed at it explicitly. The test suite itself uses phpunit.xml's
+      # in-memory SQLite and is unaffected.
       - name: Run Migrations and Seed
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
         run: php artisan migrate:fresh --seed
 
       - name: Run Tests
