@@ -43,7 +43,7 @@ class SignedInUiTest extends TestCase
         ], $attrs)));
     }
 
-    public function test_the_rail_links_to_every_section_and_marks_the_current_one(): void
+    public function test_the_top_tabs_link_to_every_section_and_mark_the_current_one(): void
     {
         $html = $this->actingAs($this->member())->get('/solutions')->assertOk()->getContent();
 
@@ -65,11 +65,11 @@ class SignedInUiTest extends TestCase
             foreach (['Manrope', '#2962ff', '#b6c4ff', 'backdrop-filter', 'material-symbols-outlined', 'fa fa-'] as $old) {
                 $this->assertStringNotContainsString($old, $html, "$url still contains $old");
             }
-            $this->assertStringContainsString('IBM+Plex+Sans', $html, $url);
+            $this->assertStringContainsString('Baloo+2', $html, $url);
         }
     }
 
-    public function test_the_questions_page_states_what_needs_an_answer(): void
+    public function test_the_questions_page_offers_unsolved_and_solved_filters(): void
     {
         $user = $this->member();
         $this->question($user);
@@ -77,9 +77,9 @@ class SignedInUiTest extends TestCase
 
         $this->actingAs($user)->get('/questions')
             ->assertOk()
-            ->assertSee('1 question still needs an answer')
             ->assertSee('Unsolved')
-            ->assertSee('Solved');
+            ->assertSee('Solved')
+            ->assertSee('aria-pressed', false);
     }
 
     public function test_an_empty_questions_page_explains_what_to_do(): void
@@ -166,17 +166,11 @@ class SignedInUiTest extends TestCase
         $this->assertSame(1, (int) $question->fresh()->status);
     }
 
-    public function test_figures_pad_with_dimmed_zeros_and_keep_the_real_value_for_screen_readers(): void
+    public function test_figures_render_the_plain_number_in_the_figure_face(): void
     {
-        $html = view('components.ix.figure', ['value' => 3, 'digits' => 2])->render();
-
-        $this->assertStringContainsString('<i>0</i>3', $html);
-        $this->assertStringContainsString('ix-sr">3<', $html);
-
-        $zero = view('components.ix.figure', ['value' => 0, 'digits' => 2])->render();
-        $this->assertStringContainsString('<i>0</i>0', $zero);
-
-        $big = view('components.ix.figure', ['value' => 120, 'digits' => 2])->render();
-        $this->assertStringNotContainsString('<i>', $big);
+        $this->assertStringContainsString('>3<', view('components.ix.figure', ['value' => 3])->render());
+        $this->assertStringContainsString('>0<', view('components.ix.figure', ['value' => 0])->render());
+        $this->assertStringContainsString('>120<', view('components.ix.figure', ['value' => 120])->render());
+        $this->assertStringContainsString('class="ix-fig"', view('components.ix.figure', ['value' => 7])->render());
     }
 }
