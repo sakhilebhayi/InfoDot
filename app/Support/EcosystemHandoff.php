@@ -14,6 +14,18 @@ namespace App\Support;
  */
 final class EcosystemHandoff
 {
+    public const TOKEN_PREFIX = 'ecosystem-handoff';
+
+    /**
+     * The token's name carries its audience, so a token minted for one platform
+     * cannot be redeemed by another. A token with no audience (the legacy name)
+     * can only be redeemed by a platform that shares this database.
+     */
+    public static function tokenName(?string $platformKey = null): string
+    {
+        return $platformKey === null || $platformKey === '' ? self::TOKEN_PREFIX : self::TOKEN_PREFIX.':'.$platformKey;
+    }
+
     /**
      * The URL to send the token to (without the token), or null if this
      * platform must not receive one.
