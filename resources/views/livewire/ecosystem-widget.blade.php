@@ -47,7 +47,7 @@
                                 @endif
 
                                 {{-- Icon --}}
-                                <span class="material-symbols-outlined transition-colors duration-200
+                                <span class="material-symbols-rounded transition-colors duration-200
                                     {{ $launching === $key ? 'text-[#2962ff]' : 'text-[#b6c4ff] group-hover:text-[#2962ff]' }}"
                                     style="font-size:26px;">
                                     {{ $platform['icon'] }}

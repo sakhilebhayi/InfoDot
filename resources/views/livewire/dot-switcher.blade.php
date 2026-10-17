@@ -9,7 +9,7 @@
                         onmouseover="this.style.background='rgba(41,98,255,0.15)';this.style.borderColor='rgba(41,98,255,0.35)'"
                         onmouseout="this.style.background='rgba(49,57,77,0.4)';this.style.borderColor='rgba(67,70,86,0.2)'"
                         title="{{ $platform['name'] }}">
-                    <span class="material-symbols-outlined" style="font-size:20px;color:#b6c4ff;">{{ $platform['icon'] }}</span>
+                    <span class="material-symbols-rounded" style="font-size:20px;color:#b6c4ff;">{{ $platform['icon'] }}</span>
                     <span style="font-size:0.55rem;font-weight:700;color:#b7c8e1;letter-spacing:0.03em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">{{ Str::after($platform['name'], '.') }}</span>
                 </button>
             @endforeach
@@ -24,9 +24,9 @@
                 onmouseover="this.style.background='rgba(41,98,255,0.22)'"
                 onmouseout="this.style.background='rgba(41,98,255,0.12)'"
                 title="Switch Dot platform">
-            <span class="material-symbols-outlined" style="font-size:18px;">apps</span>
+            <span class="material-symbols-rounded" style="font-size:18px;">apps</span>
             <span>Dot Apps</span>
-            <span class="material-symbols-outlined" style="font-size:14px;transition:transform 0.2s;" :style="open ? 'transform:rotate(180deg)' : ''">expand_more</span>
+            <span class="material-symbols-rounded" style="font-size:14px;transition:transform 0.2s;" :style="open ? 'transform:rotate(180deg)' : ''">expand_more</span>
         </button>
 
         <div x-show="open"
@@ -46,7 +46,7 @@
                         onmouseover="this.style.background='rgba(41,98,255,0.15)';this.style.borderColor='rgba(41,98,255,0.35)'"
                         onmouseout="this.style.background='rgba(49,57,77,0.4)';this.style.borderColor='rgba(67,70,86,0.2)'"
                         title="{{ $platform['name'] }}">
-                    <span class="material-symbols-outlined" style="font-size:22px;color:#b6c4ff;">{{ $platform['icon'] }}</span>
+                    <span class="material-symbols-rounded" style="font-size:22px;color:#b6c4ff;">{{ $platform['icon'] }}</span>
                     <span style="font-size:0.6rem;font-weight:700;color:#b7c8e1;letter-spacing:0.04em;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">{{ $platform['name'] }}</span>
                 </button>
             @endforeach
