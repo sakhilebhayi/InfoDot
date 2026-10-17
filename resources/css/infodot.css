@@ -2299,15 +2299,14 @@ button.ix-dir__item:hover:not([disabled]) {
     }
 }
 
-/* Platform logos sit on a paper tile so every logo reads on every area colour. */
+/* Platform logos (light variants) sit directly on the area colour. */
 .ix-logotile {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 10px;
-    background: #f6f4ee;
-    border-radius: var(--ix-radius);
+    padding: 0;
+    background: none;
 }
 
 .ix-logotile img {
@@ -2317,7 +2316,7 @@ button.ix-dir__item:hover:not([disabled]) {
 }
 
 .ix-logotile--sq {
-    padding: 4px;
+    padding: 0;
 }
 
 .ix-logotile--sq img {
