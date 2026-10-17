@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\OwnerCode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Events\TeamCreated;
@@ -47,6 +48,7 @@ class Team extends JetstreamTeam
     {
         static::creating(function ($team) {
             $team->uuid ??= (string) Str::uuid();
+            $team->code ??= OwnerCode::for((string) $team->name, fn (string $c) => static::where('code', $c)->exists());
         });
 
         static::created(function ($team) {

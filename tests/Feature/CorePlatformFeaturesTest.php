@@ -205,7 +205,7 @@ class CorePlatformFeaturesTest extends TestCase
         $this->actingAs($user)->get('/home')
             ->assertOk()
             ->assertSee('Welcome back')
-            ->assertSee('Waiting for an answer')
+            ->assertSee('waiting for an answer')
             ->assertSee($user->currentTeam->name);
     }
 }

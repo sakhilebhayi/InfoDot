@@ -13,11 +13,12 @@
         <div class="ix-tablewrap">
             <table class="ix-table">
                 <thead>
-                    <tr><th>Solution</th><th>Visible to</th><th>Author</th><th class="num">Steps</th><th>Time</th><th class="num">Replies</th><th>Added</th></tr>
+                    <tr><th>Reference</th><th>Solution</th><th>Visible to</th><th>Author</th><th class="num">Steps</th><th>Time</th><th class="num">Replies</th><th>Added</th></tr>
                 </thead>
                 <tbody>
                 @foreach ($solutions as $solution)
                     <tr>
+                        <td><span class="ix-ref">{{ \App\Support\Reference::for($solution) }}</span></td>
                         <td>
                             <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" class="title">{{ $solution->solution_title }}</a>
                             <p class="sub">{{ $solution->solution_description }}</p>

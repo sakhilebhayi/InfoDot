@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Http\Controllers\PeopleController;
 use App\Livewire\EcosystemWidget;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Ecosystem Platform Switcher
     // -------------------------------------------------------
     Route::get('/platforms', EcosystemWidget::class)->name('ecosystem.widget');
+
+    // -------------------------------------------------------
+    // People: the members of the company the person is acting for
+    // -------------------------------------------------------
+    Route::get('/people', [PeopleController::class, 'index'])->name('people');
 
     // // -------------------------------------------------------
     // Solutions Controller

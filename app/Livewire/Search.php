@@ -4,7 +4,11 @@ namespace App\Livewire;
 
 use App\Models\Questions;
 use App\Models\Solutions;
+use App\Support\EcosystemHandoff;
+use App\Support\Reference;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -18,6 +22,27 @@ class Search extends Component
     public function updatedQuery(): void
     {
         $this->highlightIndex = 0;
+    }
+
+    /** A typed reference (NWFN-Q-000014) jumps straight to its item, if the person may see it. */
+    #[Computed]
+    public function reference(): ?Model
+    {
+        return blank($this->query) ? null : Reference::resolve($this->query);
+    }
+
+    /** Opens Dot.Files or Dot.docs signed in from the quick actions. */
+    public function openPlatform(string $key): void
+    {
+        if (! in_array($key, ['files', 'docs'], true) || ! Auth::check()) {
+            return;
+        }
+
+        $url = EcosystemHandoff::launchUrl(Auth::user(), $key);
+
+        if ($url !== null) {
+            $this->redirect($url);
+        }
     }
 
     #[Computed]

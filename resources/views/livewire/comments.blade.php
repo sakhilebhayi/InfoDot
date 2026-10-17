@@ -4,7 +4,7 @@
     <div class="ix-actions">
         @if($isQuestion)
             @if((int) $model->status === 1)
-                <span class="ix-state ix-state--done">Solved</span>
+                <span class="ix-stamp" role="status">Solved</span>
             @elseif(Auth::id() === $model->user_id)
                 <button type="button" class="ix-toggle" wire:click="markedAsSolved" wire:confirm="Mark this question as solved?">
                     <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Mark as solved

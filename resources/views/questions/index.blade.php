@@ -26,12 +26,13 @@
             <div class="ix-tablewrap">
                 <table class="ix-table">
                     <thead>
-                        <tr><th>Question</th><th>Status</th><th>Visible to</th><th>Asked by</th><th class="num">Replies</th><th>Asked</th></tr>
+                        <tr><th>Reference</th><th>Question</th><th>Status</th><th>Visible to</th><th>Asked by</th><th class="num">Replies</th><th>Asked</th></tr>
                     </thead>
                     <tbody>
                     @foreach ($questions as $question)
                         @php($isSolved = (int) $question->status === 1)
                         <tr x-show="show === 'all' || show === '{{ $isSolved ? 'done' : 'open' }}'">
+                            <td><span class="ix-ref">{{ \App\Support\Reference::for($question) }}</span></td>
                             <td>
                                 <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="title">{{ $question->question }}</a>
                                 @if (filled($question->description))<p class="sub">{{ $question->description }}</p>@endif

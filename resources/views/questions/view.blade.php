@@ -1,14 +1,21 @@
 <x-app-layout>
-    @php($isSolved = (int) $question->status === 1)
+    @php($ref = \App\Support\Reference::for($question))
 
-
-    <article class="ix-panel">
+    <article class="ix-panel" x-data="{ copied: false }">
         <div class="ix-panel__body" style="padding:24px">
-            <span class="ix-state {{ $isSolved ? 'ix-state--done' : 'ix-state--open' }}">{{ $isSolved ? 'Solved' : 'Unsolved' }}</span>
-            <h1 class="ix-h1" style="margin-top:8px;font-size:24px">{{ $question->question }}</h1>
+            <div class="ix-itemhead">
+                <span class="ix-ref ix-ref--lg" aria-label="Reference {{ $ref }}">{{ $ref }}</span>
+                <button type="button" class="ix-copy"
+                        @click="navigator.clipboard.writeText('{{ $ref }}').then(() => { copied = true; setTimeout(() => copied = false, 1800) })">
+                    <span class="material-symbols-rounded" aria-hidden="true" x-text="copied ? 'check' : 'content_copy'">content_copy</span>
+                    <span x-text="copied ? 'Copied' : 'Copy reference'">Copy reference</span>
+                </button>
+            </div>
+            <h1 class="ix-h1" style="font-size:26px">{{ $question->question }}</h1>
             <p class="ix-meta" style="margin-top:8px">
                 <span>Asked by <b><a href="{{ route('profile.show', ['id' => $question->user->id]) }}">{{ $question->user->name }}</a></b></span>
                 <span>{{ $question->created_at->diffForHumans() }}</span>
+                <span>{{ $question->isPublic() ? 'Visible to everyone' : 'Visible to your company' }}</span>
             </p>
             @if (filled($question->description))
                 <p class="ix-prose" style="margin:20px 0 0">{{ $question->description }}</p>

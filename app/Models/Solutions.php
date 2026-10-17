@@ -32,6 +32,11 @@ class Solutions extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
+
     public function steps()
     {
         return $this->hasMany(Steps::class);
