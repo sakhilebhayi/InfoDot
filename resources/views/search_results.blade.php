@@ -265,6 +265,5 @@
 
             @include('partials.aside-right')
         </div>
-        @include('layouts.footer')
     </x-app-layout>
 @endguest

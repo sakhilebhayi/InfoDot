@@ -1,17 +1,17 @@
 @props(['id' => null, 'maxWidth' => null])
 
 <x-jet-modal :id="$id" :maxWidth="$maxWidth" {{ $attributes }}>
-    <div class="px-6 py-4">
-        <div class="text-lg">
+    <div style="padding: 20px 20px 16px;">
+        <h2 style="margin: 0; font-family: var(--ix-font-cond); font-weight: 700; font-size: 18px; line-height: 1.3;">
             {{ $title }}
-        </div>
+        </h2>
 
-        <div class="mt-4">
+        <div class="mt-3" style="color: var(--ix-text-2);">
             {{ $content }}
         </div>
     </div>
 
-    <div class="px-6 py-4 bg-gray-100 text-right">
+    <div class="flex items-center justify-end gap-2" style="padding: 12px 16px; border-top: 1px solid var(--ix-rule); background: var(--ix-sunken);">
         {{ $footer }}
     </div>
 </x-jet-modal>

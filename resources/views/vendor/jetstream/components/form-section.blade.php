@@ -1,24 +1,26 @@
 @props(['submit'])
 
-<div {{ $attributes->merge(['class' => 'space-y-5 md:grid md:grid-cols-3 md:gap-6 md:space-y-0']) }}>
+<div {{ $attributes->merge(['class' => 'space-y-4 md:grid md:grid-cols-3 md:gap-8 md:space-y-0', 'style' => 'padding: 24px 0; border-top: 1px solid var(--ix-rule);']) }}>
     <x-jet-section-title>
         <x-slot name="title">{{ $title }}</x-slot>
         <x-slot name="description">{{ $description }}</x-slot>
     </x-jet-section-title>
 
-    <div class="mt-6 md:mt-0 md:col-span-2">
+    <div class="md:col-span-2">
         <form wire:submit.prevent="{{ $submit }}">
-            <div class="px-4 py-6 bg-white shadow sm:p-6 {{ isset($actions) ? 'sm:rounded-tl-md sm:rounded-tr-md' : 'sm:rounded-md' }}">
-                <div class="grid grid-cols-6 gap-x-6 gap-y-6">
-                    {{ $form }}
+            <div class="ix-panel">
+                <div class="ix-panel__body">
+                    <div class="grid grid-cols-6 gap-x-5 gap-y-5">
+                        {{ $form }}
+                    </div>
                 </div>
-            </div>
 
-            @if (isset($actions))
-                <div class="flex items-center justify-end bg-gray-50 px-4 py-4 text-right shadow sm:px-6 sm:rounded-bl-md sm:rounded-br-md">
-                    {{ $actions }}
-                </div>
-            @endif
+                @if (isset($actions))
+                    <div class="flex items-center justify-end gap-3" style="padding: 12px 16px; border-top: 1px solid var(--ix-rule); background: var(--ix-sunken); border-radius: 0 0 2px 2px;">
+                        {{ $actions }}
+                    </div>
+                @endif
+            </div>
         </form>
     </div>
 </div>

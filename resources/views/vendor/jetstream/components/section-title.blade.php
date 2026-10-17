@@ -1,13 +1,13 @@
 <div class="flex justify-between md:col-span-1">
-    <div class="px-4 sm:px-0">
-        <h3 class="text-base font-medium leading-7 text-gray-900 sm:text-lg">{{ $title }}</h3>
+    <div>
+        <h2 style="margin: 0; font-family: var(--ix-font-cond); font-weight: 700; font-size: 18px; line-height: 1.3;">{{ $title }}</h2>
 
-        <p class="mt-1.5 text-sm leading-6 text-gray-600">
+        <p style="margin: 6px 0 0; max-width: 40ch; font-size: 13px; color: var(--ix-text-2);">
             {{ $description }}
         </p>
     </div>
 
-    <div class="px-4 sm:px-0">
+    <div>
         {{ $aside ?? '' }}
     </div>
 </div>

@@ -1,36 +1,36 @@
-<div class="min-w-full !z-50">
+<div class="ix-search" @click.outside="$wire.set('query', '')">
+    <span class="material-symbols-rounded" aria-hidden="true">search</span>
+    <label for="ix-search-input" class="ix-sr">Search questions and solutions</label>
     <input
-        type="text"
-        placeholder="Ask: How To Register A Business?"
-        autofocus
-        class="bg-[#131b2e] text-[#b7c8e1] sm:w-96 w-11/12 mx-5 focus:outline-none py-3 px-5 text-md border border-[#434656]/40 rounded-full placeholder-[#434656] focus:border-[#2962ff] focus:ring-1 focus:ring-[#2962ff]/20"
-        wire:model="query"
-        wire:keydown.escape="reset"
-        wire:keydown.ArrowUp="decrementHighlight"
-        wire:keydown.ArrowDown="incrementHighlight"
+        id="ix-search-input"
+        type="search"
+        placeholder="Search questions and solutions"
+        autocomplete="off"
+        class="ix-input"
+        wire:model.live.debounce.250ms="query"
+        wire:keydown.escape="$set('query', '')"
+        wire:keydown.arrow-up.prevent="decrementHighlight"
+        wire:keydown.arrow-down.prevent="incrementHighlight"
     />
 
     @if(!empty($query))
-        <div class="mt-1 sm:w-96 lg:ml-6 lg:mr-4 bg-[#131b2e] border border-[#434656]/30 rounded-2xl !z-50 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-            @if(!empty($solutions))
-                @foreach($solutions as $i => $solution)
-                    <a
-                        href="{{ route('solution_search_results', ['search' => $solution->solution_title]) }}"
-                        class="relative list-item-none !z-50 hover:bg-[#1a2438] bg-[#131b2e] border-b border-[#434656]/20 hover:text-[#b6c4ff] text-[#b7c8e1] flex items-center outline-1 py-3 px-5 w-full ml-0 md:mx-auto text-md {{ $highlightIndex === $i ? 'bg-[#1a2438] text-[#b6c4ff]' : '' }}" >{{ $solution->solution_title }}</a>
+        <div class="ix-results" role="listbox">
+            @php $i = 0; @endphp
+            @forelse($this->solutions as $solution)
+                <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" class="ix-results__item {{ $highlightIndex === $i++ ? 'is-active' : '' }}" role="option">
+                    <span class="material-symbols-rounded" aria-hidden="true">checklist</span>{{ $solution->solution_title }}
+                </a>
+            @empty
+            @endforelse
+            @foreach($this->questions as $question)
+                <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-results__item {{ $highlightIndex === $i++ ? 'is-active' : '' }}" role="option">
+                    <span class="material-symbols-rounded" aria-hidden="true">help</span>{{ $question->question }}
+                </a>
             @endforeach
-            @if(!empty($questions))
-                @foreach($questions as $i => $question)
-                    <a
-                        href="{{ route('solution_search_results', ['search' => $question->question]) }}"
-                        class="relative list-item-none !z-50 hover:bg-[#1a2438] bg-[#131b2e] border-b border-[#434656]/20 hover:text-[#b6c4ff] text-[#b7c8e1] flex items-center outline-1 py-3 px-5 w-full ml-0 md:mx-auto text-md {{ $highlightIndex === $i ? 'bg-[#1a2438] text-[#b6c4ff]' : '' }}" >{{ $question->question }}</a>
-                @endforeach
+
+            @if($this->solutions->isEmpty() && $this->questions->isEmpty())
+                <p class="ix-results__foot">Nothing matches &ldquo;{{ $query }}&rdquo;. Try fewer words, or ask it as a question.</p>
             @endif
-            <p class="text-[#8d90a2] my-3 mx-auto list-item-none !z-50 text-xs px-5">Top 5 results for: {{ $query }}</p>
         </div>
-            @else
-                <div class="list-item-none !z-50 outline-none py-3 pl-3 pr-5 w-full ml-4 mr-4 md:ml-24 md:mr-16 text-md flex justify-start items-center">
-                    <p class="text-[#8d90a2]">No Data Returned.</p>
-                </div>
-            @endif
     @endif
 </div>

@@ -1,351 +1,373 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-[#b6c4ff]">Dot.Analytics</p>
-                <h1 class="mt-1 text-2xl font-extrabold tracking-tight text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">Intelligence Dashboard</h1>
-            </div>
-            <div class="flex items-center gap-3">
-                <span class="rounded-full border border-[#22c55e]/30 bg-[#22c55e]/10 px-4 py-1.5 text-xs font-bold text-[#22c55e]">
-                    Live
-                </span>
-                <span class="text-xs text-[#8d90a2]">{{ now()->format('D, d M Y · H:i') }}</span>
-            </div>
-        </div>
-    </x-slot>
-
     {{-- ApexCharts CDN --}}
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.0/dist/apexcharts.min.js"></script>
 
-    <div class="px-6 pb-14 pt-6 lg:px-10" style="font-family:'Inter',sans-serif;">
-        <div class="mx-auto max-w-7xl space-y-8">
+    @php
+        $trendTotal = $solutionTrend->sum() + $questionTrend->sum();
+        $scored = ($totalQuestions + $totalSolutions) > 0;
+        $solvePct = (int) round($solveRate * 100);
+        $livePlatforms = collect($platforms)->filter(fn ($p) => ! empty($p['active']));
+        $sortedPlatforms = collect($platforms)->sortByDesc(fn ($p) => ! empty($p['active']) ? 1 : 0)->values();
 
-            {{-- ══════════════════════════════════════════════════════════════
-                 ROW 1 · Headline KPI cards
-            ══════════════════════════════════════════════════════════════ --}}
-            <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        $counts = [
+            ['label' => 'Users',     'value' => $totalUsers,     'delta' => $usersThisMonth,     'prev' => $usersLastMonth],
+            ['label' => 'Solutions', 'value' => $totalSolutions, 'delta' => $solutionsThisMonth, 'prev' => $solutionsLastMonth],
+            ['label' => 'Questions', 'value' => $totalQuestions, 'delta' => $questionsThisMonth, 'prev' => $questionsLastMonth],
+            ['label' => 'Comments',  'value' => $totalComments,  'delta' => null, 'prev' => null],
+            ['label' => 'Likes',     'value' => $totalLikes,     'delta' => null, 'prev' => null],
+            ['label' => 'Teams',     'value' => $totalTeams,     'delta' => null, 'prev' => null],
+        ];
 
-                @php
-                    $kpis = [
-                        ['label' => 'Users',       'value' => $totalUsers,     'icon' => 'group',       'delta' => $usersThisMonth,     'color' => '#2962ff'],
-                        ['label' => 'Solutions',   'value' => $totalSolutions, 'icon' => 'lightbulb',   'delta' => $solutionsThisMonth, 'color' => '#7c3aed'],
-                        ['label' => 'Questions',   'value' => $totalQuestions, 'icon' => 'help_outline', 'delta' => $questionsThisMonth, 'color' => '#0891b2'],
-                        ['label' => 'Comments',    'value' => $totalComments,  'icon' => 'chat_bubble',  'delta' => null,               'color' => '#059669'],
-                        ['label' => 'Likes',       'value' => $totalLikes,     'icon' => 'favorite',    'delta' => null,               'color' => '#dc2626'],
-                        ['label' => 'Teams',       'value' => $totalTeams,     'icon' => 'groups',      'delta' => null,               'color' => '#d97706'],
-                    ];
-                @endphp
+        $engines = [
+            ['name' => 'Business Intelligence',    'status' => 'active',  'desc' => 'KPIs, dashboards, reports'],
+            ['name' => 'Community Intelligence',   'status' => 'active',  'desc' => 'Sentiment, trends, engagement'],
+            ['name' => 'People Intelligence',      'status' => 'active',  'desc' => 'Workforce, retention, skills'],
+            ['name' => 'Content Intelligence',     'status' => 'active',  'desc' => 'Solutions, Q&A, knowledge'],
+            ['name' => 'Operational Intelligence', 'status' => 'planned', 'desc' => 'Fleet, assets, maintenance'],
+            ['name' => 'Financial Intelligence',   'status' => 'planned', 'desc' => 'Cash flow, fraud, forecasting'],
+            ['name' => 'Customer Intelligence',    'status' => 'planned', 'desc' => 'CLV, churn, satisfaction'],
+            ['name' => 'AI Intelligence',          'status' => 'planned', 'desc' => 'Agent ROI, adoption, quality'],
+            ['name' => 'Predictive Intelligence',  'status' => 'planned', 'desc' => 'Forecasting, risk, outcomes'],
+            ['name' => 'Decision Intelligence',    'status' => 'planned', 'desc' => 'Recommendations, next-best-action'],
+            ['name' => 'Risk Intelligence',        'status' => 'planned', 'desc' => 'Threats, compliance, posture'],
+            ['name' => 'Document Intelligence',    'status' => 'planned', 'desc' => 'Contracts, expiry, compliance'],
+            ['name' => 'Asset Intelligence',       'status' => 'planned', 'desc' => 'Depreciation, lifecycle, ROI'],
+            ['name' => 'Mining Intelligence',      'status' => 'planned', 'desc' => 'Production, safety, compliance'],
+            ['name' => 'Agriculture Intelligence', 'status' => 'planned', 'desc' => 'Yield, irrigation, equipment'],
+        ];
+        $activeEngines = collect($engines)->where('status', 'active')->count();
+    @endphp
 
-                @foreach($kpis as $kpi)
-                    <div class="rounded-2xl border border-[#434656]/25 p-5" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
-                        <div class="flex items-start justify-between">
-                            <div class="rounded-xl p-2" style="background:{{ $kpi['color'] }}18;">
-                                <span class="material-symbols-rounded" style="font-size:20px;color:{{ $kpi['color'] }};">{{ $kpi['icon'] }}</span>
-                            </div>
-                            @if($kpi['delta'] !== null && $kpi['delta'] > 0)
-                                <span class="rounded-full bg-[#22c55e]/10 px-2 py-0.5 text-[10px] font-bold text-[#22c55e]">+{{ $kpi['delta'] }}</span>
-                            @endif
-                        </div>
-                        <div class="mt-4">
-                            <p class="text-2xl font-extrabold tracking-tight text-[#dae2fd]">{{ number_format($kpi['value']) }}</p>
-                            <p class="mt-1 text-[11px] font-semibold uppercase tracking-widest text-[#8d90a2]">{{ $kpi['label'] }}</p>
-                        </div>
+    <style>
+        .ixa h2.ix-panel__head { margin: 0; }
+        .ixa .ix-state-bar { margin-bottom: 0; }
+        .ixa-stamp { font-family: var(--ix-font-mono); font-size: 12px; color: var(--ix-text-3); }
+        .ixa-verdict { min-width: 0; }
+        .ixa-verdict b { display: block; }
+        .ixa-verdict span { display: block; margin-top: 2px; font-weight: 400; font-size: 13px; color: var(--ix-text-2); }
+        .ixa-stat-sub { display: block; margin-top: 2px; font-family: var(--ix-font-mono); font-size: 12px; color: var(--ix-text-2); }
+        .ixa-stat-sub small { display: block; font-size: 12px; color: var(--ix-text-3); }
+        .ixa-trend { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+        @media (max-width: 899px) { .ixa-trend { grid-template-columns: minmax(0, 1fr); } }
+        .ixa-legend { display: inline-flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--ix-font-sans); font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ix-text-2); }
+        .ixa-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+        .ixa-legend .s-sol { background: var(--ix-signal-text); border-radius: 50%; }
+        .ixa-legend .s-que { background: var(--ix-text); }
+        .ixa-chart { padding: 12px 8px 4px 4px; min-height: 252px; }
+        .ixa-none { margin: 0; padding: 20px 16px; color: var(--ix-text-2); max-width: 60ch; text-wrap: pretty; }
+        .ixa-eng-label { font-family: var(--ix-font-cond); font-weight: 700; font-size: 24px; line-height: 1.2; }
+        .ixa-eng-score { margin-top: 2px; color: var(--ix-text-2); font-size: 13px; }
+        .ixa-bar { height: 4px; margin: 12px 0 16px; background: var(--ix-rule); }
+        .ixa-bar span { display: block; height: 100%; background: var(--ix-text); }
+        .ixa-dl { margin: 0; border-top: 1px solid var(--ix-rule); }
+        .ixa-dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--ix-rule); }
+        .ixa-dl dt { color: var(--ix-text-2); font-size: 13px; }
+        .ixa-dl dd { margin: 0; font-family: var(--ix-font-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+        .ixa-note { margin: 12px 0 0; font-size: 12px; color: var(--ix-text-3); text-wrap: pretty; }
+        .ixa-rows { list-style: none; margin: 0; padding: 0; }
+        .ixa-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--ix-rule); transition: background-color .15s var(--ix-ease); }
+        .ixa-row--av { grid-template-columns: 28px 28px minmax(0, 1fr) auto; }
+        .ixa-rows li:last-child .ixa-row { border-bottom: 0; }
+        a.ixa-row:hover { background: var(--ix-hover); }
+        .ixa-rank { font-family: var(--ix-font-mono); font-size: 13px; color: var(--ix-text-3); }
+        .ixa-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+        .ixa-cnt { text-align: right; white-space: nowrap; }
+        .ixa-cnt .ix-fig { font-size: 16px; }
+        .ixa-cnt small { margin-left: 6px; font-size: 12px; color: var(--ix-text-3); }
+        .ixa-bays-wrap { overflow: hidden; }
+        .ixa-bays { margin: 0 -1px -1px 0; background: transparent; gap: 0; }
+        .ixa-bays .ix-bay { cursor: default; box-shadow: inset -1px -1px 0 var(--ix-rule); }
+        .ixa-tbl-wrap { overflow-x: auto; }
+        .ixa-tbl { width: 100%; min-width: 560px; border-collapse: collapse; }
+        .ixa-tbl th { padding: 9px 16px; text-align: left; background: var(--ix-sunken); border-bottom: 1px solid var(--ix-rule); font-family: var(--ix-font-cond); font-weight: 600; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ix-text-3); }
+        .ixa-tbl td { padding: 10px 16px; border-bottom: 1px solid var(--ix-rule); vertical-align: middle; }
+        .ixa-tbl tr:last-child td { border-bottom: 0; }
+        .ixa-tbl td.n { font-weight: 600; }
+        .ixa-tbl td.d { color: var(--ix-text-2); }
+        .ixa-tbl .ix-state { height: auto; }
+        .apexcharts-tooltip { background: var(--ix-panel) !important; border: 1px solid var(--ix-rule-strong) !important; color: var(--ix-text) !important; box-shadow: none !important; border-radius: var(--ix-radius) !important; font-family: var(--ix-font-sans) !important; }
+        .apexcharts-tooltip-title { background: var(--ix-sunken) !important; border-bottom: 1px solid var(--ix-rule) !important; color: var(--ix-text) !important; font-family: var(--ix-font-cond) !important; font-size: 12px !important; }
+        .apexcharts-tooltip-text, .apexcharts-tooltip-y-group { font-size: 13px !important; }
+        .apexcharts-tooltip-text-y-value { font-family: var(--ix-font-mono) !important; }
+        .apexcharts-xaxistooltip, .apexcharts-yaxistooltip { background: var(--ix-panel) !important; border-color: var(--ix-rule-strong) !important; color: var(--ix-text) !important; }
+        .apexcharts-xaxistooltip-bottom::before, .apexcharts-xaxistooltip-bottom::after { border-bottom-color: var(--ix-rule-strong) !important; }
+    </style>
+
+    <div class="ixa">
+        <header class="ix-pagehead">
+            <div>
+                <h1 class="ix-h1">Analytics</h1>
+                <p class="ix-lede">Counts across the whole InfoDot community: who is posting, what gets liked, and how much of it gets answered.</p>
+            </div>
+            <time class="ixa-stamp" datetime="{{ now()->toIso8601String() }}">{{ now()->format('D d M Y H:i') }}</time>
+        </header>
+
+        <div class="ix-stack">
+
+            {{-- State: the verdict in words first, then the figures behind it --}}
+            <section class="ix-state-bar" aria-label="Community state">
+                <div class="ix-state-bar__verdict">
+                    <span class="ix-lamp {{ $engagementScore >= 60 ? 'ix-lamp--ok' : '' }}" aria-hidden="true"></span>
+                    <div class="ixa-verdict">
+                        @if($scored)
+                            <b>Engagement is {{ strtolower($engagementLabel) }}.</b>
+                            <span>{{ $solvedQuestions }} of {{ $totalQuestions }} {{ \Illuminate\Support\Str::plural('question', $totalQuestions) }} solved, across {{ $totalSolutions }} {{ \Illuminate\Support\Str::plural('solution', $totalSolutions) }}.</span>
+                        @else
+                            <b>Nothing to score yet.</b>
+                            <span>No questions or solutions have been posted, so engagement cannot be measured.</span>
+                        @endif
+                    </div>
+                </div>
+                <div class="ix-readouts">
+                    <div class="ix-readout">
+                        <span class="ix-readout__label">Score / 100</span>
+                        <x-ix.figure :value="$engagementScore" :digits="2" />
+                    </div>
+                    <div class="ix-readout">
+                        <span class="ix-readout__label">Solve rate %</span>
+                        <x-ix.figure :value="$solvePct" :digits="2" />
+                    </div>
+                    <div class="ix-readout">
+                        <span class="ix-readout__label">Solved</span>
+                        <x-ix.figure :value="$solvedQuestions" :digits="2" />
+                    </div>
+                </div>
+            </section>
+
+            {{-- Counts: one ruled readout grid --}}
+            <section class="ix-grid ix-grid--6" aria-label="Totals">
+                @foreach($counts as $c)
+                    <div class="ix-stat">
+                        <span class="ix-readout__label">{{ $c['label'] }}</span>
+                        <x-ix.figure :value="$c['value']" :digits="2" />
+                        @if($c['delta'] !== null)
+                            <span class="ixa-stat-sub">+{{ str_pad((string) $c['delta'], 2, '0', STR_PAD_LEFT) }} this month <small>{{ str_pad((string) $c['prev'], 2, '0', STR_PAD_LEFT) }} last month</small></span>
+                        @else
+                            <span class="ixa-stat-sub"><small>all time</small></span>
+                        @endif
                     </div>
                 @endforeach
-            </div>
+            </section>
 
-            {{-- ══════════════════════════════════════════════════════════════
-                 ROW 2 · Activity trend chart + Engagement score
-            ══════════════════════════════════════════════════════════════ --}}
-            <div class="grid gap-6 lg:grid-cols-3">
-
-                {{-- Activity trend (ApexCharts) --}}
-                <div class="rounded-2xl border border-[#434656]/25 p-6 lg:col-span-2" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
-                    <div class="mb-4 flex items-center justify-between">
-                        <div>
-                            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d90a2]">Community Activity</p>
-                            <h3 class="mt-1 text-base font-bold text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">6-Month Content Trend</h3>
-                        </div>
-                        <div class="flex items-center gap-4 text-xs">
-                            <span class="flex items-center gap-1.5"><span class="inline-block h-2 w-4 rounded-full bg-[#2962ff]"></span> Solutions</span>
-                            <span class="flex items-center gap-1.5"><span class="inline-block h-2 w-4 rounded-full bg-[#7c3aed]"></span> Questions</span>
-                        </div>
-                    </div>
-                    <div id="activityChart"></div>
+            {{-- Trend + engagement --}}
+            <section class="ix-grid ixa-trend">
+                <div>
+                    <h2 class="ix-panel__head">
+                        <span>Created, last 6 months</span>
+                        <span class="ixa-legend" aria-hidden="true"><span><i class="s-sol"></i>Solutions</span><span><i class="s-que"></i>Questions</span></span>
+                    </h2>
+                    @if($trendTotal > 0)
+                        <div id="activityChart" class="ixa-chart" role="img" aria-label="Line chart of solutions and questions created per month over the last six months. The same values are listed in the table that follows."></div>
+                        <table class="ix-sr">
+                            <caption>Created per month</caption>
+                            <thead><tr><th>Month</th><th>Solutions</th><th>Questions</th></tr></thead>
+                            <tbody>
+                                @foreach($monthLabels->values() as $i => $label)
+                                    <tr><td>{{ $label }}</td><td>{{ $solutionTrend->values()[$i] }}</td><td>{{ $questionTrend->values()[$i] }}</td></tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <p class="ixa-none">No solutions or questions were created in the last six months, so there is no trend to draw. The chart appears once the first one is posted.</p>
+                    @endif
                 </div>
 
-                {{-- Engagement score ring --}}
-                <div class="rounded-2xl border border-[#434656]/25 p-6" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d90a2]">Community Intelligence</p>
-                    <h3 class="mt-1 text-base font-bold text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">Engagement Score</h3>
-
-                    <div class="relative mt-4 flex justify-center">
-                        <div id="engagementRing"></div>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span class="text-3xl font-extrabold text-[#dae2fd]">{{ $engagementScore }}</span>
-                            <span class="text-[10px] font-semibold uppercase tracking-widest text-[#8d90a2]">/ 100</span>
-                        </div>
+                <div>
+                    <h2 class="ix-panel__head"><span>Engagement</span></h2>
+                    <div class="ix-panel__body">
+                        <div class="ixa-eng-label">{{ $engagementLabel }}</div>
+                        <div class="ixa-eng-score">{{ $engagementScore }} of 100</div>
+                        <div class="ixa-bar" role="img" aria-label="Engagement score {{ $engagementScore }} out of 100"><span style="width:{{ $engagementScore }}%"></span></div>
+                        <dl class="ixa-dl">
+                            <div><dt>Q&amp;A solve rate</dt><dd>{{ $solvePct }}%</dd></div>
+                            <div><dt>Comments per question</dt><dd>{{ number_format($avgCommentsPerQ, 1) }}</dd></div>
+                            <div><dt>Social connections</dt><dd>{{ number_format($totalFollows) }}</dd></div>
+                        </dl>
+                        <p class="ixa-note">Weighted 40% solve rate, 30% comments per question (5 or more counts in full), 30% likes per item (10 or more counts in full).</p>
                     </div>
+                </div>
+            </section>
 
-                    <p class="mt-2 text-center text-sm font-bold text-[#b6c4ff]">{{ $engagementLabel }}</p>
+            {{-- Rankings --}}
+            <section class="ix-grid ix-grid--2">
+                <div>
+                    <h2 class="ix-panel__head"><span>Top solutions by likes</span><span>Likes</span></h2>
+                    @if($topSolutions->isNotEmpty())
+                        <ol class="ixa-rows">
+                            @foreach($topSolutions as $i => $sol)
+                                <li>
+                                    <a href="{{ route('solutions.view', $sol->id) }}" class="ixa-row">
+                                        <span class="ixa-rank">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                                        <span class="ixa-name">{{ $sol->solution_title }}</span>
+                                        <span class="ixa-cnt"><x-ix.figure :value="$sol->likes_count" :digits="2" /></span>
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ol>
+                    @else
+                        <p class="ixa-none">No solutions have been posted yet, so there is nothing to rank by likes.</p>
+                    @endif
+                </div>
 
-                    <div class="mt-5 space-y-3">
-                        @php
-                            $metrics = [
-                                ['label' => 'Q&A Solve Rate',        'value' => round($solveRate * 100) . '%',       'color' => '#22c55e'],
-                                ['label' => 'Avg Comments / Q',      'value' => number_format($avgCommentsPerQ, 1),  'color' => '#2962ff'],
-                                ['label' => 'Social Connections',    'value' => number_format($totalFollows),        'color' => '#7c3aed'],
-                            ];
-                        @endphp
-                        @foreach($metrics as $m)
-                            <div class="flex items-center justify-between rounded-xl bg-[#0b1326]/60 px-4 py-2.5">
-                                <span class="text-xs text-[#b7c8e1]">{{ $m['label'] }}</span>
-                                <span class="text-sm font-bold" style="color:{{ $m['color'] }};">{{ $m['value'] }}</span>
+                <div>
+                    <h2 class="ix-panel__head"><span>Top contributors</span><span>Questions</span></h2>
+                    @if($topContributors->isNotEmpty())
+                        <ol class="ixa-rows">
+                            @foreach($topContributors as $i => $user)
+                                <li>
+                                    <div class="ixa-row ixa-row--av">
+                                        <span class="ixa-rank">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                                        <span class="ix-avatar"><img src="https://www.gravatar.com/avatar/{{ md5($user->email) }}?d=mp&amp;s=56" width="28" height="28" alt="" loading="lazy"></span>
+                                        <span class="ixa-name">{{ $user->name }}</span>
+                                        <span class="ixa-cnt"><x-ix.figure :value="$user->questions_count" :digits="2" /></span>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
+                    @else
+                        <p class="ixa-none">There are no users yet, so no contributors to rank.</p>
+                    @endif
+                </div>
+            </section>
+
+            {{-- Platform coverage + engines share an edge --}}
+            <div>
+                <section class="ix-panel" aria-labelledby="ixa-platforms">
+                    <h2 class="ix-panel__head" id="ixa-platforms">
+                        <span>Platform coverage</span>
+                        <span class="ixa-stamp">{{ str_pad((string) $livePlatforms->count(), 2, '0', STR_PAD_LEFT) }} live / {{ str_pad((string) count($platforms), 2, '0', STR_PAD_LEFT) }} registered</span>
+                    </h2>
+                    @if(count($platforms) > 0)
+                        <div class="ixa-bays-wrap">
+                            <div class="ix-bays ixa-bays">
+                                @foreach($sortedPlatforms as $platform)
+                                    @php $live = ! empty($platform['active']); @endphp
+                                    <div class="ix-bay {{ $live ? 'ix-bay--live' : '' }}">
+                                        <span class="ix-bay__text">
+                                            <span class="ix-bay__name">{{ $platform['name'] }}</span>
+                                            <span class="ix-bay__state">{{ $live ? 'Live' : 'Not live yet' }}</span>
+                                        </span>
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
+                        </div>
+                    @else
+                        <p class="ixa-none">No platforms are registered in this environment's ecosystem configuration.</p>
+                    @endif
+                </section>
+
+                <section class="ix-panel" aria-labelledby="ixa-engines">
+                    <h2 class="ix-panel__head" id="ixa-engines">
+                        <span>Intelligence engines</span>
+                        <span class="ixa-stamp">{{ str_pad((string) $activeEngines, 2, '0', STR_PAD_LEFT) }} active / {{ str_pad((string) count($engines), 2, '0', STR_PAD_LEFT) }}</span>
+                    </h2>
+                    <div class="ixa-tbl-wrap">
+                        <table class="ixa-tbl">
+                            <caption class="ix-sr">Each engine reads data from connected Dot platforms and produces cross-platform intelligence.</caption>
+                            <thead><tr><th scope="col">Engine</th><th scope="col">Covers</th><th scope="col">State</th></tr></thead>
+                            <tbody>
+                                @foreach($engines as $engine)
+                                    <tr>
+                                        <td class="n">{{ $engine['name'] }}</td>
+                                        <td class="d">{{ $engine['desc'] }}</td>
+                                        <td><span class="ix-state {{ $engine['status'] === 'active' ? 'ix-state--done' : '' }}">{{ $engine['status'] === 'active' ? 'Active' : 'Planned' }}</span></td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-            </div>
-
-            {{-- ══════════════════════════════════════════════════════════════
-                 ROW 3 · Content Intelligence + Top Contributors
-            ══════════════════════════════════════════════════════════════ --}}
-            <div class="grid gap-6 lg:grid-cols-2">
-
-                {{-- Top Solutions --}}
-                <div class="rounded-2xl border border-[#434656]/25 p-6" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
-                    <div class="mb-5 flex items-center gap-3">
-                        <div class="rounded-xl bg-[#2962ff]/15 p-2">
-                            <span class="material-symbols-rounded text-[#2962ff]" style="font-size:20px;">workspace_premium</span>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d90a2]">Content Intelligence</p>
-                            <h3 class="text-sm font-bold text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">Top Solutions by Engagement</h3>
-                        </div>
-                    </div>
-
-                    @forelse($topSolutions as $i => $sol)
-                        <a href="{{ route('solutions.view', $sol->id) }}"
-                           class="flex items-center gap-4 rounded-xl px-4 py-3 transition hover:bg-[#2962ff]/08 mb-2 last:mb-0">
-                            <span class="text-lg font-extrabold text-[#434656]">{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}</span>
-                            <div class="min-w-0 flex-1">
-                                <p class="truncate text-sm font-semibold text-[#dae2fd]">{{ $sol->solution_title }}</p>
-                            </div>
-                            <div class="flex items-center gap-1 text-xs text-[#dc2626]">
-                                <span class="material-symbols-rounded" style="font-size:14px;fill:1;">favorite</span>
-                                <span class="font-bold">{{ $sol->likes_count }}</span>
-                            </div>
-                        </a>
-                    @empty
-                        <p class="py-8 text-center text-sm text-[#8d90a2]">No solutions yet — create the first one.</p>
-                    @endforelse
-                </div>
-
-                {{-- Top Contributors --}}
-                <div class="rounded-2xl border border-[#434656]/25 p-6" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
-                    <div class="mb-5 flex items-center gap-3">
-                        <div class="rounded-xl bg-[#7c3aed]/15 p-2">
-                            <span class="material-symbols-rounded text-[#7c3aed]" style="font-size:20px;">military_tech</span>
-                        </div>
-                        <div>
-                            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d90a2]">People Intelligence</p>
-                            <h3 class="text-sm font-bold text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">Top Contributors</h3>
-                        </div>
-                    </div>
-
-                    @forelse($topContributors as $i => $user)
-                        <div class="mb-2 flex items-center gap-3 rounded-xl px-4 py-3 last:mb-0">
-                            <img src="https://www.gravatar.com/avatar/{{ md5($user->email) }}?d=mp&s=36"
-                                 class="h-9 w-9 rounded-full border border-[#434656]/40 object-cover flex-shrink-0" />
-                            <div class="min-w-0 flex-1">
-                                <p class="truncate text-sm font-semibold text-[#dae2fd]">{{ $user->name }}</p>
-                                <p class="text-[11px] text-[#8d90a2]">{{ $user->questions_count }} questions</p>
-                            </div>
-                            @if($i === 0)
-                                <span class="rounded-full bg-[#d97706]/15 px-2.5 py-1 text-[10px] font-bold text-[#d97706]">Top</span>
-                            @endif
-                        </div>
-                    @empty
-                        <p class="py-8 text-center text-sm text-[#8d90a2]">No contributors yet.</p>
-                    @endforelse
-                </div>
-            </div>
-
-            {{-- ══════════════════════════════════════════════════════════════
-                 ROW 4 · Ecosystem Intelligence · Platform coverage
-            ══════════════════════════════════════════════════════════════ --}}
-            <div class="rounded-2xl border border-[#434656]/25 p-6" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
-                <div class="mb-6 flex items-center justify-between">
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d90a2]">Ecosystem Intelligence</p>
-                        <h3 class="mt-1 text-base font-bold text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">Platform Coverage</h3>
-                    </div>
-                    <span class="rounded-full border border-[#2962ff]/30 bg-[#2962ff]/10 px-4 py-1.5 text-xs font-bold text-[#b6c4ff]">
-                        {{ count($platforms) }} platforms registered
-                    </span>
-                </div>
-
-                <div class="grid grid-cols-3 gap-3 sm:grid-cols-6 lg:grid-cols-9">
-                    @foreach($platforms as $key => $platform)
-                        <div class="flex flex-col items-center gap-2 rounded-2xl border border-[#434656]/20 bg-[#0b1326]/50 p-3 text-center">
-                            <span class="material-symbols-rounded text-[#b6c4ff]" style="font-size:22px;">{{ $platform['icon'] }}</span>
-                            <span class="w-full truncate text-[0.58rem] font-bold uppercase tracking-wide text-[#8d90a2]">
-                                {{ Str::after($platform['name'], '.') }}
-                            </span>
-                            <span class="h-1.5 w-1.5 rounded-full bg-[#22c55e]" title="Online"></span>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-
-            {{-- ══════════════════════════════════════════════════════════════
-                 ROW 5 · Intelligence Engines (coming soon)
-            ══════════════════════════════════════════════════════════════ --}}
-            <div class="rounded-2xl border border-[#434656]/25 p-6" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
-                <div class="mb-6">
-                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d90a2]">Intelligence Engines</p>
-                    <h3 class="mt-1 text-base font-bold text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">Powered by Dot.Analytics</h3>
-                    <p class="mt-1 text-xs text-[#8d90a2]">Each engine consumes data from connected Dot platforms and produces cross-platform intelligence.</p>
-                </div>
-
-                @php
-                    $engines = [
-                        ['name' => 'Business Intelligence',    'icon' => 'bar_chart',       'status' => 'active',  'desc' => 'KPIs · dashboards · reports'],
-                        ['name' => 'Community Intelligence',   'icon' => 'groups',          'status' => 'active',  'desc' => 'Sentiment · trends · engagement'],
-                        ['name' => 'People Intelligence',      'icon' => 'person_pin',      'status' => 'active',  'desc' => 'Workforce · retention · skills'],
-                        ['name' => 'Content Intelligence',     'icon' => 'article',         'status' => 'active',  'desc' => 'Solutions · Q&A · knowledge'],
-                        ['name' => 'Operational Intelligence', 'icon' => 'precision_manufacturing', 'status' => 'planned', 'desc' => 'Fleet · assets · maintenance'],
-                        ['name' => 'Financial Intelligence',   'icon' => 'account_balance', 'status' => 'planned', 'desc' => 'Cash flow · fraud · forecasting'],
-                        ['name' => 'Customer Intelligence',    'icon' => 'support_agent',   'status' => 'planned', 'desc' => 'CLV · churn · satisfaction'],
-                        ['name' => 'AI Intelligence',          'icon' => 'smart_toy',       'status' => 'planned', 'desc' => 'Agent ROI · adoption · quality'],
-                        ['name' => 'Predictive Intelligence',  'icon' => 'trending_up',     'status' => 'planned', 'desc' => 'Forecasting · risk · outcomes'],
-                        ['name' => 'Decision Intelligence',    'icon' => 'psychology',      'status' => 'planned', 'desc' => 'Recommendations · next-best-action'],
-                        ['name' => 'Risk Intelligence',        'icon' => 'security',        'status' => 'planned', 'desc' => 'Threats · compliance · posture'],
-                        ['name' => 'Document Intelligence',    'icon' => 'description',     'status' => 'planned', 'desc' => 'Contracts · expiry · compliance'],
-                        ['name' => 'Asset Intelligence',       'icon' => 'construction',    'status' => 'planned', 'desc' => 'Depreciation · lifecycle · ROI'],
-                        ['name' => 'Mining Intelligence',      'icon' => 'terrain',         'status' => 'planned', 'desc' => 'Production · safety · compliance'],
-                        ['name' => 'Agriculture Intelligence', 'icon' => 'grass',           'status' => 'planned', 'desc' => 'Yield · irrigation · equipment'],
-                    ];
-                @endphp
-
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                    @foreach($engines as $engine)
-                        @php $active = $engine['status'] === 'active'; @endphp
-                        <div class="rounded-2xl border p-4 {{ $active ? 'border-[#2962ff]/30 bg-[#2962ff]/05' : 'border-[#434656]/20 bg-[#0b1326]/40' }}">
-                            <div class="mb-3 flex items-center justify-between">
-                                <span class="material-symbols-rounded {{ $active ? 'text-[#2962ff]' : 'text-[#434656]' }}" style="font-size:22px;">{{ $engine['icon'] }}</span>
-                                <span class="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide {{ $active ? 'bg-[#22c55e]/15 text-[#22c55e]' : 'bg-[#434656]/20 text-[#8d90a2]' }}">
-                                    {{ $active ? 'Active' : 'Planned' }}
-                                </span>
-                            </div>
-                            <p class="text-xs font-bold leading-tight {{ $active ? 'text-[#dae2fd]' : 'text-[#8d90a2]' }}">{{ $engine['name'] }}</p>
-                            <p class="mt-1 text-[10px] text-[#434656]">{{ $engine['desc'] }}</p>
-                        </div>
-                    @endforeach
-                </div>
+                </section>
             </div>
 
         </div>
     </div>
 
-    {{-- ── ApexCharts init ─────────────────────────────────────────────── --}}
+    @if($trendTotal > 0)
     <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const el = document.getElementById('activityChart')
+        if (!el || typeof ApexCharts === 'undefined') return
 
-        const chartColors = {
-            bg:     '#0b1326',
-            grid:   'rgba(67,70,86,0.15)',
-            text:   '#8d90a2',
-            blue:   '#2962ff',
-            purple: '#7c3aed',
+        const solutions = @json($solutionTrend->values());
+        const questions = @json($questionTrend->values());
+        const months = @json($monthLabels->values());
+        const top = Math.max(1, ...solutions, ...questions)
+
+        const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+        const themed = () => {
+            const text = token('--ix-text')
+            return {
+                colors: [token('--ix-signal-text'), text],
+                chart: { foreColor: token('--ix-text-3') },
+                grid: { borderColor: token('--ix-rule') },
+                markers: { strokeColors: token('--ix-panel') },
+                xaxis: { labels: { style: { colors: token('--ix-text-3') } } },
+                yaxis: { labels: { style: { colors: token('--ix-text-3') } } },
+                tooltip: { theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' },
+            }
         }
 
-        // Activity trend – area chart
-        const activityOptions = {
+        const base = themed()
+        const font = 'IBM Plex Sans'
+        const chart = new ApexCharts(el, {
             chart: {
-                type: 'area',
-                height: 220,
+                type: 'line',
+                height: 240,
+                fontFamily: font,
+                foreColor: base.chart.foreColor,
                 background: 'transparent',
                 toolbar: { show: false },
-                sparkline: { enabled: false },
-                animations: { enabled: true, speed: 600 },
+                zoom: { enabled: false },
+                animations: { enabled: false },
             },
-            theme: { mode: 'dark' },
             series: [
-                {
-                    name: 'Solutions',
-                    data: {!! $solutionTrend->values()->toJson() !!},
-                },
-                {
-                    name: 'Questions',
-                    data: {!! $questionTrend->values()->toJson() !!},
-                },
+                { name: 'Solutions', data: solutions },
+                { name: 'Questions', data: questions },
             ],
-            colors: [chartColors.blue, chartColors.purple],
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.35,
-                    opacityTo: 0.02,
-                    stops: [0, 100],
-                },
-            },
-            stroke: { curve: 'smooth', width: 2 },
+            colors: base.colors,
+            stroke: { curve: 'straight', width: 2 },
+            fill: { type: 'solid', opacity: 1 },
+            markers: { size: 4, shape: ['circle', 'square'], strokeWidth: 2, strokeColors: base.markers.strokeColors, hover: { sizeOffset: 2 } },
             xaxis: {
-                categories: {!! $monthLabels->values()->toJson() !!},
-                labels: { style: { colors: chartColors.text, fontSize: '11px' } },
+                categories: months,
+                labels: { style: { colors: base.xaxis.labels.style.colors, fontSize: '12px', fontFamily: font } },
                 axisBorder: { show: false },
                 axisTicks: { show: false },
             },
             yaxis: {
-                labels: {
-                    style: { colors: chartColors.text, fontSize: '11px' },
-                    formatter: val => Math.round(val),
-                },
                 min: 0,
+                max: top <= 5 ? top : undefined,
+                tickAmount: top <= 5 ? top : 5,
+                forceNiceScale: top > 5,
+                labels: {
+                    style: { colors: base.yaxis.labels.style.colors, fontSize: '12px', fontFamily: 'IBM Plex Mono' },
+                    formatter: (v) => String(Math.round(v)),
+                },
             },
-            grid: {
-                borderColor: chartColors.grid,
-                strokeDashArray: 4,
-                padding: { left: 0, right: 0 },
-            },
-            tooltip: {
-                theme: 'dark',
-                style: { fontFamily: 'Inter, sans-serif' },
-            },
+            grid: { borderColor: base.grid.borderColor, strokeDashArray: 0, padding: { left: 4, right: 12 } },
+            tooltip: { theme: base.tooltip.theme, shared: true, intersect: false, style: { fontSize: '13px', fontFamily: font } },
             legend: { show: false },
             dataLabels: { enabled: false },
+        })
+        chart.render()
+
+        // Re-read the tokens when the operating system flips between night and light.
+        const mq = window.matchMedia('(prefers-color-scheme: dark)')
+        const onScheme = () => {
+            const t = themed()
+            chart.updateOptions({
+                colors: t.colors,
+                chart: { foreColor: t.chart.foreColor },
+                grid: { borderColor: t.grid.borderColor },
+                markers: { strokeColors: t.markers.strokeColors },
+                xaxis: { labels: { style: { colors: t.xaxis.labels.style.colors } } },
+                yaxis: { labels: { style: { colors: t.yaxis.labels.style.colors } } },
+                tooltip: { theme: t.tooltip.theme },
+            })
         }
-
-        new ApexCharts(document.getElementById('activityChart'), activityOptions).render()
-
-        // Engagement ring – radial bar
-        const ringOptions = {
-            chart: {
-                type: 'radialBar',
-                height: 200,
-                background: 'transparent',
-                toolbar: { show: false },
-            },
-            theme: { mode: 'dark' },
-            series: [{{ $engagementScore }}],
-            colors: ['#2962ff'],
-            plotOptions: {
-                radialBar: {
-                    hollow: { size: '62%' },
-                    track: { background: 'rgba(67,70,86,0.2)', strokeWidth: '100%' },
-                    dataLabels: { show: false },
-                    startAngle: -135,
-                    endAngle: 135,
-                },
-            },
-            stroke: { lineCap: 'round' },
-        }
-
-        new ApexCharts(document.getElementById('engagementRing'), ringOptions).render()
+        if (mq.addEventListener) mq.addEventListener('change', () => setTimeout(onScheme, 0))
     })
     </script>
+    @endif
 
-    @include('layouts.footer')
 </x-app-layout>

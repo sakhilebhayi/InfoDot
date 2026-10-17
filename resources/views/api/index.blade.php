@@ -1,13 +1,12 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-slate-100 leading-tight">
-            {{ __('API Tokens') }}
-        </h2>
-    </x-slot>
-
-    <div>
-        <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8 text-slate-100">
-            @livewire('api.api-token-manager')
+    <div class="ix-pagehead">
+        <div>
+            <h1 class="ix-h1">API tokens</h1>
+            <p class="ix-lede">Tokens let other services act on your behalf. Delete any you no longer use.</p>
         </div>
+    </div>
+
+    <div style="max-width: 980px;">
+        @livewire('api.api-token-manager')
     </div>
 </x-app-layout>

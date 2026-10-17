@@ -39,6 +39,10 @@ class Comments extends Component
 
     public function markedAsSolved(): void
     {
+        // The button is only drawn for the asker, but a Livewire method can be
+        // called by anyone signed in, so the owner check lives here too.
+        abort_unless(Auth::id() === $this->model->user_id, 403);
+
         $this->model->update(['status' => 1]);
     }
 

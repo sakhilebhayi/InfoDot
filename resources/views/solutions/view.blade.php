@@ -1,42 +1,42 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-            <h2 class="text-xl font-semibold leading-tight text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">
-                {{ __('Solution Details') }}
-            </h2>
-            <a href="{{ route('solutions') }}" class="inline-flex items-center rounded-full border border-[#434656]/40 bg-[#131b2e] px-5 py-2.5 text-sm font-semibold leading-5 text-[#dae2fd] shadow-sm transition hover:bg-[#1a2438] hover:text-[#b6c4ff]">
-                &larr; Back to Solutions
-            </a>
-        </div>
-    </x-slot>
+    @php($steps = \App\Models\Steps::where('solution_id', $solution->id)->get())
 
-    <x-dashboard-shell>
-        @php
-            $steps = \App\Models\Steps::where('solution_id', $solution->id)->get() ?? '';
-        @endphp
+    <a href="{{ route('solutions') }}" class="ix-back"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Solutions</a>
 
-        <div class="grid gap-7 lg:grid-cols-2">
-            <article class="rounded-3xl border border-[#434656]/35 bg-[rgba(49,57,77,0.55)] p-7 shadow-[0_20px_44px_rgba(0,0,0,0.35)]" style="backdrop-filter:blur(20px);">
-                <p class="text-sm leading-6 text-[#8d90a2]">Contributed by {{ $solution->user->name }}</p>
-                <h1 class="mt-3 text-2xl font-bold leading-9 text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">{{ $solution->solution_title }}</h1>
-                <p class="mt-5 text-sm leading-7 text-[#c3c5d8]">{{ $solution->solution_description }}</p>
+    <div class="ix-split" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)">
+        <article class="ix-panel">
+            <div class="ix-panel__body" style="padding:24px">
+                <h1 class="ix-h1" style="font-size:24px">{{ $solution->solution_title }}</h1>
+                <p class="ix-meta">
+                    <span>By <b><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a></b></span>
+                    <span>{{ $solution->created_at->diffForHumans() }}</span>
+                    @if ($solution->duration_type !== 'infinite')
+                        <span>Takes <b class="ix-fig">{{ $solution->duration }}</b> {{ Str::plural(rtrim($solution->duration_type, 's'), $solution->duration) }}</span>
+                    @endif
+                </p>
+                <p class="ix-prose" style="margin:20px 0 0">{{ $solution->solution_description }}</p>
+                @if (filled($solution->tags))
+                    <p class="ix-hint" style="margin-top:16px">Tags: {{ $solution->tags }}</p>
+                @endif
+            </div>
+            <div style="border-top:1px solid var(--ix-rule);padding:24px">
+                <livewire:comments :model="$solution" :solution="$solution" />
+            </div>
+        </article>
 
-                <div class="mt-7 border-t border-[#434656]/30 pt-7">
-                    <livewire:comments :model="$solution" :solution="$solution" />
-                </div>
-            </article>
-
-            <section class="space-y-5">
-                @foreach($steps as $step)
-                    <div class="rounded-3xl border border-[#434656]/35 bg-[rgba(49,57,77,0.55)] p-6 shadow-[0_12px_32px_rgba(0,0,0,0.28)]" style="backdrop-filter:blur(20px);">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-[#b6c4ff]">Step {{ $loop->iteration }}</p>
-                        <p class="mt-2.5 text-base font-semibold leading-7 text-[#dae2fd]">{{ $step->solution_heading }}</p>
-                        <p class="mt-3 text-sm leading-7 text-[#c3c5d8]">{{ $step->solution_body }}</p>
+        <section class="ix-panel" aria-label="Steps">
+            <div class="ix-panel__head"><span>Steps</span><x-ix.figure :value="$steps->count()" /></div>
+            @forelse($steps as $step)
+                <div class="ix-step">
+                    <span class="ix-step__n ix-fig">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                    <div>
+                        <h2>{{ $step->solution_heading }}</h2>
+                        <p>{{ $step->solution_body }}</p>
                     </div>
-                @endforeach
-            </section>
-        </div>
-    </x-dashboard-shell>
-
-    @include('layouts.footer')
+                </div>
+            @empty
+                <p class="ix-panel__body" style="margin:0;color:var(--ix-text-3)">This solution has no written steps yet.</p>
+            @endforelse
+        </section>
+    </div>
 </x-app-layout>

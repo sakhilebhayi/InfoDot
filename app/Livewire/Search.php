@@ -27,11 +27,13 @@ class Search extends Component
             return Solutions::query()->whereRaw('0=1')->get();
         }
 
-        return Solutions::where('solution_title', 'like', '%'.$this->query.'%')
-            ->where(function ($q) {
-                $q->where('solution_description', 'like', '%'.$this->query.'%')
-                    ->orWhere('tags', 'like', '%'.$this->query.'%');
-            })->get();
+        $like = '%'.$this->query.'%';
+
+        return Solutions::where(function ($q) use ($like) {
+            $q->where('solution_title', 'like', $like)
+                ->orWhere('solution_description', 'like', $like)
+                ->orWhere('tags', 'like', $like);
+        })->latest()->limit(5)->get();
     }
 
     #[Computed]
@@ -41,9 +43,12 @@ class Search extends Component
             return Questions::query()->whereRaw('0=1')->get();
         }
 
-        return Questions::where('question', 'like', '%'.$this->query.'%')
-            ->orWhere('description', 'like', '%'.$this->query.'%')
-            ->get();
+        $like = '%'.$this->query.'%';
+
+        return Questions::where(function ($q) use ($like) {
+            $q->where('question', 'like', $like)
+                ->orWhere('description', 'like', $like);
+        })->latest()->limit(5)->get();
     }
 
     public function incrementHighlight(): void
