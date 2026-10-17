@@ -329,7 +329,7 @@ body.ix {
 }
 
 .ix-top .ix-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #2b3439;
 }
 
 .ix-top .ix-avatar {
@@ -642,8 +642,7 @@ button.ix-avatar {
 }
 
 .ix-btn--primary:hover {
-    background: var(--ix-signal-hover);
-    border-color: var(--ix-signal-hover);
+    filter: brightness(1.14);
 }
 
 .ix-btn--ghost {
@@ -2528,4 +2527,499 @@ button.ix-dir__item:hover:not([disabled]) {
     .ix-bay:focus-visible {
         transform: none;
     }
+}
+
+/* Platforms: the register. An index of areas beside a ledger of rows, one platform per row. */
+.ix-register {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.ix-register__index {
+    position: sticky;
+    top: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ix-register__index a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ix-rule);
+    color: var(--ix-text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.ix-register__index a:hover .ix-register__idxname {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ix-register__idxn {
+    color: var(--ix-text-3);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+}
+
+.ix-register__body {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    min-width: 0;
+}
+
+.ix-reg {
+    scroll-margin-top: 120px;
+}
+
+.ix-reg__head {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    border-bottom: 3px solid var(--tone);
+}
+
+.ix-reg__head > span:last-child {
+    display: inline-flex;
+    align-items: center;
+}
+
+.ix-reg__rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.ix-regrow {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr) 110px 150px;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 8px;
+    border: 0;
+    border-bottom: 1px solid var(--ix-rule);
+    background: none;
+    color: var(--ix-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+button.ix-regrow:hover:not([disabled]),
+button.ix-regrow:focus-visible {
+    background: var(--ix-hover);
+}
+
+.ix-regrow__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 64px;
+    padding: 6px;
+    background: #f6f4ee;
+    border: 1px solid var(--ix-rule);
+}
+
+.ix-regrow__logo img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.ix-regrow__logo .material-symbols-rounded {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f0bc2e;
+    color: #1b2124;
+    font-size: 24px;
+}
+
+.ix-regrow__name {
+    min-width: 0;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.ix-regrow__name small {
+    display: block;
+    margin-top: 2px;
+    color: var(--ix-text-3);
+    font-weight: 500;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ix-regrow__live,
+.ix-regrow__soon {
+    display: inline-block;
+    padding: 2px 8px 1px;
+    font-family: var(--ix-stencil-font);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ix-regrow__live {
+    background: var(--ix-documents);
+    color: #fff;
+}
+
+.ix-regrow__soon {
+    border: 1px solid var(--ix-rule-strong);
+    color: var(--ix-text-3);
+}
+
+.ix-regrow__go {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.ix-regrow__go .material-symbols-rounded {
+    font-size: 18px;
+}
+
+.ix-regrow.is-soon .ix-regrow__logo,
+.ix-regrow.is-soon .ix-regrow__name {
+    opacity: 0.5;
+}
+
+.ix-regrow.is-soon {
+    cursor: default;
+}
+
+@media (max-width: 899px) {
+    .ix-register {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+    }
+
+    .ix-register__index {
+        position: static;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 14px;
+        padding-bottom: 4px;
+    }
+
+    .ix-register__index a {
+        flex-shrink: 0;
+        border-bottom: 0;
+        grid-template-columns: auto auto;
+    }
+
+    .ix-register__idxname,
+    .ix-register__idxn {
+        display: none;
+    }
+}
+
+@media (max-width: 639px) {
+    .ix-regrow {
+        grid-template-columns: 88px minmax(0, 1fr) auto;
+    }
+
+    .ix-regrow__go {
+        display: none;
+    }
+}
+
+/* People: a headcount slab beside the roster. */
+.ix-crew {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.ix-crew__count {
+    padding: 22px 22px 18px;
+    background: var(--ix-people);
+    color: #fff;
+}
+
+.ix-crew__count .ix-stencil-num {
+    display: block;
+    font-size: 96px;
+    line-height: 0.9;
+}
+
+.ix-crew__count p {
+    margin: 8px 0 14px;
+    font-weight: 600;
+}
+
+.ix-crew__count ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.ix-crew__count li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+    font-size: 14px;
+}
+
+.ix-crew__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 3px solid var(--ix-people);
+}
+
+.ix-crewrow {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.ix-crewrow__av {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ix-sunken);
+    border: 1px solid var(--ix-rule-strong);
+    font-weight: 700;
+    font-size: 17px;
+}
+
+.ix-crewrow__who {
+    min-width: 0;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.ix-crewrow__who a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ix-crewrow__who small {
+    display: block;
+    margin-top: 2px;
+    color: var(--ix-text-3);
+    font-weight: 500;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ix-crewrow__you {
+    margin-left: 8px;
+    padding: 1px 6px;
+    border: 1px solid var(--ix-rule-strong);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.ix-crewrow__role {
+    padding: 3px 10px 2px;
+    border: 1px solid var(--ix-rule-strong);
+    font-family: var(--ix-stencil-font);
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.ix-crewrow__role.is-owner {
+    background: var(--ix-stencil);
+    border-color: var(--ix-stencil);
+    color: #1b2124;
+}
+
+.ix-crewrow.is-pending {
+    opacity: 0.8;
+}
+
+.ix-crew__sub {
+    margin: 28px 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+@media (max-width: 899px) {
+    .ix-crew {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ix-crew__count .ix-stencil-num {
+        font-size: 72px;
+    }
+}
+
+/* Settings: a numbered index beside the sections. */
+.ix-settings {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.ix-settings__index {
+    position: sticky;
+    top: 120px;
+    display: flex;
+    flex-direction: column;
+    border-top: 3px solid var(--ix-people);
+}
+
+.ix-settings__index a {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ix-rule);
+    color: var(--ix-text);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ix-settings__index a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ix-settings__no {
+    font-family: var(--ix-stencil-font);
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--ix-text-3);
+}
+
+.ix-settings__body {
+    max-width: 860px;
+    min-width: 0;
+}
+
+.ix-settings__sec {
+    scroll-margin-top: 120px;
+}
+
+@media (max-width: 899px) {
+    .ix-settings {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .ix-settings__index {
+        position: static;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 4px 18px;
+        border-top: 0;
+    }
+
+    .ix-settings__index a {
+        border-bottom: 0;
+        padding: 6px 0;
+    }
+}
+
+/* Analytics: a graphite scoreboard and stencil tallies. */
+.ixa .ix-state-bar {
+    background: var(--ix-analytics);
+    color: #fff;
+    border: 0;
+    padding: 22px 24px;
+    gap: 16px 40px;
+}
+
+.ixa .ix-state-bar .ix-readout__label {
+    color: rgba(255, 255, 255, 0.78);
+    font-weight: 600;
+}
+
+.ixa .ix-state-bar .ix-readout .ix-fig {
+    font-family: var(--ix-stencil-font);
+    font-weight: 900;
+    font-size: 64px;
+    line-height: 0.95;
+    color: var(--ix-stencil);
+}
+
+.ixa .ixa-verdict b {
+    font-size: 22px;
+    line-height: 1.2;
+}
+
+.ixa .ixa-verdict span {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 14px;
+}
+
+.ixa .ix-state-bar .ix-lamp {
+    width: 14px;
+    height: 14px;
+    background: var(--ix-stencil);
+}
+
+.ixa .ix-state-bar .ix-lamp--ok {
+    background: #5fb386;
+}
+
+.ixa .ix-stat .ix-fig {
+    font-family: var(--ix-stencil-font);
+    font-weight: 900;
+    font-size: 48px;
+    line-height: 0.95;
+}
+
+.ixa .ix-panel__head {
+    border-top: 3px solid var(--ix-analytics);
+}
+
+/* Inside the settings layout every section reads title-over-form, not in its own second column. */
+.ix-settings .ix-settings__sec .md\:grid {
+    display: block;
+}
+
+.ix-settings .ix-settings__sec .md\:col-span-2 {
+    margin-top: 14px;
+}
+
+.ix-settings .ix-settings__sec:first-child > div > div:first-child {
+    padding-top: 16px;
+    border-top: 3px solid var(--ix-people);
+}
+
+/* White on mustard fails contrast (2.8:1 light, 2.3:1 dark); mustard plates carry ink instead. */
+[data-tone='platforms'] .ix-bays__code {
+    color: #1b2124;
+}
+
+.ix-search .ix-kbd {
+    background: #f6f4ee;
 }

@@ -37,7 +37,7 @@
                 @foreach($groups as $name => [$code, $tone, $keys])
                     @php($members = collect($keys)->filter(fn ($k) => isset($all[$k]))->sortByDesc(fn ($k) => ! empty($all[$k]['active']))->values())
                     @if($members->isNotEmpty())
-                        <section class="ix-bays" style="--tone: var(--ix-{{ $tone }})"
+                        <section class="ix-bays" data-tone="{{ $tone }}" style="--tone: var(--ix-{{ $tone }})"
                                  x-data="{ names: @js($members->map(fn ($k) => strtolower($all[$k]['name']))->all()) }"
                                  x-show="q === '' || names.some(n => n.includes(q.toLowerCase()))">
                             <h3 class="ix-bays__head"><span class="ix-bays__code">{{ $code }}</span><span class="ix-bays__name">{{ $name }}</span></h3>
