@@ -1,7 +1,6 @@
 <x-app-layout>
     @php($isSolved = (int) $question->status === 1)
 
-    <a href="{{ route('questions') }}" class="ix-back"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Questions</a>
 
     <article class="ix-panel">
         <div class="ix-panel__body" style="padding:24px">

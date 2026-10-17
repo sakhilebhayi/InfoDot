@@ -2,7 +2,7 @@
 
 <x-jet-modal :id="$id" :maxWidth="$maxWidth" {{ $attributes }}>
     <div style="padding: 20px 20px 16px;">
-        <h2 style="margin: 0; font-family: var(--ix-font-display); font-weight: 700; font-size: 18px; line-height: 1.3;">
+        <h2 style="margin: 0; font-family: var(--ix-font); font-weight: 700; font-size: 18px; line-height: 1.3;">
             {{ $title }}
         </h2>
 

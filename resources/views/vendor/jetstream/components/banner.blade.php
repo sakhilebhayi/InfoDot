@@ -2,7 +2,7 @@
 
 <div x-data="{{ json_encode(['show' => true, 'style' => $style, 'message' => $message]) }}"
             style="display: none; background: var(--ix-panel); color: var(--ix-text); border-bottom: 1px solid var(--ix-rule-strong);"
-            class="relative z-[60] lg:ml-[var(--ix-rail-w)]"
+            class="relative z-[60] lg:ml-[var(--ix-side-w)]"
             role="status"
             x-show="show && message"
             x-init="

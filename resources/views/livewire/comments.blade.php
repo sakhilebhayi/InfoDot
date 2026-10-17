@@ -1,14 +1,7 @@
 @php($isQuestion = ! empty($question))
 @php($model = $isQuestion ? $question : $solution)
-@php($liked = $model->likes()->where('user_id', Auth::id())->exists())
 <div>
-    <div class="ix-actions" role="group" aria-label="Reactions">
-        <button type="button" class="ix-toggle" aria-pressed="{{ $liked ? 'true' : 'false' }}" wire:click="storeLike">
-            <span class="material-symbols-rounded" aria-hidden="true">thumb_up</span>
-            {{ $liked ? 'Liked' : 'Like' }}
-            <x-ix.figure :value="$model->likes()->count()" />
-        </button>
-
+    <div class="ix-actions">
         @if($isQuestion)
             @if((int) $model->status === 1)
                 <span class="ix-state ix-state--done">Solved</span>
@@ -20,7 +13,7 @@
         @endif
     </div>
 
-    <h2 class="ix-h1" style="font-size:18px;margin:28px 0 4px">Replies <x-ix.figure :value="$comments->count()" /></h2>
+    <h2 class="ix-h1" style="font-size:16px;margin:24px 0 4px">Replies <span class="ix-hint" style="margin:0 0 0 6px">{{ $comments->count() }}</span></h2>
 
     <div>
         @forelse($comments as $comment)

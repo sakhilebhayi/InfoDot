@@ -197,12 +197,14 @@ class CorePlatformFeaturesTest extends TestCase
         $response->assertSee('Register your business online');
     }
 
-    public function test_home_route_redirects_to_solutions(): void
+    public function test_home_is_a_real_page_with_the_team_and_what_needs_attention(): void
     {
         $user = $this->createVerifiedUserWithCurrentTeam();
 
-        $response = $this->actingAs($user)->get('/home');
-
-        $response->assertRedirect(route('solutions'));
+        $this->actingAs($user)->get('/home')
+            ->assertOk()
+            ->assertSee('Welcome back')
+            ->assertSee('Waiting for an answer')
+            ->assertSee($user->currentTeam->name);
     }
 }

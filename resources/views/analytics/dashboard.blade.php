@@ -14,7 +14,6 @@
             ['label' => 'Solutions', 'value' => $totalSolutions, 'delta' => $solutionsThisMonth, 'prev' => $solutionsLastMonth],
             ['label' => 'Questions', 'value' => $totalQuestions, 'delta' => $questionsThisMonth, 'prev' => $questionsLastMonth],
             ['label' => 'Comments',  'value' => $totalComments,  'delta' => null, 'prev' => null],
-            ['label' => 'Likes',     'value' => $totalLikes,     'delta' => null, 'prev' => null],
             ['label' => 'Teams',     'value' => $totalTeams,     'delta' => null, 'prev' => null],
         ];
 
@@ -41,35 +40,35 @@
     <style>
         .ixa h2.ix-panel__head { margin: 0; }
         .ixa .ix-state-bar { margin-bottom: 0; }
-        .ixa-stamp { font-family: var(--ix-font-display); font-size: 12px; color: var(--ix-text-3); }
+        .ixa-stamp { font-family: var(--ix-font); font-size: 12px; color: var(--ix-text-3); }
         .ixa-verdict { min-width: 0; }
         .ixa-verdict b { display: block; }
         .ixa-verdict span { display: block; margin-top: 2px; font-weight: 400; font-size: 13px; color: var(--ix-text-2); }
-        .ixa-stat-sub { display: block; margin-top: 2px; font-family: var(--ix-font-display); font-size: 12px; color: var(--ix-text-2); }
+        .ixa-stat-sub { display: block; margin-top: 2px; font-family: var(--ix-font); font-size: 12px; color: var(--ix-text-2); }
         .ixa-stat-sub small { display: block; font-size: 12px; color: var(--ix-text-3); }
         .ixa-trend { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
         @media (max-width: 899px) { .ixa-trend { grid-template-columns: minmax(0, 1fr); } }
-        .ixa-legend { display: inline-flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--ix-font-sans); font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ix-text-2); }
+        .ixa-legend { display: inline-flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--ix-font); font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ix-text-2); }
         .ixa-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
         .ixa-legend .s-sol { background: var(--ix-signal-text); border-radius: 50%; }
         .ixa-legend .s-que { background: var(--ix-text); }
         .ixa-chart { padding: 12px 8px 4px 4px; min-height: 252px; }
         .ixa-none { margin: 0; padding: 20px 16px; color: var(--ix-text-2); max-width: 60ch; text-wrap: pretty; }
-        .ixa-eng-label { font-family: var(--ix-font-display); font-weight: 700; font-size: 24px; line-height: 1.2; }
+        .ixa-eng-label { font-family: var(--ix-font); font-weight: 700; font-size: 24px; line-height: 1.2; }
         .ixa-eng-score { margin-top: 2px; color: var(--ix-text-2); font-size: 13px; }
         .ixa-bar { height: 4px; margin: 12px 0 16px; background: var(--ix-rule); }
         .ixa-bar span { display: block; height: 100%; background: var(--ix-text); }
         .ixa-dl { margin: 0; border-top: 1px solid var(--ix-rule); }
         .ixa-dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--ix-rule); }
         .ixa-dl dt { color: var(--ix-text-2); font-size: 13px; }
-        .ixa-dl dd { margin: 0; font-family: var(--ix-font-display); font-weight: 500; font-variant-numeric: tabular-nums; }
+        .ixa-dl dd { margin: 0; font-family: var(--ix-font); font-weight: 500; font-variant-numeric: tabular-nums; }
         .ixa-note { margin: 12px 0 0; font-size: 12px; color: var(--ix-text-3); text-wrap: pretty; }
         .ixa-rows { list-style: none; margin: 0; padding: 0; }
         .ixa-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--ix-rule); transition: background-color .15s var(--ix-ease); }
         .ixa-row--av { grid-template-columns: 28px 28px minmax(0, 1fr) auto; }
         .ixa-rows li:last-child .ixa-row { border-bottom: 0; }
         a.ixa-row:hover { background: var(--ix-hover); }
-        .ixa-rank { font-family: var(--ix-font-display); font-size: 13px; color: var(--ix-text-3); }
+        .ixa-rank { font-family: var(--ix-font); font-size: 13px; color: var(--ix-text-3); }
         .ixa-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
         .ixa-cnt { text-align: right; white-space: nowrap; }
         .ixa-cnt .ix-fig { font-size: 16px; }
@@ -79,22 +78,28 @@
         .ixa-bays .ix-bay { cursor: default; box-shadow: inset -1px -1px 0 var(--ix-rule); }
         .ixa-tbl-wrap { overflow-x: auto; }
         .ixa-tbl { width: 100%; min-width: 560px; border-collapse: collapse; }
-        .ixa-tbl th { padding: 9px 16px; text-align: left; background: var(--ix-sunken); border-bottom: 1px solid var(--ix-rule); font-family: var(--ix-font-display); font-weight: 700; font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--ix-text-3); }
+        .ixa-tbl th { padding: 9px 16px; text-align: left; background: var(--ix-sunken); border-bottom: 1px solid var(--ix-rule); font-family: var(--ix-font); font-weight: 700; font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--ix-text-3); }
         .ixa-tbl td { padding: 10px 16px; border-bottom: 1px solid var(--ix-rule); vertical-align: middle; }
         .ixa-tbl tr:last-child td { border-bottom: 0; }
         .ixa-tbl td.n { font-weight: 600; }
         .ixa-tbl td.d { color: var(--ix-text-2); }
         .ixa-tbl .ix-state { height: auto; }
-        .apexcharts-tooltip { background: var(--ix-panel) !important; border: 1px solid var(--ix-rule-strong) !important; color: var(--ix-text) !important; box-shadow: none !important; border-radius: var(--ix-radius) !important; font-family: var(--ix-font-sans) !important; }
-        .apexcharts-tooltip-title { background: var(--ix-sunken) !important; border-bottom: 1px solid var(--ix-rule) !important; color: var(--ix-text) !important; font-family: var(--ix-font-display) !important; font-size: 12px !important; }
+        .apexcharts-tooltip { background: var(--ix-panel) !important; border: 1px solid var(--ix-rule-strong) !important; color: var(--ix-text) !important; box-shadow: none !important; border-radius: var(--ix-radius) !important; font-family: var(--ix-font) !important; }
+        .apexcharts-tooltip-title { background: var(--ix-sunken) !important; border-bottom: 1px solid var(--ix-rule) !important; color: var(--ix-text) !important; font-family: var(--ix-font) !important; font-size: 12px !important; }
         .apexcharts-tooltip-text, .apexcharts-tooltip-y-group { font-size: 13px !important; }
-        .apexcharts-tooltip-text-y-value { font-family: var(--ix-font-display) !important; }
+        .apexcharts-tooltip-text-y-value { font-family: var(--ix-font) !important; }
         .apexcharts-xaxistooltip, .apexcharts-yaxistooltip { background: var(--ix-panel) !important; border-color: var(--ix-rule-strong) !important; color: var(--ix-text) !important; }
         .apexcharts-xaxistooltip-bottom::before, .apexcharts-xaxistooltip-bottom::after { border-bottom-color: var(--ix-rule-strong) !important; }
     </style>
 
     <div class="ixa">
-        <p class="ixa-stamp" style="margin:0 0 16px;text-align:right"><time datetime="{{ now()->toIso8601String() }}">{{ now()->format('D d M Y H:i') }}</time></p>
+        <header class="ix-pagehead">
+            <div>
+                <h1 class="ix-h1">Analytics</h1>
+                <p class="ix-lede">How much gets asked, written down and answered across the workspace.</p>
+            </div>
+            <time class="ixa-stamp" datetime="{{ now()->toIso8601String() }}">{{ now()->format('D d M Y H:i') }}</time>
+        </header>
 
         <div class="ix-stack">
 
@@ -104,7 +109,7 @@
                     <span class="ix-lamp {{ $engagementScore >= 60 ? 'ix-lamp--ok' : '' }}" aria-hidden="true"></span>
                     <div class="ixa-verdict">
                         @if($scored)
-                            <b>Engagement is {{ strtolower($engagementLabel) }}.</b>
+                            <b>Knowledge health is {{ strtolower($engagementLabel) }}.</b>
                             <span>{{ $solvedQuestions }} of {{ $totalQuestions }} {{ \Illuminate\Support\Str::plural('question', $totalQuestions) }} solved, across {{ $totalSolutions }} {{ \Illuminate\Support\Str::plural('solution', $totalSolutions) }}.</span>
                         @else
                             <b>Nothing to score yet.</b>
@@ -167,17 +172,16 @@
                 </div>
 
                 <div>
-                    <h2 class="ix-panel__head"><span>Engagement</span></h2>
+                    <h2 class="ix-panel__head"><span>Knowledge health</span></h2>
                     <div class="ix-panel__body">
                         <div class="ixa-eng-label">{{ $engagementLabel }}</div>
                         <div class="ixa-eng-score">{{ $engagementScore }} of 100</div>
-                        <div class="ixa-bar" role="img" aria-label="Engagement score {{ $engagementScore }} out of 100"><span style="width:{{ $engagementScore }}%"></span></div>
+                        <div class="ixa-bar" role="img" aria-label="Knowledge health {{ $engagementScore }} out of 100"><span style="width:{{ $engagementScore }}%"></span></div>
                         <dl class="ixa-dl">
                             <div><dt>Q&amp;A solve rate</dt><dd>{{ $solvePct }}%</dd></div>
-                            <div><dt>Comments per question</dt><dd>{{ number_format($avgCommentsPerQ, 1) }}</dd></div>
-                            <div><dt>Social connections</dt><dd>{{ number_format($totalFollows) }}</dd></div>
-                        </dl>
-                        <p class="ixa-note">Weighted 40% solve rate, 30% comments per question (5 or more counts in full), 30% likes per item (10 or more counts in full).</p>
+                            <div><dt>Replies per question</dt><dd>{{ number_format($avgCommentsPerQ, 1) }}</dd></div>
+                                                    </dl>
+                        <p class="ixa-note">Weighted 60% solve rate and 40% replies per question (5 or more counts in full).</p>
                     </div>
                 </div>
             </section>
@@ -185,7 +189,7 @@
             {{-- Rankings --}}
             <section class="ix-grid ix-grid--2">
                 <div>
-                    <h2 class="ix-panel__head"><span>Top solutions by likes</span><span>Likes</span></h2>
+                    <h2 class="ix-panel__head"><span>Most discussed solutions</span><span>Replies</span></h2>
                     @if($topSolutions->isNotEmpty())
                         <ol class="ixa-rows">
                             @foreach($topSolutions as $i => $sol)
@@ -193,13 +197,13 @@
                                     <a href="{{ route('solutions.view', $sol->id) }}" class="ixa-row">
                                         <span class="ixa-rank">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
                                         <span class="ixa-name">{{ $sol->solution_title }}</span>
-                                        <span class="ixa-cnt"><x-ix.figure :value="$sol->likes_count" :digits="2" /></span>
+                                        <span class="ixa-cnt"><x-ix.figure :value="$sol->comments_count" :digits="2" /></span>
                                     </a>
                                 </li>
                             @endforeach
                         </ol>
                     @else
-                        <p class="ixa-none">No solutions have been posted yet, so there is nothing to rank by likes.</p>
+                        <p class="ixa-none">No solutions have been posted yet, so there is nothing to rank.</p>
                     @endif
                 </div>
 

@@ -80,9 +80,9 @@ class FrameworkCouplingContractsTest extends TestCase
         $this->assertSame(['read', 'create', 'update'], $editorRole->permissions);
     }
 
-    public function test_route_service_provider_home_constant_stays_questions(): void
+    public function test_route_service_provider_home_constant_is_the_home_page(): void
     {
-        $this->assertSame('/questions', RouteServiceProvider::HOME);
+        $this->assertSame('/home', RouteServiceProvider::HOME);
     }
 
     public function test_user_model_keeps_framework_auth_traits(): void

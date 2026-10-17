@@ -2,84 +2,81 @@
 
 namespace App\Support;
 
+use App\Models\Questions;
+use App\Models\Solutions;
+use App\Models\Team;
+use App\Models\User;
+
 /**
- * Describes where in the signed-in area the current request is, for the page
- * title, the top tabs and the blue band under them.
+ * Where in the signed-in area the current request is: the page title and the
+ * breadcrumb trail shown in the top bar.
  */
 class NavSection
 {
     public static function current(): string
     {
         return match (true) {
-            request()->routeIs('questions*', 'seek') => 'Questions',
-            request()->routeIs('solutions*', 'add') => 'Solutions',
-            request()->routeIs('ecosystem.widget') => 'Platforms',
+            request()->routeIs('dashboard') => 'Home',
+            request()->routeIs('questions*', 'seek', 'solutions*', 'add') => 'Knowledge',
+            request()->routeIs('ecosystem.widget', 'subservices.*') => 'Platforms',
             request()->routeIs('analytics.*') => 'Analytics',
-            request()->routeIs('profile.*', 'teams.*', 'api-tokens.*') => 'Account',
+            request()->routeIs('profile.*') => 'Account',
+            request()->routeIs('teams.*', 'api-tokens.*') => 'Administration',
             default => 'InfoDot',
         };
     }
 
     /**
-     * The band under the top bar: a title, an optional one-line purpose, whether
-     * the big search sits in it, an optional primary action, and whether it is the
-     * full band (section home) or the compact one (detail and form pages).
+     * Trail for the top bar. The last item is the current page (no link).
      *
-     * @return array{title: string, lede: ?string, search: bool, action: ?array{label: string, url: string, icon: string}, compact: bool}
+     * @return list<array{0: string, 1: ?string}>
      */
-    public static function band(): array
+    public static function crumbs(): array
     {
-        $home = request()->routeIs('questions', 'solutions', 'ecosystem.widget', 'analytics.*');
+        $knowledge = ['Knowledge', route('questions')];
+        $platforms = ['Platforms', route('ecosystem.widget')];
 
-        $band = match (self::current()) {
-            'Questions' => [
-                'title' => 'Questions',
-                'lede' => 'Ask your team what is blocking you, or answer someone else.',
-                'search' => true,
-                'action' => ['label' => 'Ask a question', 'url' => route('seek'), 'icon' => 'add'],
-            ],
-            'Solutions' => [
-                'title' => 'Solutions',
-                'lede' => 'Step-by-step answers written down so a problem is only solved once.',
-                'search' => true,
-                'action' => ['label' => 'Add a solution', 'url' => route('add'), 'icon' => 'add'],
-            ],
-            'Platforms' => [
-                'title' => 'Dot platforms',
-                'lede' => 'Open any live Dot platform with your current sign-in.',
-                'search' => true,
-                'action' => null,
-            ],
-            'Analytics' => [
-                'title' => 'Analytics',
-                'lede' => 'Who is posting, what gets liked, and how much of it gets answered.',
-                'search' => false,
-                'action' => null,
-            ],
-            'Account' => [
-                'title' => 'Your account',
-                'lede' => null,
-                'search' => false,
-                'action' => null,
-            ],
-            default => [
-                'title' => 'InfoDot',
-                'lede' => null,
-                'search' => true,
-                'action' => null,
-            ],
+        return match (true) {
+            request()->routeIs('dashboard') => [['Home', null]],
+            request()->routeIs('questions') => [$knowledge, ['Questions', null]],
+            request()->routeIs('seek') => [$knowledge, ['Questions', route('questions')], ['Ask a question', null]],
+            request()->routeIs('questions.view') => [$knowledge, ['Questions', route('questions')], [self::title(Questions::class, 'question', request()->route('qid')), null]],
+            request()->routeIs('solutions') => [$knowledge, ['Solutions', null]],
+            request()->routeIs('add') => [$knowledge, ['Solutions', route('solutions')], ['Add a solution', null]],
+            request()->routeIs('solutions.view') => [$knowledge, ['Solutions', route('solutions')], [self::title(Solutions::class, 'solution_title', request()->route('id')), null]],
+            request()->routeIs('ecosystem.widget') => [['Platforms', null]],
+            request()->routeIs('subservices.*') => [$platforms, [self::platformName(), null]],
+            request()->routeIs('analytics.*') => [['Analytics', null]],
+            request()->routeIs('profile.show') => [['Account', null], [self::title(User::class, 'name', request()->route('id')), null]],
+            request()->routeIs('profile.edit') => [['Account', null], ['Settings', null]],
+            request()->routeIs('teams.show') => [['Administration', null], ['Team settings', null]],
+            request()->routeIs('teams.create') => [['Administration', null], ['New team', null]],
+            request()->routeIs('api-tokens.*') => [['Administration', null], ['API tokens', null]],
+            default => [['InfoDot', null]],
         };
+    }
 
-        $band['compact'] = ! $home;
+    private static function title(string $model, string $column, mixed $id): string
+    {
+        $value = is_scalar($id) ? $model::query()->whereKey($id)->value($column) : null;
 
-        // Compact bands keep only the section title; the lede, the big search and the
-        // action would repeat what the page itself says.
-        if ($band['compact']) {
-            $band['lede'] = null;
-            $band['search'] = false;
-            $band['action'] = null;
-        }
+        return filled($value) ? (string) $value : 'Details';
+    }
 
-        return $band;
+    private static function platformName(): string
+    {
+        $key = str(request()->route()?->getName() ?? '')->after('subservices.')->toString();
+        $key = ['sheets' => 'sheet'][$key] ?? $key;
+
+        return (string) (config('ecosystem.platforms.'.$key.'.name') ?? 'Platform');
+    }
+
+    /** Whether the signed-in person administers their current team. */
+    public static function administersTeam(?User $user): bool
+    {
+        $team = $user?->currentTeam;
+
+        return $user !== null && $team instanceof Team
+            && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin'));
     }
 }

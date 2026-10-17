@@ -1,10 +1,10 @@
 <div class="ix-search" @click.outside="$wire.set('query', '')">
     <span class="material-symbols-rounded" aria-hidden="true">search</span>
-    <label for="ix-search-input" class="ix-sr">Search questions and solutions</label>
+    <label for="ix-search-input" class="ix-sr">Search knowledge</label>
     <input
         id="ix-search-input"
         type="search"
-        placeholder="Search questions and solutions"
+        placeholder="Search knowledge"
         autocomplete="off"
         class="ix-input"
         wire:model.live.debounce.250ms="query"

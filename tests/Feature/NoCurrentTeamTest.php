@@ -25,13 +25,7 @@ class NoCurrentTeamTest extends TestCase
     {
         $user = User::factory()->create(['current_team_id' => null]);
 
-        // /home (the dashboard route) redirects on to /solutions by design
-        // for this platform (InfoDot's own community hub, not a dashboard
-        // view) — assert it isn't a server error rather than a fixed code.
-        $response = $this->actingAs($user)->get('/home');
-
-        $response->assertStatus(302);
-        $this->followingRedirects()->actingAs($user)->get('/home')->assertStatus(200);
+        $this->actingAs($user)->get('/home')->assertStatus(200)->assertSee('Welcome back');
     }
 
     public function test_authenticated_user_with_no_team_can_reach_team_creation(): void

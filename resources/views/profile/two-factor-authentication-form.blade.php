@@ -43,7 +43,7 @@
                     </p>
                 </div>
 
-                <div class="mt-4 grid max-w-xl gap-1 text-sm" style="padding: 12px 16px; font-family: var(--ix-font-display); background: var(--ix-sunken); border: 1px solid var(--ix-rule); border-radius: var(--ix-radius);">
+                <div class="mt-4 grid max-w-xl gap-1 text-sm" style="padding: 12px 16px; font-family: var(--ix-font); background: var(--ix-sunken); border: 1px solid var(--ix-rule); border-radius: var(--ix-radius);">
                     @foreach (json_decode(decrypt($this->user->two_factor_recovery_codes), true) as $code)
                         <div>{{ $code }}</div>
                     @endforeach
