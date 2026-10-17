@@ -90,10 +90,9 @@ class CoverageGapTest extends TestCase
     public function test_user_profile_page_renders(): void
     {
         $user = $this->authUser();
-        $other = User::factory()->create();
 
         $this->actingAs($user)
-            ->get('/user/profile/'.$other->id)
+            ->get('/user/profile/'.$user->id)
             ->assertOk();
     }
 
@@ -111,6 +110,7 @@ class CoverageGapTest extends TestCase
     public function test_search_finds_matching_solutions(): void
     {
         $user = $this->authUser();
+        $this->actingAs($user);
         Solutions::create([
             'user_id' => $user->id,
             'solution_title' => 'Docker compose setup',
@@ -128,6 +128,7 @@ class CoverageGapTest extends TestCase
     public function test_search_keyboard_highlight_increments_and_wraps(): void
     {
         $user = $this->authUser();
+        $this->actingAs($user);
         Questions::create([
             'user_id' => $user->id,
             'question' => 'What is Docker?',

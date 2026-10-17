@@ -83,6 +83,7 @@ class AuthenticationFlowSmokeTest extends TestCase
 
         Solutions::create([
             'user_id' => $owner->id,
+            'visibility' => 'public',
             'solution_title' => 'Register your business online',
             'solution_description' => 'Complete online registration quickly.',
             'tags' => 'registration, business',

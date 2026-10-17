@@ -21,6 +21,17 @@
             @error('description')<p class="ix-error" id="description-error">{{ $message }}</p>@enderror
         </div>
 
+
+        <div class="ix-field">
+            <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
+                <input type="checkbox" name="publish" value="1" style="margin-top:3px" @checked(old('publish'))>
+                <span>
+                    <span class="ix-label" style="margin:0">Publish to the public community</span>
+                    <span class="ix-hint" style="display:block;margin-top:2px">Off by default: only your company can see this. Turn it on to let every signed-in person, and signed-out visitors through search, read it. Do not publish anything confidential.</span>
+                </span>
+            </label>
+        </div>
+
         <div class="ix-actions">
             <button class="ix-btn ix-btn--primary" type="submit">Post question</button>
             <a class="ix-btn ix-btn--ghost" href="{{ route('questions') }}">Cancel</a>

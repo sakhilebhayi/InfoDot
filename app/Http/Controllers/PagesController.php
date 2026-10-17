@@ -136,13 +136,27 @@ class PagesController extends Controller
 
     public function show($id)
     {
-        $get_profile = User::where('id', $id)->first();
+        // Only yourself and people who share a company with you. Anyone else is
+        // answered as if the profile did not exist.
+        $get_profile = User::where('id', $id)->firstOrFail();
+        abort_unless(Auth::id() === $get_profile->id || $this->sharesATeam(Auth::user(), $get_profile), 404);
         $association = Associates::where('user_id', Auth::id())->where('associate_id', $id)->whereNull('deleted_at')->first();
 
         return view('profile.show', [
             'user' => $get_profile,
             'association' => $association,
         ]);
+    }
+
+    private function sharesATeam(?User $viewer, User $other): bool
+    {
+        if (! $viewer) {
+            return false;
+        }
+
+        $mine = $viewer->allTeams()->pluck('id');
+
+        return $other->allTeams()->pluck('id')->intersect($mine)->isNotEmpty();
     }
 
     public function edit()
