@@ -93,3 +93,7 @@ Route::get('/cookies', 'App\Http\Controllers\PagesController@cookies')->name('co
 Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_search_results')->name('solution_search_results');
 
 // ===============================================================
+
+// Liveness probe used by the deploy's smoke check and by monitoring. GET only, so
+// a POST answers a small 405 instead of reaching a controller.
+Route::get('/up', fn () => response('OK', 200, ['Content-Type' => 'text/plain']))->name('up');
