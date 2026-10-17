@@ -3,6 +3,10 @@
 @endphp
 <header class="ix-top">
     <div class="ix-top__inner">
+        <a href="{{ route('dashboard') }}" class="ix-brand" aria-label="InfoDot home">
+            <img src="{{ asset('img/logo_white.png') }}" alt="InfoDot" width="64" height="26">
+        </a>
+
         <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
             <button type="button" class="ix-owner" style="background:none;border-top:0;border-bottom:0;border-left:0;color:inherit;cursor:pointer;text-align:left" @click="open = !open" :aria-expanded="open" aria-haspopup="true" aria-label="Company menu">
                 <span class="ix-owner__code">{{ $company?->code ?? 'INFO' }}</span>

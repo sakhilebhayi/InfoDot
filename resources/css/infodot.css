@@ -504,7 +504,7 @@ body.ix {
 
     .ix-tabs {
         order: 3;
-        flex-basis: 100%;
+        flex-basis: calc(100% + 32px);
         margin: 0 -16px;
         padding: 0 16px;
         overflow-x: auto;
@@ -2131,5 +2131,35 @@ button.ix-dir__item:hover:not([disabled]) {
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
+    }
+}
+
+.ix-brand {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.ix-brand img {
+    display: block;
+    height: 26px;
+    width: auto;
+}
+
+@media (max-width: 479px) {
+    .ix-owner__name small {
+        display: none;
+    }
+
+    .ix-owner {
+        padding-right: 0;
+    }
+
+    .ix-owner__name {
+        display: none;
+    }
+
+    .ix-top__actions {
+        margin-left: auto;
     }
 }
