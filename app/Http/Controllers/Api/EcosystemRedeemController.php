@@ -70,11 +70,13 @@ class EcosystemRedeemController extends Controller
             ],
             'teams' => $user->allTeams()->map(fn ($team) => [
                 'id' => $team->id,
+                'uuid' => $team->uuid,
                 'name' => $team->name,
                 'personal' => (bool) $team->personal_team,
                 'role' => $user->ownsTeam($team) ? 'owner' : ($user->teamRole($team)?->key),
             ])->values(),
             'current_team_id' => $user->current_team_id,
+            'current_team_uuid' => $user->currentTeam?->uuid,
         ]);
     }
 
