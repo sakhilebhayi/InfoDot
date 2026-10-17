@@ -3,7 +3,6 @@
 
     <section class="ix-gate" aria-label="Your company">
         <div class="ix-gate__inner">
-            <div class="ix-gate__code" aria-label="Owner code {{ $team->code ?? 'INFO' }}">{{ $team->code ?? 'INFO' }}</div>
             <div class="ix-gate__who">
                 <h1>{{ $team->name ?? 'Your workspace' }}</h1>
                 <p>Welcome back, {{ $first }}.

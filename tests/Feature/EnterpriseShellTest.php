@@ -87,7 +87,8 @@ class EnterpriseShellTest extends TestCase
             $this->assertStringContainsString('data-area="'.$area.'"', $html, $url);
 
             if ($area !== 'home') {
-                $this->assertMatchesRegularExpression('#NOFI<i>/</i>'.$code.'#', $html, $url);
+                $this->assertStringContainsString('ix-band__code">'.$code.'<', $html, $url);
+                $this->assertStringNotContainsString('ix-owner__code', $html, $url);
             }
         }
     }

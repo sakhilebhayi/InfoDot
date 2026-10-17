@@ -421,23 +421,16 @@ body.ix {
     gap: 16px 40px;
 }
 
-.ix-gate__code {
-    font-family: var(--ix-stencil-font);
-    font-weight: 900;
-    font-size: clamp(88px, 16vw, 188px);
-    line-height: 0.82;
-    letter-spacing: 0.03em;
-    color: var(--ix-stencil);
-}
-
 .ix-gate__who {
     min-width: 0;
-    padding-bottom: 6px;
+    padding: 24px 0 8px;
+    border-left: 6px solid var(--ix-stencil);
+    padding-left: 20px;
 }
 
 .ix-gate__who h1 {
     margin: 0;
-    font-size: clamp(22px, 3vw, 32px);
+    font-size: clamp(30px, 5vw, 52px);
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.01em;
@@ -2156,7 +2149,8 @@ button.ix-dir__item:hover:not([disabled]) {
     }
 
     .ix-owner__name {
-        display: none;
+        max-width: 100px;
+        -webkit-line-clamp: 1;
     }
 
     .ix-top__actions {

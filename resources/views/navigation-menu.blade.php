@@ -9,13 +9,12 @@
 
         <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
             <button type="button" class="ix-owner" style="background:none;border-top:0;border-bottom:0;border-left:0;color:inherit;cursor:pointer;text-align:left" @click="open = !open" :aria-expanded="open" aria-haspopup="true" aria-label="Company menu">
-                <span class="ix-owner__code">{{ $company?->code ?? 'INFO' }}</span>
                 <span class="ix-owner__name">{{ $company?->name ?? 'Personal workspace' }}<small>{{ ($company?->personal_team ?? true) ? 'Personal workspace' : 'Company' }}</small></span>
                 <span class="material-symbols-rounded" aria-hidden="true" style="opacity:.7">expand_more</span>
             </button>
             <div class="ix-pop__panel" style="left:0;right:auto" x-show="open" x-cloak x-transition.opacity.duration.100ms>
                 @if ($company)
-                    <div class="ix-pop__head">{{ $company->name }} &middot; {{ $company->code }}</div>
+                    <div class="ix-pop__head">{{ $company->name }}</div>
                     <a class="ix-pop__item" href="{{ route('people') }}">
                         <span class="material-symbols-rounded" aria-hidden="true">groups</span>{{ __('People') }}
                     </a>

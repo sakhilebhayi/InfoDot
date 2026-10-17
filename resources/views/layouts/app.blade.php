@@ -27,7 +27,7 @@
         @unless ($area === 'home')
             <div class="ix-band">
                 <div class="ix-band__inner">
-                    <span class="ix-band__code">{{ $company?->code ?? 'INFO' }}<i>/</i>{{ $areaCode }}</span>
+                    <span class="ix-band__code">{{ $areaCode }}</span>
                     <nav class="ix-crumbs" aria-label="Breadcrumb">
                         @foreach (\App\Support\NavSection::crumbs() as [$label, $url])
                             @if (! $loop->first)<span class="material-symbols-rounded sep" aria-hidden="true">chevron_right</span>@endif
