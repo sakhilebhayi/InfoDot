@@ -18,6 +18,7 @@ class Solutions extends Model
     public function toSearchableArray(): array
     {
         return [
+            'id' => $this->getKey(),
             'solution_title' => $this->solution_title,
             'solution_description' => $this->solution_description,
             'tags' => $this->tags,
