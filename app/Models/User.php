@@ -35,9 +35,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    /**
+     * TNTSearch reads the primary key out of this array; without 'id' every save of the
+     * model throws "Undefined array key id" (it broke registration on 2026-10-17).
+     */
     public function toSearchableArray(): array
     {
         return [
+            'id' => $this->getKey(),
             'name' => $this->name,
             'email' => $this->email,
         ];

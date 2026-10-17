@@ -18,6 +18,7 @@ class Questions extends Model
     public function toSearchableArray(): array
     {
         return [
+            'id' => $this->getKey(),
             'question' => $this->question,
             'description' => $this->description,
         ];
