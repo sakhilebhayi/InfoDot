@@ -56,7 +56,7 @@
     </div>
 
     <section class="mb-8" aria-labelledby="profile-questions">
-        <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font-cond); font-weight: 700; font-size: 20px;">Questions</h2>
+        <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font-display); font-weight: 700; font-size: 20px;">Questions</h2>
 
         @if ($questions->isEmpty())
             <div class="ix-panel ix-panel__body" style="color: var(--ix-text-2);">
@@ -69,7 +69,7 @@
             <div class="ix-list">
                 @foreach ($questions->take($limit) as $question)
                     <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-row">
-                        <span class="ix-state {{ (int) $question->status === 1 ? 'ix-state--done' : 'ix-state--open' }}">{{ (int) $question->status === 1 ? 'Solved' : 'Open' }}</span>
+                        <span class="ix-lead {{ (int) $question->status === 1 ? 'ix-lead--done' : '' }}"><span class="material-symbols-rounded" aria-hidden="true">{{ (int) $question->status === 1 ? 'check' : 'question_mark' }}</span><span class="ix-sr">{{ (int) $question->status === 1 ? 'Solved' : 'Open' }}</span></span>
                         <div class="min-w-0">
                             <h3 class="ix-row__title">{{ $question->question }}</h3>
                             @if ($question->description)
@@ -87,7 +87,7 @@
     </section>
 
     <section aria-labelledby="profile-solutions">
-        <h2 id="profile-solutions" style="margin: 0 0 10px; font-family: var(--ix-font-cond); font-weight: 700; font-size: 20px;">Solutions</h2>
+        <h2 id="profile-solutions" style="margin: 0 0 10px; font-family: var(--ix-font-display); font-weight: 700; font-size: 20px;">Solutions</h2>
 
         @if ($solutions->isEmpty())
             <div class="ix-panel ix-panel__body" style="color: var(--ix-text-2);">
@@ -100,7 +100,7 @@
             <div class="ix-list">
                 @foreach ($solutions->take($limit) as $solution)
                     <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" class="ix-row">
-                        <span class="ix-state ix-state--solution">Solution</span>
+                        <span class="ix-lead ix-lead--solution"><span class="material-symbols-rounded" aria-hidden="true">format_list_numbered</span><span class="ix-sr">Solution</span></span>
                         <div class="min-w-0">
                             <h3 class="ix-row__title">{{ $solution->solution_title }}</h3>
                             @if ($solution->solution_description)

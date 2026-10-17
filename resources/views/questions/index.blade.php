@@ -5,58 +5,44 @@
         $done = $total - $open;
     @endphp
 
-    <div class="ix-pagehead">
-        <div>
-            <h1 class="ix-h1">Questions</h1>
-            <p class="ix-lede">Ask your team what is blocking you. Mark a question solved when the answer worked.</p>
-        </div>
-        <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">
-            <span class="material-symbols-rounded" aria-hidden="true">add</span>Ask a question
-        </a>
-    </div>
-
     @if ($total > 0)
-        <div class="ix-state-bar">
-            <div class="ix-state-bar__verdict">
-                <span class="ix-lamp {{ $open > 0 ? 'ix-lamp--signal' : 'ix-lamp--ok' }}" aria-hidden="true"></span>
-                @if ($open > 0)
-                    {{ $open }} {{ Str::plural('question', $open) }} still {{ $open === 1 ? 'needs' : 'need' }} an answer
-                @else
-                    Every question has been answered
-                @endif
+        <div x-data="{ show: 'all' }">
+            <div class="ix-filters" role="group" aria-label="Filter questions">
+                <button type="button" class="ix-pill" :aria-pressed="show === 'all'" @click="show = 'all'">All <span class="ix-pill__n">{{ $total }}</span></button>
+                <button type="button" class="ix-pill" :aria-pressed="show === 'open'" @click="show = 'open'">Unsolved <span class="ix-pill__n">{{ $open }}</span></button>
+                <button type="button" class="ix-pill" :aria-pressed="show === 'done'" @click="show = 'done'">Solved <span class="ix-pill__n">{{ $done }}</span></button>
             </div>
-            <div class="ix-readouts">
-                <div class="ix-readout"><span class="ix-readout__label">Unsolved</span><x-ix.figure :value="$open" /></div>
-                <div class="ix-readout"><span class="ix-readout__label">Solved</span><x-ix.figure :value="$done" /></div>
-                <div class="ix-readout"><span class="ix-readout__label">Total</span><x-ix.figure :value="$total" /></div>
-            </div>
-        </div>
 
-        <div class="ix-list">
-            @foreach ($questions as $question)
-                @php($isSolved = (int) $question->status === 1)
-                <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-row">
-                    <span><span class="ix-state {{ $isSolved ? 'ix-state--done' : 'ix-state--open' }}">{{ $isSolved ? 'Solved' : 'Unsolved' }}</span></span>
-                    <span>
-                        <h2 class="ix-row__title">{{ $question->question }}</h2>
-                        @if (filled($question->description))
-                            <p class="ix-row__excerpt">{{ $question->description }}</p>
-                        @else
-                            <p class="ix-row__excerpt ix-row__excerpt--none">No description.</p>
-                        @endif
-                        <p class="ix-row__by">{{ $question->user->name ?? 'Former member' }} &middot; {{ $question->created_at->diffForHumans() }}</p>
-                    </span>
-                    <span class="ix-row__figs">
-                        <span class="ix-count"><x-ix.figure :value="$question->comments_count" /><small>{{ Str::plural('reply', $question->comments_count) }}</small></span>
-                        <span class="ix-count"><x-ix.figure :value="$question->likes_count" /><small>{{ Str::plural('like', $question->likes_count) }}</small></span>
-                    </span>
-                </a>
-            @endforeach
+            <div class="ix-list">
+                @foreach ($questions as $question)
+                    @php($isSolved = (int) $question->status === 1)
+                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-row" x-show="show === 'all' || show === '{{ $isSolved ? 'done' : 'open' }}'">
+                        <span class="ix-lead {{ $isSolved ? 'ix-lead--done' : '' }}" title="{{ $isSolved ? 'Solved' : 'Waiting for an answer' }}">
+                            <span class="material-symbols-rounded" aria-hidden="true">{{ $isSolved ? 'check' : 'question_mark' }}</span>
+                            <span class="ix-sr">{{ $isSolved ? 'Solved' : 'Unsolved' }}</span>
+                        </span>
+                        <span>
+                            <h2 class="ix-row__title">{{ $question->question }}</h2>
+                            @if (filled($question->description))
+                                <p class="ix-row__excerpt">{{ $question->description }}</p>
+                            @else
+                                <p class="ix-row__excerpt ix-row__excerpt--none">No description.</p>
+                            @endif
+                            <p class="ix-row__by">{{ $question->user->name ?? 'Former member' }} &middot; {{ $question->created_at->diffForHumans() }}</p>
+                        </span>
+                        <span class="ix-row__figs">
+                            <span class="ix-count"><x-ix.figure :value="$question->comments_count" /><small>{{ Str::plural('reply', $question->comments_count) }}</small></span>
+                            <span class="ix-count"><x-ix.figure :value="$question->likes_count" /><small>{{ Str::plural('like', $question->likes_count) }}</small></span>
+                            <span class="ix-go" aria-hidden="true"><span class="material-symbols-rounded">chevron_right</span></span>
+                        </span>
+                    </a>
+                @endforeach
+            </div>
         </div>
     @else
         <section class="ix-empty">
             <h2>No questions yet</h2>
-            <p>Questions are how the team gets unblocked. Describe what you are trying to do and what is stopping you, and anyone on the team can answer.</p>
+            <p>Questions are how the team gets unblocked. Say what you are trying to do and what is stopping you, and anyone on the team can answer.</p>
             <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">Ask the first question</a>
         </section>
     @endif

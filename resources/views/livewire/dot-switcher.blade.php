@@ -11,7 +11,7 @@
     ];
 @endphp
 <div x-data="{ open: @entangle('open') }" @click.outside="open = false" @keydown.escape="open = false" class="ix-pop">
-    <button type="button" class="ix-btn" @click="open = !open" :aria-expanded="open" aria-haspopup="true" title="Switch Dot platform">
+    <button type="button" class="ix-round ix-round--wide" @click="open = !open" :aria-expanded="open" aria-haspopup="true" title="Switch Dot platform">
         <span class="material-symbols-rounded" aria-hidden="true">apps</span>
         <span class="hidden sm:inline">Dot Apps</span>
     </button>
@@ -29,8 +29,8 @@
                                 class="ix-apps__item"
                                 @if($live) wire:click="switchTo('{{ $key }}')" @else disabled @endif
                                 title="{{ $live ? $platform['name'] : $platform['name'].' is not live yet' }}">
-                            <span class="material-symbols-rounded" aria-hidden="true">{{ $platform['icon'] }}</span>
-                            <span class="t">{{ $platform['name'] }}</span>
+                            <span class="dot"><span class="material-symbols-rounded" aria-hidden="true">{{ $platform['icon'] }}</span></span>
+                            <span class="t">{{ Str::after($platform['name'], '.') }}</span>
                         </button>
                     @endforeach
                 </div>
