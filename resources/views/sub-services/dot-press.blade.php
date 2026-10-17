@@ -1,14 +1,14 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="text-2xl font-bold leading-9 text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">Dot.Press</h2>
-    </x-slot>
+    <div class="ix-pagehead">
+        <h1 class="ix-h1">Dot.Press</h1>
+    </div>
 
-    <x-dashboard-shell>
-        <div class="rounded-3xl border border-[#434656]/35 bg-[rgba(49,57,77,0.55)] p-7 shadow-[0_20px_44px_rgba(0,0,0,0.35)]" style="backdrop-filter:blur(20px);">
-            <h3 class="text-xl font-bold leading-8 text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">Dot.Press Workspace</h3>
-            <p class="mt-3 text-sm leading-7 text-[#8d90a2]">This page is ready for publishing workflows, editorial pipelines, and announcement management.</p>
+    <div class="ix-panel">
+        <div class="ix-panel__body">
+            <p style="margin: 0 0 16px; max-width: 62ch; color: var(--ix-text-2);">Dot.Press has no workspace inside InfoDot yet, so there is nothing to open or configure on this page.</p>
+            <a href="{{ route('ecosystem.widget') }}" class="ix-btn">
+                <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Back to platforms
+            </a>
         </div>
-    </x-dashboard-shell>
-
-    @include('layouts.footer')
+    </div>
 </x-app-layout>

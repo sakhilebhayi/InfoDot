@@ -12,6 +12,7 @@ class SolutionsController extends Controller
     public function index()
     {
         $solutions = Solutions::withCount(['likes', 'comments'])
+            ->with('user')
             ->latest()
             ->get();
 
@@ -32,8 +33,12 @@ class SolutionsController extends Controller
                 'solution_title' => 'required|min:3|max:255',
                 'solution_description' => 'required|min:3',
                 'tags-input' => 'required|min:3',
-                'duration' => 'required',
-                'duration_type' => 'required',
+                'duration' => 'required|integer|min:1',
+                'duration_type' => 'required|in:hours,days,weeks,months,years,infinite',
+                'solution_heading' => 'required|array|min:1',
+                'solution_heading.*' => 'required|string|max:255',
+                'solution_body' => 'required|array',
+                'solution_body.*' => 'required|string',
             ],
             [ // 2nd array is the rules custom message
                 'required' => 'The :attribute field is mandatory.',
@@ -47,7 +52,7 @@ class SolutionsController extends Controller
         $solution->tags = $request->input('tags-input');
         $solution->duration = $request->input('duration');
         $solution->duration_type = $request->input('duration_type');
-        $solution->steps = $request->input('steps');
+        $solution->steps = count($request->input('solution_heading'));
         $solution->save();
 
         $steps = $request->input('solution_heading');

@@ -12,6 +12,7 @@ class QuestionsController extends Controller
     public function index()
     {
         $questions = Questions::withCount(['likes', 'comments'])
+            ->with('user')
             ->latest()
             ->get();
 

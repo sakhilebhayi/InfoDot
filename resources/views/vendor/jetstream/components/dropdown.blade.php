@@ -1,4 +1,4 @@
-@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1 bg-slate-900 text-slate-100', 'dropdownClasses' => ''])
+@props(['align' => 'right', 'width' => '48', 'contentClasses' => 'py-1', 'dropdownClasses' => ''])
 
 @php
 switch ($align) {
@@ -37,10 +37,10 @@ switch ($width) {
             x-transition:leave="transition ease-in duration-75"
             x-transition:leave-start="transform opacity-100 scale-100"
             x-transition:leave-end="transform opacity-0 scale-95"
-            class="absolute z-50 mt-2 {{ $width }} rounded-md shadow-lg {{ $alignmentClasses }} {{ $dropdownClasses }}"
+            class="absolute z-50 mt-2 {{ $width }} {{ $alignmentClasses }} {{ $dropdownClasses }}"
             style="display: none;"
             @click="open = false">
-        <div class="rounded-md ring-1 ring-slate-700 {{ $contentClasses }}">
+        <div class="{{ $contentClasses }}" style="background: var(--ix-panel); color: var(--ix-text); border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius);">
             {{ $content }}
         </div>
     </div>

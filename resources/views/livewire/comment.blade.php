@@ -1,14 +1,7 @@
-<div class="flex items-center rounded-2xl border border-[#434656]/30 bg-[#131b2e] p-4">
-    @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-        <img class="w-12 h-12 rounded-full mr-3" src="{{ asset($comment->user->avatar()) }}" alt="{{ Auth::user()->name }}" />
-    @else
-        <img src="https://via.placeholder.com/100x100" class="w-12 h-12 rounded-full mr-3" alt="Avatar">
-    @endif
+<div class="ix-comment">
+    <span class="ix-avatar" aria-hidden="true">{{ strtoupper(substr($comment->user->name ?? '?', 0, 1)) }}</span>
     <div>
-        <p class="text-[#dae2fd]"><strong>{{ $comment->user->name }}</strong></p>
-        <p class="text-[#c3c5d8]"><span>{{ $comment->body }}</span></p>
+        <div class="ix-comment__by">{{ $comment->user->name ?? 'Former member' }}<span>{{ $comment->created_at->diffForHumans() }}</span></div>
+        <p>{{ $comment->body }}</p>
     </div>
 </div>
-
-
-

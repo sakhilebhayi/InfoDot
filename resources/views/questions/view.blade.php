@@ -1,26 +1,23 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3 sm:gap-4">
-            <h2 class="text-xl font-semibold leading-tight text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">
-                {{ __('Question Details') }}
-            </h2>
-            <a href="{{ route('questions') }}" class="inline-flex items-center rounded-full border border-[#434656]/40 bg-[#131b2e] px-5 py-2.5 text-sm font-semibold leading-5 text-[#dae2fd] shadow-sm transition hover:bg-[#1a2438] hover:text-[#b6c4ff]">
-                &larr; Back to Questions
-            </a>
+    @php($isSolved = (int) $question->status === 1)
+
+    <a href="{{ route('questions') }}" class="ix-back"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Questions</a>
+
+    <article class="ix-panel">
+        <div class="ix-panel__body" style="padding:24px">
+            <span class="ix-state {{ $isSolved ? 'ix-state--done' : 'ix-state--open' }}">{{ $isSolved ? 'Solved' : 'Unsolved' }}</span>
+            <h1 class="ix-h1" style="margin-top:8px;font-size:24px">{{ $question->question }}</h1>
+            <p class="ix-meta" style="margin-top:8px">
+                <span>Asked by <b><a href="{{ route('profile.show', ['id' => $question->user->id]) }}">{{ $question->user->name }}</a></b></span>
+                <span>{{ $question->created_at->diffForHumans() }}</span>
+            </p>
+            @if (filled($question->description))
+                <p class="ix-prose" style="margin:20px 0 0">{{ $question->description }}</p>
+            @endif
         </div>
-    </x-slot>
 
-    <x-dashboard-shell>
-        <article class="rounded-3xl border border-[#434656]/35 bg-[rgba(49,57,77,0.55)] p-7 shadow-[0_20px_44px_rgba(0,0,0,0.35)]" style="backdrop-filter:blur(20px);">
-            <p class="text-sm leading-6 text-[#8d90a2]">Asked by {{ $question->user->name }}</p>
-            <h1 class="mt-3 text-2xl font-bold leading-9 text-[#dae2fd]" style="font-family:'Manrope',sans-serif;">{{ $question->question }}</h1>
-            <p class="mt-5 text-sm leading-7 text-[#c3c5d8]">{{ $question->description }}</p>
-
-            <div class="mt-7 border-t border-[#434656]/30 pt-7">
-                <livewire:comments :model="$question" :question="$question"/>
-            </div>
-        </article>
-    </x-dashboard-shell>
-
-    @include('layouts.footer')
+        <div style="border-top:1px solid var(--ix-rule);padding:24px">
+            <livewire:comments :model="$question" :question="$question" />
+        </div>
+    </article>
 </x-app-layout>

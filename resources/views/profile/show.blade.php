@@ -1,189 +1,124 @@
 <x-app-layout>
-<main class="profile-page">
-    <section class="relative block" style="height: 350px;">
-        <div class="absolute top-0 w-full h-full bg-center bg-cover" style='background-image: url("https://source.unsplash.com/random/?productivity,business?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=crop&amp;w=2710&amp;q=80");'>
-            <span id="blackOverlay" class="w-full h-full absolute opacity-50 bg-black"></span>
-        </div>
-        <div class="top-auto bottom-0 left-0 right-0 w-full absolute pointer-events-none overflow-hidden" style="height: 70px;">
-            <svg class="absolute bottom-0 overflow-hidden" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" version="1.1" viewBox="0 0 2560 100" x="0" y="0" >
-                <polygon class="text-gray-300 fill-current" points="2560 0 2560 100 0 100"></polygon>
-            </svg>
-        </div>
-    </section>
-    <section class="relative py-16 bg-slate-950">
-        <div class="container mx-auto px-4">
-            <div class="relative flex flex-col min-w-0 break-words bg-slate-900 w-full mb-6 shadow-xl rounded-lg -mt-64">
-                <div class="px-6">
-                    <div class="flex flex-wrap justify-center">
-                        <div class="w-full lg:w-3/12 px-4 lg:order-2 flex justify-center text-center mx-auto">
-                            <div class="relative">
-                                <img alt="profile-photo" src="{{ (!$user->profile_photo_url) ? $user->avatar() : $user->profile_photo_url }}" class="shadow-xl rounded-full h-auto align-middle border-none absolute -m-10 lg:-ml-16" style="max-width: 100px; min-width: 100px;"/>
-                            </div>
-                        </div>
-                        <div class="w-full lg:w-4/12 px-4 lg:order-3 lg:text-right lg:self-center">
-                            <div class="py-6 px-3 mt-32 sm:mt-0 text-center lg:text-right">
-                                @if(Auth::id() !== $user->id)
+    @php
+        abort_unless($user, 404);
 
-                                    <livewire:associates :model="$user" :user="$user" :key="$user->id">
-                                @else
-                                    <a href="{{ route('profile.edit') }}" class="justify-items-end btn rounded-full uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1" style="transition: all 0.15s ease 0s;">
-                                        Edit Profile
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                        <div class="w-full lg:w-4/12 px-4 lg:order-1">
-                            <ul class="flex justify-center py-4 lg:pt-4 pt-8" id="tabs-id">
-                                <li class="mr-4 p-3 text-center">
-                                    <span class="text-xl font-bold block uppercase tracking-wide text-slate-200">
-                                        {{ $user->associates->count() }}
+        $isOwner = Auth::id() === $user->id;
+        $limit = 25;
+        $questions = $user->questions->sortByDesc('created_at')->values();
+        $solutions = $user->solutions->sortByDesc('created_at')->values();
+        $associateCount = $user->associates->count();
+    @endphp
 
-                                    </span>
-                                    <span class="text-sm text-slate-400">
-                                        Associates
-                                    </span>
-                                </li>
-                                <li class="mr-4 p-3 text-center cursor-pointer">
-                                    <a onclick="changeAtiveTab(event,'questions')">
-                                        <span class="text-xl font-bold block uppercase tracking-wide text-slate-200">
-                                            {{ $user->questions->count() }}
-                                        </span>
-                                        <span class="text-sm text-slate-400">
-                                            Questions
-                                        </span>
-                                    </a>
-                                </li>
-                                <li class="lg:mr-4 p-3 text-center cursor-pointer">
-                                    <a onclick="changeAtiveTab(event,'solutions')">
-                                        <span class="text-xl font-bold block uppercase tracking-wide text-slate-200">
-                                            {{ $user->solutions->count() }}
-                                        </span>
-                                        <span class="text-sm text-slate-400">
-                                            Solutions
-                                        </span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="text-center mt-12">
-                        <h3 class="text-4xl font-semibold leading-normal mb-2 text-slate-100 mb-2">
-                            {{ $user->name }}
-                        </h3>
-                    <div class="text-sm leading-normal mt-0 mb-2 text-slate-400 font-bold uppercase">
-                        <i class="fas fa-map-marker-alt mr-2 text-lg text-slate-400"></i>
-                        Los Angeles, California
-                    </div>
-                    <div class="mb-2 text-slate-200 mt-10">
-                        <i class="fas fa-briefcase mr-2 text-lg text-slate-400"></i>
-                        Solution Manager - Creative Tim Officer
-                    </div>
-                    <div class="mb-2 text-slate-200">
-                        <i class="fas fa-university mr-2 text-lg text-slate-400"></i>
-                        University of Computer Science
-                    </div>
-                    </div>
-                    <div class="mt-10 py-10 border-t border-slate-700 text-center">
-                        <div class="flex flex-wrap justify-center">
-                            <div class="w-full lg:w-9/12 px-4">
-                                <div class="flex flex-wrap">
-                                    <div class="w-full">
-                                        <div class="tab-content tab-space" id="content-tabs-id">
-                                            <div class="block" id="questions">
-                                                <div class="mx-2 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                                                    @if(!empty($user->questions))
-                                                        @foreach($user->questions as $question)
-                                                            <div aria-label="group of cards" tabindex="0" class="focus:outline-none py-2 w-full">
-                                                                <div tabindex="0" aria-label="card 1" class="mb-7 bg-slate-900 p-6 shadow rounded">
-                                                                    <div class="flex items-center border-b border-slate-700 pb-4 mb-2">
-                                                                        <div class="flex items-start justify-between w-full">
-                                                                            <div class="pl-3 w-full text-left line-clamp-1">
-                                                                                <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none text-xl font-medium leading-5 text-slate-100">
-                                                                                    {{ $question->question }}
-                                                                                </a>
-                                                                                <p tabindex="0" class="focus:outline-none text-sm leading-normal pt-2 text-slate-400">
-                                                                                    {{ $question->created_at->diffForHumans() }}
-                                                                                </p>
-                                                                            </div>
-                                                                            <div role="img" aria-label="bookmark">
-                                                                                <i class="fa fa-check-circle {{ $question->status == 0 ? 'text-red-500' : 'text-green-500' }} mt-1 mx-1" aria-hidden="true"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="px-2 text-left">
-                                                                        <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none text-sm leading-5 py-4 text-slate-300 mt-3 pt-3 line-clamp-3">
-                                                                            {{ $question->description }}
-                                                                        </a>
+    <div class="ix-pagehead" style="align-items: center;">
+        <div class="flex min-w-0 items-center gap-4">
+            <span class="ix-avatar" style="width: 56px; height: 56px; font-size: 22px;">
+                @if ($user->profile_photo_path)
+                    <img src="{{ $user->profile_photo_url }}" alt="">
+                @else
+                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                @endif
+            </span>
 
-                                                                    </div>
-                                                                    <div class="flex items-center justify-center border-t border-slate-700 pt-4 mt-3">
-                                                                        <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="bg-slate-900 text-slate-100 active:bg-slate-800 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
-                                                                            View Question
-                                                                            </a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    @endif
-                                                </div>
-                                            </div>
-                                            <div class="hidden" id="solutions">
-                                                <div class="mx-2 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                                                    @if(!empty($user->solutions))
-                                                        @foreach($user->solutions as $solution)
-                                                            <div aria-label="group of cards" tabindex="0" class="focus:outline-none py-2 w-full">
-                                                                <div tabindex="0" aria-label="card 1" class="mb-7 bg-slate-900 p-6 shadow rounded">
-                                                                    <div class="flex items-center border-b border-slate-700 pb-4 mb-2">
-                                                                        {{-- <img src="https://cdn.tuk.dev/assets/components/misc/doge-coin.png" alt="coin avatar" class="w-12 h-12 rounded-full" /> --}}
-                                                                        <div class="flex items-start justify-between w-full">
-                                                                            <div class="pl-3 w-full text-left">
-                                                                                <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none text-xl font-medium leading-5 text-slate-100 line-clamp-3">
-                                                                                    {{ $solution->solution_title }}
-                                                                                </a>
-                                                                                <p tabindex="0" class="focus:outline-none text-sm leading-normal pt-2 text-slate-400">
-                                                                                    {{ $solution->created_at->diffForHumans() }}
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="px-2 text-left">
-                                                                        <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none text-sm leading-5 py-4 text-slate-300 mt-3 pt-3 line-clamp-3">
-                                                                            {{ $solution->solution_description }}
-                                                                        </a>
-                                                                        @if(!empty($solution->tags))
-                                                                            <div tabindex="0" class="focus:outline-none flex">
-                                                                                @php
-                                                                                    $tags = explode(',', $solution->tags) ?? '';
-                                                                                @endphp
-                                                                                @foreach($tags as $tag)
-                                                                                    <div class="py-2 mx-1 my-3 px-4 text-xs leading-3 text-blue-200 rounded-full bg-blue-900/50">
-                                                                                        {{ $tag }}
-                                                                                    </div>
-                                                                                @endforeach
-                                                                            </div>
-                                                                        @endif
-                                                                    </div>
-                                                                    <div class="flex items-center justify-center border-t border-slate-700 pt-4 mt-3">
-                                                                        <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" class="bg-slate-900 text-slate-100 active:bg-slate-800 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
-                                                                            View Solution
-                                                                            </a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="min-w-0">
+                <h1 class="ix-h1 truncate">{{ $user->name }}</h1>
+                @if ($user->created_at)
+                    <p class="ix-lede" style="margin-top: 2px;">Member since {{ $user->created_at->format('j M Y') }}</p>
+                @endif
             </div>
         </div>
+
+        <div>
+            @if (! $isOwner)
+                <livewire:associates :model="$user" :user="$user" :key="$user->id" />
+            @else
+                <a href="{{ route('profile.edit') }}" class="ix-btn">
+                    <span class="material-symbols-rounded" aria-hidden="true">edit</span>Edit profile
+                </a>
+            @endif
+        </div>
+    </div>
+
+    <div class="ix-state-bar">
+        <div class="ix-readouts">
+            <div class="ix-readout" style="border-left: 0;">
+                <x-ix.figure :value="$associateCount" />
+                <span class="block text-xs" style="color: var(--ix-text-3);">Associates</span>
+            </div>
+            <div class="ix-readout">
+                <x-ix.figure :value="$questions->count()" />
+                <span class="block text-xs" style="color: var(--ix-text-3);">Questions</span>
+            </div>
+            <div class="ix-readout">
+                <x-ix.figure :value="$solutions->count()" />
+                <span class="block text-xs" style="color: var(--ix-text-3);">Solutions</span>
+            </div>
+        </div>
+    </div>
+
+    <section class="mb-8" aria-labelledby="profile-questions">
+        <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font-cond); font-weight: 700; font-size: 20px;">Questions</h2>
+
+        @if ($questions->isEmpty())
+            <div class="ix-panel ix-panel__body" style="color: var(--ix-text-2);">
+                {{ $isOwner ? 'You have not asked any questions yet.' : $user->name.' has not asked any questions yet.' }}
+                @if ($isOwner)
+                    <a href="{{ route('seek') }}" style="color: var(--ix-text); text-decoration: underline;">Ask a question</a>
+                @endif
+            </div>
+        @else
+            <div class="ix-list">
+                @foreach ($questions->take($limit) as $question)
+                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-row">
+                        <span class="ix-state {{ (int) $question->status === 1 ? 'ix-state--done' : 'ix-state--open' }}">{{ (int) $question->status === 1 ? 'Solved' : 'Open' }}</span>
+                        <div class="min-w-0">
+                            <h3 class="ix-row__title">{{ $question->question }}</h3>
+                            @if ($question->description)
+                                <p class="ix-row__excerpt">{{ $question->description }}</p>
+                            @endif
+                            <p class="ix-row__by">Asked {{ $question->created_at->diffForHumans() }}</p>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+            @if ($questions->count() > $limit)
+                <p class="ix-hint">Showing the latest {{ $limit }} of {{ $questions->count() }} questions.</p>
+            @endif
+        @endif
     </section>
-</main>
-@include('layouts.footer')
+
+    <section aria-labelledby="profile-solutions">
+        <h2 id="profile-solutions" style="margin: 0 0 10px; font-family: var(--ix-font-cond); font-weight: 700; font-size: 20px;">Solutions</h2>
+
+        @if ($solutions->isEmpty())
+            <div class="ix-panel ix-panel__body" style="color: var(--ix-text-2);">
+                {{ $isOwner ? 'You have not added any solutions yet.' : $user->name.' has not added any solutions yet.' }}
+                @if ($isOwner)
+                    <a href="{{ route('add') }}" style="color: var(--ix-text); text-decoration: underline;">Add a solution</a>
+                @endif
+            </div>
+        @else
+            <div class="ix-list">
+                @foreach ($solutions->take($limit) as $solution)
+                    <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" class="ix-row">
+                        <span class="ix-state ix-state--solution">Solution</span>
+                        <div class="min-w-0">
+                            <h3 class="ix-row__title">{{ $solution->solution_title }}</h3>
+                            @if ($solution->solution_description)
+                                <p class="ix-row__excerpt">{{ $solution->solution_description }}</p>
+                            @endif
+                            <p class="ix-row__by">
+                                Added {{ $solution->created_at->diffForHumans() }}
+                                @if (! empty($solution->tags))
+                                    &middot; {{ collect(explode(',', $solution->tags))->map(fn ($tag) => trim($tag))->filter()->implode(', ') }}
+                                @endif
+                            </p>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+            @if ($solutions->count() > $limit)
+                <p class="ix-hint">Showing the latest {{ $limit }} of {{ $solutions->count() }} solutions.</p>
+            @endif
+        @endif
+    </section>
 </x-app-layout>
