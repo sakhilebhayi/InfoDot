@@ -4,6 +4,8 @@ Status: audit phase, 2026-10-17. Nothing in this document is implemented unless 
 
 ## 1. What exists today
 
+> Caveat: the Dot.Files and Dot.docs audits read the working copies at `/Users/sakhilebhayi/Dot`, which sit on feature branches (`Dot.Files` on `feature/dot-doc-integration`, three commits ahead of what production runs; `Dot.docs` on `chore/tailwind-v4`). Items that depend on those branches (the `document` node type, signed document viewer, `expires_at` token column) are not in production Dot.Files. Re-verify against `origin/main` before building on them.
+
 **InfoDot (this repo)**
 - Works: sign-up/sign-in, Jetstream teams (roles: Administrator, Editor), Questions and Solutions with comments and likes, search, profile, analytics, the Dot platform launcher (`/auth/ecosystem` token handoff).
 - Files and folders: `File`, `Folder` and `Obj` (tree) models and tables exist (`HasTeamScope`), but there are no routes, controllers, pages, upload code or tests. There is no file management in InfoDot.
