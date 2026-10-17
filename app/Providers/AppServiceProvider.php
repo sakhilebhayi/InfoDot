@@ -6,8 +6,11 @@ use App\Models\File;
 use App\Models\Folder;
 use App\Models\Questions;
 use App\Models\Solutions;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -59,6 +62,8 @@ class AppServiceProvider extends ServiceProvider
         ] as $component) {
             Blade::component("vendor.jetstream.components.{$component}", "jet-{$component}");
         }
+
+        RateLimiter::for('ecosystem-redeem', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
 
         Relation::morphMap([
             'file' => File::class,

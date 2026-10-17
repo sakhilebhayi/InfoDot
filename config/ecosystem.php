@@ -81,4 +81,21 @@ return [
 
     'allow_insecure_handoff' => (bool) env('ECOSYSTEM_ALLOW_INSECURE_HANDOFF', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Redeem service secrets
+    |--------------------------------------------------------------------------
+    | Production gives every Dot app its own database, so a satellite cannot look
+    | a handoff token up locally. It sends the token to POST /api/ecosystem/redeem
+    | on InfoDot instead, proving who it is with a per-platform secret
+    | (ECOSYSTEM_SECRET_<PLATFORM KEY>, for example ECOSYSTEM_SECRET_FILES). The
+    | same value is set on the satellite as INFODOT_SERVICE_SECRET. A platform
+    | with no secret here cannot redeem anything.
+    */
+
+    'service_secrets' => collect(['files', 'docs', 'forms', 'sheet', 'projects', 'agents', 'memory', 'central', 'mines', 'engage', 'press', 'charts', 'dopemine'])
+        ->mapWithKeys(fn ($key) => [$key => env('ECOSYSTEM_SECRET_'.strtoupper($key))])
+        ->filter()
+        ->all(),
+
 ];

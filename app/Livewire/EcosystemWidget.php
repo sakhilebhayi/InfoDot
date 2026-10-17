@@ -59,7 +59,7 @@ class EcosystemWidget extends Component
         $this->launching = $key;
 
         $token = $user->createToken(
-            'ecosystem-handoff',
+            EcosystemHandoff::tokenName($key),
             ['ecosystem:read'],
             now()->addMinutes((int) config('ecosystem.handoff_ttl', 5))
         )->plainTextToken;
