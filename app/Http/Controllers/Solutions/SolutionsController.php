@@ -12,7 +12,7 @@ class SolutionsController extends Controller
     public function index()
     {
         $solutions = Solutions::withCount(['likes', 'comments'])
-            ->with('user')
+            ->with(['user', 'team'])
             ->latest()
             ->get();
 

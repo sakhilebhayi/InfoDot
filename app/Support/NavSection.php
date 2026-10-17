@@ -20,6 +20,7 @@ class NavSection
             request()->routeIs('questions*', 'seek', 'solutions*', 'add') => 'Knowledge',
             request()->routeIs('ecosystem.widget', 'subservices.*') => 'Platforms',
             request()->routeIs('analytics.*') => 'Analytics',
+            request()->routeIs('people') => 'People',
             request()->routeIs('profile.*') => 'Account',
             request()->routeIs('teams.*', 'api-tokens.*') => 'Administration',
             default => 'InfoDot',
@@ -27,7 +28,27 @@ class NavSection
     }
 
     /**
-     * Trail for the top bar. The last item is the current page (no link).
+     * The business area in view: its container colour (data-area on the body) and the
+     * four-letter code stencilled in the band, like a container's category code.
+     *
+     * @return array{0: string, 1: string}
+     */
+    public static function area(): array
+    {
+        return match (true) {
+            request()->routeIs('dashboard') => ['home', 'GATE'],
+            request()->routeIs('questions*', 'seek', 'solutions*', 'add') => ['knowledge', 'KNOW'],
+            request()->routeIs('ecosystem.widget', 'subservices.*') => ['platforms', 'PLAT'],
+            request()->routeIs('analytics.*') => ['analytics', 'DATA'],
+            request()->routeIs('people') => ['people', 'CREW'],
+            request()->routeIs('profile.*') => ['people', 'ACCT'],
+            request()->routeIs('teams.*', 'api-tokens.*') => ['people', 'ADMN'],
+            default => ['home', 'GATE'],
+        };
+    }
+
+    /**
+     * Trail for the area band. The last item is the current page (no link).
      *
      * @return list<array{0: string, 1: ?string}>
      */
@@ -47,6 +68,7 @@ class NavSection
             request()->routeIs('ecosystem.widget') => [['Platforms', null]],
             request()->routeIs('subservices.*') => [$platforms, [self::platformName(), null]],
             request()->routeIs('analytics.*') => [['Analytics', null]],
+            request()->routeIs('people') => [['People', null]],
             request()->routeIs('profile.show') => [['Account', null], [self::title(User::class, 'name', request()->route('id')), null]],
             request()->routeIs('profile.edit') => [['Account', null], ['Settings', null]],
             request()->routeIs('teams.show') => [['Administration', null], ['Team settings', null]],

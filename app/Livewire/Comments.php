@@ -44,6 +44,12 @@ class Comments extends Component
         abort_unless(Auth::id() === $this->model->user_id, 403);
 
         $this->model->update(['status' => 1]);
+
+        // The view reads $question, a separate copy of the same record; point it at
+        // the updated one so the page shows the new state (and the stamp) at once.
+        if ($this->question !== null) {
+            $this->question = $this->model;
+        }
     }
 
     public function postComment(): void

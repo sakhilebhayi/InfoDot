@@ -23,6 +23,7 @@ class HomeController extends Controller
             'unsolvedTotal' => Questions::query()->where('status', '!=', 1)->count(),
             'solutions' => Solutions::query()->with('user')->latest()->limit(5)->get(),
             'team' => $team,
+            'people' => $team ? $team->allUsers()->take(8)->values() : collect([$user]),
             'memberCount' => $team ? $team->allUsers()->count() : 1,
             'role' => $team ? ($user->ownsTeam($team) ? 'Owner' : $user->teamRole($team)?->name) : null,
         ]);

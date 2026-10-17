@@ -1,10 +1,19 @@
 <x-app-layout>
     @php($steps = \App\Models\Steps::where('solution_id', $solution->id)->get())
+    @php($ref = \App\Support\Reference::for($solution))
 
 
     <div class="ix-split" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)">
-        <article class="ix-panel">
+        <article class="ix-panel" x-data="{ copied: false }">
             <div class="ix-panel__body" style="padding:24px">
+                <div class="ix-itemhead">
+                    <span class="ix-ref ix-ref--lg" aria-label="Reference {{ $ref }}">{{ $ref }}</span>
+                    <button type="button" class="ix-copy"
+                            @click="navigator.clipboard.writeText('{{ $ref }}').then(() => { copied = true; setTimeout(() => copied = false, 1800) })">
+                        <span class="material-symbols-rounded" aria-hidden="true" x-text="copied ? 'check' : 'content_copy'">content_copy</span>
+                        <span x-text="copied ? 'Copied' : 'Copy reference'">Copy reference</span>
+                    </button>
+                </div>
                 <h1 class="ix-h1" style="font-size:24px">{{ $solution->solution_title }}</h1>
                 <p class="ix-meta">
                     <span>By <b><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a></b></span>

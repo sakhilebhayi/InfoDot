@@ -7,32 +7,32 @@
 web
 
 ## Users
-Business people working inside an organisation: owners and executives, department heads, project managers and team leaders, information and document managers, IT administrators and compliance officers, and employees at small businesses through to large enterprises. They arrive between tasks to find a document or an answer, open the right Dot platform, and administer who can see what. Confirmed by the owner (2026-10-17 brief): InfoDot must read as corporate, not social.
+Business owners and the people who work for them: owners and executives, department heads, project managers, information and document managers, IT administrators, and employees from small businesses through enterprises. They arrive between tasks to find an answer or a document, open the right Dot platform, and see who works under the company. The owner must be proud to put their company's code on screen.
 
 ## Product Purpose
-InfoDot is the hub and parent of the Dot ecosystem: the identity provider that signs a person in once and opens every Dot platform, and the business workspace around it. Today that means a Home page, a Knowledge section (Questions and Solutions, kept as a business knowledge base without likes), a directory of live platforms, analytics, and team administration. Files and Documents open Dot.Files and Dot.docs signed in. The roadmap (owner brief) adds workspaces, shared files through a Dot.Files API, approvals and richer administration; none of that is advertised until it is built and verified.
+InfoDot is the hub and parent of the Dot ecosystem: the identity provider that signs a person in once and opens every Dot platform, and the business workspace around it. Today that means a Home gate, a Knowledge area (Questions and Solutions, kept as a business knowledge base without likes), a directory of live platforms, People, and analytics. Files and Documents open Dot.Files and Dot.docs signed in. Roadmap items (shared files through a Dot.Files API, approvals) are not advertised until built and verified.
 
 ## Positioning
-InfoDot is the origin of the ecosystem ("the mother of all of them", in the owner's words) and must have its own identity: calm, precise and corporate, not a sibling of the dark control-room look of Dot.Memory, Dot.Central or Dot.Projects, not a social platform, and not an imitation of SharePoint or Apple.
+InfoDot is the origin of the ecosystem and has its own identity, "The Yard", drawn from shipping-container ownership: every company has a four-letter owner code and everything it owns carries a reference such as NWFN-Q-000014. It must not resemble the dark control-room look of Dot.Memory, Dot.Central or Dot.Projects, a generic SaaS sidebar-and-cards layout, or a social platform.
 
 ## Operating Context
-Laravel/Livewire app on shared cPanel hosting; each Dot app has its own database. Sign-in hands a short-lived token to another platform, which proves it with InfoDot's redeem endpoint (Phase 0). Email is verified at sign-up because other apps trust InfoDot's email. Dot.Files is the intended single authority for files and folders; it has no API yet.
+Laravel/Livewire app on shared cPanel hosting; each Dot app has its own database. Sign-in hands a short-lived token to another platform, which proves it at InfoDot's redeem endpoint. Email is verified at sign-up because other apps trust it. Companies are non-personal Jetstream teams with a uuid and owner code.
 
 ## Capabilities and Constraints
-Questions and Solutions stay (owner-confirmed binding), without social counters. Only features that work appear in navigation (no Shared with me, Favourites or Approvals yet). Only live platforms can be opened. Permissions and organisation boundaries must be enforced server-side; Questions and Solutions are currently global across teams (see docs/enterprise-platform-audit.md) and must not hold private business documents.
+Questions and Solutions stay, without social counters. Only features that work appear in navigation. Only live platforms can be opened. Visibility is enforced server-side: company by default, public only by explicit choice; unknown or hidden items return 404.
 
 ## Brand Commitments
-Name: InfoDot. Real logo assets in `public/img/` (`logo.png` for light, `logo_white.png` for dark). Accent derives from the logo blue. Corporate, minimal, premium; light and dark themes of equal quality.
+Name: InfoDot. Real logo assets in `public/img/`. Light and dark themes of equal quality. Container colours mark areas: Knowledge blue, Files oxide red, Documents green, Platforms mustard, Analytics graphite, People steel.
 
 ## Evidence on Hand
-Only the application's own data; demonstration content in screenshots and tests is synthetic. No customer counts, testimonials or compliance claims exist and none may be invented.
+Only the application's own data; demonstration content is synthetic. No customer counts, testimonials or compliance claims exist and none may be invented.
 
 ## Product Principles
-- Clarity over decoration: every element informs or enables an action.
-- Content first: documents, lists and search lead; chrome recedes.
+- Ownership is the signature: owner code and reference on everything a company owns, and both are searchable.
+- Each area has its own layout and container colour; no identical card grids.
+- Stencil type for codes and big numerals only; everything read is set in Archivo.
 - Honest navigation: show only what works today.
-- Business, not social: accountability, ownership and state in words; no engagement counters.
-- One system: every page uses the shared design system and tokens.
+- Business, not social: state and accountability in words, a stencilled SOLVED stamp instead of counters.
 
 ## Accessibility & Inclusion
-Text at or above 4.5:1 in both themes, keyboard navigation, visible focus, responsive from 375px, plain language. South African context (POPIA-aligned legal pages exist).
+Text at or above 4.5:1 in both themes, keyboard navigation (Ctrl/Cmd K search), visible focus, reduced motion respected, responsive from 375px, plain language. South African context (POPIA-aligned legal pages).
