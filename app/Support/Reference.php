@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Questions;
+use App\Models\Resource;
 use App\Models\Solutions;
 use Illuminate\Database\Eloquent\Model;
 
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class Reference
 {
-    public const KINDS = ['Q' => Questions::class, 'S' => Solutions::class];
+    public const KINDS = ['Q' => Questions::class, 'S' => Solutions::class, 'F' => Resource::class];
 
     public static function for(Model $item): string
     {
@@ -26,7 +27,7 @@ final class Reference
 
     public static function resolve(string $text): ?Model
     {
-        if (! preg_match('/^\s*([A-Z0-9]{4})-([QS])-0*(\d{1,9})\s*$/i', $text, $m)) {
+        if (! preg_match('/^\s*([A-Z0-9]{4})-([QSF])-0*(\d{1,9})\s*$/i', $text, $m)) {
             return null;
         }
 
@@ -34,11 +35,27 @@ final class Reference
         $item = $class::query()->with('team')->find((int) $m[3]);
 
         // The code must be the item's real owner: a forged prefix opens nothing.
+        // A stored file (or any registered object) is only openable by someone in its company.
+        if ($item instanceof Resource && ! self::viewerBelongs($item)) {
+            return null;
+        }
+
         return $item && strcasecmp(self::for($item), strtoupper($m[1]).'-'.strtoupper($m[2]).'-'.sprintf('%06d', $m[3])) === 0 ? $item : null;
+    }
+
+    private static function viewerBelongs(Resource $resource): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && $resource->team !== null && $user->belongsToTeam($resource->team);
     }
 
     public static function route(Model $item): string
     {
+        if ($item instanceof Resource) {
+            return route('resources.open', ['resource' => $item->uuid]);
+        }
+
         return $item instanceof Questions
             ? route('questions.view', ['qid' => $item->getKey()])
             : route('solutions.view', ['id' => $item->getKey()]);

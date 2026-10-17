@@ -42,7 +42,7 @@
             @php $i = 0; @endphp
             @if($this->reference)
                 <a href="{{ \App\Support\Reference::route($this->reference) }}" class="ix-results__item is-active" role="option">
-                    <span class="ix-ref">{{ \App\Support\Reference::for($this->reference) }}</span>{{ $this->reference->question ?? $this->reference->solution_title }}
+                    <span class="ix-ref">{{ \App\Support\Reference::for($this->reference) }}</span>@if($this->reference instanceof \App\Models\Resource)Open {{ $this->reference->type }} in {{ config('ecosystem.platforms.'.$this->reference->platform.'.name', $this->reference->platform) }}@else{{ $this->reference->question ?? $this->reference->solution_title }}@endif
                 </a>
             @endif
             @foreach($this->solutions as $solution)

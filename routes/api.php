@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\EcosystemRedeemController;
 use App\Http\Controllers\Api\EcosystemTokenController;
+use App\Http\Controllers\Api\ResourceRegistryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,12 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/ecosystem/redeem', EcosystemRedeemController::class)
     ->middleware('throttle:ecosystem-redeem')
     ->name('api.ecosystem.redeem');
+
+// A platform registers (and removes) pointers to the objects it owns. Authenticated by that
+// platform's secret. See ResourceRegistryController.
+Route::post('/ecosystem/resources', [ResourceRegistryController::class, 'store'])
+    ->middleware('throttle:ecosystem-redeem')
+    ->name('api.ecosystem.resources.store');
+Route::delete('/ecosystem/resources/{objectUuid}', [ResourceRegistryController::class, 'destroy'])
+    ->middleware('throttle:ecosystem-redeem')
+    ->name('api.ecosystem.resources.destroy');
