@@ -4,6 +4,14 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/img/platforms/docs.png": {
+    "file": "assets/docs-Bgi7gZB8.png",
+    "src": "resources/img/platforms/docs.png"
+  },
+  "resources/img/platforms/files.png": {
+    "file": "assets/files-C9XIb1Vh.png",
+    "src": "resources/img/platforms/files.png"
+  },
   "resources/js/app.js": {
     "file": "assets/app-hFmZfLqG.js",
     "name": "app",
