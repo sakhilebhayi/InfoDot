@@ -40,7 +40,7 @@
                     <div class="rounded-2xl border border-[#434656]/25 p-5" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
                         <div class="flex items-start justify-between">
                             <div class="rounded-xl p-2" style="background:{{ $kpi['color'] }}18;">
-                                <span class="material-symbols-outlined" style="font-size:20px;color:{{ $kpi['color'] }};">{{ $kpi['icon'] }}</span>
+                                <span class="material-symbols-rounded" style="font-size:20px;color:{{ $kpi['color'] }};">{{ $kpi['icon'] }}</span>
                             </div>
                             @if($kpi['delta'] !== null && $kpi['delta'] > 0)
                                 <span class="rounded-full bg-[#22c55e]/10 px-2 py-0.5 text-[10px] font-bold text-[#22c55e]">+{{ $kpi['delta'] }}</span>
@@ -116,7 +116,7 @@
                 <div class="rounded-2xl border border-[#434656]/25 p-6" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
                     <div class="mb-5 flex items-center gap-3">
                         <div class="rounded-xl bg-[#2962ff]/15 p-2">
-                            <span class="material-symbols-outlined text-[#2962ff]" style="font-size:20px;">workspace_premium</span>
+                            <span class="material-symbols-rounded text-[#2962ff]" style="font-size:20px;">workspace_premium</span>
                         </div>
                         <div>
                             <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d90a2]">Content Intelligence</p>
@@ -132,7 +132,7 @@
                                 <p class="truncate text-sm font-semibold text-[#dae2fd]">{{ $sol->solution_title }}</p>
                             </div>
                             <div class="flex items-center gap-1 text-xs text-[#dc2626]">
-                                <span class="material-symbols-outlined" style="font-size:14px;fill:1;">favorite</span>
+                                <span class="material-symbols-rounded" style="font-size:14px;fill:1;">favorite</span>
                                 <span class="font-bold">{{ $sol->likes_count }}</span>
                             </div>
                         </a>
@@ -145,7 +145,7 @@
                 <div class="rounded-2xl border border-[#434656]/25 p-6" style="background:rgba(19,27,46,0.9);backdrop-filter:blur(16px);">
                     <div class="mb-5 flex items-center gap-3">
                         <div class="rounded-xl bg-[#7c3aed]/15 p-2">
-                            <span class="material-symbols-outlined text-[#7c3aed]" style="font-size:20px;">military_tech</span>
+                            <span class="material-symbols-rounded text-[#7c3aed]" style="font-size:20px;">military_tech</span>
                         </div>
                         <div>
                             <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8d90a2]">People Intelligence</p>
@@ -188,7 +188,7 @@
                 <div class="grid grid-cols-3 gap-3 sm:grid-cols-6 lg:grid-cols-9">
                     @foreach($platforms as $key => $platform)
                         <div class="flex flex-col items-center gap-2 rounded-2xl border border-[#434656]/20 bg-[#0b1326]/50 p-3 text-center">
-                            <span class="material-symbols-outlined text-[#b6c4ff]" style="font-size:22px;">{{ $platform['icon'] }}</span>
+                            <span class="material-symbols-rounded text-[#b6c4ff]" style="font-size:22px;">{{ $platform['icon'] }}</span>
                             <span class="w-full truncate text-[0.58rem] font-bold uppercase tracking-wide text-[#8d90a2]">
                                 {{ Str::after($platform['name'], '.') }}
                             </span>
@@ -233,7 +233,7 @@
                         @php $active = $engine['status'] === 'active'; @endphp
                         <div class="rounded-2xl border p-4 {{ $active ? 'border-[#2962ff]/30 bg-[#2962ff]/05' : 'border-[#434656]/20 bg-[#0b1326]/40' }}">
                             <div class="mb-3 flex items-center justify-between">
-                                <span class="material-symbols-outlined {{ $active ? 'text-[#2962ff]' : 'text-[#434656]' }}" style="font-size:22px;">{{ $engine['icon'] }}</span>
+                                <span class="material-symbols-rounded {{ $active ? 'text-[#2962ff]' : 'text-[#434656]' }}" style="font-size:22px;">{{ $engine['icon'] }}</span>
                                 <span class="rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide {{ $active ? 'bg-[#22c55e]/15 text-[#22c55e]' : 'bg-[#434656]/20 text-[#8d90a2]' }}">
                                     {{ $active ? 'Active' : 'Planned' }}
                                 </span>
