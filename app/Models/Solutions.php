@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasKnowledgeVisibility;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
@@ -9,10 +10,11 @@ use Laravel\Scout\Searchable;
 class Solutions extends Model
 {
     use HasFactory;
+    use HasKnowledgeVisibility;
     use Searchable;
 
     protected $fillable = [
-        'user_id', 'solution_title', 'solution_description', 'tags', 'duration', 'duration_type', 'steps',
+        'user_id', 'team_id', 'visibility', 'solution_title', 'solution_description', 'tags', 'duration', 'duration_type', 'steps',
     ];
 
     public function toSearchableArray(): array

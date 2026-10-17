@@ -26,7 +26,7 @@
             <div class="ix-tablewrap">
                 <table class="ix-table">
                     <thead>
-                        <tr><th>Question</th><th>Status</th><th>Asked by</th><th class="num">Replies</th><th>Asked</th></tr>
+                        <tr><th>Question</th><th>Status</th><th>Visible to</th><th>Asked by</th><th class="num">Replies</th><th>Asked</th></tr>
                     </thead>
                     <tbody>
                     @foreach ($questions as $question)
@@ -37,6 +37,7 @@
                                 @if (filled($question->description))<p class="sub">{{ $question->description }}</p>@endif
                             </td>
                             <td><span class="ix-chip {{ $isSolved ? 'ix-chip--done' : 'ix-chip--open' }}">{{ $isSolved ? 'Solved' : 'Unsolved' }}</span></td>
+                            <td class="muted">{{ $question->isPublic() ? 'Everyone' : 'Your company' }}</td>
                             <td class="muted">{{ $question->user->name ?? 'Former member' }}</td>
                             <td class="num">{{ $question->comments_count }}</td>
                             <td class="muted">{{ $question->created_at->diffForHumans() }}</td>

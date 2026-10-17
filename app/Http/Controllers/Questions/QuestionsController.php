@@ -28,7 +28,8 @@ class QuestionsController extends Controller
 
     public function view($qid)
     {
-        $question = Questions::where('id', $qid)->first();
+        // Not found, not forbidden: do not reveal that another company's question exists.
+        $question = Questions::where('id', $qid)->firstOrFail();
 
         return view('questions.view')->with(['question' => $question]);
     }
@@ -39,6 +40,7 @@ class QuestionsController extends Controller
             [ // 1st array is field rules
                 'question' => 'required|min:3|max:255',
                 'description' => 'required|min:3',
+                'publish' => 'nullable|boolean',
             ],
             [ // 2nd array is the rules custom message
                 'required' => 'The :attribute field is mandatory.',
@@ -47,6 +49,8 @@ class QuestionsController extends Controller
         $question = new Questions;
 
         $question->user_id = auth()->user()->id;
+        $question->team_id = auth()->user()->current_team_id;
+        $question->visibility = $request->boolean('publish') ? Questions::VISIBILITY_PUBLIC : Questions::VISIBILITY_COMPANY;
         $question->question = $request->input('question');
         $question->description = $request->input('description');
         $question->save();

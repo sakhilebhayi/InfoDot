@@ -10,11 +10,11 @@
         $sortedPlatforms = collect($platforms)->sortByDesc(fn ($p) => ! empty($p['active']) ? 1 : 0)->values();
 
         $counts = [
-            ['label' => 'Users',     'value' => $totalUsers,     'delta' => $usersThisMonth,     'prev' => $usersLastMonth],
+            ['label' => 'Members',     'value' => $totalUsers,     'delta' => $usersThisMonth,     'prev' => $usersLastMonth],
             ['label' => 'Solutions', 'value' => $totalSolutions, 'delta' => $solutionsThisMonth, 'prev' => $solutionsLastMonth],
             ['label' => 'Questions', 'value' => $totalQuestions, 'delta' => $questionsThisMonth, 'prev' => $questionsLastMonth],
             ['label' => 'Comments',  'value' => $totalComments,  'delta' => null, 'prev' => null],
-            ['label' => 'Teams',     'value' => $totalTeams,     'delta' => null, 'prev' => null],
+            
         ];
 
         $engines = [
@@ -96,7 +96,7 @@
         <header class="ix-pagehead">
             <div>
                 <h1 class="ix-h1">Analytics</h1>
-                <p class="ix-lede">How much gets asked, written down and answered across the workspace.</p>
+                <p class="ix-lede">How much gets asked, written down and answered in {{ $team->name ?? 'your workspace' }}.</p>
             </div>
             <time class="ixa-stamp" datetime="{{ now()->toIso8601String() }}">{{ now()->format('D d M Y H:i') }}</time>
         </header>
@@ -140,7 +140,7 @@
                         <span class="ix-readout__label">{{ $c['label'] }}</span>
                         <x-ix.figure :value="$c['value']" :digits="2" />
                         @if($c['delta'] !== null)
-                            <span class="ixa-stat-sub">+{{ str_pad((string) $c['delta'], 2, '0', STR_PAD_LEFT) }} this month <small>{{ str_pad((string) $c['prev'], 2, '0', STR_PAD_LEFT) }} last month</small></span>
+                            <span class="ixa-stat-sub">+{{ $c['delta'] }} this month <small>{{ $c['prev'] }} last month</small></span>
                         @else
                             <span class="ixa-stat-sub"><small>all time</small></span>
                         @endif
