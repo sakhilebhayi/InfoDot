@@ -2298,3 +2298,50 @@ button.ix-dir__item:hover:not([disabled]) {
         padding-right: 52px;
     }
 }
+
+/* Platform logos sit on a paper tile so every logo reads on every area colour. */
+.ix-logotile {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    background: #f6f4ee;
+    border-radius: var(--ix-radius);
+}
+
+.ix-logotile img {
+    display: block;
+    height: 36px;
+    width: auto;
+}
+
+.ix-logotile--sq {
+    padding: 4px;
+}
+
+.ix-logotile--sq img {
+    height: 72px;
+    width: 72px;
+}
+
+.ix-door__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ix-fieldblock__foot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+@media (max-width: 639px) {
+    .ix-logotile--sq img {
+        height: 56px;
+        width: 56px;
+    }
+}
