@@ -169,6 +169,7 @@ class CoverageGapTest extends TestCase
     public function test_dot_switcher_issues_token_and_redirects(): void
     {
         $user = $this->authUser();
+        config(['ecosystem.platforms.files.url' => 'https://files.infodot.co.za']);
 
         Livewire::actingAs($user)
             ->test(DotSwitcher::class)
