@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  # Called by deploy.yml as the release gate.
+  workflow_call: {}
   push:
     branches: [main]
   pull_request:
