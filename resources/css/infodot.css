@@ -2157,3 +2157,144 @@ button.ix-dir__item:hover:not([disabled]) {
         margin-left: auto;
     }
 }
+
+/* Search: the landing page's pill with the gold round button, prominent in the top bar. */
+.ix-search .ix-input {
+    height: 44px;
+    padding: 0 104px 0 22px;
+    border-radius: 999px;
+    border: 0;
+    background: #f6f4ee;
+    color: #1b2124;
+    font-size: 15px;
+    box-shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.55);
+    text-overflow: ellipsis;
+}
+
+.ix-search .ix-input::placeholder {
+    color: #5b666b;
+}
+
+.ix-search .ix-input:focus {
+    background: #fff;
+    color: #1b2124;
+    outline: 2px solid #f0bc2e;
+    outline-offset: 0;
+}
+
+.ix-search .ix-search__go {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #f0bc2e;
+    color: #1b2124;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.12s var(--ix-ease);
+}
+
+.ix-search .ix-search__go:hover {
+    background: #d9a30f;
+}
+
+.ix-search .ix-search__go:focus-visible {
+    outline: 2px solid #1b2124;
+    outline-offset: 2px;
+}
+
+.ix-search .ix-search__go .material-symbols-rounded {
+    position: static;
+    transform: none;
+    color: inherit;
+    font-size: 20px;
+}
+
+.ix-search .ix-kbd {
+    right: 48px;
+    color: #5b666b;
+    border-color: rgba(27, 33, 36, 0.3);
+}
+
+.ix-top .ix-search .ix-input {
+    background: #f6f4ee;
+    border-color: transparent;
+    color: #1b2124;
+}
+
+.ix-top .ix-search .ix-input:focus {
+    background: #fff;
+    color: #1b2124;
+}
+
+.ix-top .ix-search .ix-input::placeholder {
+    color: #5b666b;
+}
+
+.ix-top .ix-kbd {
+    border-color: rgba(27, 33, 36, 0.3);
+    color: #5b666b;
+}
+
+/* Desktop: search gets the whole centre of the first row; tabs drop to a second row. */
+@media (min-width: 1200px) {
+    .ix-top__inner {
+        flex-wrap: wrap;
+        gap: 0 20px;
+    }
+
+    .ix-brand,
+    .ix-owner,
+    .ix-top__actions {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .ix-owner {
+        align-self: center;
+    }
+
+    .ix-top__search {
+        order: 1;
+        flex: 1 1 auto;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 6px 0;
+    }
+
+    .ix-top__actions {
+        order: 2;
+    }
+
+    .ix-tabs {
+        order: 3;
+        flex-basis: 100%;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .ix-tab {
+        min-height: 44px;
+        padding: 0 14px;
+    }
+
+    .ix-tab:first-child {
+        padding-left: 0;
+    }
+}
+
+@media (max-width: 639px) {
+    .ix-search .ix-kbd {
+        display: none;
+    }
+
+    .ix-search .ix-input {
+        padding-right: 52px;
+    }
+}

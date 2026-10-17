@@ -4,22 +4,28 @@
      @keydown.window.prevent.ctrl.k="$refs.q.focus()"
      @keydown.window.prevent.meta.k="$refs.q.focus()"
      @keydown.escape="open = false; $refs.q.blur()">
-    <span class="material-symbols-rounded" aria-hidden="true">search</span>
     <label for="ix-search-input" class="ix-sr">Search knowledge, jump to a reference, or run a command</label>
-    <input
-        id="ix-search-input"
-        x-ref="q"
-        type="search"
-        placeholder="Search or reference"
-        autocomplete="off"
-        class="ix-input"
-        @focus="open = true"
-        wire:model.live.debounce.250ms="query"
-        wire:keydown.escape="$set('query', '')"
-        wire:keydown.arrow-up.prevent="decrementHighlight"
-        wire:keydown.arrow-down.prevent="incrementHighlight"
-    />
-    <kbd class="ix-kbd" aria-hidden="true" x-show="!open">Ctrl K</kbd>
+    <form action="{{ route('solution_search_results') }}" method="GET" role="search">
+        <input
+            id="ix-search-input"
+            name="search"
+            x-ref="q"
+            type="search"
+            placeholder="Search or enter a reference"
+            autocomplete="off"
+            class="ix-input"
+            @focus="open = true"
+            wire:model.live.debounce.250ms="query"
+            wire:keydown.escape="$set('query', '')"
+            wire:keydown.arrow-up.prevent="decrementHighlight"
+            wire:keydown.arrow-down.prevent="incrementHighlight"
+        />
+        <kbd class="ix-kbd" aria-hidden="true" x-show="!open">Ctrl K</kbd>
+
+        <button type="submit" class="ix-search__go" aria-label="Search Questions and Solutions">
+            <span class="material-symbols-rounded" aria-hidden="true">search</span>
+        </button>
+    </form>
 
     <div class="ix-results" x-show="open" x-cloak x-transition.opacity.duration.100ms>
         @if(blank($query))
