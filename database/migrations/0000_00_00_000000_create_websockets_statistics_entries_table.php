@@ -13,6 +13,14 @@ class CreateWebSocketsStatisticsEntriesTable extends Migration
      */
     public function up()
     {
+        // The live database created this table under the file name
+        // 2014_10_40_000000_create_websockets_statistics_entries_table (a copy of
+        // this migration that exists only on the production host). Without this
+        // guard that database would try to create it a second time.
+        if (Schema::hasTable('websockets_statistics_entries')) {
+            return;
+        }
+
         Schema::create('websockets_statistics_entries', function (Blueprint $table) {
             $table->increments('id');
             $table->string('app_id');
