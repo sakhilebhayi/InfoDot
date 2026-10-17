@@ -1,7 +1,6 @@
 <x-app-layout>
     @php($steps = \App\Models\Steps::where('solution_id', $solution->id)->get())
 
-    <a href="{{ route('solutions') }}" class="ix-back"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Solutions</a>
 
     <div class="ix-split" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)">
         <article class="ix-panel">

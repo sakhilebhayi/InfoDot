@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Analytics;
 use App\Http\Controllers\Controller;
 use App\Models\Associates;
 use App\Models\Comment;
-use App\Models\Like;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
@@ -22,7 +21,6 @@ class AnalyticsController extends Controller
         $totalSolutions = Solutions::count();
         $totalQuestions = Questions::count();
         $totalComments = Comment::count();
-        $totalLikes = Like::count();
         $totalTeams = Team::count();
         $totalFollows = Associates::count();
         $solvedQuestions = Questions::where('status', 'solved')->count();
@@ -51,36 +49,34 @@ class AnalyticsController extends Controller
 
         $monthLabels = $months->map(fn (Carbon $m) => $m->format('M'));
 
-        // ── Top solutions by likes ────────────────────────────────────────
-        $topSolutions = Solutions::withCount('likes')
-            ->orderByDesc('likes_count')
+        // ── Most discussed solutions (replies) ────────────────────────────
+        $topSolutions = Solutions::withCount('comments')
+            ->orderByDesc('comments_count')
             ->limit(5)
             ->get(['id', 'solution_title']);
 
         // ── Top contributors (most content created) ───────────────────────
-        $topContributors = User::withCount(['questions', 'likes'])
+        $topContributors = User::withCount('questions')
             ->orderByDesc('questions_count')
             ->limit(5)
             ->get(['id', 'name', 'email']);
 
-        // ── Engagement score (0–100) ──────────────────────────────────────
+        // ── Knowledge health (0–100): how much gets answered ──────────────
+        // 60% solve rate, 40% replies per question (5 or more counts in full).
+        // Likes are deliberately not part of it.
         $solveRate = $totalQuestions > 0 ? ($solvedQuestions / $totalQuestions) : 0;
         $avgCommentsPerQ = $totalQuestions > 0 ? ($totalComments / $totalQuestions) : 0;
-        $avgLikesPerItem = ($totalSolutions + $totalQuestions) > 0
-            ? ($totalLikes / ($totalSolutions + $totalQuestions))
-            : 0;
 
         $engagementScore = (int) min(100, round(
-            ($solveRate * 40) +
-            (min($avgCommentsPerQ / 5, 1) * 30) +
-            (min($avgLikesPerItem / 10, 1) * 30)
+            ($solveRate * 60) +
+            (min($avgCommentsPerQ / 5, 1) * 40)
         ));
 
         $engagementLabel = match (true) {
             $engagementScore >= 80 => 'Excellent',
             $engagementScore >= 60 => 'Good',
             $engagementScore >= 40 => 'Fair',
-            default => 'Growing',
+            default => 'Building',
         };
 
         // ── Platform registry ─────────────────────────────────────────────
@@ -88,7 +84,7 @@ class AnalyticsController extends Controller
 
         return view('analytics.dashboard', compact(
             'totalUsers', 'totalSolutions', 'totalQuestions',
-            'totalComments', 'totalLikes', 'totalTeams', 'totalFollows',
+            'totalComments', 'totalTeams', 'totalFollows',
             'solvedQuestions',
             'usersThisMonth', 'usersLastMonth',
             'solutionsThisMonth', 'solutionsLastMonth',

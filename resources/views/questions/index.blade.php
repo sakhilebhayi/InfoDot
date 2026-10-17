@@ -5,6 +5,16 @@
         $done = $total - $open;
     @endphp
 
+    <div class="ix-pagehead">
+        <div>
+            <h1 class="ix-h1">Questions</h1>
+            <p class="ix-lede">Ask your team what is blocking you. Mark a question solved when an answer worked.</p>
+        </div>
+        <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">
+            <span class="material-symbols-rounded" aria-hidden="true">add</span>Ask a question
+        </a>
+    </div>
+
     @if ($total > 0)
         <div x-data="{ show: 'all' }">
             <div class="ix-filters" role="group" aria-label="Filter questions">
@@ -13,30 +23,27 @@
                 <button type="button" class="ix-pill" :aria-pressed="show === 'done'" @click="show = 'done'">Solved <span class="ix-pill__n">{{ $done }}</span></button>
             </div>
 
-            <div class="ix-list">
-                @foreach ($questions as $question)
-                    @php($isSolved = (int) $question->status === 1)
-                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-row" x-show="show === 'all' || show === '{{ $isSolved ? 'done' : 'open' }}'">
-                        <span class="ix-lead {{ $isSolved ? 'ix-lead--done' : '' }}" title="{{ $isSolved ? 'Solved' : 'Waiting for an answer' }}">
-                            <span class="material-symbols-rounded" aria-hidden="true">{{ $isSolved ? 'check' : 'question_mark' }}</span>
-                            <span class="ix-sr">{{ $isSolved ? 'Solved' : 'Unsolved' }}</span>
-                        </span>
-                        <span>
-                            <h2 class="ix-row__title">{{ $question->question }}</h2>
-                            @if (filled($question->description))
-                                <p class="ix-row__excerpt">{{ $question->description }}</p>
-                            @else
-                                <p class="ix-row__excerpt ix-row__excerpt--none">No description.</p>
-                            @endif
-                            <p class="ix-row__by">{{ $question->user->name ?? 'Former member' }} &middot; {{ $question->created_at->diffForHumans() }}</p>
-                        </span>
-                        <span class="ix-row__figs">
-                            <span class="ix-count"><x-ix.figure :value="$question->comments_count" /><small>{{ Str::plural('reply', $question->comments_count) }}</small></span>
-                            <span class="ix-count"><x-ix.figure :value="$question->likes_count" /><small>{{ Str::plural('like', $question->likes_count) }}</small></span>
-                            <span class="ix-go" aria-hidden="true"><span class="material-symbols-rounded">chevron_right</span></span>
-                        </span>
-                    </a>
-                @endforeach
+            <div class="ix-tablewrap">
+                <table class="ix-table">
+                    <thead>
+                        <tr><th>Question</th><th>Status</th><th>Asked by</th><th class="num">Replies</th><th>Asked</th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach ($questions as $question)
+                        @php($isSolved = (int) $question->status === 1)
+                        <tr x-show="show === 'all' || show === '{{ $isSolved ? 'done' : 'open' }}'">
+                            <td>
+                                <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="title">{{ $question->question }}</a>
+                                @if (filled($question->description))<p class="sub">{{ $question->description }}</p>@endif
+                            </td>
+                            <td><span class="ix-chip {{ $isSolved ? 'ix-chip--done' : 'ix-chip--open' }}">{{ $isSolved ? 'Solved' : 'Unsolved' }}</span></td>
+                            <td class="muted">{{ $question->user->name ?? 'Former member' }}</td>
+                            <td class="num">{{ $question->comments_count }}</td>
+                            <td class="muted">{{ $question->created_at->diffForHumans() }}</td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
     @else

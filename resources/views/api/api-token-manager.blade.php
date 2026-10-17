@@ -101,7 +101,7 @@
             </div>
 
             <x-jet-input x-ref="plaintextToken" type="text" readonly :value="$plainTextToken"
-                class="mt-4 block w-full" style="font-family: var(--ix-font-display); font-size: 13px;"
+                class="mt-4 block w-full" style="font-family: var(--ix-font); font-size: 13px;"
                 aria-label="{{ __('API token') }}"
                 autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                 @showing-token-modal.window="setTimeout(() => $refs.plaintextToken.select(), 250)"

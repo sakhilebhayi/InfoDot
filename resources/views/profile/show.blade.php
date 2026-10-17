@@ -56,7 +56,7 @@
     </div>
 
     <section class="mb-8" aria-labelledby="profile-questions">
-        <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font-display); font-weight: 700; font-size: 20px;">Questions</h2>
+        <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Questions</h2>
 
         @if ($questions->isEmpty())
             <div class="ix-panel ix-panel__body" style="color: var(--ix-text-2);">
@@ -87,7 +87,7 @@
     </section>
 
     <section aria-labelledby="profile-solutions">
-        <h2 id="profile-solutions" style="margin: 0 0 10px; font-family: var(--ix-font-display); font-weight: 700; font-size: 20px;">Solutions</h2>
+        <h2 id="profile-solutions" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Solutions</h2>
 
         @if ($solutions->isEmpty())
             <div class="ix-panel ix-panel__body" style="color: var(--ix-text-2);">

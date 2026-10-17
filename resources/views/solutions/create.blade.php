@@ -1,5 +1,4 @@
 <x-app-layout>
-    <a href="{{ route('solutions') }}" class="ix-back"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Solutions</a>
 
     <div class="ix-pagehead">
         <div>

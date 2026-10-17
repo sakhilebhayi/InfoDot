@@ -62,10 +62,10 @@ class SignedInUiTest extends TestCase
         foreach (['/questions', '/questions/ask', '/question/view/1', '/solutions', '/solution/create', '/platforms'] as $url) {
             $html = $this->actingAs($user)->get($url)->assertOk()->getContent();
 
-            foreach (['Manrope', '#2962ff', '#b6c4ff', 'backdrop-filter', 'material-symbols-outlined', 'fa fa-'] as $old) {
+            foreach (['Manrope', 'Baloo', 'Nunito', '#2962ff', '#b6c4ff', 'backdrop-filter', 'material-symbols-outlined', 'fa fa-'] as $old) {
                 $this->assertStringNotContainsString($old, $html, "$url still contains $old");
             }
-            $this->assertStringContainsString('Baloo+2', $html, $url);
+            $this->assertStringContainsString('Hanken+Grotesk', $html, $url);
         }
     }
 

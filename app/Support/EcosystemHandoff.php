@@ -2,6 +2,9 @@
 
 namespace App\Support;
 
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
+
 /**
  * Decides where an SSO handoff token may be sent.
  *
@@ -24,6 +27,39 @@ final class EcosystemHandoff
     public static function tokenName(?string $platformKey = null): string
     {
         return $platformKey === null || $platformKey === '' ? self::TOKEN_PREFIX : self::TOKEN_PREFIX.':'.$platformKey;
+    }
+
+    /**
+     * The full handoff URL for this person and platform (the token is minted here),
+     * or null when the platform is unknown, not live or not on a trusted host. The
+     * destination is checked BEFORE a token exists: a refused destination never gets one.
+     */
+    public static function launchUrl(User $user, string $key): ?string
+    {
+        $platform = config('ecosystem.platforms', [])[$key] ?? null;
+
+        if (! $platform) {
+            return null;
+        }
+
+        $endpoint = self::endpointFor($platform);
+
+        if ($endpoint === null) {
+            Log::warning('Ecosystem handoff refused: platform is inactive or its URL is not on a trusted https domain.', [
+                'platform' => $key,
+                'url' => $platform['url'] ?? null,
+            ]);
+
+            return null;
+        }
+
+        $token = $user->createToken(
+            self::tokenName($key),
+            ['ecosystem:read'],
+            now()->addMinutes((int) config('ecosystem.handoff_ttl', 5))
+        )->plainTextToken;
+
+        return $endpoint.'?token='.$token;
     }
 
     /**

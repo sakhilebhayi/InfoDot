@@ -3,22 +3,21 @@
 Source of truth: `resources/css/infodot.css` (classes prefixed `ix-`). Product truth: `PRODUCT.md`.
 
 ## Idea
-InfoDot is the parent of the Dot ecosystem, so its interface is drawn from its own logo: chunky rounded letters, a grey disc, a chevron. The one signature move is "the dot": counts, avatars, steps, status and platforms sit in circles, and the go-arrow is the logo chevron in a disc. It deliberately does not share the dark ruled control-room look of Dot.Memory, Dot.Central or Dot.Projects.
+A calm, precise business workspace. Order comes from type, spacing and alignment, not decoration: neutral surfaces, thin borders, one restrained accent taken from the InfoDot logo blue, almost no shadow, no gradients. Information lives in tables and compact lists. It deliberately shares nothing with the dark control-room look of the sibling Dot platforms and is not a social interface.
 
 ## Colour
-- Brand blue `#1f78c8` (committed: top bar and band), deep blue `#195fa0` (hover, active tab text). Dark set: `#14508a` band, `#4aa3ee` actions.
-- Paper ground `#f4f6f9`, white panels, ink `#14202c`, secondary text `#43566a`, tertiary `#586c80` (all >= 4.5:1 on their surface).
-- Logo grey `#bcbec0` for discs, gold `#f0bc2e` only for the dot accent (unsolved state, the band action, selection, focus ring).
-- Solved green `#17714b`, error `#c0362c`. Light is default; the dark set follows `prefers-color-scheme`.
+- Light: page `#f6f7f9`, surfaces `#ffffff`, sunken `#f0f2f5`, hairlines `#e2e6eb`; text `#111827`, secondary `#465264`, tertiary `#626f81`.
+- Dark: page `#0d1117`, surfaces `#151b23`, hairlines `#242d39`; text `#e6edf3`, secondary `#a9b5c3`, tertiary `#8c9aab`.
+- One accent: `#1b64b4` (light) / `#5ea1f0` (dark) for primary actions, current navigation and focus. Status colours only for meaning: amber for unsolved/needs attention, green for solved/live, red for errors. Themes follow `prefers-color-scheme` and keep the same contrast.
 
 ## Type
-Baloo 2 (700/800) for headings, row titles and every figure (tabular numerals); Nunito (400-800) for reading. Body 15px, band title 44px (34px phones), row title 20px.
+Hanken Grotesk only (400-700). Body 14px, page title 26px/650, section titles 14-16px/600, table headers 12px/600 in tertiary. Tabular figures in tables and readouts. Icons: Material Symbols Rounded at weight 350.
 
-## Shape and layout
-Pills (999px) for buttons, tabs and filters; 20px radius panels; 12px inputs. Standard top navigation: blue bar with tabs (Questions, Solutions, Platforms, Analytics), Dot Apps, team, account; below it a blue band with the section title, one line of purpose, the search pill and the primary action; then paper. No side rail. Lists are single panels of ruled rows, not floating cards.
+## Shell
+Fixed 248px side navigation (white surface, hairline) grouped Work (Home, Files, Documents), Knowledge (Questions, Solutions), Ecosystem (Platforms, Analytics), Administration (team and members, API tokens; administrators only). Files and Documents open the platform signed in and appear only when live. 56px top bar: breadcrumbs left, search, Dot Apps, team menu, account. Content column max 1120px. Under 1024px the side navigation becomes a drawer.
 
 ## Components
-Lead circle (status), count discs, chevron disc, filter pills with counts, status chips, platform dots (blue = live, grey = coming), step discs, comment rows, empty state with the logo's disc and dot. Popovers: 20px radius, 12px blur shadow, 1px border.
+Page head (title, one line, primary action), segmented filter, table with sticky header row (`ix-table`, stacks on phones), status chip (dot + words), panel with hairline head, form fields (36px, 6px radius, accent focus ring), popovers (12px blur shadow only), platform directory rows, steps with numbered markers, empty state with dashed border.
 
-## States
-Every control has hover, focus-visible (3px gold ring), active (scale 0.97), disabled. Platforms that are not live are disabled and say "Coming".
+## Rules
+No likes or engagement counters; no gradients or glass; no cards for lists that are tables; radius 6-8px; motion limited to 120ms colour transitions and the drawer; every control has hover, focus-visible (2px accent), active and disabled states.

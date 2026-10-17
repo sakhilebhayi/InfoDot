@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Support\EcosystemHandoff;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -31,40 +30,18 @@ class EcosystemWidget extends Component
 
     public function launch(string $key): void
     {
-        $platforms = config('ecosystem.platforms', []);
-        $platform = $platforms[$key] ?? null;
-
-        if (! $platform) {
-            return;
-        }
-
         $user = Auth::user();
 
         if (! $user) {
             return;
         }
 
-        // Checked BEFORE a token exists: a refused destination never gets one.
-        $endpoint = EcosystemHandoff::endpointFor($platform);
+        $url = EcosystemHandoff::launchUrl($user, $key);
 
-        if ($endpoint === null) {
-            Log::warning('Ecosystem handoff refused: platform is inactive or its URL is not on a trusted https domain.', [
-                'platform' => $key,
-                'url' => $platform['url'] ?? null,
-            ]);
-
-            return;
+        if ($url !== null) {
+            $this->launching = $key;
+            $this->redirect($url);
         }
-
-        $this->launching = $key;
-
-        $token = $user->createToken(
-            EcosystemHandoff::tokenName($key),
-            ['ecosystem:read'],
-            now()->addMinutes((int) config('ecosystem.handoff_ttl', 5))
-        )->plainTextToken;
-
-        $this->redirect($endpoint.'?token='.$token);
     }
 
     public function render(): View

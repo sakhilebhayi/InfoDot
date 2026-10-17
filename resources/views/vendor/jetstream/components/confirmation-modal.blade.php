@@ -5,7 +5,7 @@
         <span class="material-symbols-rounded" aria-hidden="true" style="color: var(--ix-danger); margin-top: 1px;">warning</span>
 
         <div class="min-w-0">
-            <h2 style="margin: 0; font-family: var(--ix-font-display); font-weight: 700; font-size: 18px; line-height: 1.3;">
+            <h2 style="margin: 0; font-family: var(--ix-font); font-weight: 700; font-size: 18px; line-height: 1.3;">
                 {{ $title }}
             </h2>
 
