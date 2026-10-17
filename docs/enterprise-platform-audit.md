@@ -67,3 +67,44 @@ Real-time collaboration beyond Dot.docs's polling and block merge, version histo
 1. Questions and Solutions: keep as a business knowledge base without likes, move out of the primary navigation, or retire.
 2. Files authority: Dot.Files via a new API (recommended), or InfoDot's own library.
 3. Start order: Phase 0 and Phase 1 first (recommended), or the design alone.
+
+## 7. Cross-platform routing and tenant isolation (second brief, audit findings)
+
+Evidence is from code on `origin/main` of each repo (what production runs) unless noted.
+
+### What "tenant" means today, per app
+- **InfoDot:** a Jetstream team. Personal teams are one person; non-personal teams are companies. `Questions`, `Solutions`, comments and likes are **global, not team-scoped, by design** (`HasTeamScope` doc comment), and the header search reads them across all companies. So any signed-in person of any company can read every company's questions and solutions. This is the one confirmed cross-tenant read in the product today (small now, wrong for a business platform).
+- **Dot.Files:** `team_id` on objects, files and folders, enforced by a global scope. Two weaknesses: the scope applies **no filter at all** when the user has no current team (fails open); `FileBrowser::deleteObject` looks up an id held in a public Livewire property with only that scope behind it (no policy check). Download authorises against the session's current team rather than the file's own team. Search runs through Scout; results are re-hydrated through the scope, but the index file holds every team's names.
+- **Dot.docs:** `documents.owner_id` plus a nullable `team_id`; `DocumentPolicy` (owner, team role, collaborator, public link). Policy-based, so stronger than Files; the shared tree (`objects`) only works if both apps share a database, which production does not.
+
+### The structural gap (more important than any single bug)
+Phase 0 proves **who** a person is across apps (verified email) but not **which company** they act for. The redeem response already carries the person's teams and current team, but Dot.Files and Dot.docs ignore it: each creates its own personal team for a new person. So today:
+- there is no shared tenant identifier across apps (InfoDot `teams.id`, Files `teams.id` and Docs `teams.id` are unrelated numbers);
+- a person in two companies in InfoDot arrives in each satellite with only a personal team;
+- membership changes in InfoDot (removed from a company) never reach the satellites;
+- a deep link cannot name a company, so a destination cannot check "this resource belongs to the company the person is acting for".
+
+Tenant-aware routing therefore needs a **tenant identity layer first**, not a router first.
+
+### Plan (in order)
+| Step | What | Where |
+|---|---|---|
+| A. Tenant identity | Stable `uuid` on InfoDot teams; satellites store `infodot_team_uuid` on their teams; on every SSO the redeem payload (teams, roles, active team) is applied: create or match the company team, sync membership and role, remove memberships InfoDot no longer lists; the active tenant for the session is validated against membership | InfoDot (migration), Files, Docs |
+| B. Close the isolation gaps | Files: fail closed without a current team, policy check on every object action, authorise downloads against the file's own team, team-filtered search; InfoDot: make Questions, Solutions and search tenant-scoped (migration, backfill to the author's team); isolation tests with two synthetic companies on every path | Files, InfoDot |
+| C. Resource registry and resolver | `resources` table in InfoDot holding only stable references (resource uuid, type, authoritative platform, tenant uuid, platform object uuid, canonical path), no content; `GET /open/{resource}` validates membership and tenant, mints a platform-bound token with a `redirect` to the exact object, and sends the person there; destination re-authorises | InfoDot |
+| D. Platform deep-link contracts | Files and Docs accept `redirect` to an object path and answer 403 with a request-access screen; a small authenticated API for registration and rename, move and delete events so references stay current (no duplicates) | Files, Docs |
+| E. Tenant-aware search | Cross-platform search only after A to D, querying each platform with the caller's token so each platform filters; no central copy of titles | all |
+| F. Controlled cross-tenant sharing | Explicit, expiring, revocable share records owned by the resource's platform; revalidated on each open | Files, Docs, InfoDot |
+
+### Routing registry (verified so far)
+| Resource | Authoritative platform | Verified |
+|---|---|---|
+| Stored file or folder | Dot.Files | live; no API yet |
+| Word-processing document | Dot.docs | live; document API absent |
+| Question, solution | InfoDot (Knowledge) | live; currently global |
+| Project, task, HR, finance, analytics, charts | Dot.Projects, Dot.Tasks, Dot.HR, Dot.Finance, Dot.Analytics, Dot.Charts | **not verified**; Tasks, HR, Finance, Analytics are not live; Projects and Charts are live but their resource models and routes have not been audited |
+
+A document stored by Dot.Files and edited in Dot.docs is one resource with two roles (storage vs editor); the registry must record both, which is not possible until Files and Docs share a reference through an API rather than shared tables.
+
+### Not to be claimed yet
+Tenant isolation across platforms, cross-platform search, deep links to specific resources, cross-tenant sharing, audit of cross-platform access. Each arrives only with its step above and its tests.
