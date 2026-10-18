@@ -77,7 +77,7 @@ class SignedInUiTest extends TestCase
 
         $this->actingAs($user)->get('/questions')
             ->assertOk()
-            ->assertSee('Unsolved')
+            ->assertSee('Waiting')
             ->assertSee('Solved')
             ->assertSee('aria-pressed', false);
     }
@@ -86,7 +86,7 @@ class SignedInUiTest extends TestCase
     {
         $this->actingAs($this->member())->get('/questions')
             ->assertOk()
-            ->assertSee('No questions yet')
+            ->assertSee('has no questions yet')
             ->assertSee('Ask the first question');
     }
 

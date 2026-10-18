@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Questions;
 use App\Events\Questions\QuestionWasAsked;
 use App\Http\Controllers\Controller;
 use App\Models\Questions;
+use App\Support\Industry;
 use Illuminate\Http\Request;
 
 class QuestionsController extends Controller
@@ -18,12 +19,13 @@ class QuestionsController extends Controller
 
         return view('questions.index', [
             'questions' => $questions,
+            'industry' => Industry::for(auth()->user()->currentTeam),
         ]);
     }
 
     public function seek()
     {
-        return view('questions.seek');
+        return view('questions.seek', ['industry' => Industry::for(auth()->user()->currentTeam)]);
     }
 
     public function view($qid)

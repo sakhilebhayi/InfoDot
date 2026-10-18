@@ -2,6 +2,7 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Support\Industry;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Jetstream\Contracts\CreatesTeams;
@@ -22,14 +23,21 @@ class CreateTeam implements CreatesTeams
 
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
+            'industry' => ['nullable', 'string', 'in:'.implode(',', array_keys(Industry::options()))],
         ])->validateWithBag('createTeam');
 
         AddingTeam::dispatch($user);
 
-        $user->switchTeam($team = $user->ownedTeams()->create([
+        $team = $user->ownedTeams()->create([
             'name' => $input['name'],
             'personal_team' => false,
-        ]));
+        ]);
+
+        if (filled($input['industry'] ?? null)) {
+            $team->forceFill(['industry' => $input['industry']])->save();
+        }
+
+        $user->switchTeam($team);
 
         return $team;
     }

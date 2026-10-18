@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Solutions;
 use App\Http\Controllers\Controller;
 use App\Models\Solutions;
 use App\Models\Steps;
+use App\Support\Industry;
 use Illuminate\Http\Request;
 
 class SolutionsController extends Controller
@@ -18,12 +19,13 @@ class SolutionsController extends Controller
 
         return view('solutions.index', [
             'solutions' => $solutions,
+            'industry' => Industry::for(auth()->user()->currentTeam),
         ]);
     }
 
     public function create()
     {
-        return view('solutions.create');
+        return view('solutions.create', ['industry' => Industry::for(auth()->user()->currentTeam)]);
     }
 
     public function add_solution(Request $request)
