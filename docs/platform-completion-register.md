@@ -214,6 +214,10 @@ Contracts used for every cross-platform call:
 ## 6. Owner decisions and credentials needed
 
 Decisions made by the owner (2026-10-18):
+- **Payment provider: Paystack** (test mode first; adapter behind the existing seam in Billing; Emall, Auction, Ehail integrate through Billing).
+- **Finance supports BOTH** a personal ledger (per user) and company finance (per InfoDot company).
+- **Billing model confirmed:** billed in advance, one invoice per period, plan changes at renewal (immediate in a trial), no proration.
+- **Merging approved:** merge the stacks into their trunks, CI PR first, merge commits, no deploys.
 - **Pulse `main` is canonical; `feature/ecosystem-sso` is archived.**
 - **Dot.Email is dropped.** No code exists; treated as a mix-up with Ehail.
   Scope is 13 platforms.
@@ -222,9 +226,6 @@ Decisions made by the owner (2026-10-18):
 - **Tutor stays a booking marketplace** (no courses or assessment build).
 
 Still open:
-- **Finance:** personal ledger or company finance? (Changes tenancy.)
-- **Payment provider** for Billing, Emall, Auction, Ehail (owner will decide later;
-  payment work waits for it).
 
 Credentials and infrastructure (owner-only):
 - DNS records and cPanel subdomains for 7 unresolved names; database per platform.
@@ -304,4 +305,5 @@ not been investigated.
   - Still not built: Analytics real-data pipeline (insights fixed to be honest, connectors/pipelines still unreachable); Design asset uploads and real AI provider; calls from the apps to Notify (Notify is ready; Billing has a client); read-only viewer role in Plug, Notify, Farms, Analytics (Tasks, HR and Billing have it); Pulse SSO (blocked on the canonical branch).
 - 2026-10-18 owner decision: Pulse `main` is canonical, `feature/ecosystem-sso` archived. In flight: Pulse signed sign-in (stacked on Pulse #5-#7) and a read-only `viewer` role for Plug, Notify, Farms, Analytics (Tasks, HR, Billing already have it).
 - 2026-10-18 wave 6: Pulse signed sign-in [Dot.Pulse#8](https://github.com/sakhilebhayi/Dot.Pulse/pull/8) (290 pass/7 skip); read-only `viewer` role in Plug [#6](https://github.com/sakhilebhayi/Dot.Plug/pull/6) (134/7), Notify [#5](https://github.com/sakhilebhayi/Dot.Notify/pull/5) (313/7), Farms [#5](https://github.com/sakhilebhayi/Dot.Farms/pull/5) (395/7), Analytics [#14](https://github.com/sakhilebhayi/Dot.Analytics/pull/14) (752/7); unknown InfoDot roles now fall back to viewer, not editor, in those four. Closed two ungated AI actions in Notify and three ungated actions in Analytics. Merge order and deploy prerequisites: see `docs/platform-merge-and-deploy-runbook.md`.
+- 2026-10-18 owner answers: Paystack chosen; Finance = both personal and company; Billing model confirmed; merging approved ("start now", no deploys). Pilot merge on Plug: CI PR #5 then the stack top #6 into main by merge commit; post-merge CI on main green (33b64d6); stacked PRs whose commits became reachable closed. Merge pass for the other repos in progress (see runbook for the order).
 
