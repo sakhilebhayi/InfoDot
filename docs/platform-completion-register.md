@@ -25,7 +25,7 @@ in-memory SQLite by the audit (not the production database).
 | Tasks | Kanban tasks, recurrence, escalation queue | `feat/reverb-realtime-core`, 3 unmerged, 1 behind | placeholder | none |
 | HR | Employees + leave requests (small CRUD) | main = origin/main | no DNS | none |
 | Plug | Extension marketplace (not integration config) | main = origin/main | no DNS | none |
-| Email | **No code exists anywhere in `~/Dot`** | n/a | no DNS | n/a |
+| Email | **Dropped by the owner 2026-10-18** (no code ever existed; mix-up with Ehail) | n/a | no DNS | n/a |
 | Tutor | Tutor booking marketplace (not courses) | main = origin/main | placeholder | none |
 | Design | Canvas editor (text and rectangles), SVG export, token catalog | main, 1 commit unpushed (the whole editor) | placeholder | none |
 | Notify | Per-team notification rules, channels, schedules, webhook receiver | `feat/reverb-realtime-core`, 3 unmerged | no DNS | none |
@@ -130,12 +130,12 @@ Top defects are ranked; the full audit reports are summarised here, not repeated
 - Working: marketplace listing, install status rows.
 - Missing: connection and credential management, webhooks, API contracts, sandbox.
 - Risks: install/uninstall has no role check.
-- Plan: **owner decision on purpose** (see section 6), role check immediately.
+- Plan: stays an extension marketplace (owner, 2026-10-18); role check first, then publish/version flow.
 
 ### Tutor
 - Working: browse/book/confirm/complete, ratings, lesson files, operator approval.
 - Missing: tutor onboarding, courses, progress, assessments, payments.
-- Plan: owner decision on purpose; tutor onboarding regardless.
+- Plan: stays a booking marketplace (owner, 2026-10-18); tutor onboarding, availability and overlap checks next; payments wait for the provider decision.
 
 ### Design
 - Working: projects, basic editor, SVG export, token catalog.
@@ -152,7 +152,7 @@ Top defects are ranked; the full audit reports are summarised here, not repeated
 - Working: feed, moderation hold queue, follows, reactions.
 - Critical: global feed with no tenant isolation, private community leakage,
   public Reverb channel leaking post titles.
-- Plan: **owner decision on product** (see section 6); fix isolation first.
+- Plan: stays a social network (owner, 2026-10-18); fix isolation, private communities and the public channel first; resolve the diverged branches.
 
 ### Analytics
 - Critical: "insights" are generated from platform names only, with canned
@@ -168,7 +168,7 @@ Top defects are ranked; the full audit reports are summarised here, not repeated
 - Plan: fix approval, scope rides, observer on accept, then payments through Billing.
 
 ### Email
-- Does not exist. No folder, spec, registry entry or reference in `~/Dot`.
+- Out of scope. No folder, spec, registry entry or reference ever existed; owner dropped it.
 
 ## 4. Dependency map and contracts
 
@@ -205,22 +205,23 @@ Contracts used for every cross-platform call:
 3. **Shared services:** Notify ingest + reliability; Billing provider + webhooks +
    entitlements.
 4. **Platform completion in order of dependency:** Tasks, Auction, Emall, HR, Finance,
-   Farms, Design, Ehail, then Analytics, Tutor, Plug, Pulse after owner decisions.
+   Farms, Design, Ehail, then Analytics, Tutor, Plug, Pulse. Payment work waits for the provider decision.
 5. Deploy one platform at a time only when it has CI, a database, DNS, SSO and a
    live smoke check.
 
 ## 6. Owner decisions and credentials needed
 
-Decisions:
-- **Dot.Email:** no code exists. Treat the brief's name as a mix-up with Ehail, or
-  commission a new platform? Recommended: treat as Ehail and drop Email.
-- **Pulse:** the code is a general social network. Keep that, or rebuild as business
-  publishing and engagement reporting?
-- **Plug:** marketplace for extensions, or the integration/connection manager the
-  brief describes?
-- **Tutor:** tutor-booking marketplace, or courses and assessment?
+Decisions made by the owner (2026-10-18):
+- **Dot.Email is dropped.** No code exists; treated as a mix-up with Ehail.
+  Scope is 13 platforms.
+- **Pulse stays a social network** for now (no business-publishing rebuild).
+- **Plug stays an extension marketplace** (no integration-manager rebuild).
+- **Tutor stays a booking marketplace** (no courses or assessment build).
+
+Still open:
 - **Finance:** personal ledger or company finance? (Changes tenancy.)
-- **Payment provider** for Billing, Emall, Auction, Ehail.
+- **Payment provider** for Billing, Emall, Auction, Ehail (owner will decide later;
+  payment work waits for it).
 - **Pulse branches:** which of `main` and `feature/ecosystem-sso` is canonical.
 
 Credentials and infrastructure (owner-only):
@@ -262,3 +263,4 @@ not been investigated.
 
 - 2026-10-18: discovery complete. 14 audits (13 platforms plus the Ehail/Email search)
   and baseline test runs for all 14 repos. Nothing changed or deployed yet.
+- 2026-10-18: owner decisions recorded (Email dropped; Pulse, Plug, Tutor keep their current purpose). Wave 1 fix agents started (Ehail, Auction, Analytics, Tasks, Plug+Design); PRs only.
