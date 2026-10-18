@@ -1,6 +1,25 @@
 # InfoDot enterprise platform: audit, architecture and phased plan
 
-Status: audit phase, 2026-10-17. Nothing in this document is implemented unless it says so. Sources: InfoDot code (main at e419d54), read-only audits of `Dot.Files` and `Dot.docs` (code, cited by file), the Dot.Brain governance docs, and the live-host facts gathered in the 2026-10 reliability audit.
+Status: baseline audit written 2026-10-17; see the status table below for what has since been built. Nothing is implemented unless that table says so. Sources: InfoDot code (main at e419d54), read-only audits of `Dot.Files` and `Dot.docs` (code, cited by file), the Dot.Brain governance docs, and the live-host facts gathered in the 2026-10 reliability audit.
+
+## Status as of 2026-10-18
+
+The audit below is the original 2026-10-17 baseline and is kept as written, because it records what was true and why decisions were made. What has since been built, verified and deployed:
+
+| Plan item | State | Where |
+|---|---|---|
+| Phase 0 identity: redeem endpoint, per-platform secrets, verified email, single-use audience-bound tokens | **Live** | InfoDot, Dot.Files, Dot.docs |
+| Phase 1 brand, shell, design system | **Live**, then superseded by "The Yard" design language (top bar, area bands, owner codes and references) | InfoDot (#13, #16 to #19, #21) |
+| Step A tenant identity: team uuid, satellites store `infodot_team_uuid`, sign-in sync of membership and roles, `infodot:link-team` | **Live** | InfoDot, Dot.Files, Dot.docs |
+| Step B isolation gaps: private Knowledge with a public area, Files fail-closed scope, owner-checked delete and download, scoped search and analytics | **Live** | InfoDot, Dot.Files |
+| Step C resource registry and resolver (`resources` table, registration API, `/open/{uuid}`) | **Live for files** | InfoDot (#20) |
+| Step D deep-link contract, Dot.Files side (`/o/{uuid}`, redirect allow-list, backfill command) | **Live for files**; Dot.docs not yet | Dot.Files (#88) |
+| Bridge services (Memory, Brain, Dopemine) never shown to people | **Live** in InfoDot; error-page fix merged in 14 platform repos | InfoDot (#22) |
+| Step E tenant-aware cross-platform search, step F cross-company sharing | Not started | |
+
+Owner decisions in section 6 are settled: Questions and Solutions are kept as a business knowledge base without likes (private to the company by default, public by choice); Dot.Files is the authority for files, reached through an API; identity first, then design.
+
+The caveat in section 1 about the Dot.Files and Dot.docs working copies is historical: everything above was built and tested against each repo's `origin/main`.
 
 ## 1. What exists today
 
