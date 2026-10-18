@@ -28,7 +28,7 @@ class ResourceOpenController extends Controller
             $user->switchTeam($team);
         }
 
-        $url = EcosystemHandoff::launchUrl($user, $resource->platform, '/o/'.$resource->platform_object_uuid);
+        $url = EcosystemHandoff::launchUrl($user, $resource->platform, $resource->path);
 
         if ($url === null) {
             return response()->view('resources.unavailable', ['platform' => config('ecosystem.platforms.'.$resource->platform.'.name', $resource->platform)], 503);
