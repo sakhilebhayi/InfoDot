@@ -72,12 +72,18 @@
             @if(! $this->reference && $this->solutions->isEmpty() && $this->questions->isEmpty())
                 <p class="ix-results__foot">Nothing matches &ldquo;{{ $query }}&rdquo;. Try fewer words, or ask it as a question.</p>
             @endif
+            {{-- Files and Documents answer a moment later; the key restarts the load for each new query. --}}
+            @if(mb_strlen(trim($query)) >= 3 && $externalFor !== trim($query))
+                <div wire:key="ext-{{ trim($query) }}" wire:init="loadExternal" class="ix-results__foot" aria-live="polite">Looking in Files and Documents&hellip;</div>
+            @endif
             @php($lastKind = null)
             @foreach($this->items as $i => $item)
                 @if($item['kind'] !== $lastKind)
                     @php($lastKind = $item['kind'])
                     @if(in_array($item['kind'], ['solution', 'question']))
                         <div class="ix-pop__head">{{ $item['kind'] === 'solution' ? 'Solutions' : 'Questions' }}</div>
+                    @elseif($item['kind'] === 'external')
+                        <div class="ix-pop__head">In Files and Documents</div>
                     @elseif($item['kind'] === 'ask')
                         <div class="ix-pop__head">Not here?</div>
                     @endif
@@ -85,7 +91,8 @@
                 <a href="{{ $item['url'] }}" class="ix-results__item {{ $highlightIndex === $i ? 'is-active' : '' }} {{ in_array($item['kind'], ['ask', 'all']) ? 'ix-results__item--action' : '' }}" role="option" aria-selected="{{ $highlightIndex === $i ? 'true' : 'false' }}">
                     @if(isset($item['ref']))<span class="ix-ref">{{ $item['ref'] }}</span>
                     @else<span class="material-symbols-rounded" aria-hidden="true">{{ $item['icon'] }}</span>@endif
-                    <span class="ix-results__label">@if(in_array($item['kind'], ['solution', 'question'])){{ $this->mark($item['label']) }}@else{{ $item['label'] }}@endif</span>
+                    <span class="ix-results__label">@if(in_array($item['kind'], ['solution', 'question', 'external'])){{ $this->mark($item['label']) }}@else{{ $item['label'] }}@endif</span>
+                    @if($item['kind'] === 'external')<span class="ix-results__tag">{{ $item['platform'] }}</span>@endif
                 </a>
             @endforeach
         @endif

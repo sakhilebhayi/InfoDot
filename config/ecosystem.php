@@ -114,4 +114,17 @@ return [
 
     'membership_platforms' => array_values(array_filter(array_map('trim', explode(',', (string) env('ECOSYSTEM_MEMBERSHIP_PLATFORMS', 'files,docs'))))),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Cross-platform search
+    |--------------------------------------------------------------------------
+    | While someone types in the header search, these platforms are asked (signed, server to
+    | server) for things in the person's current company that match. Each platform filters by
+    | what that person may see, InfoDot keeps no copy of any title, and a result is only shown
+    | if it is a pointer InfoDot already holds for that company. Comma-separated in
+    | ECOSYSTEM_SEARCH_PLATFORMS.
+    */
+
+    'search_platforms' => array_values(array_filter(array_map('trim', explode(',', (string) env('ECOSYSTEM_SEARCH_PLATFORMS', 'files,docs'))))),
+
 ];

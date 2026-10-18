@@ -7,6 +7,7 @@ use App\Models\Resource;
 use App\Models\Solutions;
 use App\Support\EcosystemHandoff;
 use App\Support\Industry;
+use App\Support\PlatformSearch;
 use App\Support\Reference;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -28,9 +29,29 @@ class Search extends Component
 
     public int $highlightIndex = 0;
 
+    /** Matches in Files and Documents, loaded a moment after the instant ones so typing never waits. */
+    public array $external = [];
+
+    public string $externalFor = '';
+
     public function updatedQuery(): void
     {
         $this->highlightIndex = 0;
+        $this->external = [];
+        $this->externalFor = '';
+    }
+
+    /** Ask the platforms that hold this company's files and documents. Called once per query. */
+    public function loadExternal(): void
+    {
+        $query = trim($this->query);
+
+        if ($this->externalFor === $query || Auth::user() === null) {
+            return;
+        }
+
+        $this->externalFor = $query;
+        $this->external = PlatformSearch::search(Auth::user(), Auth::user()->currentTeam, $query);
     }
 
     /** The examples that fit this company's kind of business. */
@@ -116,7 +137,7 @@ class Search extends Component
     /**
      * Everything the arrow keys and Enter can land on, in the order it is shown.
      *
-     * @return list<array{kind: string, label: string, url: string, ref?: string, icon: string}>
+     * @return list<array{kind: string, label: string, url: string, ref?: string, icon: string, platform?: string}>
      */
     #[Computed]
     public function items(): array
@@ -147,6 +168,10 @@ class Search extends Component
 
         foreach ($this->questions as $question) {
             $items[] = ['kind' => 'question', 'label' => $question->question, 'url' => route('questions.view', ['qid' => $question->id]), 'icon' => 'forum'];
+        }
+
+        foreach ($this->external as $row) {
+            $items[] = ['kind' => 'external', 'label' => $row['label'], 'url' => $row['url'], 'icon' => $row['icon'], 'platform' => $row['platform']];
         }
 
         if (mb_strlen($query) >= 3) {
