@@ -22,8 +22,8 @@ name: Deploy to Production
 #   2. Builds the frontend on the runner (the host has no Node) and syncs it to
 #      public/build.incoming on the host.
 #   3. On the host: rollback copy, maintenance mode, code to origin/main,
-#      composer install, production invariants (APP_DEBUG forced false; a
-#      warning, not a change, for APP_ENV=local or an http APP_URL), swap in the
+#      composer install, production invariants (APP_DEBUG forced false; APP_ENV
+#      forced to production; a warning, not a change, for an http APP_URL), swap in the
 #      new public/build, keep the docroot's build/ in step, migrations, caches,
 #      back up.
 #   4. (No cron lines: InfoDot has no scheduled commands and no queued jobs.)
@@ -261,8 +261,16 @@ jobs:
             printf '\nAPP_DEBUG=false\n' >> .env
           fi
           echo "== APP_DEBUG forced to false: $(grep '^APP_DEBUG=' .env | tail -1)"
-          # Not changed here (it can alter behaviour), but never silent.
-          if grep -q '^APP_ENV=local' .env; then echo "::warning::APP_ENV=local in the production .env; set it to production."; fi
+          # APP_ENV=local on a live site mislabels errors in Sentry and lets any package that
+          # branches on the environment behave as in development. InfoDot's own code never
+          # branches on it (checked: no environment() or isLocal() anywhere in app/, config/,
+          # routes/, resources/), so forcing it is safe here, as APP_DEBUG is above.
+          if grep -q '^APP_ENV=' .env; then
+            sed -i 's/^APP_ENV=.*/APP_ENV=production/' .env
+          else
+            printf '\nAPP_ENV=production\n' >> .env
+          fi
+          echo "== APP_ENV forced to production: $(grep '^APP_ENV=' .env | tail -1)"
           if grep -qE '^APP_URL=http://' .env; then echo "::warning::APP_URL is http://, not https://; set it to the https address."; fi
 
           # ---- frontend: swap the staged build in, keep the docroot copy in step
