@@ -15,7 +15,10 @@ The audit below is the original 2026-10-17 baseline and is kept as written, beca
 | Step C resource registry and resolver (`resources` table, registration API, `/open/{uuid}`) | **Live for files** | InfoDot (#20) |
 | Step D deep-link contract, Dot.Files side (`/o/{uuid}`, redirect allow-list, backfill command) | **Live for files**; Dot.docs not yet | Dot.Files (#88) |
 | Bridge services (Memory, Brain, Dopemine) never shown to people | **Live** in InfoDot; error-page fix merged in 14 platform repos | InfoDot (#22) |
-| Step E tenant-aware cross-platform search, step F cross-company sharing | Not started | |
+| Step E tenant-aware cross-platform search (Files and Docs results in header search, signed, member-only, pointers InfoDot already holds) | **Live** | InfoDot, Dot.Files, Dot.docs |
+| Instant revocation: signed webhook on member removal, role change and company deletion; the sign-in sync stays as the backstop | **Live** | InfoDot, Dot.Files, Dot.docs |
+| Documents registered with D references, `/o/{uuid}` in Dot.docs | **Live** | Dot.docs |
+| Step F cross-company sharing | **Proposal below, not built: needs owner decisions** | |
 
 Owner decisions in section 6 are settled: Questions and Solutions are kept as a business knowledge base without likes (private to the company by default, public by choice); Dot.Files is the authority for files, reached through an API; identity first, then design.
 
@@ -127,3 +130,25 @@ A document stored by Dot.Files and edited in Dot.docs is one resource with two r
 
 ### Not to be claimed yet
 Tenant isolation across platforms, cross-platform search, deep links to specific resources, cross-tenant sharing, audit of cross-platform access. Each arrives only with its step above and its tests.
+
+## 8. Cross-company sharing: proposal, not built
+
+Why this one waits: every other step moved data or checks between apps that already trusted each other. Sharing creates a *new way into a company's data for someone outside it*. How much access, for how long and who may grant it are product and risk decisions, so they are listed here to be answered, not guessed.
+
+**What already exists.** Dot.docs has its own sharing: named collaborators (viewer, editor, admin, even from another company), public links with password and expiry. Dot.Files has none.
+
+**Proposed v1 (Dot.Files first)**
+- A share is a row owned by Dot.Files: `file_id`, recipient verified email, `expires_at`, `revoked_at`, `created_by`. InfoDot holds nothing.
+- The recipient must sign in through InfoDot with that verified email; the share is checked on **every** open (`/o/{uuid}` and download), so revoking or expiring takes effect immediately and a forwarded link opens nothing for anyone else.
+- Access is view and download of that one file. No folder listing, no company switch, no other file.
+- Every create, open and revoke is written to an audit log the company's admins can read.
+- The owner of the share can revoke at any time; deleting the file or removing the sharer from the company revokes it.
+
+**Decisions needed**
+1. Who may share: company owners and administrators only (recommended), or any editor?
+2. Recipient: an existing InfoDot account by verified email only (recommended), or any email address via an emailed one-time link?
+3. Longest allowed expiry: 30 days default, 90 maximum (recommended), or longer?
+4. Should the recipient also be able to upload or comment, or strictly view and download (recommended)?
+5. Should the sharer's company be notified by email when a share is opened for the first time?
+
+Until these are answered nothing here is advertised or built. Dot.docs collaborators keep working as they do today.
