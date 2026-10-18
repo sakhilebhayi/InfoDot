@@ -13,9 +13,9 @@
         @endif
     </div>
 
-    <h2 class="ix-h1" style="font-size:16px;margin:24px 0 4px">Replies <span class="ix-hint" style="margin:0 0 0 6px">{{ $comments->count() }}</span></h2>
+    <h2 class="ix-thread__head"><span class="ix-stencil-num">{{ str_pad((string) $comments->count(), 2, '0', STR_PAD_LEFT) }}</span> {{ Str::plural('reply', $comments->count()) }}</h2>
 
-    <div>
+    <div class="ix-thread">
         @forelse($comments as $comment)
             <livewire:comment :comment="$comment" :key="$comment->id" />
         @empty
