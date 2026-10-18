@@ -167,7 +167,7 @@ class ResourceRegistryTest extends TestCase
         $this->assertNull(Reference::resolve(str_replace('-D-', '-F-', $ref)), 'a document never opens through an F reference');
     }
 
-    public function test_a_person_in_another_company_gets_a_request_access_page_and_no_token(): void
+    public function test_a_person_in_another_company_is_handed_to_the_platform_which_decides_and_keeps_their_own_workspace(): void
     {
         $this->register()->assertCreated();
         $resource = Resource::first();
@@ -176,13 +176,23 @@ class ResourceRegistryTest extends TestCase
         $other = Team::factory()->create(['user_id' => $outsider->id, 'personal_team' => false, 'name' => 'Rival Ltd']);
         $outsider->forceFill(['current_team_id' => $other->id])->save();
 
-        $this->actingAs($outsider)->get('/open/'.$resource->uuid)
-            ->assertForbidden()
-            ->assertSee('not in the company that owns this item')
-            ->assertDontSee('Northwind');
+        $response = $this->actingAs($outsider)->get('/open/'.$resource->uuid);
 
-        $this->assertSame(0, $outsider->tokens()->count(), 'no handoff token was minted');
-        $this->assertSame($other->id, $outsider->fresh()->current_team_id, 'their workspace was not switched');
+        // InfoDot does not decide for the platform (a document collaborator or a file share may
+        // legitimately open it); it only says who the person is. Nothing about the object is shown here.
+        $response->assertRedirect();
+        $this->assertStringStartsWith('https://files.infodot.co.za/auth/ecosystem?token=', $response->headers->get('Location'));
+        $this->assertSame($other->id, $outsider->fresh()->current_team_id, 'their workspace was not switched to the owning company');
+    }
+
+    public function test_an_unknown_resource_is_a_plain_404_and_an_unavailable_platform_says_so(): void
+    {
+        $outsider = User::factory()->create(['email_verified_at' => Carbon::now()]);
+        $this->actingAs($outsider)->get('/open/'.(string) Str::uuid())->assertNotFound();
+
+        $this->register()->assertCreated();
+        config(['ecosystem.platforms.files.active' => false]);
+        $this->actingAs($outsider)->get('/open/'.Resource::first()->uuid)->assertStatus(503);
     }
 
     public function test_signed_out_people_are_sent_to_login(): void
