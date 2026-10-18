@@ -214,6 +214,7 @@ Contracts used for every cross-platform call:
 ## 6. Owner decisions and credentials needed
 
 Decisions made by the owner (2026-10-18):
+- **Pulse `main` is canonical; `feature/ecosystem-sso` is archived.**
 - **Dot.Email is dropped.** No code exists; treated as a mix-up with Ehail.
   Scope is 13 platforms.
 - **Pulse stays a social network** for now (no business-publishing rebuild).
@@ -224,7 +225,6 @@ Still open:
 - **Finance:** personal ledger or company finance? (Changes tenancy.)
 - **Payment provider** for Billing, Emall, Auction, Ehail (owner will decide later;
   payment work waits for it).
-- **Pulse branches:** which of `main` and `feature/ecosystem-sso` is canonical.
 
 Credentials and infrastructure (owner-only):
 - DNS records and cPanel subdomains for 7 unresolved names; database per platform.
@@ -302,4 +302,5 @@ not been investigated.
   - Billing [#4](https://github.com/sakhilebhayi/Dot.Billing/pull/4), [#5](https://github.com/sakhilebhayi/Dot.Billing/pull/5), [#6](https://github.com/sakhilebhayi/Dot.Billing/pull/6): 369 pass/10 skip (SQLite). Money in cents, plans, invoice engine, payment-recording seam (no provider), signed entitlements API, honest dunning, Notify client. Owner must confirm the billing model and erasure policy.
   - Finance [#6](https://github.com/sakhilebhayi/Dot.Finance/pull/6), [#7](https://github.com/sakhilebhayi/Dot.Finance/pull/7), [#8](https://github.com/sakhilebhayi/Dot.Finance/pull/8): 386 pass/7 skip. Derived balances, cents, per-currency totals, transfers, audit, soft delete, edit screens, import dedupe, cash flow, forecast labelled as projection. Run migrations in maintenance mode; opening balance is dated the migration day.
   - Still not built: Analytics real-data pipeline (insights fixed to be honest, connectors/pipelines still unreachable); Design asset uploads and real AI provider; calls from the apps to Notify (Notify is ready; Billing has a client); read-only viewer role in Plug, Notify, Farms, Analytics (Tasks, HR and Billing have it); Pulse SSO (blocked on the canonical branch).
+- 2026-10-18 owner decision: Pulse `main` is canonical, `feature/ecosystem-sso` archived. In flight: Pulse signed sign-in (stacked on Pulse #5-#7) and a read-only `viewer` role for Plug, Notify, Farms, Analytics (Tasks, HR, Billing already have it).
 
