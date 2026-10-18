@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Support\EcosystemHandoff;
+use App\Support\Platforms;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -17,14 +18,15 @@ class DotSwitcher extends Component
     #[Computed]
     public function platforms(): array
     {
-        return config('ecosystem.platforms', []);
+        return Platforms::visible();
     }
 
     public function switchTo(string $platformKey): void
     {
         $user = Auth::user();
 
-        if (! $user) {
+        // Bridge services are never opened by a person, even by a hand-made request.
+        if (! $user || Platforms::isInternal($platformKey)) {
             return;
         }
 

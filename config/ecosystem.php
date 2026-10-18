@@ -13,6 +13,10 @@ return [
     | appears everywhere automatically. Update URLs per environment via the
     | matching DOT_*_URL env vars.
     |
+    | `internal` marks bridge services (shared memory, AI, platform connectivity): they stay
+    | here because platforms talk to them, but they are never listed or launched for a person
+    | (see App\Support\Platforms).
+    |
     | `active` means a real application is deployed there. Placeholders (static
     | "Coming Soon" pages) and development-only platforms are listed with
     | `active => false` so error pages do not send people to them. Defaults
@@ -30,7 +34,7 @@ return [
         'central' => ['name' => 'Dot.Central', 'url' => env('DOT_CENTRAL_URL', 'https://central.infodot.co.za'), 'icon' => 'hub', 'accent' => '#e8bd3d', 'active' => true],
         'charts' => ['name' => 'Dot.Charts', 'url' => env('DOT_CHARTS_URL', 'https://charts.infodot.co.za'), 'icon' => 'candlestick_chart', 'accent' => '#f1c62e', 'active' => true],
         'design' => ['name' => 'Dot.Design', 'url' => env('DOT_DESIGN_URL', 'https://design.infodot.co.za'), 'icon' => 'palette', 'accent' => '#efb93a', 'active' => false],
-        'dopemine' => ['name' => 'Dot.Dopemine', 'url' => env('DOT_DOPEMINE_URL', 'https://dopemine.infodot.co.za'), 'icon' => 'bolt', 'accent' => '#e8b923', 'active' => true],
+        'dopemine' => ['name' => 'Dot.Dopemine', 'url' => env('DOT_DOPEMINE_URL', 'https://dopemine.infodot.co.za'), 'icon' => 'bolt', 'accent' => '#e8b923', 'active' => true, 'internal' => true],
         'ehail' => ['name' => 'Dot.Ehail', 'url' => env('DOT_EHAIL_URL', 'https://ehail.infodot.co.za'), 'icon' => 'local_taxi', 'accent' => '#e2b13d', 'active' => false],
         'emall' => ['name' => 'Dot.Emall', 'url' => env('DOT_EMALL_URL', 'https://emall.infodot.co.za'), 'icon' => 'storefront', 'accent' => '#eec13f', 'active' => false],
         'engage' => ['name' => 'Dot.Engage', 'url' => env('DOT_ENGAGE_URL', 'https://engage.infodot.co.za'), 'icon' => 'campaign', 'accent' => '#e8bb2c', 'active' => true],
@@ -39,7 +43,7 @@ return [
         'finance' => ['name' => 'Dot.Finance', 'url' => env('DOT_FINANCE_URL', 'https://finance.infodot.co.za'), 'icon' => 'payments', 'accent' => '#e8af39', 'active' => false],
         'forms' => ['name' => 'Dot.Forms', 'url' => env('DOT_FORMS_URL', 'https://forms.infodot.co.za'), 'icon' => 'dynamic_form', 'accent' => '#f1c62e', 'active' => true],
         'hr' => ['name' => 'Dot.HR', 'url' => env('DOT_HR_URL', 'https://hr.infodot.co.za'), 'icon' => 'badge', 'accent' => '#f0b91c', 'active' => false],
-        'memory' => ['name' => 'Dot.Memory', 'url' => env('DOT_MEMORY_URL', 'https://memory.infodot.co.za'), 'icon' => 'memory', 'accent' => '#f4c94c', 'active' => true],
+        'memory' => ['name' => 'Dot.Memory', 'url' => env('DOT_MEMORY_URL', 'https://memory.infodot.co.za'), 'icon' => 'memory', 'accent' => '#f4c94c', 'active' => true, 'internal' => true],
         'mines' => ['name' => 'Dot.Mines', 'url' => env('DOT_MINES_URL', 'https://mines.infodot.co.za'), 'icon' => 'terrain', 'accent' => '#f1c62e', 'active' => true],
         'notify' => ['name' => 'Dot.Notify', 'url' => env('DOT_NOTIFY_URL', 'https://notify.infodot.co.za'), 'icon' => 'notifications', 'accent' => '#f0c33a', 'active' => false],
         'plug' => ['name' => 'Dot.Plug', 'url' => env('DOT_PLUG_URL', 'https://plug.infodot.co.za'), 'icon' => 'extension', 'accent' => '#f0c33a', 'active' => false],
