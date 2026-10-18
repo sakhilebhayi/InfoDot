@@ -8,6 +8,17 @@ Secrets: run `tools/ecosystem-secrets.sh` once. It writes `~/dot-ecosystem-secre
 with every shared value grouped by "paste this into that app". Never paste its contents into chat,
 tickets or commits.
 
+## 0. The short way (scripts, run on your machine)
+1. DNS + the cPanel subdomain + AutoSSL for each `<key>.infodot.co.za` (still yours).
+2. `DEPLOY_HOST=... DEPLOY_USER=... DEPLOY_KEY_FILE=~/.ssh/<key> tools/set-deploy-secrets.sh` sets the five
+   GitHub deploy secrets on all 13 platform repos (names only are printed).
+3. `SSH_TARGET=user@host tools/prepare-host.sh tasks auction ...` does the first install per platform
+   (docroot layout, code clone, production `.env` on SQLite, `APP_KEY`, composer packages, and the
+   shared secrets from `~/dot-ecosystem-secrets.env`). Use `DRY_RUN=1` to read what it will run.
+4. Put the matching `ECOSYSTEM_SECRET_<KEY>` lines from the same file into InfoDot's host `.env`.
+5. `gh workflow run deploy.yml --repo sakhilebhayi/Dot.<Name> -f confirm=adopt`, then `-f confirm=deploy`.
+The sections below explain each step and the by-hand alternative.
+
 ## 1. Hosting (cPanel)
 1. DNS: an A record for `<host>` to the shared host (198.38.92.233). Seven names currently serve only a
    Coming Soon page and seven have no DNS at all (see the register, section 1).
