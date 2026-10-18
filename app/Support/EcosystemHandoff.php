@@ -65,6 +65,17 @@ final class EcosystemHandoff
     }
 
     /**
+     * A server to server API URL on a platform ({scheme}://{host}/path), only for a live platform on a
+     * trusted https host, by the same rule as a handoff. Null when the platform must not be called.
+     */
+    public static function apiUrlFor(string $key, string $path): ?string
+    {
+        $endpoint = self::endpointFor(config('ecosystem.platforms', [])[$key] ?? null);
+
+        return $endpoint === null ? null : substr($endpoint, 0, -strlen('/auth/ecosystem')).'/'.ltrim($path, '/');
+    }
+
+    /**
      * The URL to send the token to (without the token), or null if this
      * platform must not receive one.
      *
