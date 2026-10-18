@@ -183,6 +183,7 @@ class CorePlatformFeaturesTest extends TestCase
 
         Solutions::create([
             'user_id' => $user->id,
+            'visibility' => 'public',
             'solution_title' => 'Register your business online',
             'solution_description' => 'Complete online registration quickly.',
             'tags' => 'registration, business',
@@ -204,7 +205,7 @@ class CorePlatformFeaturesTest extends TestCase
         $this->actingAs($user)->get('/home')
             ->assertOk()
             ->assertSee('Welcome back')
-            ->assertSee('Waiting for an answer')
+            ->assertSee('waiting for an answer')
             ->assertSee($user->currentTeam->name);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Support\EcosystemHandoff;
+use App\Support\Platforms;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
@@ -12,19 +13,26 @@ class EcosystemWidget extends Component
 {
     public ?string $launching = null;
 
+    /**
+     * Platforms by area. Each group carries the plate code and container colour the
+     * Dot Apps map uses, so the same platform reads the same everywhere.
+     *
+     * @return array<string, array{code: string, tone: string, members: array}>
+     */
     #[Computed]
     public function groups(): array
     {
-        $all = config('ecosystem.platforms', []);
+        $all = Platforms::visible();
+        $pick = fn (array $keys) => array_filter($all, fn ($k) => in_array($k, $keys, true), ARRAY_FILTER_USE_KEY);
 
         return [
-            'Workspace' => array_filter($all, fn ($k) => in_array($k, ['files', 'docs', 'forms', 'sheet', 'projects', 'tasks', 'hr', 'plug']), ARRAY_FILTER_USE_KEY),
-            'AI & Automation' => array_filter($all, fn ($k) => in_array($k, ['agents', 'analytics', 'memory']), ARRAY_FILTER_USE_KEY),
-            'Community & Engagement' => array_filter($all, fn ($k) => in_array($k, ['pulse', 'engage', 'press', 'dopemine']), ARRAY_FILTER_USE_KEY),
-            'Commerce & Finance' => array_filter($all, fn ($k) => in_array($k, ['finance', 'emall', 'auction', 'billing', 'charts']), ARRAY_FILTER_USE_KEY),
-            'Services & Learning' => array_filter($all, fn ($k) => in_array($k, ['ehail', 'tutor', 'design']), ARRAY_FILTER_USE_KEY),
-            'Infrastructure' => array_filter($all, fn ($k) => in_array($k, ['central', 'notify']), ARRAY_FILTER_USE_KEY),
-            'Industry Verticals' => array_filter($all, fn ($k) => in_array($k, ['mines', 'farms']), ARRAY_FILTER_USE_KEY),
+            'Workspace' => ['code' => 'WORK', 'tone' => 'knowledge', 'members' => $pick(['files', 'docs', 'forms', 'sheet', 'projects', 'tasks', 'hr', 'plug'])],
+            'AI & Automation' => ['code' => 'AUTO', 'tone' => 'analytics', 'members' => $pick(['agents', 'analytics'])],
+            'Community & Engagement' => ['code' => 'COMM', 'tone' => 'platforms', 'members' => $pick(['pulse', 'engage', 'press'])],
+            'Commerce & Finance' => ['code' => 'FINA', 'tone' => 'files', 'members' => $pick(['finance', 'emall', 'auction', 'billing', 'charts'])],
+            'Services & Learning' => ['code' => 'LEARN', 'tone' => 'documents', 'members' => $pick(['ehail', 'tutor', 'design'])],
+            'Infrastructure' => ['code' => 'INFRA', 'tone' => 'people', 'members' => $pick(['central', 'notify'])],
+            'Industry Verticals' => ['code' => 'VERT', 'tone' => 'knowledge', 'members' => $pick(['mines', 'farms'])],
         ];
     }
 
@@ -32,7 +40,7 @@ class EcosystemWidget extends Component
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (! $user || Platforms::isInternal($key)) {
             return;
         }
 

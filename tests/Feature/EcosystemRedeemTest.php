@@ -64,7 +64,9 @@ class EcosystemRedeemTest extends TestCase
             ->assertJsonPath('teams.0.name', 'Amara Team')
             ->assertJsonPath('teams.0.role', 'owner')
             ->assertJsonPath('teams.0.personal', true)
-            ->assertJsonPath('current_team_id', $user->current_team_id);
+            ->assertJsonPath('teams.0.uuid', $user->currentTeam->uuid)
+            ->assertJsonPath('current_team_id', $user->current_team_id)
+            ->assertJsonPath('current_team_uuid', $user->currentTeam->uuid);
     }
 
     public function test_the_payload_carries_no_password_or_token_material(): void

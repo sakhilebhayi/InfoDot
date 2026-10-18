@@ -8,9 +8,10 @@ use Illuminate\View\View;
 use Livewire\Component;
 
 /**
- * A navigation entry that opens another Dot platform signed in (the same handoff
- * as the Dot Apps menu). It renders nothing for a platform that is not live, so
- * the navigation never offers something that cannot be opened.
+ * A control that opens another Dot platform signed in (the same handoff as the Dot
+ * Apps menu): a top-bar tab, a navigation row, or a door on Home. It renders nothing
+ * for a platform that is not live, so the interface never offers something that
+ * cannot be opened.
  */
 class PlatformLink extends Component
 {
@@ -19,6 +20,9 @@ class PlatformLink extends Component
     public string $label = '';
 
     public string $icon = 'open_in_new';
+
+    /** tab | row | door */
+    public string $variant = 'row';
 
     public function open(): void
     {
@@ -40,6 +44,6 @@ class PlatformLink extends Component
         $live = (bool) (config('ecosystem.platforms.'.$this->platform.'.active') ?? false)
             && EcosystemHandoff::endpointFor(config('ecosystem.platforms.'.$this->platform)) !== null;
 
-        return view('livewire.platform-link', ['live' => $live]);
+        return view('livewire.platform-link', ['live' => $live, 'area' => $this->platform === 'docs' ? 'documents' : $this->platform]);
     }
 }

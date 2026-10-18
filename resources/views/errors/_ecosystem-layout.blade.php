@@ -21,7 +21,7 @@
             // than a fixed hand-picked subset -- add a platform to the
             // registry once and it shows up here automatically everywhere.
             $currentPlatformName = 'InfoDot';
-            $discover = collect(config('ecosystem.platforms', []))
+            $discover = collect(\App\Support\Platforms::visible())
                 ->reject(fn ($p) => ($p['name'] ?? null) === $currentPlatformName)
                 ->reject(fn ($p) => ($p['active'] ?? true) === false)
                 ->values()

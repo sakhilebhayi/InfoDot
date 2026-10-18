@@ -62,10 +62,10 @@ class SignedInUiTest extends TestCase
         foreach (['/questions', '/questions/ask', '/question/view/1', '/solutions', '/solution/create', '/platforms'] as $url) {
             $html = $this->actingAs($user)->get($url)->assertOk()->getContent();
 
-            foreach (['Manrope', 'Baloo', 'Nunito', '#2962ff', '#b6c4ff', 'backdrop-filter', 'material-symbols-outlined', 'fa fa-'] as $old) {
+            foreach (['Manrope', 'Baloo', 'Nunito', 'Hanken', '#2962ff', '#b6c4ff', 'backdrop-filter', 'material-symbols-outlined', 'fa fa-'] as $old) {
                 $this->assertStringNotContainsString($old, $html, "$url still contains $old");
             }
-            $this->assertStringContainsString('Hanken+Grotesk', $html, $url);
+            $this->assertStringContainsString('Archivo', $html, $url);
         }
     }
 
@@ -77,7 +77,7 @@ class SignedInUiTest extends TestCase
 
         $this->actingAs($user)->get('/questions')
             ->assertOk()
-            ->assertSee('Unsolved')
+            ->assertSee('Waiting')
             ->assertSee('Solved')
             ->assertSee('aria-pressed', false);
     }
@@ -86,7 +86,7 @@ class SignedInUiTest extends TestCase
     {
         $this->actingAs($this->member())->get('/questions')
             ->assertOk()
-            ->assertSee('No questions yet')
+            ->assertSee('has no questions yet')
             ->assertSee('Ask the first question');
     }
 

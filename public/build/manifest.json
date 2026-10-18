@@ -1,8 +1,124 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CyQKwU6q.css",
+    "file": "assets/app-BMhFOdhJ.css",
     "src": "resources/css/app.css",
     "isEntry": true
+  },
+  "resources/img/apps/agents.png": {
+    "file": "assets/agents-CAk666RZ.png",
+    "src": "resources/img/apps/agents.png"
+  },
+  "resources/img/apps/analytics.png": {
+    "file": "assets/analytics-ZIeO9uWH.png",
+    "src": "resources/img/apps/analytics.png"
+  },
+  "resources/img/apps/auction.png": {
+    "file": "assets/auction--cADeQ4I.png",
+    "src": "resources/img/apps/auction.png"
+  },
+  "resources/img/apps/billing.png": {
+    "file": "assets/billing-CRxAxdor.png",
+    "src": "resources/img/apps/billing.png"
+  },
+  "resources/img/apps/central.png": {
+    "file": "assets/central-BrMFoXSS.png",
+    "src": "resources/img/apps/central.png"
+  },
+  "resources/img/apps/design.png": {
+    "file": "assets/design-xeB-JY0Y.png",
+    "src": "resources/img/apps/design.png"
+  },
+  "resources/img/apps/docs.png": {
+    "file": "assets/docs-BBoI6ftx.png",
+    "src": "resources/img/apps/docs.png"
+  },
+  "resources/img/apps/dopemine.png": {
+    "file": "assets/dopemine-iLSAZDHm.png",
+    "src": "resources/img/apps/dopemine.png"
+  },
+  "resources/img/apps/ehail.png": {
+    "file": "assets/ehail-CmxMMRq4.png",
+    "src": "resources/img/apps/ehail.png"
+  },
+  "resources/img/apps/emall.png": {
+    "file": "assets/emall-k6Oe9bv9.png",
+    "src": "resources/img/apps/emall.png"
+  },
+  "resources/img/apps/engage.png": {
+    "file": "assets/engage-HYxVbBnq.png",
+    "src": "resources/img/apps/engage.png"
+  },
+  "resources/img/apps/farms.png": {
+    "file": "assets/farms-BzF6XX9g.png",
+    "src": "resources/img/apps/farms.png"
+  },
+  "resources/img/apps/files.png": {
+    "file": "assets/files-Dd9w1SP3.png",
+    "src": "resources/img/apps/files.png"
+  },
+  "resources/img/apps/finance.png": {
+    "file": "assets/finance-DmbUo58_.png",
+    "src": "resources/img/apps/finance.png"
+  },
+  "resources/img/apps/forms.png": {
+    "file": "assets/forms-BndCld2F.png",
+    "src": "resources/img/apps/forms.png"
+  },
+  "resources/img/apps/hr.png": {
+    "file": "assets/hr-BO-2lgM3.png",
+    "src": "resources/img/apps/hr.png"
+  },
+  "resources/img/apps/infodot.png": {
+    "file": "assets/infodot-Bgj5iiFj.png",
+    "src": "resources/img/apps/infodot.png"
+  },
+  "resources/img/apps/memory.png": {
+    "file": "assets/memory-DyWZLu4o.png",
+    "src": "resources/img/apps/memory.png"
+  },
+  "resources/img/apps/mines.png": {
+    "file": "assets/mines-DXF27VjT.png",
+    "src": "resources/img/apps/mines.png"
+  },
+  "resources/img/apps/notify.png": {
+    "file": "assets/notify-Da2rWmGN.png",
+    "src": "resources/img/apps/notify.png"
+  },
+  "resources/img/apps/plug.png": {
+    "file": "assets/plug-Odky6UQT.png",
+    "src": "resources/img/apps/plug.png"
+  },
+  "resources/img/apps/press.png": {
+    "file": "assets/press-BIsUqciq.png",
+    "src": "resources/img/apps/press.png"
+  },
+  "resources/img/apps/projects.png": {
+    "file": "assets/projects-DNWUW_xX.png",
+    "src": "resources/img/apps/projects.png"
+  },
+  "resources/img/apps/pulse.png": {
+    "file": "assets/pulse-Si0qDNlR.png",
+    "src": "resources/img/apps/pulse.png"
+  },
+  "resources/img/apps/sheet.png": {
+    "file": "assets/sheet-BsP4jm66.png",
+    "src": "resources/img/apps/sheet.png"
+  },
+  "resources/img/apps/tasks.png": {
+    "file": "assets/tasks-BYHmtYcF.png",
+    "src": "resources/img/apps/tasks.png"
+  },
+  "resources/img/apps/tutor.png": {
+    "file": "assets/tutor-CYTf0nmx.png",
+    "src": "resources/img/apps/tutor.png"
+  },
+  "resources/img/platforms/docs.png": {
+    "file": "assets/docs-Bgi7gZB8.png",
+    "src": "resources/img/platforms/docs.png"
+  },
+  "resources/img/platforms/files.png": {
+    "file": "assets/files-C9XIb1Vh.png",
+    "src": "resources/img/platforms/files.png"
   },
   "resources/js/app.js": {
     "file": "assets/app-hFmZfLqG.js",

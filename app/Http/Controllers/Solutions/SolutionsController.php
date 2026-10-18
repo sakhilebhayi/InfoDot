@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Solutions;
 use App\Http\Controllers\Controller;
 use App\Models\Solutions;
 use App\Models\Steps;
+use App\Support\Industry;
 use Illuminate\Http\Request;
 
 class SolutionsController extends Controller
@@ -12,18 +13,19 @@ class SolutionsController extends Controller
     public function index()
     {
         $solutions = Solutions::withCount(['likes', 'comments'])
-            ->with('user')
+            ->with(['user', 'team'])
             ->latest()
             ->get();
 
         return view('solutions.index', [
             'solutions' => $solutions,
+            'industry' => Industry::for(auth()->user()->currentTeam),
         ]);
     }
 
     public function create()
     {
-        return view('solutions.create');
+        return view('solutions.create', ['industry' => Industry::for(auth()->user()->currentTeam)]);
     }
 
     public function add_solution(Request $request)
@@ -33,6 +35,7 @@ class SolutionsController extends Controller
                 'solution_title' => 'required|min:3|max:255',
                 'solution_description' => 'required|min:3',
                 'tags-input' => 'required|min:3',
+                'publish' => 'nullable|boolean',
                 'duration' => 'required|integer|min:1',
                 'duration_type' => 'required|in:hours,days,weeks,months,years,infinite',
                 'solution_heading' => 'required|array|min:1',
@@ -47,6 +50,8 @@ class SolutionsController extends Controller
         $solution = new Solutions;
 
         $solution->user_id = auth()->user()->id;
+        $solution->team_id = auth()->user()->current_team_id;
+        $solution->visibility = $request->boolean('publish') ? Solutions::VISIBILITY_PUBLIC : Solutions::VISIBILITY_COMPANY;
         $solution->solution_title = $request->input('solution_title');
         $solution->solution_description = $request->input('solution_description');
         $solution->tags = $request->input('tags-input');
@@ -72,7 +77,7 @@ class SolutionsController extends Controller
 
     public function view_solution($id)
     {
-        $solution = Solutions::where('id', $id)->first();
+        $solution = Solutions::where('id', $id)->firstOrFail();
 
         return view('solutions.view')->with(['solution' => $solution]);
 

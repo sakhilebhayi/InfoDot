@@ -33,8 +33,10 @@ final class EcosystemHandoff
      * The full handoff URL for this person and platform (the token is minted here),
      * or null when the platform is unknown, not live or not on a trusted host. The
      * destination is checked BEFORE a token exists: a refused destination never gets one.
+     * `$redirect` is an in-platform path the destination opens after sign-in; the
+     * destination validates it again, so it is a hint, never an instruction.
      */
-    public static function launchUrl(User $user, string $key): ?string
+    public static function launchUrl(User $user, string $key, ?string $redirect = null): ?string
     {
         $platform = config('ecosystem.platforms', [])[$key] ?? null;
 
@@ -59,7 +61,7 @@ final class EcosystemHandoff
             now()->addMinutes((int) config('ecosystem.handoff_ttl', 5))
         )->plainTextToken;
 
-        return $endpoint.'?token='.$token;
+        return $endpoint.'?token='.$token.($redirect !== null ? '&redirect='.rawurlencode($redirect) : '');
     }
 
     /**
