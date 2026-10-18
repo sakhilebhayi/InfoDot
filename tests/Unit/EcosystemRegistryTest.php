@@ -37,7 +37,7 @@ class EcosystemRegistryTest extends TestCase
         sort($active);
 
         $this->assertSame(
-            ['agents', 'auction', 'billing', 'central', 'charts', 'design', 'docs', 'dopemine', 'ehail', 'emall', 'engage', 'farms', 'files', 'finance', 'forms', 'hr', 'infodot', 'memory', 'mines', 'notify', 'plug', 'press', 'projects', 'pulse', 'sheet', 'tasks', 'tutor'],
+            ['agents', 'analytics', 'auction', 'billing', 'central', 'charts', 'design', 'docs', 'dopemine', 'ehail', 'emall', 'engage', 'farms', 'files', 'finance', 'forms', 'hr', 'infodot', 'memory', 'mines', 'notify', 'plug', 'press', 'projects', 'pulse', 'sheet', 'tasks', 'tutor'],
             $active,
         );
     }
