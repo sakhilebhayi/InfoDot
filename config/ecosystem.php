@@ -97,7 +97,7 @@ return [
     | with no secret here cannot redeem anything.
     */
 
-    'service_secrets' => collect(['files', 'docs', 'forms', 'sheet', 'projects', 'agents', 'memory', 'central', 'mines', 'engage', 'press', 'charts', 'dopemine'])
+    'service_secrets' => collect(['files', 'docs', 'forms', 'sheet', 'projects', 'agents', 'memory', 'central', 'mines', 'engage', 'press', 'charts', 'dopemine', 'analytics', 'auction', 'billing', 'design', 'ehail', 'emall', 'farms', 'finance', 'hr', 'notify', 'plug', 'pulse', 'tasks', 'tutor'])
         ->mapWithKeys(fn ($key) => [$key => env('ECOSYSTEM_SECRET_'.strtoupper($key))])
         ->filter()
         ->all(),
