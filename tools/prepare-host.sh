@@ -25,7 +25,7 @@ for K in "$@"; do
   # secrets for this platform: lines "Dot.<k>:  NAME=value" from the generated file
   EXTRA=""
   if [ -r "$SECRETS_FILE" ]; then
-    EXTRA="$(grep -E "^Dot\.$K:[[:space:]]+[A-Z_]+=" "$SECRETS_FILE" | sed -E "s/^Dot\.$K:[[:space:]]+//" || true)"
+    EXTRA="$(grep -E "^Dot\.$K:[[:space:]]+[A-Z_]+=" "$SECRETS_FILE" | sed -E "s/^Dot\.$K:[[:space:]]+//; s/[[:space:]]+#.*$//" || true)"
   else
     echo "note: $SECRETS_FILE not readable; the .env will have no shared secrets (INFODOT_SERVICE_SECRET etc.)" >&2
   fi
