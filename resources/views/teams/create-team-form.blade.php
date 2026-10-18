@@ -32,6 +32,19 @@
             <x-jet-input id="name" type="text" class="block w-full" wire:model.defer="state.name" autofocus />
             <x-jet-input-error for="name" />
         </div>
+
+        <div class="col-span-6 sm:col-span-4">
+            <x-jet-label for="industry" value="{{ __('What does the company do?') }}" />
+            <select id="industry" class="ix-input ix-select block w-full" wire:model.defer="state.industry">
+                <option value="">{{ __('General business') }}</option>
+                @foreach (\App\Support\Industry::options() as $key => $label)
+                    @continue($key === 'general')
+                    <option value="{{ $key }}">{{ __($label) }}</option>
+                @endforeach
+            </select>
+            <p class="ix-hint">{{ __('Search, the question form and empty pages suggest examples that fit your business. You can change this any time.') }}</p>
+            <x-jet-input-error for="industry" />
+        </div>
     </x-slot>
 
     <x-slot name="actions">

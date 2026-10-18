@@ -15,19 +15,19 @@
 
             <div class="ix-field">
                 <label class="ix-label" for="solution_title">Title</label>
-                <input class="ix-input" name="solution_title" id="solution_title" type="text" value="{{ old('solution_title') }}" placeholder="How to register a business on the CIPC website" maxlength="255" required @error('solution_title') aria-invalid="true" @enderror>
+                <input class="ix-input" name="solution_title" id="solution_title" type="text" value="{{ old('solution_title') }}" placeholder="{{ $industry['solution_title'] }}" maxlength="255" required @error('solution_title') aria-invalid="true" @enderror>
                 @error('solution_title')<p class="ix-error">{{ $message }}</p>@enderror
             </div>
 
             <div class="ix-field">
                 <label class="ix-label" for="solution_description">What it achieves</label>
-                <textarea class="ix-textarea" name="solution_description" id="solution_description" rows="4" placeholder="Say the outcome: what is done, and which documents or access are needed." required @error('solution_description') aria-invalid="true" @enderror>{{ old('solution_description') }}</textarea>
+                <textarea class="ix-textarea" name="solution_description" id="solution_description" rows="4" placeholder="{{ $industry['solution_description'] }}" required @error('solution_description') aria-invalid="true" @enderror>{{ old('solution_description') }}</textarea>
                 @error('solution_description')<p class="ix-error">{{ $message }}</p>@enderror
             </div>
 
             <div class="ix-field">
                 <label class="ix-label" for="tags-input">Tags</label>
-                <input class="ix-input" name="tags-input" id="tags-input" type="text" value="{{ old('tags-input') }}" placeholder="business registration, how to, business plan" required @error('tags-input') aria-invalid="true" @enderror>
+                <input class="ix-input" name="tags-input" id="tags-input" type="text" value="{{ old('tags-input') }}" placeholder="{{ $industry['solution_tags'] }}" required @error('tags-input') aria-invalid="true" @enderror>
                 <p class="ix-hint">Separate tags with commas. Specific tags are easier to find than broad ones.</p>
                 @error('tags-input')<p class="ix-error">{{ $message }}</p>@enderror
             </div>
@@ -101,6 +101,14 @@
 
         <aside class="ix-panel" aria-label="Writing guide">
             <div class="ix-panel__head">Writing a solution people use</div>
+            <div class="ix-panel__body" style="padding-bottom:0">
+                <p class="ix-ideas__sub" style="margin:0 0 8px">Ideas for {{ $industry['label'] }}. Tap one to use it as the title.</p>
+                <ul class="ix-ideas__list">
+                    @foreach ($industry['solutions'] as $idea)
+                        <li><button type="button" class="ix-idea" onclick="const f=document.getElementById('solution_title'); f.value=this.dataset.t; f.focus();" data-t="{{ $idea }}">{{ $idea }}</button></li>
+                    @endforeach
+                </ul>
+            </div>
             <div class="ix-panel__body" style="display:grid;gap:16px;color:var(--ix-text-2)">
                 <p style="margin:0"><b style="color:var(--ix-text)">Title.</b> Short and specific. &ldquo;Register a business on the CIPC website&rdquo; beats &ldquo;Start a business&rdquo;.</p>
                 <p style="margin:0"><b style="color:var(--ix-text)">Description.</b> State the outcome and what is needed to get it, not a pitch.</p>
