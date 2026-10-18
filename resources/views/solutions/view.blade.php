@@ -1,50 +1,95 @@
 <x-app-layout>
-    @php($steps = \App\Models\Steps::where('solution_id', $solution->id)->get())
-    @php($ref = \App\Support\Reference::for($solution))
+    @php
+        $ref = \App\Support\Reference::for($solution);
+        $tags = collect(explode(',', (string) $solution->tags))->map(fn ($t) => trim($t))->filter()->values();
+        $count = $steps->count();
+    @endphp
 
+    <div class="ix-detail">
+        <article class="ix-detail__main" x-data="{ copied: false }">
+            <div class="ix-itemhead">
+                <span class="ix-ref ix-ref--lg" aria-label="Reference {{ $ref }}">{{ $ref }}</span>
+                <button type="button" class="ix-copy"
+                        @click="navigator.clipboard.writeText('{{ $ref }}').then(() => { copied = true; setTimeout(() => copied = false, 1800) })">
+                    <span class="material-symbols-rounded" aria-hidden="true" x-text="copied ? 'check' : 'content_copy'">content_copy</span>
+                    <span x-text="copied ? 'Copied' : 'Copy reference'">Copy reference</span>
+                </button>
+            </div>
 
-    <div class="ix-split" style="grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)">
-        <article class="ix-panel" x-data="{ copied: false }">
-            <div class="ix-panel__body" style="padding:24px">
-                <div class="ix-itemhead">
-                    <span class="ix-ref ix-ref--lg" aria-label="Reference {{ $ref }}">{{ $ref }}</span>
-                    <button type="button" class="ix-copy"
-                            @click="navigator.clipboard.writeText('{{ $ref }}').then(() => { copied = true; setTimeout(() => copied = false, 1800) })">
-                        <span class="material-symbols-rounded" aria-hidden="true" x-text="copied ? 'check' : 'content_copy'">content_copy</span>
-                        <span x-text="copied ? 'Copied' : 'Copy reference'">Copy reference</span>
-                    </button>
-                </div>
-                <h1 class="ix-h1" style="font-size:24px">{{ $solution->solution_title }}</h1>
-                <p class="ix-meta">
-                    <span>By <b><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a></b></span>
-                    <span>{{ $solution->created_at->diffForHumans() }}</span>
-                    @if ($solution->duration_type !== 'infinite')
-                        <span>Takes <b class="ix-fig">{{ $solution->duration }}</b> {{ Str::plural(rtrim($solution->duration_type, 's'), $solution->duration) }}</span>
+            <p class="ix-detail__kind"><span class="ix-q__state is-open" style="background:#1b2124;color:var(--ix-stencil)">Solution</span></p>
+            <h1 class="ix-detail__title">{{ $solution->solution_title }}</h1>
+            <div class="ix-statement"><p class="ix-prose">{{ $solution->solution_description }}</p></div>
+
+            @if ($tags->isNotEmpty())
+                <ul class="ix-tags" aria-label="Tags">@foreach ($tags as $tag)<li>{{ $tag }}</li>@endforeach</ul>
+            @endif
+
+            <section class="ix-proc" aria-labelledby="proc-h"
+                     x-data="{ n: {{ $count }}, done: [], key: 'ix-proc-{{ $solution->id }}',
+                        init() { try { this.done = JSON.parse(localStorage.getItem(this.key) || '[]') } catch (e) { this.done = [] } },
+                        toggle(i) { this.done = this.done.includes(i) ? this.done.filter(x => x !== i) : [...this.done, i]; try { localStorage.setItem(this.key, JSON.stringify(this.done)) } catch (e) {} },
+                        reset() { this.done = []; try { localStorage.removeItem(this.key) } catch (e) {} } }">
+                <div class="ix-proc__head">
+                    <h2 id="proc-h"><span class="ix-stencil-num">{{ str_pad((string) $count, 2, '0', STR_PAD_LEFT) }}</span> {{ Str::plural('step', $count) }}</h2>
+                    @if ($count > 0)
+                        <p class="ix-proc__progress" aria-live="polite">
+                            <span x-text="done.length + ' of ' + n + ' done'">0 of {{ $count }} done</span>
+                            <button type="button" class="ix-copy" x-show="done.length > 0" x-cloak @click="reset()">Start again</button>
+                        </p>
                     @endif
-                </p>
-                <p class="ix-prose" style="margin:20px 0 0">{{ $solution->solution_description }}</p>
-                @if (filled($solution->tags))
-                    <p class="ix-hint" style="margin-top:16px">Tags: {{ $solution->tags }}</p>
+                </div>
+                @if ($count > 0)
+                    <div class="ix-proc__bar" aria-hidden="true"><span :style="'width:' + (n ? done.length / n * 100 : 0) + '%'"></span></div>
                 @endif
-            </div>
-            <div style="border-top:1px solid var(--ix-rule);padding:24px">
-                <livewire:comments :model="$solution" :solution="$solution" />
-            </div>
+
+                <ol class="ix-proc__list">
+                    @forelse ($steps as $step)
+                        <li class="ix-pstep" :class="{ 'is-done': done.includes({{ $loop->index }}) }">
+                            <button type="button" class="ix-pstep__n" role="checkbox" :aria-checked="done.includes({{ $loop->index }})" @click="toggle({{ $loop->index }})"
+                                    aria-label="Mark step {{ $loop->iteration }} done">
+                                <span class="ix-stencil-num">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                                <span class="material-symbols-rounded" aria-hidden="true">check</span>
+                            </button>
+                            <div>
+                                <h3>{{ $step->solution_heading }}</h3>
+                                <p>{{ $step->solution_body }}</p>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="ix-pstep ix-pstep--empty"><p class="ix-hint" style="margin:0">This solution has no written steps yet.</p></li>
+                    @endforelse
+                </ol>
+            </section>
+
+            <livewire:comments :model="$solution" :solution="$solution" />
         </article>
 
-        <section class="ix-panel" aria-label="Steps">
-            <div class="ix-panel__head"><span>Steps</span><x-ix.figure :value="$steps->count()" /></div>
-            @forelse($steps as $step)
-                <div class="ix-step">
-                    <span class="ix-step__n ix-fig">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                    <div>
-                        <h2>{{ $step->solution_heading }}</h2>
-                        <p>{{ $step->solution_body }}</p>
-                    </div>
-                </div>
-            @empty
-                <p class="ix-panel__body" style="margin:0;color:var(--ix-text-3)">This solution has no written steps yet.</p>
-            @endforelse
-        </section>
+        <aside class="ix-detail__rail" aria-label="About this solution">
+            <section class="ix-facts">
+                <h2>Details</h2>
+                <dl>
+                    <div><dt>Written by</dt><dd><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a></dd></div>
+                    <div><dt>Added</dt><dd>{{ $solution->created_at->diffForHumans() }}</dd></div>
+                    <div><dt>Time it takes</dt><dd>@if ($solution->duration_type === 'infinite') Unknown @else {{ $solution->duration }} {{ Str::plural(rtrim($solution->duration_type, 's'), $solution->duration) }} @endif</dd></div>
+                    <div><dt>Visible to</dt><dd>{{ $solution->isPublic() ? 'Everyone' : 'Your company' }}</dd></div>
+                </dl>
+            </section>
+
+            @if ($related->isNotEmpty())
+                <section class="ix-related">
+                    <h2>More like this</h2>
+                    <ul>
+                        @foreach ($related as $other)
+                            <li>
+                                <a href="{{ route('solutions.view', ['id' => $other->id]) }}">{{ $other->solution_title }}</a>
+                                <span class="ix-ref">{{ \App\Support\Reference::for($other) }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
+
+            <a href="{{ route('add') }}" class="ix-btn">Write another solution</a>
+        </aside>
     </div>
 </x-app-layout>

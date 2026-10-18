@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Solutions;
 use App\Models\Steps;
 use App\Support\Industry;
+use App\Support\Related;
 use Illuminate\Http\Request;
 
 class SolutionsController extends Controller
@@ -79,7 +80,10 @@ class SolutionsController extends Controller
     {
         $solution = Solutions::where('id', $id)->firstOrFail();
 
-        return view('solutions.view')->with(['solution' => $solution]);
-
+        return view('solutions.view', [
+            'solution' => $solution,
+            'steps' => Steps::where('solution_id', $solution->id)->get(),
+            'related' => Related::solutions($solution),
+        ]);
     }
 }

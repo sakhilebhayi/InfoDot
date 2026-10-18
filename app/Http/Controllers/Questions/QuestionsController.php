@@ -6,6 +6,7 @@ use App\Events\Questions\QuestionWasAsked;
 use App\Http\Controllers\Controller;
 use App\Models\Questions;
 use App\Support\Industry;
+use App\Support\Related;
 use Illuminate\Http\Request;
 
 class QuestionsController extends Controller
@@ -33,7 +34,7 @@ class QuestionsController extends Controller
         // Not found, not forbidden: do not reveal that another company's question exists.
         $question = Questions::where('id', $qid)->firstOrFail();
 
-        return view('questions.view')->with(['question' => $question]);
+        return view('questions.view', ['question' => $question, 'related' => Related::questions($question)]);
     }
 
     public function add_question(Request $request)
