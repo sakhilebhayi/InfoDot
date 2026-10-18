@@ -337,3 +337,22 @@ Blocked on the owner:
 Verification note: local test output is rewritten by `laravel/pao` for agents and hides PHPUnit warnings;
 use `PAO_DISABLE=1`. GitHub CI is the gate.
 
+## 10. Update, later on 2026-10-18 / 2026-10-19
+
+- Token gained the `workflow` scope; the five held deploy pipelines (Tasks, Auction, Ehail, Notify, Farms) were rebased onto
+  `main`, linted (actionlint clean) and merged, with `ci.yml` fixed to run on pushes to `main`. All 13 platforms now have
+  CI and a manual deploy pipeline (Analytics has its own CI/Docker setup, no deploy workflow).
+- Duplicate-Alpine fix merged on 10 platform repos and on the live apps Dopemine and Projects (a CDN Alpine next to
+  Livewire's bundled one made every Livewire re-render throw; InfoDot, Files, Memory, Tasks, Pulse and Design already
+  loaded none).
+- Responsive shells, account sections (team switcher, Team settings, Log out in the sidebar at every width), restore
+  screens (Farms, Tasks), Finance company ledgers: merged.
+- Older Analytics PRs: #1 (DKP/roster remap) and #2 (custom dashboards) closed as superseded; #3 (global search) and #4
+  (push notifications) are being ported onto the current trunk. Old Plug WIP PR #1 closed.
+- Policy wording reviewed: Notify's privacy and cookie text now says it does not track opens or clicks (true: no pixels or
+  tracked links exist); Analytics' policy says AI features produce nothing when no provider is configured (true: the
+  canned fallback was removed). Both are factual corrections, not legal review.
+- New: `tools/ecosystem-secrets.sh` (generates every shared secret pair into one local mode-600 file) and
+  `docs/platform-go-live-checklist.md` (the owner-only steps: DNS, cPanel, repository secrets, marking platforms live,
+  Paystack test-mode setup).
+
