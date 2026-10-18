@@ -307,3 +307,33 @@ not been investigated.
 - 2026-10-18 wave 6: Pulse signed sign-in [Dot.Pulse#8](https://github.com/sakhilebhayi/Dot.Pulse/pull/8) (290 pass/7 skip); read-only `viewer` role in Plug [#6](https://github.com/sakhilebhayi/Dot.Plug/pull/6) (134/7), Notify [#5](https://github.com/sakhilebhayi/Dot.Notify/pull/5) (313/7), Farms [#5](https://github.com/sakhilebhayi/Dot.Farms/pull/5) (395/7), Analytics [#14](https://github.com/sakhilebhayi/Dot.Analytics/pull/14) (752/7); unknown InfoDot roles now fall back to viewer, not editor, in those four. Closed two ungated AI actions in Notify and three ungated actions in Analytics. Merge order and deploy prerequisites: see `docs/platform-merge-and-deploy-runbook.md`.
 - 2026-10-18 owner answers: Paystack chosen; Finance = both personal and company; Billing model confirmed; merging approved ("start now", no deploys). Pilot merge on Plug: CI PR #5 then the stack top #6 into main by merge commit; post-merge CI on main green (33b64d6); stacked PRs whose commits became reachable closed. Merge pass for the other repos in progress (see runbook for the order).
 
+## 9. State at the end of 2026-10-18
+
+Merged into `main` (merge commits, CI green on each `main` unless noted): Plug, Finance, Emall, Billing,
+HR, Tutor, Design, Pulse (default branch set to `main`), Tasks, Auction, Ehail, Notify, Farms (their
+`feat/reverb-realtime-core` merged into `main`; the Notify, Auction, Ehail, Farms and Tasks `main` runs
+do not trigger CI on push, see below). Also merged: Paystack test-mode payments (Billing invoices, Emall
+checkout, Auction settlement, Ehail fares), metrics publishers, the Notify event catalogue and clients,
+deploy pipelines for Plug, Tutor, Design, Pulse, Finance, Emall, Billing and HR, and the
+`league/commonmark` 2.10.4 lockfile fix on 18 repos including the live apps.
+
+Open / in flight: Finance company ledgers; Analytics integration with `feature/ecosystem-sso` then its
+stack (#12-#18); responsive app shells (13 apps); restore screens (Farms, Tasks); InfoDot #31, #32.
+
+Blocked on the owner:
+- **`gh auth refresh -s workflow`.** The token cannot push workflow files. Waiting: deploy pipelines for
+  Tasks, Auction, Ehail, Notify, Farms (written, linted, unpushed, in `scratchpad/work-dep-*`) and a
+  one-line CI fix on those five (`push: branches` should be `main`).
+- **Paystack:** create one test-mode business per app (webhook URL is per business, so apps sharing one
+  would receive each other's events as `unmatched`), set `PAYSTACK_SECRET_KEY`, register
+  `https://<host>/webhooks/paystack`, and run one real test-card payment per app. No real Paystack call has
+  been made by any code or test. Seller, driver and fleet payouts are not built.
+- **Hosting:** DNS, databases, SMTP, repository secrets, `ECOSYSTEM_SECRET_<KEY>` and `INFODOT_*`, marking
+  platforms live in InfoDot, cron and queue lines (see each repo's `docs/deployment.md`).
+- Emall currency (`ANALYTICS_CURRENCY`; the storefront still prints `$` while Paystack charges ZAR),
+  Auction operator access (`AUCTION_OPERATOR_EMAILS` instead of an operator flag), the Notify privacy and
+  cookie wording, and the Analytics policy wording edit.
+
+Verification note: local test output is rewritten by `laravel/pao` for agents and hides PHPUnit warnings;
+use `PAO_DISABLE=1`. GitHub CI is the gate.
+
