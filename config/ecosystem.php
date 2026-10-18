@@ -28,7 +28,7 @@ return [
     'platforms' => [
         'infodot' => ['name' => 'InfoDot', 'url' => env('DOT_INFODOT_URL', 'https://infodot.co.za'), 'icon' => 'home', 'accent' => '#2f8fd6', 'active' => true],
         'agents' => ['name' => 'Dot.Agents', 'url' => env('DOT_AGENTS_URL', 'https://agents.infodot.co.za'), 'icon' => 'smart_toy', 'accent' => '#f1c62e', 'active' => true],
-        'analytics' => ['name' => 'Dot.Analytics', 'url' => env('DOT_ANALYTICS_URL', 'https://analytics.infodot.co.za'), 'icon' => 'insights', 'accent' => '#f1c62e', 'active' => false],
+        'analytics' => ['name' => 'Dot.Analytics', 'url' => env('DOT_ANALYTICS_URL', 'https://analytics.infodot.co.za'), 'icon' => 'insights', 'accent' => '#f1c62e', 'active' => true],
         'auction' => ['name' => 'Dot.Auction', 'url' => env('DOT_AUCTION_URL', 'https://auction.infodot.co.za'), 'icon' => 'gavel', 'accent' => '#f1c62e', 'active' => true],
         'billing' => ['name' => 'Dot.Billing', 'url' => env('DOT_BILLING_URL', 'https://billing.infodot.co.za'), 'icon' => 'credit_card', 'accent' => '#f1c62e', 'active' => true],
         'central' => ['name' => 'Dot.Central', 'url' => env('DOT_CENTRAL_URL', 'https://central.infodot.co.za'), 'icon' => 'hub', 'accent' => '#e8bd3d', 'active' => true],

@@ -8,7 +8,7 @@
 #
 # "infodot" takes the lines starting "InfoDot:" in the secrets file; any other name takes "Dot.<name>:" lines.
 # Trailing "# comments" on a line are dropped. Values are never printed. Optional: DRY_RUN=1 (show which names
-# would be written, run nothing), SSH_BIN, PHP_BIN (default php), BASE_DOMAIN (default infodot.co.za).
+# would be written, run nothing), SET_VARS (extra NAME=value lines for every target), SSH_BIN, PHP_BIN (default php), BASE_DOMAIN (default infodot.co.za).
 set -euo pipefail
 : "${SSH_TARGET:?set SSH_TARGET=user@host}"
 [ $# -gt 0 ] || { echo "usage: $0 infodot|<platform> [...]" >&2; exit 2; }
@@ -23,6 +23,9 @@ for K in "$@"; do
     *) echo "unknown target $K" >&2; exit 2 ;;
   esac
   LINES="$(grep -E "^${PREFIX}[[:space:]]+[A-Z_0-9]+=" "$SECRETS_FILE" | sed -E "s/^${PREFIX}[[:space:]]+//; s/[[:space:]]+#.*$//" || true)"
+  # SET_VARS: extra NAME=value lines (newline separated) written to every target, e.g.
+  #   SET_VARS="ANALYTICS_INGEST_URL=https://analytics.infodot.co.za/api/ingest/snapshots"
+  if [ -n "${SET_VARS:-}" ]; then LINES="${LINES:+$LINES$'\n'}$SET_VARS"; fi
   [ -n "$LINES" ] || { echo "$K: no lines in $SECRETS_FILE, skipped"; continue; }
   if [ "${DRY_RUN:-}" = 1 ]; then echo "== $K would write: $(printf '%s\n' "$LINES" | cut -d= -f1 | paste -sd' ' -)"; continue; fi
   echo "== $K: writing $(printf '%s\n' "$LINES" | grep -c .) line(s)"
