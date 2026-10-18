@@ -16,10 +16,10 @@ in-memory SQLite by the audit (not the production database).
 
 | Platform | What it really is | Local branch vs origin/main | Live host (probe 2026-10-18) | CI / deploy pipeline |
 |---|---|---|---|---|
-| Analytics | Insight dashboards, intelligence "engines", ingest API | `fix/ci-trigger-branch-coverage`, 46 commits unmerged, origin/main is a 4-commit stub | no DNS | CI yes (tests, no deploy) |
+| Analytics | Insight dashboards, intelligence "engines", ingest API | real trunk is `feature/ecosystem-sso` (origin/main is a 4-commit stub; remote HEAD points at the trunk) | no DNS | CI yes (tests, no deploy) |
 | Pulse | Global social network (not business engagement) | main = origin/main; `feature/ecosystem-sso` diverged by 28/28 commits | no DNS | none |
-| Finance | Personal ledger (accounts, budgets, CSV, recurring) | main, 1 commit unpushed | placeholder | none |
-| Emall | Multi-vendor storefront, no payment | main, 1 commit unpushed | placeholder | none |
+| Finance | Personal ledger (accounts, budgets, CSV, recurring) | main = origin/main (audit's "unpushed" claim was stale; merged as #2) | placeholder | none |
+| Emall | Multi-vendor storefront, no payment | main = origin/main (merged as #2) | placeholder | none |
 | Auction | Live bidding, proxy engine (dead code) | `feat/reverb-realtime-core`, 3 commits unmerged | placeholder | none |
 | Billing | Read-only billing dashboard + dunning queue | main = origin/main | no DNS | none |
 | Tasks | Kanban tasks, recurrence, escalation queue | `feat/reverb-realtime-core`, 3 unmerged, 1 behind | placeholder | none |
@@ -27,7 +27,7 @@ in-memory SQLite by the audit (not the production database).
 | Plug | Extension marketplace (not integration config) | main = origin/main | no DNS | none |
 | Email | **Dropped by the owner 2026-10-18** (no code ever existed; mix-up with Ehail) | n/a | no DNS | n/a |
 | Tutor | Tutor booking marketplace (not courses) | main = origin/main | placeholder | none |
-| Design | Canvas editor (text and rectangles), SVG export, token catalog | main, 1 commit unpushed (the whole editor) | placeholder | none |
+| Design | Canvas editor (text and rectangles), SVG export, token catalog | main = origin/main (editor merged as #2) | placeholder | none |
 | Notify | Per-team notification rules, channels, schedules, webhook receiver | `feat/reverb-realtime-core`, 3 unmerged | no DNS | none |
 | Farms | Crop-cycle logbook | `feat/reverb-realtime-core`, 1 unmerged | no DNS | none |
 | Ehail (ride-hailing) | Fleet, drivers, ride requests; not email | `feat/reverb-realtime-core`, 3 unmerged, main has moved | placeholder | none |
@@ -57,9 +57,11 @@ These are fixed once as a pattern and then rolled out.
 5. **`HasTeamScope` fails open** with no user or team (jobs, console, seeders).
 6. **Docs drift.** README/wiki claim Laravel 12, "unverified scaffolding", or
    features that do not exist, in every repo.
-7. **Branch hygiene.** Three repos hold unpushed work (Emall, Finance, Design). Five
-   hold unmerged feature branches (Auction, Tasks, Notify, Farms, Ehail), plus
-   Analytics (46 commits) and Pulse (diverged).
+7. **Branch hygiene.** Five repos hold an unmerged `feat/reverb-realtime-core`
+   branch with no PR (Auction, Tasks, Notify, Farms, Ehail). Analytics works on
+   `feature/ecosystem-sso` as its trunk. Pulse `main` and `feature/ecosystem-sso`
+   have diverged. (The first audit wrongly called Emall, Finance and Design commits
+   "unpushed"; they were merged as #2 and the audit read stale remote refs.)
 8. **Local `.env` files** use `APP_ENV=local`, `APP_DEBUG=true`, http URLs on
    `.co.za`, and Postgres. Production values are unknown and must be set by the
    deploy, never copied.
@@ -112,7 +114,7 @@ Top defects are ranked; the full audit reports are summarised here, not repeated
   moderation, promo codes, fulfilment.
 - Missing: payment, product images, restock on cancel.
 - Broken: `pending_approval` default hides existing listings after migrate.
-- Plan: payment via Billing, order-line snapshots, restock, push the unpushed commit.
+- Plan: payment via Billing (after provider decision), order-line snapshots, restock.
 
 ### Tasks
 - Working: boards, subtasks, recurrence, smart views, escalation queue.
@@ -141,7 +143,7 @@ Top defects are ranked; the full audit reports are summarised here, not repeated
 - Working: projects, basic editor, SVG export, token catalog.
 - Missing: asset upload, real AI provider, collaboration, Files/Docs link.
 - Broken/over-exposed: mock AI presented as real; `/design-system` writes open to any user.
-- Plan: push the editor commit, authorization on catalog, uploads via Dot.Files.
+- Plan: catalog authorization (PR open), uploads via Dot.Files, real AI provider later.
 
 ### Farms
 - Working: farm/field/crop-cycle logbook, notification bell.
@@ -196,7 +198,7 @@ Contracts used for every cross-platform call:
 ## 5. Prioritised plan
 
 1. **Foundations (before platform features):** SSO redeem conformity pattern,
-   CI + deploy workflow template, branch hygiene (push or merge the stranded work),
+   CI + deploy workflow template, branch hygiene (decide and merge the stranded feature branches),
    hosting and DNS (owner).
 2. **Security and correctness defects that are live risks once hosted:** Ehail
    self-approval and ride privacy; Auction bid atomicity; Analytics global flags and
@@ -264,3 +266,11 @@ not been investigated.
 - 2026-10-18: discovery complete. 14 audits (13 platforms plus the Ehail/Email search)
   and baseline test runs for all 14 repos. Nothing changed or deployed yet.
 - 2026-10-18: owner decisions recorded (Email dropped; Pulse, Plug, Tutor keep their current purpose). Wave 1 fix agents started (Ehail, Auction, Analytics, Tasks, Plug+Design); PRs only.
+- 2026-10-18 wave 1 (PRs only, none merged or deployed; each PR's suite re-run by me on SQLite):
+  - Tasks [Dot.Tasks#3](https://github.com/sakhilebhayi/Dot.Tasks/pull/3): 101 tests pass. AI headers, status validation, priority order, team scope, indexes.
+  - Auction [Dot.Auction#3](https://github.com/sakhilebhayi/Dot.Auction/pull/3): 123 tests, 116 pass, 7 skipped. Locked bid transaction, idempotent settlement. Lock proven only on a throwaway Postgres run by the agent.
+  - Ehail [Dot.Ehail#3](https://github.com/sakhilebhayi/Dot.Ehail/pull/3): 169 tests, 162 pass, 7 skipped. Self-approval closed, ride privacy, accept broadcast.
+  - Plug [Dot.Plug#3](https://github.com/sakhilebhayi/Dot.Plug/pull/3): 88 tests, 81 pass, 7 skipped. Install/publish role checks, SSO throttle.
+  - Design [Dot.Design#4](https://github.com/sakhilebhayi/Dot.Design/pull/4): 121 tests, 114 pass, 7 skipped. Operator-only catalog writes, honest mock AI, page-number race.
+  - Analytics [Dot.Analytics#12](https://github.com/sakhilebhayi/Dot.Analytics/pull/12) (base `feature/ecosystem-sso`): 642 tests, 635 pass, 7 skipped. No fabricated insights, operator-only flags, enforced gates, encrypted webhook secrets, hardened AI SQL.
+  - Deploy-time actions for the owner: set `users.is_platform_operator` for operators (Ehail, Design, Analytics via `analytics:operator`); rotate any Analytics webhook secrets that were stored in plaintext; review Auction's duplicate-winner demotion migration.
