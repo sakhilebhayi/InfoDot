@@ -102,4 +102,16 @@ return [
         ->filter()
         ->all(),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Membership webhooks
+    |--------------------------------------------------------------------------
+    | When someone is removed from a company, has their role changed, or a company is
+    | deleted, these platforms are told at once (signed with the same per-platform secret as
+    | the redeem call) so access ends in seconds, not at the person's next sign-in. The
+    | sign-in sync stays as the backstop. Comma-separated in ECOSYSTEM_MEMBERSHIP_PLATFORMS.
+    */
+
+    'membership_platforms' => array_values(array_filter(array_map('trim', explode(',', (string) env('ECOSYSTEM_MEMBERSHIP_PLATFORMS', 'files,docs'))))),
+
 ];
