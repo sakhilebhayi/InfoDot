@@ -120,7 +120,7 @@ class ResourceRegistryTest extends TestCase
     {
         $team = $this->company('Northwind Finance');
         $object = (string) Str::uuid();
-        $this->register(['team_uuid' => $team->uuid, 'object_uuid' => $object])->assertCreated();
+        $this->register(['team_uuid' => $team->uuid, 'object_uuid' => $object, 'path' => '/o/'.$object])->assertCreated();
         $resource = Resource::first();
 
         $member = User::factory()->create(['email_verified_at' => Carbon::now()]);
@@ -135,6 +135,36 @@ class ResourceRegistryTest extends TestCase
         $this->assertStringStartsWith('https://files.infodot.co.za/auth/ecosystem?token=', $url);
         $this->assertStringContainsString('&redirect='.rawurlencode('/o/'.$object), $url);
         $this->assertSame($team->id, $member->fresh()->current_team_id, 'opening switches to the owning company');
+    }
+
+    public function test_docs_registers_a_document_and_it_is_referenced_with_a_d(): void
+    {
+        $team = $this->company('Northwind Finance');
+        $object = (string) Str::uuid();
+
+        $response = $this->register(['team_uuid' => $team->uuid, 'object_uuid' => $object, 'type' => 'document'], 'docs-secret-for-tests', 'docs')->assertCreated();
+
+        $this->assertMatchesRegularExpression('/^'.$team->code.'-D-000001$/', $response->json('reference'));
+    }
+
+    public function test_a_document_opens_in_docs_and_the_letter_must_match_what_it_is(): void
+    {
+        $team = $this->company('Northwind Finance');
+        $object = (string) Str::uuid();
+        $this->register(['team_uuid' => $team->uuid, 'object_uuid' => $object, 'type' => 'document', 'path' => '/o/'.$object], 'docs-secret-for-tests', 'docs')->assertCreated();
+        $resource = Resource::first()->load('team');
+
+        $member = User::factory()->create(['email_verified_at' => Carbon::now()]);
+        $team->users()->attach($member, ['role' => 'editor']);
+
+        $response = $this->actingAs($member)->get('/open/'.$resource->uuid);
+        $this->assertStringStartsWith('https://doc.infodot.co.za/auth/ecosystem?token=', $response->headers->get('Location'));
+        $this->assertStringContainsString('&redirect='.rawurlencode('/o/'.$object), $response->headers->get('Location'));
+
+        $ref = Reference::for($resource);
+        $this->assertStringContainsString('-D-', $ref);
+        $this->assertTrue(Reference::resolve($ref)?->is($resource));
+        $this->assertNull(Reference::resolve(str_replace('-D-', '-F-', $ref)), 'a document never opens through an F reference');
     }
 
     public function test_a_person_in_another_company_gets_a_request_access_page_and_no_token(): void

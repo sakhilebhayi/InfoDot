@@ -15,11 +15,16 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class Reference
 {
-    public const KINDS = ['Q' => Questions::class, 'S' => Solutions::class, 'F' => Resource::class];
+    public const KINDS = ['Q' => Questions::class, 'S' => Solutions::class, 'F' => Resource::class, 'D' => Resource::class];
+
+    /** What a registered object is called in a reference: F for a stored file, D for a document. */
+    private const RESOURCE_LETTER = ['file' => 'F', 'document' => 'D'];
 
     public static function for(Model $item): string
     {
-        $kind = array_search($item::class, self::KINDS, true) ?: 'X';
+        $kind = $item instanceof Resource
+            ? (self::RESOURCE_LETTER[$item->type] ?? 'X')
+            : (array_search($item::class, self::KINDS, true) ?: 'X');
         $code = $item->team?->code ?? 'INFO';
 
         return sprintf('%s-%s-%06d', $code, $kind, $item->getKey());
@@ -27,7 +32,7 @@ final class Reference
 
     public static function resolve(string $text): ?Model
     {
-        if (! preg_match('/^\s*([A-Z0-9]{4})-([QSF])-0*(\d{1,9})\s*$/i', $text, $m)) {
+        if (! preg_match('/^\s*([A-Z0-9]{4})-([QSFD])-0*(\d{1,9})\s*$/i', $text, $m)) {
             return null;
         }
 
@@ -35,8 +40,9 @@ final class Reference
         $item = $class::query()->with('team')->find((int) $m[3]);
 
         // The code must be the item's real owner: a forged prefix opens nothing.
-        // A stored file (or any registered object) is only openable by someone in its company.
-        if ($item instanceof Resource && ! self::viewerBelongs($item)) {
+        // A stored file or a document is only openable by someone in its company, and its letter
+        // must be the right one for what it is (NOFI-F-... never opens a document).
+        if ($item instanceof Resource && (! self::viewerBelongs($item) || (self::RESOURCE_LETTER[$item->type] ?? null) !== strtoupper($m[2]))) {
             return null;
         }
 
