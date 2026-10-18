@@ -3,8 +3,8 @@
     // code, area colour variable, members
     $groups = [
         'Workspace' => ['WORK', 'knowledge', ['files', 'docs', 'forms', 'sheet', 'projects', 'tasks', 'hr', 'plug']],
-        'AI & Automation' => ['AUTO', 'analytics', ['agents', 'analytics', 'memory']],
-        'Community & Engagement' => ['COMM', 'platforms', ['pulse', 'engage', 'press', 'dopemine']],
+        'AI & Automation' => ['AUTO', 'analytics', ['agents', 'analytics']],
+        'Community & Engagement' => ['COMM', 'platforms', ['pulse', 'engage', 'press']],
         'Commerce & Finance' => ['FINA', 'files', ['finance', 'emall', 'auction', 'billing', 'charts']],
         'Services & Learning' => ['LEARN', 'documents', ['ehail', 'tutor', 'design']],
         'Infrastructure' => ['INFRA', 'people', ['central', 'notify']],

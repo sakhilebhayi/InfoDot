@@ -89,7 +89,7 @@ class EcosystemHandoffTest extends TestCase
     {
         // Parsed from the file, not from config(): a local or production .env may
         // legitimately override DOT_*_URL, and this test is about the defaults.
-        preg_match_all("/'(?<key>[a-z]+)' => \\['name' => '[^']+', 'url' => env\\('DOT_[A-Z]+_URL', '(?<url>[^']+)'\\), 'icon' => '[a-z_]+', 'accent' => '#[0-9a-f]{6}', 'active' => (?<active>true|false)\\]/", file_get_contents(base_path('config/ecosystem.php')), $m, PREG_SET_ORDER);
+        preg_match_all("/'(?<key>[a-z]+)' => \\['name' => '[^']+', 'url' => env\\('DOT_[A-Z]+_URL', '(?<url>[^']+)'\\), 'icon' => '[a-z_]+', 'accent' => '#[0-9a-f]{6}', 'active' => (?<active>true|false)(?:, 'internal' => true)?\\]/", file_get_contents(base_path('config/ecosystem.php')), $m, PREG_SET_ORDER);
 
         $this->assertCount(28, $m);
 

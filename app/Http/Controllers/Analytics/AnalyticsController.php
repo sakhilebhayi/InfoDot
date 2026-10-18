@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Questions;
 use App\Models\Solutions;
+use App\Support\Platforms;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -92,7 +93,7 @@ class AnalyticsController extends Controller
         };
 
         // ── Platform registry ─────────────────────────────────────────────
-        $platforms = config('ecosystem.platforms', []);
+        $platforms = Platforms::visible();
 
         return view('analytics.dashboard', compact(
             'team', 'totalUsers', 'totalSolutions', 'totalQuestions', 'totalComments',

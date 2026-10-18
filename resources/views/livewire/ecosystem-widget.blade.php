@@ -1,5 +1,5 @@
 @php
-    $platforms = collect(config('ecosystem.platforms', []))->except('infodot');
+    $platforms = collect(\App\Support\Platforms::visible())->except('infodot');
     $total = $platforms->count();
     $live = $platforms->filter(fn ($p) => ! empty($p['active']))->count();
 @endphp
