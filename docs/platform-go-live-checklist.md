@@ -15,7 +15,9 @@ tickets or commits.
 3. `SSH_TARGET=user@host tools/prepare-host.sh tasks auction ...` does the first install per platform
    (docroot layout, code clone, production `.env` on SQLite, `APP_KEY`, composer packages, and the
    shared secrets from `~/dot-ecosystem-secrets.env`). Use `DRY_RUN=1` to read what it will run.
-4. Put the matching `ECOSYSTEM_SECRET_<KEY>` lines from the same file into InfoDot's host `.env`.
+4. `SSH_TARGET=user@host tools/apply-secrets.sh infodot` writes the `ECOSYSTEM_SECRET_<KEY>` lines from the same file
+   into InfoDot's host `.env` (idempotent; keeps `.env.bak-secrets`). The same tool refreshes any other app's
+   secrets, for example `tools/apply-secrets.sh billing`. Use `DRY_RUN=1` to see which names it would write.
 5. `gh workflow run deploy.yml --repo sakhilebhayi/Dot.<Name> -f confirm=adopt`, then `-f confirm=deploy`.
 The sections below explain each step and the by-hand alternative.
 
