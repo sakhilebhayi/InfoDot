@@ -20,3 +20,4 @@
 - Migrated the 10 other new apps (13 on the runner), merged the diagnostics (#46), the second-30 start and the pilot docs (#47, #48), refreshed the runner. Failure counts: see REMEDIATION_ROADMAP.md R-1.
 - Opened 12 runner-mode PRs for the older apps (Mines, Agents, Central, Press, Forms, Engage, Sheet, Projects, Memory, Dopemine, docs, Charts). Not merged, not deployed.
 - Merged the 12 older-app runner PRs and migrated them in two batches (watched 10 minutes each, 0 failures). Crontab now: runner line + Charts keepalive only.
+- R-2: opened 17 composer-update PRs (audit clean, CI green), 2 axios PRs, a Charts backend PR (48 advisories found there), and the weekly Dependency Audit workflow. Nothing merged or deployed.

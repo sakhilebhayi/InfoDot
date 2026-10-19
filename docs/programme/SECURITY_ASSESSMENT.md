@@ -19,8 +19,8 @@ a security claim.
 
 Repositories with advisories (17): Auction, Billing, Design, Dopemine, Ehail, Emall, Farms, Files, Finance, HR,
 Memory, Notify, Plug, Projects, Pulse, Tasks, Tutor (4 to 5 advisories each; Pulse 10). Clean in this audit (9):
-Agents, Analytics (composer), Central, Engage, Forms, Mines, Press, Sheet, docs. Dot.Charts has no root
-`composer.json` and was not audited. Dot.Brain (JavaScript) was not audited.
+Agents, Analytics (composer), Central, Engage, Forms, Mines, Press, Sheet, docs. Dot.Charts' Laravel app is in `backend/` and was missed here at first; the later audit found 48
+advisories across 15 packages, 14 high (see REMEDIATION_ROADMAP.md R-2). Dot.Brain (JavaScript) was not audited.
 
 Remediation: `composer update` of the named packages (with dependencies), full suite per repository, PR, deploy.
 Tracked as R-2 in the roadmap. No upgrade is applied to production without the suite and the deploy smoke check.

@@ -84,12 +84,28 @@ workflow. **Done 2026-10-19: that target is reached** (25 `schedule:run` and 18 
 **Acceptance (not yet met).** Burst sample without `fork` errors; Scheduler Watchdog failure rate under 2% over
 48 h with every platform's scheduler still running.
 
-## R-2 Dependency advisories (security, high for Pulse and axios, medium otherwise)
+## R-2 Dependency advisories (security, high for Pulse, Charts and axios, medium otherwise)
 
-Update `guzzlehttp/guzzle`, `livewire/livewire`, `laravel/framework`, `league/flysystem`, `symfony/*` and `axios`
-in the 17 affected repositories, one PR each, suite green, then deploy in the usual one-at-a-time order. Add
-`composer audit` and `npm audit` as a CI step so new advisories fail a PR. Acceptance: `composer audit --locked`
-reports none on every default branch.
+Status 2026-10-19 (nothing merged or deployed): one PR per repository updates only the advised packages and their
+dependencies (`composer.json` unchanged), `composer audit --locked` clean afterwards, CI green on all of them:
+Pulse #16 (the high Guzzle advisory), Auction #21, Billing #17, Design #17, Dopemine #22, Ehail #20, Emall #19,
+Farms #18, Files #97, Finance #20, HR #15, Memory #26, Notify #17, Plug #12, Projects #18, Tasks #20, Tutor #14
+(all `Dot.<Name>`); axios 1.18.1 to 1.20.0 in Analytics #26 and Files #96 (`npm audit` 0, build passes).
+
+**Correction to the baseline:** Dot.Charts keeps its Laravel app in `backend/`, so the first audit skipped it. Its
+backend has **48 advisories across 15 packages, 14 of them high** (Guzzle, league/commonmark, symfony/mime,
+symfony/http-kernel, laravel/framework, phpunit). PR Charts #18 updates it (PHP 8.2 floor of its composer.json
+kept; Laravel 12.48.1 to 12.70.0), audit clean afterwards, backend suite 239 of 240 locally (the one error needs a
+gitignored signing key and fails identically on the old lock). **Dot.Charts, Dot.Memory and Dot.Dopemine have no test
+CI**, so for those three the suite must be run by hand before deploying. Charts' `frontend/` lockfile is not audited
+yet.
+
+Prevention: the weekly **Dependency Audit** workflow (InfoDot PR #52, `tools/audit-dependencies.sh`) audits every
+repository's default-branch lockfiles (Charts: `backend/`) and fails on any advisory so GitHub emails the owner. It
+reports until the PRs above are merged.
+
+Rollout: merge the PRs, then deploy one app at a time as usual (Pulse and Charts first). Acceptance: the Dependency
+Audit run reports no advisories.
 
 ## R-3 Backups and restore test (operations, high)
 
