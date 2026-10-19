@@ -62,6 +62,7 @@ status)
   grep -o '# dot-[a-z0-9-]*' "$CT" | sort | uniq -c | sort -rn | sed 's/^/   /'
   echo "== command files in $DIR:"; ls -1 "$DIR"/*.cron 2>/dev/null | sed "s#^$HOME/##" || echo "   none"
   echo "== last pass:"; cat "$DIR/last-run.log" 2>/dev/null || echo "   none yet"
+  echo "== recent failures (tails of the failing commands' own logs):"; tail -30 "$DIR/failures.log" 2>/dev/null || echo "   none"
   rm -f "$CT" ;;
 install)
   [ -x "$BIN" ] || { echo "runner script missing or not executable: $BIN" >&2; exit 1; }

@@ -21,7 +21,7 @@ touch "$RUN/active.$$"; n=$(ls "$RUN" | grep -c '^active\.'); m=$(cat "$RUN/max"
 echo "$app $cmd" >> "$RUN/calls"
 case "$app" in slow*) sleep 1;; hang*) sleep 5;; esac
 rm -f "$RUN/active.$$"
-case "$app" in fail*) exit 3;; esac
+case "$app" in fail*) echo "Scheduled task X failed"; exit 3;; esac
 echo "No scheduled commands are ready to run."
 SH
 chmod +x "$SHIM/crontab" "$SHIM/php"
@@ -60,6 +60,8 @@ check "never more than 4 commands at once (saw $(cat "$RUN/max"))" "[ \$(cat '$R
 check "the pass took less than 12 s (6 slow apps of 1 s, 4 at a time)" "[ $ELAPSED -lt 12 ]"
 check "last-run.log reports the failing command" "grep -q 'failed=1' '$HOME/.dot-cron.d/last-run.log' && grep -q 'FAILED:.*failer' '$HOME/.dot-cron.d/last-run.log'"
 check "last-run.log counts 10 schedule and 2 queue commands" "grep -q 'schedule=10 queue=2' '$HOME/.dot-cron.d/last-run.log'"
+check "last-run.log lists the slowest commands" "grep -q 'slowest:' '$HOME/.dot-cron.d/last-run.log' && grep -q 'rc=' '$HOME/.dot-cron.d/last-run.log'"
+check "the failing command's own log tail was kept in failures.log" "grep -q 'rc=3' '$HOME/.dot-cron.d/failures.log'"
 # 5. timeout kills a hanging command and the pass still ends
 START=$(date +%s); DOT_CRON_TIMEOUT=1 DOT_CRON_PARALLEL=4 bash "$HOME/bin/dot-cron-runner"; ELAPSED=$(( $(date +%s) - START ))
 check "a command over DOT_CRON_TIMEOUT is killed (pass took $ELAPSED s, hang would be 5 s)" "grep -q 'hang' '$HOME/.dot-cron.d/last-run.log' && [ $ELAPSED -lt 9 ]"
