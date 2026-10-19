@@ -25,7 +25,7 @@ jobs:
   health:
     name: Inspect cron, processes and limits
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
       - name: Set up SSH
         run: |
@@ -73,11 +73,23 @@ jobs:
           done | sort -rn | head -40
 
           echo
-          echo "== boot time of three sample apps (artisan --version, seconds)"
+          echo "== boot time of three sample apps (artisan --version, wall seconds)"
+          TIMEFORMAT='%R'
           for a in "$HOME"/mines.infodot.co.za/*/ "$HOME"/tasks.infodot.co.za/tasks/ "$HOME"/sheets.infodot.co.za/*/; do
             [ -f "$a/artisan" ] || continue
-            s=$(date +%s.%N); php "$a/artisan" --version >/dev/null 2>&1; e=$(date +%s.%N)
-            printf '%s  %.2fs\n' "${a#$HOME/}" "$(echo "$e - $s" | bc 2>/dev/null || echo 0)"
+            t=$( { time php "$a/artisan" --version >/dev/null 2>&1; } 2>&1 )
+            printf '%s  %ss\n' "${a#$HOME/}" "$t"
+          done
+
+          echo
+          echo "== burst sample: our artisan processes around the next minute boundary"
+          echo "(every cron line starts at second 0; this shows how long they stay alive)"
+          now=$(date +%s); wait=$((60 - now % 60)); sleep "$wait"; sleep 1
+          for i in 1 2 3 4 5 6 7 8; do
+            n=$(ps -u "$(id -un)" -o args= | grep -c '[a]rtisan')
+            oldest=$(ps -u "$(id -un)" -o etimes=,args= | grep '[a]rtisan' | sort -rn | head -1 | cut -c1-90)
+            echo "t+$(( (i-1) * 6 + 1 ))s: $n artisan processes; oldest: ${oldest:-none}"
+            sleep 6
           done
 
           echo
