@@ -18,8 +18,8 @@ T="${DOT_CRON_TIMEOUT:-115}"
 [ -d "$D" ] || exit 0
 mkdir -p "$D/locks"
 START=$(date +%s)
-FAILED="$D/.failed.$$"; : > "$FAILED"
-trap 'rm -f "$FAILED"' EXIT
+FAILED="$D/.failed.$$"; TIMES="$D/.times.$$"; : > "$FAILED"; : > "$TIMES"
+trap 'rm -f "$FAILED" "$TIMES"' EXIT
 
 select_lines() { # $1 = artisan command to select, e.g. schedule:run
   cat "$D"/*.cron 2>/dev/null | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*$' | grep -E "artisan $1( |\$)" || true
@@ -29,8 +29,18 @@ run_pass() {
   local lines
   lines="$(select_lines "$1")"
   [ -n "$lines" ] || return 0
-  printf '%s\n' "$lines" | tr '\n' '\0' | DOT_T="$T" DOT_FAILED="$FAILED" \
-    xargs -0 -n 1 -P "$P" sh -c 'timeout -k 5 "$DOT_T" sh -c "$1" || echo "$1" >> "$DOT_FAILED"' _
+  printf '%s\n' "$lines" | tr '\n' '\0' | DOT_T="$T" DOT_FAILED="$FAILED" DOT_TIMES="$TIMES" DOT_DIR="$D" \
+    xargs -0 -n 1 -P "$P" sh -c '
+      S=$(date +%s); timeout -k 5 "$DOT_T" sh -c "$1"; RC=$?; E=$(date +%s)
+      echo "$((E - S))s rc=$RC $1" >> "$DOT_TIMES"
+      if [ "$RC" -ne 0 ]; then
+        echo "rc=$RC $1" >> "$DOT_FAILED"
+        # keep the end of the app'"'"'s own cron log (the command writes it; the next minute overwrites it)
+        DIR=$(printf "%s" "$1" | sed -n "s/^cd \([^ ]*\) &&.*/\1/p"); LOG=$(printf "%s" "$1" | sed -n "s/.*> \([^ ]*\) 2>&1.*/\1/p")
+        if [ -n "$DIR" ] && [ -n "$LOG" ] && [ -f "$DIR/$LOG" ]; then
+          { echo "--- $(date -u +%H:%M:%SZ) rc=$RC $DIR"; tail -8 "$DIR/$LOG" | cut -c1-200; } >> "$DOT_DIR/failures.log"
+        fi
+      fi' _
 }
 
 N1=$(select_lines 'schedule:run' | grep -c . || true)
@@ -46,4 +56,7 @@ END=$(date +%s)
 {
   echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) schedule=${N1} queue=${N2} failed=$(grep -c . "$FAILED" || true) seconds=$((END - START)) parallel=$P"
   head -10 "$FAILED" | cut -c1-200 | sed 's/^/  FAILED: /'
+  echo "  slowest:"; sort -rn "$TIMES" | head -5 | cut -c1-160 | sed 's/^/    /'
 } > "$D/last-run.log"
+# failures.log keeps the tails of failing commands' own logs; bounded
+[ -f "$D/failures.log" ] && tail -n 200 "$D/failures.log" > "$D/failures.log.t" && mv "$D/failures.log.t" "$D/failures.log"
