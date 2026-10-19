@@ -122,6 +122,20 @@ against a non-production copy. The shared-host architecture (one account, SQLite
 be assumed to reach the one-million-registered-user goal; the plan must say what changes (managed database,
 dedicated queue workers, object storage) and be validated by the load test, not asserted.
 
+## R-9 InfoDot community contributions and knowledge rewards (new requirement, 2026-10-19; not started)
+
+Owner brief stored verbatim in [requirements/infodot-community-rewards.md](requirements/infodot-community-rewards.md):
+reward useful questions, answers, verified solutions, tutorials and corrections on InfoDot through the existing Dot
+Points scoring and ledger in Dot.Brain / Dot.Memory / Dot.Dopemine, shown on the existing profile, with configurable
+rules, quality gates, anti-abuse, an auditable lifecycle with reversals, and validated `infodot.*` events.
+
+First steps (planned, not done): (1) inspect what exists: InfoDot's question/answer/moderation/profile code (the
+"Questions" page is in the signed-in UI) and the current Dot Points scoring, ledger and event contracts in the three
+intelligence services; (2) write the gap analysis and the event contract (`infodot.question.published` ... 
+`infodot.contribution.reward_reversed`) before any code; (3) build the rule engine and ledger integration first,
+then moderation and anti-abuse, then the Brain / Memory / Dopemine integrations and the profile display. Depends on
+R-5 (verified sign-in) and on the tenant-isolation review (R-7).
+
 ## Later phases
 
 Design system, integration contracts, Brain/Memory/Dopemine governance, compliance matrix (POPIA, GDPR), disaster
