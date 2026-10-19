@@ -26,8 +26,26 @@ minutes by marker parity. Estimate, not measured: lines starting in one minute d
 deploy. The 20 older cron lines (Mines, Agents, Central, Press, Forms, Engage, Sheet, Projects, Memory, Dopemine,
 docs, Charts) are unchanged and are the next step if the failure rate stays above target.
 
-**Acceptance (not yet met).** Re-run Host Health after the deploys: burst sample without `fork` errors, and the
-Scheduler Watchdog failure rate back under 2% over 48 h with every platform's scheduler still running.
+**Result of the first fix (verified 2026-10-19 16:57 UTC, Host Health run 39289886705, after all 13 deploys).**
+Crontab lines that fire every minute fell from 43 to 31 (12 queue workers now run every second minute).
+The burst sample still shows 51 `artisan` processes alive 7 s after the minute boundary and the sampler itself
+still gets `bash: fork: retry: Resource temporarily unavailable`. **The peak was reduced, not removed; R-1 is
+not resolved.** The Scheduler Watchdog effect cannot be judged yet (deploys finished minutes ago); compare the
+failure rate again after 24 to 48 h.
+
+Why it is not enough: about 20 of the remaining lines belong to the older apps (unchanged, still two processes
+per line) and every line still starts in the same second, so the peak is set by how many start together, not by
+how long each runs.
+
+**Next step (proposed, not built): a bounded-concurrency runner.** One crontab line per minute starts a small
+script that runs every app's `schedule:run` first and the queue workers after, at most 4 at a time
+(`xargs -P 4`), reading per-app command files from `~/.dot-cron.d/`. Peak processes become about 10 whatever the
+number of apps, and a slow app cannot starve the others. Needs: the runner on the host, each pipeline writing its
+command file instead of crontab lines (26 repositories, two templates), a one-time migration of the existing
+lines, and the same read-back verification the crontab writer already uses.
+
+**Acceptance (not yet met).** Burst sample without `fork` errors; Scheduler Watchdog failure rate under 2% over
+48 h with every platform's scheduler still running.
 
 ## R-2 Dependency advisories (security, high for Pulse and axios, medium otherwise)
 
