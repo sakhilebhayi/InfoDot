@@ -44,6 +44,22 @@ number of apps, and a slow app cannot starve the others. Needs: the runner on th
 command file instead of crontab lines (26 repositories, two templates), a one-time migration of the existing
 lines, and the same read-back verification the crontab writer already uses.
 
+**Runner pilot (verified 2026-10-19 17:23 to 17:47 UTC; tasks, notify and pulse migrated, 39 other crontab lines unchanged).**
+The runner works as designed (3 schedule + 3 queue commands per pass, never more than 4 at once) but the pilot
+shows the real constraint. In 9 minutes of passes, a scheduler command was killed in most minutes: exit code 137
+(SIGKILL) for notify, tasks and pulse, 11 to 18 s after the minute boundary, and twice exit 125 (`timeout` itself
+could not fork). Passes took 22 to 26 s for six commands (the slowest single `schedule:run`: 15 s). The same
+SIGKILL (137) killed `composer install` during the Tasks deploy that left that site in maintenance mode. So the
+host does not only refuse forks: it kills our PHP processes when the account is over a limit, and the remaining
+39 per-minute crontab lines still start together at second 0 right next to the runner. Hypothesis, **not yet
+confirmed**: a memory or entry-process limit on the account; cPanel's Resource Usage page (CloudLinux) would show
+the limit and the fault counts and is the quickest way to settle it.
+
+Consequences: migrating a few apps does not help while the rest still burst at second 0; the runner must carry
+every app (the 20 older cron lines need their pipelines changed to command files too); and the runner itself
+should start away from second 0. Diagnostics (PR #46: exit codes, slowest commands, failure log tails) is what
+exposed this.
+
 **Acceptance (not yet met).** Burst sample without `fork` errors; Scheduler Watchdog failure rate under 2% over
 48 h with every platform's scheduler still running.
 
