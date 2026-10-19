@@ -1,0 +1,28 @@
+name: Dependency Audit
+
+# Weekly (and on demand): runs `composer audit` and `npm audit` against the lockfiles on the default branch of
+# every Dot repository (tools/audit-dependencies.sh) and fails if any has an advisory, so GitHub notifies the
+# owner. It reads public repositories only and changes nothing. The table is in the run's summary.
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          tools: composer:v2
+          coverage: none
+      - name: Audit every repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash tools/audit-dependencies.sh
