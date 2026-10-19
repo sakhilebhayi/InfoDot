@@ -60,6 +60,25 @@ every app (the 20 older cron lines need their pipelines changed to command files
 should start away from second 0. Diagnostics (PR #46: exit codes, slowest commands, failure log tails) is what
 exposed this.
 
+**Results of the rollout so far (verified from the runner's `failures.log`, 2026-10-19 UTC).** Failures are
+commands that exited non-zero (137 = killed, 125 = `timeout` could not fork) and whose own log was readable, so the
+counts are a lower bound.
+
+| Period | Setup | Failures | Pass length |
+|---|---|---|---|
+| 17:40 to 17:51 (11 min) | runner for 3 apps; 39 other crontab lines at second 0 | 13 | 22 to 26 s |
+| 17:52 to 18:05 (14 min) | runner for all 13 new apps at second 0; 20 older lines at second 0 | 1 (billing, 17:56) | 29 to 34 s |
+| 18:06 to 18:16 (10 min) | same, runner started at second 30 | 0 | 18 to 19 s |
+
+Single `schedule:run` commands still take up to 10 s each, which says the account is CPU or memory constrained
+and not only process constrained. The cause is still a hypothesis until the host's Resource Usage page is read.
+
+**Next (PRs open, nothing merged).** The 12 older pipelines get the same runner mode and `exec`: Mines #427,
+Agents #12, Central #57, Press #44, Forms #39, Engage #42, Sheet #50, Projects #17, Memory #25, Dopemine #21,
+docs #84, Charts #17. Each passed the real-block test on a fake host (13/13 checks): the actual cron section of the
+file, with and without the runner. After merging, each app migrates itself on its next deploy, or via the Cron Runner
+workflow. The target is an empty crontab apart from the runner line and Charts' analytics keepalive.
+
 **Acceptance (not yet met).** Burst sample without `fork` errors; Scheduler Watchdog failure rate under 2% over
 48 h with every platform's scheduler still running.
 
