@@ -3,7 +3,7 @@
 ## 2026-10-18 (before this programme document set)
 - Merged and deployed the 13-platform completion work; deployed Dot.Analytics; InfoDot marks all 14 active
   (InfoDot PRs #35, #36, #37, #38; Dot.Analytics PR #22). Details: `docs/platform-completion-register.md`.
-- Host dropped SSH connections during 8 deploys (exit 255 / "exec request failed"); each passed on retry.
+- Host dropped SSH connections during 9 failed deploy attempts (Emall 2, Tutor 2, Analytics 2, HR, Pulse, Plug; exit 255 / "exec request failed"); each deploy passed on a later attempt.
 
 ## 2026-10-19: baseline increment
 - Inventoried 27 Dot repositories, probed every host, read CI and PR state (ECOSYSTEM_INVENTORY.md).
