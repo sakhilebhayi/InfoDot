@@ -157,6 +157,26 @@ R-5 (verified sign-in) and on the tenant-isolation review (R-7).
 Design system, integration contracts, Brain/Memory/Dopemine governance, compliance matrix (POPIA, GDPR), disaster
 recovery drills, investor due-diligence pack: each written when its evidence exists.
 
+### R-1: the account's actual limits (cPanel Resource Usage, read by the owner 2026-10-19 evening)
+
+| Resource | Limit | Reading (one idle snapshot) |
+|---|---|---|
+| Physical memory | **1 GB** | 550.8 MB (53.8%) |
+| Number of processes | **100** | 10 (10%) |
+| Entry processes | **30** | 1 (3.3%) |
+| CPU | 100 | 2 |
+| Disk | 29.3 GB | 12.34 GB (42%) |
+| IOPS / I/O | 1,024 / 48.8 MB/s | 0 |
+
+This confirms the process-limit explanation and adds the likelier killer: **one gigabyte of RAM for 27 subdomains.**
+An idle account already sits at about 550 MB (web workers), a Laravel `artisan` process is tens of megabytes,
+and `composer install` during a deploy is far more. Bursts that cross 1 GB get SIGKILL (exit 137: the killed
+scheduler runs and the `composer install` that left Tasks in maintenance mode); a burst of more than 100 processes
+gives "fork: Resource temporarily unavailable" (exit 125). The runner's parallelism of 4 is therefore a memory
+choice as much as a process one; if a pass ever shows 137 again, lower `DOT_CRON_PARALLEL` to 3 before anything
+else. The numbers are one snapshot, not a peak: the Resource Usage graphs for the failing minutes would show the
+peak. Scale implication for the 1M-user goal: this account cannot be the production platform for that target.
+
 ### R-1 status (2026-10-19 18:55 UTC)
 
 All 25 apps run through the runner; 0 command failures logged in the 19 minutes since the last batch moved, against
