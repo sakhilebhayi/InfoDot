@@ -69,6 +69,8 @@ counts are a lower bound.
 | 17:40 to 17:51 (11 min) | runner for 3 apps; 39 other crontab lines at second 0 | 13 | 22 to 26 s |
 | 17:52 to 18:05 (14 min) | runner for all 13 new apps at second 0; 20 older lines at second 0 | 1 (billing, 17:56) | 29 to 34 s |
 | 18:06 to 18:16 (10 min) | same, runner started at second 30 | 0 | 18 to 19 s |
+| 18:36 to 18:46 (10 min) | batch 1 of the older apps moved (memory, dopemine, docs, projects, charts, central; mines moved by its own deploy) | 0 | 46 to 48 s |
+| 18:46 to 18:55 (9 min) | batch 2 moved (agents, press, forms, engage, sheet): the crontab holds only the runner line and the Charts analytics keepalive | 0 | 49 s |
 
 Single `schedule:run` commands still take up to 10 s each, which says the account is CPU or memory constrained
 and not only process constrained. The cause is still a hypothesis until the host's Resource Usage page is read.
@@ -77,7 +79,7 @@ and not only process constrained. The cause is still a hypothesis until the host
 Agents #12, Central #57, Press #44, Forms #39, Engage #42, Sheet #50, Projects #17, Memory #25, Dopemine #21,
 docs #84, Charts #17. Each passed the real-block test on a fake host (13/13 checks): the actual cron section of the
 file, with and without the runner. After merging, each app migrates itself on its next deploy, or via the Cron Runner
-workflow. The target is an empty crontab apart from the runner line and Charts' analytics keepalive.
+workflow. **Done 2026-10-19: that target is reached** (25 `schedule:run` and 18 `queue:work` commands run through the runner).
 
 **Acceptance (not yet met).** Burst sample without `fork` errors; Scheduler Watchdog failure rate under 2% over
 48 h with every platform's scheduler still running.
@@ -124,3 +126,14 @@ dedicated queue workers, object storage) and be validated by the load test, not 
 
 Design system, integration contracts, Brain/Memory/Dopemine governance, compliance matrix (POPIA, GDPR), disaster
 recovery drills, investor due-diligence pack: each written when its evidence exists.
+
+### R-1 status (2026-10-19 18:55 UTC)
+
+All 25 apps run through the runner; 0 command failures logged in the 19 minutes since the last batch moved, against
+13 in 11 minutes before the rollout started. One caveat for the next change: a pass now takes about 49 s, started at
+second 30, so it ends around second 19 of the next minute. Another 10 to 15 s of work would make passes overlap
+(the schedule-pass lock then skips a minute and writes `last-skip.log`). Mines' `schedule:run` alone takes 20 to 23 s.
+The older apps' Scheduler Watchdog runs since 18:30 all succeeded, but only 1 to 2 runs per app are in that window
+(GitHub's scheduler was degraded), so the 48 h comparison against the pre-18-Oct baseline is still outstanding.
+R-1 stays open until that comparison and the cPanel Resource Usage reading are in. The process-limit hypothesis is
+unconfirmed.

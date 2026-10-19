@@ -19,3 +19,4 @@
 - Rollout step 1: merged the runner, installed it (two failed installs were rolled back by the read-back check: the host shell has no /dev/fd), merged the 13 runner-mode pipeline PRs, migrated tasks, notify, pulse. Pilot result: scheduler commands killed (rc 137 / 125) in most minutes while the 39 other lines still burst at second 0. The other 10 new apps and the older apps are NOT migrated. See REMEDIATION_ROADMAP.md R-1.
 - Migrated the 10 other new apps (13 on the runner), merged the diagnostics (#46), the second-30 start and the pilot docs (#47, #48), refreshed the runner. Failure counts: see REMEDIATION_ROADMAP.md R-1.
 - Opened 12 runner-mode PRs for the older apps (Mines, Agents, Central, Press, Forms, Engage, Sheet, Projects, Memory, Dopemine, docs, Charts). Not merged, not deployed.
+- Merged the 12 older-app runner PRs and migrated them in two batches (watched 10 minutes each, 0 failures). Crontab now: runner line + Charts keepalive only.
