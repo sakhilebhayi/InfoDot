@@ -1,0 +1,74 @@
+name: Cron Runner
+
+# Manages the account's ONE bounded-concurrency cron runner (tools/dot-cron-runner.sh) instead of dozens of
+# per-app `* * * * *` crontab lines that fire in the same second and exhaust the host's process limit
+# (see docs/programme/REMEDIATION_ROADMAP.md, R-1). Fixed modes, no free-form command.
+#
+#   status    read-only: runner present?, crontab lines per app, command files, the last pass
+#   install   copy the runner to ~/bin and add its single crontab line (idempotent)
+#   migrate   move the named apps' `# dot-<key>` crontab lines into ~/.dot-cron.d/<key>.cron
+#   revert    undo migrate for the named apps
+#
+# Only run `migrate` for apps whose deploy pipeline already writes command files (an app that still writes
+# crontab lines would run twice). Every crontab write takes the shared lock, keeps a timestamped backup,
+# verifies the read-back and restores the previous crontab on any mismatch.
+#
+# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: status | install | migrate | revert
+        required: true
+        default: status
+        type: choice
+        options: [status, install, migrate, revert]
+      apps:
+        description: "App keys for migrate/revert, space separated (e.g. tasks auction)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  cron:
+    name: ${{ inputs.mode }} cron runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the inputs
+        env:
+          MODE: ${{ inputs.mode }}
+          APPS: ${{ inputs.apps }}
+        run: |
+          case "$MODE" in status|install) ;; migrate|revert) [ -n "$APPS" ] || { echo "::error::$MODE needs apps"; exit 1; } ;; esac
+          printf '%s' "$APPS" | grep -Eq '^[a-z0-9 -]*$' || { echo "::error::apps may only contain a-z, 0-9, space and dash"; exit 1; }
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Copy the runner to the host
+        if: ${{ inputs.mode == 'install' }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" 'mkdir -p "$HOME/bin"'
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes tools/dot-cron-runner.sh \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:bin/dot-cron-runner"
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" 'chmod 755 "$HOME/bin/dot-cron-runner"'
+
+      - name: Run
+        env:
+          MODE: ${{ inputs.mode }}
+          APPS: ${{ inputs.apps }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              "bash -s -- $MODE $APPS" < tools/dot-cron-host.sh

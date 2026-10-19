@@ -64,3 +64,12 @@ jobs:
 
       - name: Run Tests
         run: php artisan test
+
+  cron-runner:
+    name: cron runner (fake host)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the fake-host test of the cron runner and its installer
+        run: bash tools/test-dot-cron.sh
