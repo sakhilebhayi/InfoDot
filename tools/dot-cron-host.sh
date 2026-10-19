@@ -30,13 +30,21 @@ with_lock() {
   exec 9>"$HOME/.dot-crontab.lock"; flock -w 120 9 || { echo "could not take the crontab lock within 120 s" >&2; exit 1; }
 }
 
+normalize() { grep -v '^[[:space:]]*$' "$1" | grep -v '^# \(DO NOT EDIT\|(.* installed on\|(Cron version\)' | sed -E 's/[[:space:]]+$//' | sort; }
+
 # write_crontab <new file> <old file> <expected number of lines of others>  (others = lines not in $4 pattern)
 write_crontab() {
   local new="$1" old="$2" chk; chk="$(mktemp)"
   cp "$old" "$HOME/.dot-crontab.backup-$(date -u +%Y%m%dT%H%M%S)"
   crontab "$new"
   read_crontab "$chk" || { crontab "$old"; echo "read-back failed; previous crontab restored" >&2; exit 1; }
-  if ! cmp -s <(sort "$new") <(sort "$chk"); then crontab "$old"; echo "read-back differs from what was written; previous crontab restored" >&2; exit 1; fi
+  # Some crontab implementations add header comments, trim trailing blanks or drop empty lines on write:
+  # compare without those, and show what differs (cron lines hold paths only, no secrets) if it still does.
+  if ! cmp -s <(normalize "$new") <(normalize "$chk"); then
+    echo "read-back differs from what was written; difference (< written, > read back):" >&2
+    diff <(normalize "$new") <(normalize "$chk") | head -20 | cut -c1-200 >&2 || true
+    crontab "$old"; echo "previous crontab restored" >&2; exit 1
+  fi
   rm -f "$chk"
 }
 
