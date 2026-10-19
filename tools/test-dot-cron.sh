@@ -5,7 +5,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 W="$(mktemp -d)"; trap 'rm -rf "$W"' EXIT
 export HOME="$W/home"; SHIM="$W/shim"; mkdir -p "$HOME/bin" "$SHIM" "$W/apps"
-export PATH="$SHIM:$PATH" CRONTAB_FILE="$W/crontab.txt" RUN="$W/run"; mkdir -p "$RUN"
+export DOT_CRON_DELAY=0 PATH="$SHIM:$PATH" CRONTAB_FILE="$W/crontab.txt" RUN="$W/run"; mkdir -p "$RUN"
 FAIL=0; ok() { echo "ok   - $1"; }; bad() { echo "FAIL - $1"; FAIL=1; }
 check() { if eval "$2"; then ok "$1"; else bad "$1"; fi; }
 
@@ -65,6 +65,13 @@ check "the failing command's own log tail was kept in failures.log" "grep -q 'rc
 # 5. timeout kills a hanging command and the pass still ends
 START=$(date +%s); DOT_CRON_TIMEOUT=1 DOT_CRON_PARALLEL=4 bash "$HOME/bin/dot-cron-runner"; ELAPSED=$(( $(date +%s) - START ))
 check "a command over DOT_CRON_TIMEOUT is killed (pass took $ELAPSED s, hang would be 5 s)" "grep -q 'hang' '$HOME/.dot-cron.d/last-run.log' && [ $ELAPSED -lt 9 ]"
+# 5b. the start delay is honoured, and an overlapping pass is skipped instead of piling up
+START=$(date +%s); DOT_CRON_DELAY=2 bash "$HOME/bin/dot-cron-runner"; ELAPSED=$(( $(date +%s) - START ))
+check "DOT_CRON_DELAY=2 delays the start (pass took $ELAPSED s, at least 2)" "[ $ELAPSED -ge 2 ]"
+if command -v flock >/dev/null && [ -z "${SHIM_FLOCK:-}" ] && [ ! -f "$SHIM/flock" ]; then
+  ( bash "$HOME/bin/dot-cron-runner" & sleep 0.5; bash "$HOME/bin/dot-cron-runner"; wait )
+  check "a second runner started during a pass skips (last-skip.log written)" "grep -q skipped '$HOME/.dot-cron.d/last-skip.log'"
+else echo "skip - overlap test needs real flock (runs in CI)"; fi
 # 6. revert
 bash "$HOSTSH" revert tasks auction >/dev/null 2>&1
 check "revert puts tasks' two lines back with the marker" "[ \$(grep -c '# dot-tasks' '$CRONTAB_FILE') = 2 ] && [ ! -f '$HOME/.dot-cron.d/tasks.cron' ]"
