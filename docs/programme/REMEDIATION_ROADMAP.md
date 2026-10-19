@@ -86,7 +86,7 @@ workflow. **Done 2026-10-19: that target is reached** (25 `schedule:run` and 18 
 
 ## R-2 Dependency advisories (security, high for Pulse, Charts and axios, medium otherwise)
 
-Status 2026-10-19 (nothing merged or deployed): one PR per repository updates only the advised packages and their
+**Done 2026-10-19 evening: all PRs merged and the 19 apps deployed one at a time (Pulse and Charts first); every site 200 afterwards, and the Dependency Audit script reports no advisories in any of the 27 repositories.** One runner failure was logged during the deploy wave (Notify, exit 255 at 19:47Z, while its code was being replaced). Original status: one PR per repository updates only the advised packages and their
 dependencies (`composer.json` unchanged), `composer audit --locked` clean afterwards, CI green on all of them:
 Pulse #16 (the high Guzzle advisory), Auction #21, Billing #17, Design #17, Dopemine #22, Ehail #20, Emall #19,
 Farms #18, Files #97, Finance #20, HR #15, Memory #26, Notify #17, Plug #12, Projects #18, Tasks #20, Tutor #14
