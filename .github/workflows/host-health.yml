@@ -1,0 +1,88 @@
+name: Host Health
+
+# Read-only, whole-account diagnosis of the shared cPanel host: why do scheduled
+# commands run late? Every Dot app shares ONE crontab and one set of process
+# limits, so this is account-wide and is kept in InfoDot. Fixed commands on
+# purpose -- this workflow must never become a general remote shell. It changes
+# nothing and prints no .env values, keys or tokens.
+#
+# It prints: the clock; load and process counts; the account's resource
+# limits; every crontab line grouped by app marker (cron lines hold paths only);
+# how many lines fire in each minute of the hour; the age of each app's last
+# scheduler and queue cron output (storage/logs/cron-*.log, which each cron line
+# overwrites every run, so the age is "seconds since cron last ran it"); the
+# last lines of the slowest-looking logs; and the time `artisan --version` takes
+# to boot three sample apps.
+#
+# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  health:
+    name: Inspect cron, processes and limits
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Inspect
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              'bash -s' <<'HEALTH'
+          set -uo pipefail
+          echo "== clock: $(date -u +%Y-%m-%dT%H:%M:%SZ)  host: $(hostname)"
+          echo "== load: $(cat /proc/loadavg)  cores: $(nproc 2>/dev/null)"
+          echo "== my processes now: $(ps -u "$(id -un)" -o pid= | wc -l) total, $(pgrep -u "$(id -un)" -c php 2>/dev/null || echo 0) php"
+          echo "== limits (ulimit -a)"; ulimit -a 2>/dev/null | head -20
+          echo "== my longest-running / busiest processes"
+          ps -u "$(id -un)" -o pid,etime,pcpu,pmem,args --sort=-pcpu 2>/dev/null | cut -c1-150 | head -15
+
+          echo
+          echo "== crontab: line count and lines per app marker"
+          CT="$(crontab -l 2>/dev/null || true)"
+          echo "$CT" | grep -c . | sed 's/^/total lines: /'
+          echo "$CT" | grep -o '# dot-[a-z]*' | sort | uniq -c | sort -rn
+          echo "-- lines firing every minute: $(echo "$CT" | grep -c '^\* \* \* \* \*')"
+          echo "-- distinct minute fields (first column) and how many lines use each:"
+          echo "$CT" | grep -v '^#' | awk 'NF>5{print $1}' | sort | uniq -c | sort -rn | head
+          echo "-- crontab (path/command part only, to read the commands):"
+          echo "$CT" | sed -E 's/>.*//' | cut -c1-170
+
+          echo
+          echo "== age of each app's last cron output (seconds ago; scheduler line writes cron-scheduler.log each run)"
+          NOW=$(date +%s)
+          for f in "$HOME"/*/*/storage/logs/cron-scheduler.log "$HOME"/public_html/*/storage/logs/cron-scheduler.log "$HOME"/*/storage/logs/cron-scheduler.log; do
+            [ -f "$f" ] || continue
+            m=$(stat -c %Y "$f"); app=$(echo "$f" | sed -E "s#^$HOME/##; s#/storage/logs/.*##")
+            printf '%6ss  scheduler  %s\n' "$((NOW-m))" "$app"
+          done | sort -rn | head -40
+          for f in "$HOME"/*/*/storage/logs/cron-queue.log "$HOME"/public_html/*/storage/logs/cron-queue.log; do
+            [ -f "$f" ] || continue
+            m=$(stat -c %Y "$f"); app=$(echo "$f" | sed -E "s#^$HOME/##; s#/storage/logs/.*##")
+            printf '%6ss  queue      %s\n' "$((NOW-m))" "$app"
+          done | sort -rn | head -40
+
+          echo
+          echo "== boot time of three sample apps (artisan --version, seconds)"
+          for a in "$HOME"/mines.infodot.co.za/*/ "$HOME"/tasks.infodot.co.za/tasks/ "$HOME"/sheets.infodot.co.za/*/; do
+            [ -f "$a/artisan" ] || continue
+            s=$(date +%s.%N); php "$a/artisan" --version >/dev/null 2>&1; e=$(date +%s.%N)
+            printf '%s  %.2fs\n' "${a#$HOME/}" "$(echo "$e - $s" | bc 2>/dev/null || echo 0)"
+          done
+
+          echo
+          echo "== last lines of the 3 oldest scheduler logs (errors would show here)"
+          for f in $(ls -1tr "$HOME"/*/*/storage/logs/cron-scheduler.log 2>/dev/null | head -3); do
+            echo "-- ${f#$HOME/}"; tail -3 "$f" | cut -c1-200
+          done
+          HEALTH
