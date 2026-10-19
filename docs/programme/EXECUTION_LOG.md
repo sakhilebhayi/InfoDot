@@ -10,3 +10,7 @@
 - Ran `composer audit` / `npm audit` on 26 default-branch lockfiles: advisories in 17 repositories (SECURITY_ASSESSMENT.md S-1).
 - Found the scheduler-staleness regression (REMEDIATION_ROADMAP.md R-1).
 - No application code changed in this increment. Deployments: none.
+
+## 2026-10-19: R-1 diagnosis
+- Added the read-only Host Health workflow (InfoDot PR #40); ran it twice. Found the process-limit burst (`fork: Resource temporarily unavailable`, 57 artisan processes at t+7 s).
+- Opened 13 cron-spread PRs (see REMEDIATION_ROADMAP.md R-1). Not merged, not deployed.

@@ -10,15 +10,24 @@ time the 13 platforms were adopted): failed runs rose from 0 of 26-41 before to 
 2/74 (Memory); Charts 0/75. Example probe reply: scheduler age 257 s against a 180 s limit. Before the deploys
 the same watchdogs failed essentially never.
 
-Likely cause (hypothesis, **not yet proven**): each new app adds a `schedule:run` line and a `queue:work` line to
-the one shared crontab, all firing every minute on a shared account with process limits; the SSH drops (exit 255,
-"exec request failed") and the odd 503 seen during deploys point the same way.
+**Root cause (verified 2026-10-19, Host Health run 39274368839).** The crontab has 45 lines, 43 of them
+`* * * * *`, all starting in the same second. A burst sample at the minute boundary showed 57 `artisan` processes
+alive 7 s in (cron's `sh -c` parents were visible in the first run's process list), and the host answered `bash: fork: retry: Resource temporarily
+unavailable`: the account's process limit is hit. A cron job or SSH session that cannot fork starts late or not at
+all, which explains the stale scheduler probes, the SSH exit 255 / "exec request failed" drops during deploys and
+the occasional 503/timeout. Host load average was about 6 on 32 cores and `artisan --version` boots in about
+0.3 s, so CPU is not the constraint; process count is. The account's exact process limit is not readable from
+inside the shell (`ulimit -u` shows the kernel maximum, the limit is applied by the host).
 
-Plan: (1) read the host's limits and cron timing through an existing `server-inspect`/`server-logs` workflow or
-the owner; (2) combine the two lines per app into one boot, stagger start minutes, and run `queue:work` only when
-the queue has work or at a lower frequency for apps whose schedule is daily; (3) re-measure the watchdog
-failure rate over 48 h. Acceptance: watchdog failure rate back to the pre-18-Oct level (under 2%) with all 13
-platforms still running their schedules.
+**Fix (PRs open, nothing deployed).** In the 13 deploy pipelines that were added on 2026-10-18 (Dot.Tasks #18,
+Auction #19, Ehail #18, Notify #15, Farms #16, Finance #18, Emall #17, Billing #15, HR #13, Tutor #12, Design #15,
+Pulse #14, Analytics #24): `exec` before `php` (one process per line instead of two) and the queue worker on alternate
+minutes by marker parity. Estimate, not measured: lines starting in one minute drop from 43 to about 36 and each line is one process instead of two, so the peak falls from roughly 100 processes to roughly 36. Takes effect per app on its next
+deploy. The 20 older cron lines (Mines, Agents, Central, Press, Forms, Engage, Sheet, Projects, Memory, Dopemine,
+docs, Charts) are unchanged and are the next step if the failure rate stays above target.
+
+**Acceptance (not yet met).** Re-run Host Health after the deploys: burst sample without `fork` errors, and the
+Scheduler Watchdog failure rate back under 2% over 48 h with every platform's scheduler still running.
 
 ## R-2 Dependency advisories (security, high for Pulse and axios, medium otherwise)
 
