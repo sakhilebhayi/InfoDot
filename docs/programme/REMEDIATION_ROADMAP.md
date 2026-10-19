@@ -86,7 +86,7 @@ workflow. **Done 2026-10-19: that target is reached** (25 `schedule:run` and 18 
 
 ## R-2 Dependency advisories (security, high for Pulse, Charts and axios, medium otherwise)
 
-Status 2026-10-19 (nothing merged or deployed): one PR per repository updates only the advised packages and their
+**Done 2026-10-19 evening: all PRs merged and the 19 apps deployed one at a time (Pulse and Charts first); every site 200 afterwards, and the Dependency Audit script reports no advisories in any of the 27 repositories.** One runner failure was logged during the deploy wave (Notify, exit 255 at 19:47Z, while its code was being replaced). Original status: one PR per repository updates only the advised packages and their
 dependencies (`composer.json` unchanged), `composer audit --locked` clean afterwards, CI green on all of them:
 Pulse #16 (the high Guzzle advisory), Auction #21, Billing #17, Design #17, Dopemine #22, Ehail #20, Emall #19,
 Farms #18, Files #97, Finance #20, HR #15, Memory #26, Notify #17, Plug #12, Projects #18, Tasks #20, Tutor #14
@@ -156,6 +156,26 @@ R-5 (verified sign-in) and on the tenant-isolation review (R-7).
 
 Design system, integration contracts, Brain/Memory/Dopemine governance, compliance matrix (POPIA, GDPR), disaster
 recovery drills, investor due-diligence pack: each written when its evidence exists.
+
+### R-1: the account's actual limits (cPanel Resource Usage, read by the owner 2026-10-19 evening)
+
+| Resource | Limit | Reading (one idle snapshot) |
+|---|---|---|
+| Physical memory | **1 GB** | 550.8 MB (53.8%) |
+| Number of processes | **100** | 10 (10%) |
+| Entry processes | **30** | 1 (3.3%) |
+| CPU | 100 | 2 |
+| Disk | 29.3 GB | 12.34 GB (42%) |
+| IOPS / I/O | 1,024 / 48.8 MB/s | 0 |
+
+This confirms the process-limit explanation and adds the likelier killer: **one gigabyte of RAM for 27 subdomains.**
+An idle account already sits at about 550 MB (web workers), a Laravel `artisan` process is tens of megabytes,
+and `composer install` during a deploy is far more. Bursts that cross 1 GB get SIGKILL (exit 137: the killed
+scheduler runs and the `composer install` that left Tasks in maintenance mode); a burst of more than 100 processes
+gives "fork: Resource temporarily unavailable" (exit 125). The runner's parallelism of 4 is therefore a memory
+choice as much as a process one; if a pass ever shows 137 again, lower `DOT_CRON_PARALLEL` to 3 before anything
+else. The numbers are one snapshot, not a peak: the Resource Usage graphs for the failing minutes would show the
+peak. Scale implication for the 1M-user goal: this account cannot be the production platform for that target.
 
 ### R-1 status (2026-10-19 18:55 UTC)
 

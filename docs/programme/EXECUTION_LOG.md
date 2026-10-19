@@ -22,3 +22,5 @@
 - Merged the 12 older-app runner PRs and migrated them in two batches (watched 10 minutes each, 0 failures). Crontab now: runner line + Charts keepalive only.
 - R-2: opened 17 composer-update PRs (audit clean, CI green), 2 axios PRs, a Charts backend PR (48 advisories found there), and the weekly Dependency Audit workflow. Nothing merged or deployed.
 - 2026-10-19: new requirement received (InfoDot community contributions and knowledge rewards); stored in requirements/infodot-community-rewards.md and added to the roadmap as R-9. Not started.
+- cPanel limits read: 1 GB RAM, 100 processes, 30 entry processes (R-1). Merged all R-2 PRs (17 composer, 2 axios, Charts backend) and docs #51/#52; deploying them one app at a time.
+- Merged and deployed the R-2 updates (17 composer, 2 axios, Charts backend): 19 deploys, all succeeded on the first attempt (about 3 minutes each, no SSH drops, no kills), every site 200, audit clean across all repos. One cron-runner failure logged in that window (Notify, rc 255, 19:47Z).
