@@ -30,18 +30,31 @@ with_lock() {
   exec 9>"$HOME/.dot-crontab.lock"; flock -w 120 9 || { echo "could not take the crontab lock within 120 s" >&2; exit 1; }
 }
 
+normalize() { grep -v '^[[:space:]]*$' "$1" | grep -v '^# \(DO NOT EDIT\|(.* installed on\|(Cron version\)' | sed -E 's/[[:space:]]+$//' | sort; }
+
 # write_crontab <new file> <old file> <expected number of lines of others>  (others = lines not in $4 pattern)
 write_crontab() {
   local new="$1" old="$2" chk; chk="$(mktemp)"
   cp "$old" "$HOME/.dot-crontab.backup-$(date -u +%Y%m%dT%H%M%S)"
   crontab "$new"
   read_crontab "$chk" || { crontab "$old"; echo "read-back failed; previous crontab restored" >&2; exit 1; }
-  if ! cmp -s <(sort "$new") <(sort "$chk"); then crontab "$old"; echo "read-back differs from what was written; previous crontab restored" >&2; exit 1; fi
+  # Some crontab implementations add header comments, trim trailing blanks or drop empty lines on write:
+  # compare without those, and show what differs (cron lines hold paths only, no secrets) if it still does.
+  # (no <(...) here: the host's restricted shell has no /dev/fd)
+  local nn nc; nn="$(mktemp)"; nc="$(mktemp)"; normalize "$new" > "$nn"; normalize "$chk" > "$nc"
+  if ! cmp -s "$nn" "$nc"; then
+    echo "read-back differs from what was written; difference (< written, > read back):" >&2
+    diff "$nn" "$nc" | head -20 | cut -c1-200 >&2 || true
+    rm -f "$nn" "$nc"; crontab "$old"; echo "previous crontab restored" >&2; exit 1
+  fi
+  rm -f "$nn" "$nc"
   rm -f "$chk"
 }
 
 case "$MODE" in
 status)
+  echo "== tools the runner needs: $(for c in flock timeout xargs sh tr grep; do command -v $c >/dev/null 2>&1 && echo "$c=ok" || echo "$c=MISSING"; done | tr '\n' ' ')"
+  echo "== xargs -0 -P works: $(printf 'a\0b\0' | xargs -0 -n 1 -P 2 echo 2>&1 | tr '\n' ' ')"
   echo "== runner script: $( [ -x "$BIN" ] && echo "present ($BIN)" || echo "MISSING" )"
   CT="$(mktemp)"; read_crontab "$CT"
   echo "== runner crontab line: $(grep -c "$RMARK" "$CT") (expected 1 once installed)"
@@ -52,6 +65,7 @@ status)
   rm -f "$CT" ;;
 install)
   [ -x "$BIN" ] || { echo "runner script missing or not executable: $BIN" >&2; exit 1; }
+  for c in flock timeout xargs; do command -v "$c" >/dev/null 2>&1 || { echo "the runner needs $c and the host does not have it" >&2; exit 1; }; done
   mkdir -p "$DIR" "$DIR/locks"; with_lock
   OLD="$(mktemp)"; NEW="$(mktemp)"; read_crontab "$OLD"
   { grep -v "$RMARK" "$OLD" || true; echo "$RLINE"; } > "$NEW"

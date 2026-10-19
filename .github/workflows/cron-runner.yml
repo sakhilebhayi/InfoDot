@@ -45,7 +45,8 @@ jobs:
           APPS: ${{ inputs.apps }}
         run: |
           case "$MODE" in status|install) ;; migrate|revert) [ -n "$APPS" ] || { echo "::error::$MODE needs apps"; exit 1; } ;; esac
-          printf '%s' "$APPS" | grep -Eq '^[a-z0-9 -]*$' || { echo "::error::apps may only contain a-z, 0-9, space and dash"; exit 1; }
+          # printf adds the newline grep needs: an empty value has no line and would never match.
+          printf '%s\n' "$APPS" | grep -Eq '^[a-z0-9 -]*$' || { echo "::error::apps may only contain a-z, 0-9, space and dash"; exit 1; }
 
       - name: Set up SSH
         run: |
