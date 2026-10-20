@@ -122,6 +122,37 @@
         @endif
     </section>
 
+    @if ($isOwner && $moderation->isNotEmpty())
+        <section class="mb-8 ix-modstatus" aria-labelledby="profile-moderation">
+            <h2 id="profile-moderation" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Moderation of your content</h2>
+            <p class="ix-points__note">A moderator hid these. Open one to read why and, if you disagree, appeal it once.</p>
+            <ul class="ix-modstatus__list">
+                @foreach ($moderation as $row)
+                    <li>
+                        <p class="ix-modstatus__title">
+                            <span class="ix-chip {{ $row['hidden'] ? 'ix-chip--open' : 'ix-chip--done' }}">{{ $row['hidden'] ? 'Hidden' : 'Restored' }}</span>
+                            {{ $row['kind'] }}: <a href="{{ $row['url'] }}">{{ $row['title'] }}</a>
+                        </p>
+                        @if ($row['hidden'] && filled($row['reason']))
+                            <p class="ix-points__note">Reason: {{ $row['reason'] }}</p>
+                        @endif
+                        <p class="ix-points__note">
+                            @if ($row['appeal'] === null)
+                                No appeal sent yet.
+                            @elseif ($row['appeal']->isOpen())
+                                Appeal sent {{ $row['appeal']->created_at->diffForHumans() }}, waiting for a moderator.
+                            @elseif ($row['appeal']->status === 'upheld')
+                                Appeal upheld {{ $row['appeal']->decided_at?->format('j M Y') }}.
+                            @else
+                                Appeal denied {{ $row['appeal']->decided_at?->format('j M Y') }}@if (filled($row['appeal']->decision_note)): {{ $row['appeal']->decision_note }}@endif. This is final.
+                            @endif
+                        </p>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <section class="mb-8" aria-labelledby="profile-questions">
         <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Questions</h2>
 

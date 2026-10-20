@@ -8,7 +8,11 @@
     @endif
 
     @forelse ($answers as $answer)
-        <article class="ix-answer {{ $answer->isAccepted() ? 'is-accepted' : '' }}" id="answer-{{ $answer->id }}">
+        <article class="ix-answer {{ $answer->isAccepted() ? 'is-accepted' : '' }} {{ $answer->isHidden() ? 'is-hidden' : '' }}" id="answer-{{ $answer->id }}">
+            @if ($answer->isHidden())
+                <livewire:hidden-notice kind="answer" :item-id="$answer->id" :key="'hidden-'.$answer->id" />
+            @endif
+
             @if ($answer->isAccepted())
                 <p class="ix-answer__flag"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Accepted as the solution</p>
             @endif
@@ -26,8 +30,12 @@
                     <button type="button" class="ix-btn" wire:click="revoke({{ $answer->id }})">Remove acceptance</button>
                 @endif
 
-                @if ($answer->user_id !== $user->id)
-                    <button type="button" class="ix-link" wire:click="startReport({{ $answer->id }})">Report</button>
+                @if ($answer->user_id !== $user->id && ! $answer->isHidden())
+                    @if (in_array($answer->id, $reported, true))
+                        <span>You reported this</span>
+                    @else
+                        <button type="button" class="ix-link" wire:click="startReport({{ $answer->id }})">Report</button>
+                    @endif
                 @endif
             </footer>
 
@@ -42,6 +50,7 @@
                         <option value="other">Something else</option>
                     </select>
                     <button type="submit" class="ix-btn">Send report</button>
+                    @error('report') <p class="ix-error" role="alert">{{ $message }}</p> @enderror
                 </form>
             @endif
         </article>

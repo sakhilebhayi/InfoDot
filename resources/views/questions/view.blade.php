@@ -18,6 +18,8 @@
             <p class="ix-detail__kind"><span class="ix-q__state {{ $solved ? 'is-done' : 'is-open' }}">{{ $solved ? 'Solved' : 'Waiting for an answer' }}</span></p>
             <h1 class="ix-detail__title">{{ $question->question }}</h1>
 
+            <livewire:hidden-notice kind="question" :item-id="$question->id" />
+
             @if (filled($question->description))
                 <div class="ix-statement"><p class="ix-prose">{{ $question->description }}</p></div>
             @endif
@@ -51,6 +53,8 @@
                     </ul>
                 </section>
             @endif
+
+            <livewire:report-content kind="question" :item-id="$question->id" />
 
             <a href="{{ route('seek') }}" class="ix-btn">Ask another question</a>
         </aside>

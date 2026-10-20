@@ -9,6 +9,7 @@ use App\Events\Knowledge\ContentReported;
 use App\Models\Answer;
 use App\Models\ContentReport;
 use App\Models\Questions;
+use App\Models\Solutions;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -30,6 +31,8 @@ class AnswerService
 
     public const PER_MINUTE = 6;
 
+    public const REPORTS_PER_HOUR = 10;
+
     /** May this person see (and so answer) this question? Public, their own, or their company's. */
     public function canSee(Questions $question, User $user): bool
     {
@@ -38,11 +41,25 @@ class AnswerService
             || ($question->team_id !== null && $user->belongsToTeam($question->team));
     }
 
+    /** May this person see this question, answer or solution (which also decides whether they may report it)? */
+    public function canSeeContent(Model $item, User $user): bool
+    {
+        return match (true) {
+            $item instanceof Answer => $this->canSee($item->question, $user),
+            $item instanceof Questions => $this->canSee($item, $user),
+            $item instanceof Solutions => $item->isPublic()
+                || $item->user_id === $user->id
+                || ($item->team_id !== null && $user->belongsToTeam($item->team)),
+            default => false,
+        };
+    }
+
     public function publish(Questions $question, User $author, string $body): Answer
     {
         $body = trim($body);
 
         abort_unless($this->canSee($question, $author), 403);
+        abort_if($question->isHidden(), 403);
 
         if (mb_strlen($body) < self::MIN_LENGTH || mb_strlen($body) > self::MAX_LENGTH) {
             throw ValidationException::withMessages(['body' => 'Write a proper answer: at least '.self::MIN_LENGTH.' characters, with the steps or the reasoning.']);
@@ -87,6 +104,7 @@ class AnswerService
         $question = $answer->question;
 
         return $answer->status === Answer::PUBLISHED
+            && ! $answer->isHidden()
             && $answer->user_id !== $by->id
             && ($question->user_id === $by->id || ($by->isModerator() && $this->canSee($question, $by)));
     }
@@ -100,7 +118,7 @@ class AnswerService
         }
 
         DB::transaction(function () use ($answer, $by): void {
-            $previous = Answer::where('question_id', $answer->question_id)->whereNotNull('accepted_at')->get();
+            $previous = Answer::withoutGlobalScopes()->where('question_id', $answer->question_id)->whereNotNull('accepted_at')->get();
 
             foreach ($previous as $old) {
                 $old->forceFill(['accepted_at' => null, 'accepted_by' => null])->save();
@@ -137,19 +155,52 @@ class AnswerService
         return $answer->refresh();
     }
 
-    /** Anyone who can see an item may report it, once. Reports go to the moderators; nothing is removed automatically. */
+    /**
+     * Anyone who can see an item may report it, once, but never their own. Reports go to the moderators; nothing is removed
+     * automatically. A person can send REPORTS_PER_HOUR new reports an hour. Reporting the same thing again is not an error:
+     * the first report stands and nothing new is created.
+     */
     public function report(Model $item, User $reporter, string $reason, ?string $detail = null): ContentReport
     {
         abort_unless(in_array($reason, ContentReport::REASONS, true), 422);
-        abort_if($item instanceof Answer ? ! $this->canSee($item->question, $reporter) : ($item instanceof Questions && ! $this->canSee($item, $reporter)), 403);
+        abort_unless($item instanceof Answer || $item instanceof Questions || $item instanceof Solutions, 422);
+        abort_unless($this->canSeeContent($item, $reporter), 403);
+
+        if ($item->user_id === $reporter->id) {
+            throw ValidationException::withMessages(['report' => 'You cannot report your own content. If it is wrong, say so in a comment or ask a moderator.']);
+        }
+
+        if ($item->isHidden()) {
+            throw ValidationException::withMessages(['report' => 'A moderator has already hidden this.']);
+        }
+
+        $morph = ['reportable_type' => $item->getMorphClass(), 'reportable_id' => $item->getKey(), 'reporter_id' => $reporter->id];
+
+        if ($existing = ContentReport::where($morph)->first()) {
+            return $existing;
+        }
+
+        $key = 'reports:'.$reporter->id;
+
+        if (RateLimiter::tooManyAttempts($key, self::REPORTS_PER_HOUR)) {
+            $minutes = max(1, (int) ceil(RateLimiter::availableIn($key) / 60));
+
+            throw ValidationException::withMessages(['report' => 'You have sent '.self::REPORTS_PER_HOUR.' reports in the last hour. Try again in '.$minutes.' '.($minutes === 1 ? 'minute' : 'minutes').'.']);
+        }
 
         $report = ContentReport::firstOrCreate(
-            ['reportable_type' => $item->getMorphClass(), 'reportable_id' => $item->getKey(), 'reporter_id' => $reporter->id, 'status' => 'open'],
+            $morph + ['status' => ContentReport::OPEN],
             ['reason' => $reason, 'detail' => $detail !== null ? mb_substr(trim($detail), 0, 1000) : null],
         );
 
         if ($report->wasRecentlyCreated) {
-            event(new ContentReported($item instanceof Answer ? $item->reference() : 'infodot:question:'.$item->getKey(), ['reason' => $reason, 'reporter_uuid' => $reporter->uuid]));
+            RateLimiter::hit($key, 3600);
+
+            event(new ContentReported(match (true) {
+                $item instanceof Answer => $item->reference(),
+                $item instanceof Solutions => 'infodot:solution:'.$item->getKey(),
+                default => 'infodot:question:'.$item->getKey(),
+            }, ['reason' => $reason, 'reporter_uuid' => $reporter->uuid]));
         }
 
         return $report;
