@@ -87,6 +87,7 @@ jobs:
           done
           echo
           echo "== SIGN-IN SETTINGS per app (read-only; addresses and yes/no only, never a secret value)"
+          IE="$(find "$HOME/public_html" -maxdepth 2 -name .env -type f 2>/dev/null | head -1)"
           for D in "$HOME"/*.infodot.co.za "$HOME"/public_html; do
             [ -d "$D" ] || continue
             for A in "$D"/*/ ; do
@@ -94,7 +95,14 @@ jobs:
               E="${A}.env"
               g() { grep -E "^$1=" "$E" | tail -1 | cut -d= -f2- | tr -d "\"' " ; }
               sec=$(g INFODOT_SERVICE_SECRET); [ -n "$sec" ] && secs="secret=set(len ${#sec})" || secs="secret=MISSING"
-              echo "   $(basename "$D")/$(basename "${A%/}"): key=[$(g INFODOT_PLATFORM_KEY)] redeem=[$(g INFODOT_REDEEM_URL)] $secs infodot_url=[$(g DOT_INFODOT_URL)] db=$(g DB_CONNECTION)/$(basename "$(g DB_DATABASE)") app_url=[$(g APP_URL)]"
+              pk=$(g INFODOT_PLATFORM_KEY); [ -n "$pk" ] || pk=$(basename "${A%/}" | sed 's/^dotfiles$/files/; s/^main$/projects/')
+              up=$(echo "$pk" | tr '[:lower:]' '[:upper:]')
+              if [ -n "$IE" ] && [ -n "$sec" ]; then
+                isec=$(grep -E "^ECOSYSTEM_SECRET_${up}=" "$IE" | tail -1 | cut -d= -f2- | tr -d "\"' ")
+                if [ -z "$isec" ]; then match="infodot-side=MISSING"; elif [ "$isec" = "$sec" ]; then match="matches-infodot=YES"; else match="matches-infodot=NO"; fi
+              elif [ -n "$IE" ]; then isec=$(grep -E "^ECOSYSTEM_SECRET_${up}=" "$IE" | tail -1 | cut -d= -f2-); [ -n "$isec" ] && match="infodot-has-secret(app-lacks)" || match="infodot-side=MISSING"
+              else match="infodot-env-not-found"; fi
+              echo "   $(basename "$D")/$(basename "${A%/}"): key=[$(g INFODOT_PLATFORM_KEY)] $match redeem=[$(g INFODOT_REDEEM_URL)] $secs infodot_url=[$(g DOT_INFODOT_URL)] db=$(g DB_CONNECTION)/$(basename "$(g DB_DATABASE)") app_url=[$(g APP_URL)]"
             done
           done
           HEALTH
