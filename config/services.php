@@ -30,4 +30,12 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Dot.Dopemine hosts the Dot Points ledger. InfoDot reports contribution events to it (signed, retried from a
+    // durable outbox) and reads a person's balance for their profile. Unset = events wait in the outbox.
+    'dopemine' => [
+        'url' => env('DOPEMINE_URL', 'https://dopemine.infodot.co.za'),
+        'secret' => env('DOPEMINE_INGEST_SECRET'),
+        'timeout' => (int) env('DOPEMINE_TIMEOUT', 5),
+    ],
+
 ];

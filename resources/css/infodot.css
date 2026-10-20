@@ -4005,3 +4005,75 @@ button.ix-regrow:focus-visible {
     color: var(--ix-files);
     font-size: 14px;
 }
+
+/* Profile: contribution counts and the owner's Dot Points (three separate things: counts, redeemable points, history). */
+.ix-contrib__note {
+    margin: 8px 0 0;
+    color: var(--ix-text-3);
+    font-size: 13px;
+}
+
+.ix-points {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ix-rule);
+    max-width: 68ch;
+}
+
+.ix-points h3 {
+    margin: 0 0 6px;
+    font: 700 16px/1.3 var(--ix-font);
+}
+
+.ix-points__balance {
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: var(--ix-text-2);
+}
+
+.ix-points__balance strong {
+    font: 700 28px/1.1 var(--ix-font);
+    color: var(--ix-text);
+    margin-right: 4px;
+}
+
+.ix-points__note {
+    margin: 0 0 8px;
+    color: var(--ix-text-2);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ix-points__history {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.ix-points__history th,
+.ix-points__history td {
+    padding: 6px 8px 6px 0;
+    border-bottom: 1px solid var(--ix-rule);
+    text-align: left;
+    vertical-align: top;
+}
+
+.ix-points__history th {
+    color: var(--ix-text-3);
+    font-weight: 600;
+}
+
+.ix-points__history td:last-child,
+.ix-points__history th:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.ix-points__tag {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border: 1px solid var(--ix-rule-strong);
+    color: var(--ix-text-3);
+    font-size: 12px;
+}

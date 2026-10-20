@@ -26,7 +26,10 @@ name: Deploy to Production
 #      forced to production; a warning, not a change, for an http APP_URL), swap in the
 #      new public/build, keep the docroot's build/ in step, migrations, caches,
 #      back up.
-#   4. (No cron lines: InfoDot has no scheduled commands and no queued jobs.)
+#   4. Installs this app's cron lines through the account's shared crontab, or hands them to the
+#      bounded-concurrency cron runner when it is installed (docs/programme R-1): `schedule:run` when
+#      `artisan schedule:list` shows a task (points:flush-outbox delivers contribution events to the
+#      Dot Points ledger), `queue:work` only when the code queues something.
 #   5. Smoke check from the runner, like a browser: / and /login answer 200,
 #      the built CSS answers 200, /up answers 200, and a harmless POST /up (a
 #      405) does not return a debug page.
@@ -320,6 +323,128 @@ jobs:
           trap - ERR
           echo "== Deployed: $(git rev-parse --short HEAD)"
           DEPLOY
+
+      - name: Install the cron lines
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              DEPLOY_PATH="$APP_PATH" \
+              'bash -s' <<'CRON'
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          PHP=php
+          # ---- crontab: repair this app's lines, never touch anyone else's ----
+          # Rule for this account: the crontab is written only by deploy
+          # workflows, each touches only lines carrying its own marker, and a
+          # write is verified before and after. 2026-08-31: a pipeline whose read
+          # failed installed an EMPTY crontab and silently killed Dot.Mines'
+          # scheduler for six weeks. cron runs with a minimal PATH, so lines carry
+          # the absolute PHP path and keep their last output in a log file.
+          MARK="# dot-infodot"
+          # Spread the load on the shared account. 43 cron lines used to fire in the same second and
+          # the host answered "fork: Resource temporarily unavailable" (2026-10-19), so scheduler and
+          # queue runs started late or not at all. `exec` drops the sh parent (one process per line instead
+          # of two); the queue worker runs every second minute, on this app's own parity, so about half
+          # of the workers start in any given minute. A queued job waits at most about two minutes.
+          QMIN="$(( $(printf %s "$MARK" | cksum | cut -d" " -f1) % 2 ))-59/2"
+          # One writer at a time on this account: deploys of different apps can
+          # coincide and would otherwise race on the single crontab.
+          command -v flock > /dev/null || { echo "::error::flock is not installed on the host; crontab writes cannot be serialised"; exit 1; }
+          exec 9>"$HOME/.dot-crontab.lock"; flock -w 120 9 || { echo "::error::could not take the crontab lock within 120 s (another deploy is writing the crontab)"; exit 1; }
+          PHP_BIN="$(command -v "${PHP:-php}")"
+
+          # ---- which lines does THIS release need?
+          # The lines follow the code that was just deployed, so they stay right
+          # as releases add or remove scheduled commands and queued jobs:
+          #   schedule:run  when `artisan schedule:list` shows any task
+          #   queue:work    when the code queues anything (ShouldQueue, ->queue())
+          #                 and the host .env does not run the queue inline
+          #                 (QUEUE_CONNECTION=sync). A cron-driven worker, not a
+          #                 daemon: shared cPanel cannot keep one running. It
+          #                 drains the queue and exits (--stop-when-empty) and
+          #                 never lives past 50 s (--max-time), so the next
+          #                 minute's worker starts on the new code.
+          WANT=0
+          SCHED_LINE=""
+          QUEUE_LINE=""
+          SCHED_OUT="$("$PHP_BIN" artisan schedule:list 2>&1)" || { echo "::error::artisan schedule:list failed, so the scheduled tasks are unknown: $SCHED_OUT"; exit 1; }
+          if printf '%s\n' "$SCHED_OUT" | grep -qi 'no scheduled tasks'; then
+            echo "== schedule:list: no scheduled tasks, so no scheduler line"
+          else
+            SCHED_LINE="* * * * * cd $DEPLOY_PATH && exec $PHP_BIN artisan schedule:run > storage/logs/cron-scheduler.log 2>&1 $MARK"
+            WANT=$((WANT + 1))
+            echo "== schedule:list: scheduled tasks present, scheduler line needed"
+          fi
+          QUEUE_CONN="$(grep -E '^QUEUE_CONNECTION=' .env | tail -1 | cut -d= -f2- | tr -d "\"' " || true)"
+          if grep -rqE 'ShouldQueue|->queue\(|Queue::(push|later)' app && [ "${QUEUE_CONN:-database}" != "sync" ]; then
+            QUEUE_LINE="$QMIN * * * * cd $DEPLOY_PATH && exec $PHP_BIN artisan queue:work --stop-when-empty --tries=3 --timeout=90 --max-time=50 > storage/logs/cron-queue.log 2>&1 $MARK"
+            WANT=$((WANT + 1))
+            echo "== queued work present (QUEUE_CONNECTION=${QUEUE_CONN:-database}), queue worker line needed"
+          else
+            echo "== no queued jobs or listeners in app/ (or QUEUE_CONNECTION=sync), so no queue worker line"
+          fi
+
+          OLD="$(mktemp)"; NEW="$(mktemp)"; CHK="$(mktemp)"; ERR="$(mktemp)"
+          # crontab -l on this host can transiently answer empty (seen 2026-10-16,
+          # right after a write, under the lock). A read is trusted only when it
+          # is non-empty or the host says there is no crontab; otherwise retry.
+          read_crontab() {
+            local i
+            for i in 1 2 3 4 5; do
+              if crontab -l > "$1" 2> "$ERR"; then
+                [ -s "$1" ] && return 0
+              elif grep -qi "no crontab for" "$ERR"; then
+                : > "$1"; return 0
+              fi
+              sleep 2
+            done
+            return 1
+          }
+          if ! read_crontab "$OLD"; then
+            echo "::error::crontab -l answered empty or failed five times ($(cat "$ERR")). Refusing to write a crontab I could not read."; exit 1
+          fi
+          HAVE=$(grep -c "$MARK" "$OLD" || true)
+          if [ "$WANT" -eq 0 ] && [ "$HAVE" -eq 0 ]; then
+            rm -f "$OLD" "$NEW" "$CHK" "$ERR"; flock -u 9
+            rm -f "$HOME/.dot-cron.d/${MARK#\# dot-}.cron"
+            echo "== crontab: nothing to install for $MARK and nothing of mine to remove; not written"
+            exit 0
+          fi
+          KEY="${MARK#\# dot-}"
+          EXPECT_MINE=$WANT
+          OTHERS=$(grep -v "$MARK" "$OLD" | grep -c . || true)
+          {
+            grep -v "$MARK" "$OLD" || true
+            if [ -n "$SCHED_LINE" ]; then printf '%s\n' "$SCHED_LINE"; fi
+            if [ -n "$QUEUE_LINE" ]; then printf '%s\n' "$QUEUE_LINE"; fi
+          } > "$NEW"
+          # Runner mode (docs/programme/REMEDIATION_ROADMAP.md, R-1): when the account runs the bounded-concurrency
+          # cron runner (InfoDot: Cron Runner workflow, "install"), this app's commands go to ~/.dot-cron.d/$KEY.cron
+          # and the runner starts them, at most 4 at a time. Its own crontab lines are then removed (a migration on
+          # deploy). Without the runner the crontab lines above are installed exactly as before.
+          if [ -x "$HOME/bin/dot-cron-runner" ] && grep -q '# dot-cron-runner' "$OLD"; then
+            CMDS="$(grep -F -- "$MARK" "$NEW" | sed -E 's/^[^ ]+ [^ ]+ [^ ]+ [^ ]+ [^ ]+ //; s/ *# dot-[a-z0-9-]*$//' || true)"
+            mkdir -p "$HOME/.dot-cron.d"
+            if [ -n "$CMDS" ]; then
+              printf '%s\n' "$CMDS" > "$HOME/.dot-cron.d/$KEY.cron.tmp" && mv "$HOME/.dot-cron.d/$KEY.cron.tmp" "$HOME/.dot-cron.d/$KEY.cron"
+            else
+              rm -f "$HOME/.dot-cron.d/$KEY.cron"
+            fi
+            grep -v -F -- "$MARK" "$NEW" > "$NEW.t" || true; mv "$NEW.t" "$NEW"
+            EXPECT_MINE=0
+            echo "== runner mode: $(printf '%s' "$CMDS" | grep -c . || true) command(s) written to ~/.dot-cron.d/$KEY.cron, none left in the crontab"
+          fi
+          crontab "$NEW"
+          read_crontab "$CHK" || : > "$CHK"
+          AFTER=$(grep -v "$MARK" "$CHK" | grep -c . || true)
+          MINE=$(grep -c "$MARK" "$CHK" || true)
+          if [ "$AFTER" != "$OTHERS" ] || [ "$MINE" != "$EXPECT_MINE" ]; then
+            crontab "$OLD"
+            echo "::error::crontab verification failed (other lines before=$OTHERS after=$AFTER, mine=$MINE, expected=$WANT); the previous crontab was restored."; exit 1
+          fi
+          rm -f "$OLD" "$NEW" "$CHK" "$ERR"; flock -u 9
+          echo "== crontab: $MINE line(s) for $MARK installed, $OTHERS other line(s) preserved"
+          CRON
 
       - name: Smoke-check the live site
         run: |

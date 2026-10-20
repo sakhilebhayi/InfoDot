@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Questions;
 
+use App\Events\Knowledge\QuestionSubmitted;
 use App\Events\Questions\QuestionWasAsked;
 use App\Http\Controllers\Controller;
 use App\Models\Questions;
@@ -58,7 +59,7 @@ class QuestionsController extends Controller
         $question->description = $request->input('description');
         $question->save();
 
-        event(new \App\Events\Knowledge\QuestionSubmitted('infodot:question:'.$question->id, [
+        event(new QuestionSubmitted('infodot:question:'.$question->id, [
             'question_id' => $question->id,
             'author_uuid' => auth()->user()->uuid,
             'tenant_team_id' => $question->team_id,

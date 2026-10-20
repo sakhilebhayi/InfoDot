@@ -19,7 +19,7 @@ PHP_BIN="${PHP_BIN:-php}"; BASE_DOMAIN="${BASE_DOMAIN:-infodot.co.za}"
 for K in "$@"; do
   case "$K" in
     infodot) PREFIX='InfoDot:' ;;
-    tasks|auction|ehail|notify|farms|finance|emall|billing|hr|tutor|design|pulse|plug) PREFIX="Dot\\.$K:" ;;
+    tasks|auction|ehail|notify|farms|finance|emall|billing|hr|tutor|design|pulse|plug|dopemine|memory|agents|central|engage|forms|projects|analytics) PREFIX="Dot\\.$K:" ;;
     *) echo "unknown target $K" >&2; exit 2 ;;
   esac
   LINES="$(grep -E "^${PREFIX}[[:space:]]+[A-Z_0-9]+=" "$SECRETS_FILE" | sed -E "s/^${PREFIX}[[:space:]]+//; s/[[:space:]]+#.*$//" || true)"

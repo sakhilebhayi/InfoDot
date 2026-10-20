@@ -14,7 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Contribution events waiting for the Dot Points ledger (retried with growing delays; see RewardOutbox).
+        $schedule->command('points:flush-outbox')->everyMinute()->withoutOverlapping()->onOneServer();
     }
 
     /**

@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Events\Knowledge\AnswerAcceptanceRevoked;
+use App\Events\Knowledge\AnswerAccepted;
+use App\Events\Knowledge\AnswerPublished;
+use App\Events\Knowledge\QuestionSubmitted;
+use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Models\File;
 use App\Models\Folder;
 use App\Models\Questions;
@@ -10,6 +15,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -32,6 +38,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // Community knowledge events -> durable outbox -> the Dot Points ledger (signed, retried).
+        foreach ([
+            QuestionSubmitted::class,
+            AnswerPublished::class,
+            AnswerAccepted::class,
+            AnswerAcceptanceRevoked::class,
+        ] as $knowledgeEvent) {
+            Event::listen($knowledgeEvent, ForwardKnowledgeEventToPoints::class);
+        }
+
         foreach ([
             'action-message',
             'action-section',

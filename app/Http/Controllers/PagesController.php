@@ -6,6 +6,8 @@ use App\Models\Associates;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\User;
+use App\Services\Points\PointsClient;
+use App\Support\Knowledge\ContributionStats;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -142,9 +144,15 @@ class PagesController extends Controller
         abort_unless(Auth::id() === $get_profile->id || $this->sharesATeam(Auth::user(), $get_profile), 404);
         $association = Associates::where('user_id', Auth::id())->where('associate_id', $id)->whereNull('deleted_at')->first();
 
+        $isOwner = Auth::id() === $get_profile->id;
+
         return view('profile.show', [
             'user' => $get_profile,
             'association' => $association,
+            'stats' => ContributionStats::for($get_profile, $isOwner),
+            // Points are the owner's own business: nobody else's profile view asks the ledger for them.
+            'points' => $isOwner ? app(PointsClient::class)->summary((string) $get_profile->uuid) : null,
+            'pointsConfigured' => $isOwner && app(PointsClient::class)->enabled(),
         ]);
     }
 
