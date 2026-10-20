@@ -85,4 +85,16 @@ jobs:
           for f in $(ls -1tr "$HOME"/*/*/storage/logs/cron-scheduler.log 2>/dev/null | head -3); do
             echo "-- ${f#$HOME/}"; tail -3 "$f" | cut -c1-200
           done
+          echo
+          echo "== SIGN-IN SETTINGS per app (read-only; addresses and yes/no only, never a secret value)"
+          for D in "$HOME"/*.infodot.co.za "$HOME"/public_html; do
+            [ -d "$D" ] || continue
+            for A in "$D"/*/ ; do
+              [ -f "${A}artisan" ] && [ -f "${A}.env" ] || continue
+              E="${A}.env"
+              g() { grep -E "^$1=" "$E" | tail -1 | cut -d= -f2- | tr -d "\"' " ; }
+              sec=$(g INFODOT_SERVICE_SECRET); [ -n "$sec" ] && secs="secret=set(len ${#sec})" || secs="secret=MISSING"
+              echo "   $(basename "$D")/$(basename "${A%/}"): key=[$(g INFODOT_PLATFORM_KEY)] redeem=[$(g INFODOT_REDEEM_URL)] $secs infodot_url=[$(g DOT_INFODOT_URL)] db=$(g DB_CONNECTION)/$(basename "$(g DB_DATABASE)") app_url=[$(g APP_URL)]"
+            done
+          done
           HEALTH
