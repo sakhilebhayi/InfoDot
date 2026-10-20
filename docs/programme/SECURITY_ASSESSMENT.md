@@ -37,6 +37,51 @@ Tracked as R-2 in the roadmap. No upgrade is applied to production without the s
 - Secrets live in a mode-600 local file and host `.env` files; they were not committed (GitGuardian passes on the
   InfoDot and Analytics PRs).
 
+## S-2b Sign-in token in the URL (found by the owner 2026-10-20; FIXED and deployed 2026-10-20)
+
+**Finding (high).** Switching platform sent the browser to `https://<app>/auth/ecosystem?token=<credential>&redirect=...`.
+The single-use sign-in credential therefore sat in the address bar, browser history, server access logs and
+Referer headers, and when the destination refused the sign-in (403/503) the person was left on a URL showing it.
+Present in InfoDot and all 24 receiving platforms. The token was already audience-bound, single-use and short
+lived (5 minutes), which limited but did not remove the exposure.
+
+**Fix.** InfoDot opens a platform through its own `/go/{platform}` page, which mints a 60-second single-use token
+and POSTs it in a form body. Receivers accept the POST (origin-checked, so a form on another site cannot sign a
+visitor in as someone else), and any refused sign-in redirects (303) to the plain login page with a generic
+message. Mines and Charts have their own sign-in and no receiver, so they now open at their own login and no token
+is minted. PRs: InfoDot #54 and one "Sign-in token: accept a POST, never show it" PR per receiving platform.
+Tests: `PlatformLaunchTest` (InfoDot) and `EcosystemSsoPostTest` (each platform) cover token-never-in-URL,
+cross-site POST refused without spending the token, nothing echoed on failure, CSRF exclusion, exact-origin check.
+
+**Rollout (done).** The 25 receivers were deployed one at a time, then InfoDot. A first receiver deploy exposed an HTTP 419
+on the Laravel 13 apps (the new `PreventRequestForgery` middleware had to be excluded as well; unit tests skip CSRF, so the
+test now runs in production mode); fixed and redeployed. Live checks on every receiver: a cross-site POST and a bad GET
+both answer 303 to `/login`. **Not verified live:** a full signed-in click-through from InfoDot into a platform (needs a real
+session); the owner should do one. A follow-up removes the legacy GET path from the receivers.
+
+**Limits of this fix.** The token is in the response body of the launch page (hidden form field) for the signed-in
+person for a moment, and in the POST body in transit (HTTPS). Access logs no longer record it. Old bookmarked or
+already-sent links with `?token=` still work until the legacy GET is removed; they are spent on use or expire in
+5 minutes.
+
+## S-2c Application folders served over HTTP (found 2026-10-20 by a deploy smoke check; contained the same day)
+
+**Finding (critical, pre-existing).** Dopemine, Engage, Memory and Sheet answered HTTP 200 for `/<key>/database/database.sqlite`
+(real SQLite databases of 0.3 to 21 MB), `/<key>/storage/logs/laravel.log` (Engage 1.5 MB, Sheet 0.7 MB), `composer.json`,
+`composer.lock`, `vendor/autoload.php` and `phpunit.xml`. `.env` was 403 on all. The newer platforms had a
+`Require all denied` `.htaccess` in the app folder; these four never did. **Unknown: for how long, and whether anyone
+downloaded them** (the owner must check the raw access logs). Treat the data as copied until that is shown otherwise:
+sessions, API tokens, password resets and any secrets in the logs or databases need rotating, and a POPIA section 22
+assessment is needed if personal information may have been accessed.
+
+**Containment (done).** App Folder Guard (InfoDot `.github/workflows/app-folder-guard.yml`, `tools/probe-exposure.sh`)
+wrote the deny file into the four folders; afterwards every probed path is 403 and the sites and built assets still load.
+`tools/probe-exposure.sh` over all 27 platforms: nothing readable. **Open:** add the probe to every deploy pipeline, make
+`prepare-host` and the older pipelines create the deny file, and move app folders out of the docroot.
+
+Also seen: during one Tasks deploy the smoke check briefly saw `.env`, `artisan` and the SQLite file answer 200 (403 again on every
+later probe); cause unknown, so a short exposure window on Tasks during that deploy cannot be ruled out.
+
 ## S-3 Not yet assessed (no evidence either way)
 
 Tenant-isolation test coverage on the older platforms, MFA availability and enforcement, rate limiting on login and
