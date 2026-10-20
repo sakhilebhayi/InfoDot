@@ -20,7 +20,7 @@ return new class extends Migration
         Schema::create('answers', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            // questions.id and users.id are INT UNSIGNED (`increments`), so these must be too: a bigint foreignId()
+            // questions.id and users.id are INT UNSIGNED (`increments`), so these must be too: a bigint foreign-id column
             // is refused by MySQL ("Foreign key constraint is incorrectly formed") although SQLite accepts it.
             $table->unsignedInteger('question_id');
             $table->unsignedInteger('user_id');
