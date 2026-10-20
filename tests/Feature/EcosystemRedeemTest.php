@@ -143,7 +143,7 @@ class EcosystemRedeemTest extends TestCase
         $this->withHeaders(['Authorization' => 'Bearer '.self::SECRET])->postJson('/api/ecosystem/redeem', [])->assertStatus(422);
     }
 
-    public function test_switcher_and_widget_mint_tokens_bound_to_the_platform_they_open(): void
+    public function test_the_launch_page_mints_tokens_bound_to_the_platform_it_opens(): void
     {
         $this->assertSame('ecosystem-handoff:files', EcosystemHandoff::tokenName('files'));
         $this->assertSame('ecosystem-handoff', EcosystemHandoff::tokenName(null));
@@ -151,12 +151,14 @@ class EcosystemRedeemTest extends TestCase
         $user = $this->member();
         config(['ecosystem.trusted_domains' => ['infodot.co.za']]);
 
-        Livewire::actingAs($user)->test(DotSwitcher::class)->call('switchTo', 'files');
+        // The switcher and the widget only point the browser at the launch page; the token is minted there.
+        Livewire::actingAs($user)->test(DotSwitcher::class)->call('switchTo', 'files')->assertRedirect(route('platform.launch', ['platform' => 'files']));
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
 
+        $this->actingAs($user)->get('/go/files')->assertOk();
         $this->assertDatabaseHas('personal_access_tokens', ['name' => 'ecosystem-handoff:files', 'tokenable_id' => $user->id]);
 
-        Livewire::actingAs($user)->test(EcosystemWidget::class)->call('launch', 'docs');
-
+        $this->actingAs($user)->get('/go/docs')->assertOk();
         $this->assertDatabaseHas('personal_access_tokens', ['name' => 'ecosystem-handoff:docs', 'tokenable_id' => $user->id]);
     }
 

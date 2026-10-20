@@ -30,21 +30,56 @@ final class EcosystemHandoff
     }
 
     /**
-     * The full handoff URL for this person and platform (the token is minted here),
-     * or null when the platform is unknown, not live or not on a trusted host. The
-     * destination is checked BEFORE a token exists: a refused destination never gets one.
-     * `$redirect` is an in-platform path the destination opens after sign-in; the
+     * Where to send the browser to open a platform: an InfoDot URL (no token in it), or null when the platform
+     * is unknown, not live or not on a trusted host. The credential is minted on the launch page itself
+     * ({@see launchForm()}) and handed over in a POST body, never in a URL: a URL is shown in the address bar,
+     * kept in history, written to server logs and sent in Referer headers, and a failed sign-in leaves the
+     * person sitting on it. `$redirect` is an in-platform path the destination opens after sign-in; the
      * destination validates it again, so it is a hint, never an instruction.
      */
     public static function launchUrl(User $user, string $key, ?string $redirect = null): ?string
     {
-        $platform = config('ecosystem.platforms', [])[$key] ?? null;
+        if (self::endpointFor(config('ecosystem.platforms', [])[$key] ?? null) === null) {
+            Log::warning('Ecosystem handoff refused: platform is unknown, inactive or its URL is not on a trusted https domain.', ['platform' => $key]);
 
-        if (! $platform) {
             return null;
         }
 
-        $endpoint = self::endpointFor($platform);
+        // A platform with its own sign-in is opened at its own login page: no launch page, no token.
+        if (self::hasNoReceiver($key)) {
+            return self::plainUrl($key);
+        }
+
+        $safe = self::safeRedirect($redirect);
+
+        return route('platform.launch', ['platform' => $key] + ($safe !== null ? ['redirect' => $safe] : []));
+    }
+
+    /** True for a platform that cannot redeem a handoff token ('sso' => false in the registry). */
+    public static function hasNoReceiver(string $key): bool
+    {
+        return (config('ecosystem.platforms', [])[$key]['sso'] ?? true) === false;
+    }
+
+    /** The platform's own front door (scheme, host and port from the trusted endpoint), or null when it must not be opened. */
+    public static function plainUrl(string $key): ?string
+    {
+        $endpoint = self::endpointFor(config('ecosystem.platforms', [])[$key] ?? null);
+
+        return $endpoint === null ? null : substr($endpoint, 0, -strlen('/auth/ecosystem')).'/';
+    }
+
+    /**
+     * What the launch page posts to the platform: the destination, a single-use token that only that platform
+     * can redeem, and the optional in-platform path. The destination is checked BEFORE a token exists: a
+     * refused destination never gets one. Null when the platform must not receive a token.
+     *
+     * @return array{action: string, token: string, redirect: ?string, name: string, origin: string}|null
+     */
+    public static function launchForm(User $user, string $key, ?string $redirect = null): ?array
+    {
+        $platform = config('ecosystem.platforms', [])[$key] ?? null;
+        $endpoint = self::hasNoReceiver($key) ? null : self::endpointFor($platform);
 
         if ($endpoint === null) {
             Log::warning('Ecosystem handoff refused: platform is inactive or its URL is not on a trusted https domain.', [
@@ -58,10 +93,41 @@ final class EcosystemHandoff
         $token = $user->createToken(
             self::tokenName($key),
             ['ecosystem:read'],
-            now()->addMinutes((int) config('ecosystem.handoff_ttl', 5))
+            now()->addSeconds(max(10, (int) config('ecosystem.launch_ttl_seconds', 60)))
         )->plainTextToken;
 
-        return $endpoint.'?token='.$token.($redirect !== null ? '&redirect='.rawurlencode($redirect) : '');
+        $parts = parse_url($endpoint);
+
+        return [
+            'action' => $endpoint,
+            'token' => $token,
+            'redirect' => self::safeRedirect($redirect),
+            'name' => (string) ($platform['name'] ?? $key),
+            'origin' => $parts['scheme'].'://'.$parts['host'].(isset($parts['port']) ? ':'.$parts['port'] : ''),
+        ];
+    }
+
+    /** Only a plain absolute path on the destination is passed on: one "/", no "//", "\\", "..", control character or scheme. */
+    public static function safeRedirect(?string $redirect): ?string
+    {
+        if ($redirect === null || $redirect === '' || strlen($redirect) > 2048) {
+            return null;
+        }
+
+        foreach ([$redirect, rawurldecode($redirect)] as $candidate) {
+            if (
+                ! str_starts_with($candidate, '/')
+                || str_starts_with($candidate, '//')
+                || str_contains($candidate, '\\')
+                || str_contains($candidate, '..')
+                || str_contains($candidate, '//')
+                || preg_match('/[\x00-\x20\x7f]/', $candidate)
+            ) {
+                return null;
+            }
+        }
+
+        return $redirect;
     }
 
     /**
