@@ -89,7 +89,7 @@ class EcosystemHandoffTest extends TestCase
     {
         // Parsed from the file, not from config(): a local or production .env may
         // legitimately override DOT_*_URL, and this test is about the defaults.
-        preg_match_all("/'(?<key>[a-z]+)' => \\['name' => '[^']+', 'url' => env\\('DOT_[A-Z]+_URL', '(?<url>[^']+)'\\), 'icon' => '[a-z_]+', 'accent' => '#[0-9a-f]{6}', 'active' => (?<active>true|false)(?:, 'internal' => true)?\\]/", file_get_contents(base_path('config/ecosystem.php')), $m, PREG_SET_ORDER);
+        preg_match_all("/'(?<key>[a-z]+)' => \\['name' => '[^']+', 'url' => env\\('DOT_[A-Z]+_URL', '(?<url>[^']+)'\\), 'icon' => '[a-z_]+', 'accent' => '#[0-9a-f]{6}', 'active' => (?<active>true|false)(?:, 'internal' => true)?(?:, 'sso' => false)?\\]/", file_get_contents(base_path('config/ecosystem.php')), $m, PREG_SET_ORDER);
 
         $this->assertCount(28, $m);
 
@@ -104,16 +104,17 @@ class EcosystemHandoffTest extends TestCase
         }
     }
 
-    public function test_switcher_sends_a_token_only_to_a_trusted_live_platform(): void
+    public function test_switcher_sends_the_browser_to_the_launch_page_for_a_trusted_live_platform_and_no_token_is_in_the_url(): void
     {
         config(['ecosystem.platforms.files.url' => 'https://files.infodot.co.za', 'ecosystem.platforms.files.active' => true]);
 
-        Livewire::actingAs($this->user())
+        $component = Livewire::actingAs($this->user())
             ->test(DotSwitcher::class)
             ->call('switchTo', 'files')
-            ->assertRedirectContains('https://files.infodot.co.za/auth/ecosystem?token=');
+            ->assertRedirect(route('platform.launch', ['platform' => 'files']));
 
-        $this->assertSame(1, DB::table('personal_access_tokens')->count());
+        $this->assertStringNotContainsString('token', (string) data_get($component->effects, 'redirect'));
+        $this->assertSame(0, DB::table('personal_access_tokens')->count(), 'the token is minted on the launch page, not on the click');
     }
 
     public function test_switcher_creates_no_token_and_does_not_redirect_for_a_hijackable_host(): void
@@ -140,16 +141,16 @@ class EcosystemHandoffTest extends TestCase
         $this->assertSame(0, DB::table('personal_access_tokens')->count());
     }
 
-    public function test_widget_sends_a_token_only_to_a_trusted_live_platform(): void
+    public function test_widget_sends_the_browser_to_the_launch_page_for_a_trusted_live_platform(): void
     {
         config(['ecosystem.platforms.forms.url' => 'https://forms.infodot.co.za', 'ecosystem.platforms.forms.active' => true]);
 
         Livewire::actingAs($this->user())
             ->test(EcosystemWidget::class)
             ->call('launch', 'forms')
-            ->assertRedirectContains('https://forms.infodot.co.za/auth/ecosystem?token=');
+            ->assertRedirect(route('platform.launch', ['platform' => 'forms']));
 
-        $this->assertSame(1, DB::table('personal_access_tokens')->count());
+        $this->assertSame(0, DB::table('personal_access_tokens')->count());
     }
 
     public function test_widget_creates_no_token_for_a_hijackable_host(): void

@@ -152,6 +152,18 @@ intelligence services; (2) write the gap analysis and the event contract (`infod
 then moderation and anti-abuse, then the Brain / Memory / Dopemine integrations and the profile display. Depends on
 R-5 (verified sign-in) and on the tenant-isolation review (R-7).
 
+## R-10 InfoDot landing page as a collective business mentor (new requirement, 2026-10-20; not started; LAST)
+
+Owner brief stored verbatim in [requirements/infodot-landing-page.md](requirements/infodot-landing-page.md): rewrite and
+redesign the landing page around the three pillars (learn from collective experience, build and grow through the
+business lifecycle, measure progress), with intent-based entry points that lead to real routes, honest integration
+claims and no invented testimonials or statistics.
+
+**Owner instruction: this is the last item on the list, to be done after everything else is finished.** It depends on
+what exists by then: the Q&A pages, R-9 (community rewards) and the real Dot.Tasks / Finance / Analytics / Memory /
+Brain integrations decide which claims the page may make. First step: inspect the current landing page, routes and
+integrations and map each section to a real feature.
+
 ## Later phases
 
 Design system, integration contracts, Brain/Memory/Dopemine governance, compliance matrix (POPIA, GDPR), disaster
