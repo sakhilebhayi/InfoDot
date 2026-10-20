@@ -166,4 +166,25 @@ class PlatformLaunchTest extends TestCase
             $this->assertStringNotContainsString('CsrfToken', is_string($name) ? $name : '', 'the cross-origin sign-in post cannot carry a CSRF token');
         }
     }
+
+    public function test_a_platform_with_its_own_sign_in_opens_at_its_front_door_and_no_token_is_minted(): void
+    {
+        $user = $this->user();
+        config(['ecosystem.platforms.mines.url' => 'https://mines.infodot.co.za', 'ecosystem.platforms.mines.active' => true]);
+
+        $this->assertTrue(\App\Support\EcosystemHandoff::hasNoReceiver('mines'));
+        $this->assertTrue(\App\Support\EcosystemHandoff::hasNoReceiver('charts'));
+        $this->assertFalse(\App\Support\EcosystemHandoff::hasNoReceiver('files'));
+
+        // The switcher goes straight there ...
+        $this->assertSame('https://mines.infodot.co.za/', \App\Support\EcosystemHandoff::launchUrl($user, 'mines'));
+
+        // ... and a hand-typed launch URL does the same, with no token and no form.
+        $this->actingAs($user)->get('/go/mines')->assertRedirect('https://mines.infodot.co.za/');
+        $this->assertSame(0, DB::table('personal_access_tokens')->count());
+
+        // A look-alike host is still refused.
+        config(['ecosystem.platforms.mines.url' => 'https://mines.infodot.app']);
+        $this->assertNull(\App\Support\EcosystemHandoff::launchUrl($user, 'mines'));
+    }
 }

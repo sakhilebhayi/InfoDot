@@ -25,6 +25,8 @@ return [
     | a flag when a platform really goes live.
     */
 
+    // 'sso' => false marks a platform that has its own sign-in and no /auth/ecosystem receiver (Dot.Mines, Dot.Charts):
+    // opening it goes to its own login page and no token is minted for it.
     'platforms' => [
         'infodot' => ['name' => 'InfoDot', 'url' => env('DOT_INFODOT_URL', 'https://infodot.co.za'), 'icon' => 'home', 'accent' => '#2f8fd6', 'active' => true],
         'agents' => ['name' => 'Dot.Agents', 'url' => env('DOT_AGENTS_URL', 'https://agents.infodot.co.za'), 'icon' => 'smart_toy', 'accent' => '#f1c62e', 'active' => true],
@@ -32,7 +34,7 @@ return [
         'auction' => ['name' => 'Dot.Auction', 'url' => env('DOT_AUCTION_URL', 'https://auction.infodot.co.za'), 'icon' => 'gavel', 'accent' => '#f1c62e', 'active' => true],
         'billing' => ['name' => 'Dot.Billing', 'url' => env('DOT_BILLING_URL', 'https://billing.infodot.co.za'), 'icon' => 'credit_card', 'accent' => '#f1c62e', 'active' => true],
         'central' => ['name' => 'Dot.Central', 'url' => env('DOT_CENTRAL_URL', 'https://central.infodot.co.za'), 'icon' => 'hub', 'accent' => '#e8bd3d', 'active' => true],
-        'charts' => ['name' => 'Dot.Charts', 'url' => env('DOT_CHARTS_URL', 'https://charts.infodot.co.za'), 'icon' => 'candlestick_chart', 'accent' => '#f1c62e', 'active' => true],
+        'charts' => ['name' => 'Dot.Charts', 'url' => env('DOT_CHARTS_URL', 'https://charts.infodot.co.za'), 'icon' => 'candlestick_chart', 'accent' => '#f1c62e', 'active' => true, 'sso' => false],
         'design' => ['name' => 'Dot.Design', 'url' => env('DOT_DESIGN_URL', 'https://design.infodot.co.za'), 'icon' => 'palette', 'accent' => '#efb93a', 'active' => true],
         'dopemine' => ['name' => 'Dot.Dopemine', 'url' => env('DOT_DOPEMINE_URL', 'https://dopemine.infodot.co.za'), 'icon' => 'bolt', 'accent' => '#e8b923', 'active' => true, 'internal' => true],
         'ehail' => ['name' => 'Dot.Ehail', 'url' => env('DOT_EHAIL_URL', 'https://ehail.infodot.co.za'), 'icon' => 'local_taxi', 'accent' => '#e2b13d', 'active' => true],
@@ -44,7 +46,7 @@ return [
         'forms' => ['name' => 'Dot.Forms', 'url' => env('DOT_FORMS_URL', 'https://forms.infodot.co.za'), 'icon' => 'dynamic_form', 'accent' => '#f1c62e', 'active' => true],
         'hr' => ['name' => 'Dot.HR', 'url' => env('DOT_HR_URL', 'https://hr.infodot.co.za'), 'icon' => 'badge', 'accent' => '#f0b91c', 'active' => true],
         'memory' => ['name' => 'Dot.Memory', 'url' => env('DOT_MEMORY_URL', 'https://memory.infodot.co.za'), 'icon' => 'memory', 'accent' => '#f4c94c', 'active' => true, 'internal' => true],
-        'mines' => ['name' => 'Dot.Mines', 'url' => env('DOT_MINES_URL', 'https://mines.infodot.co.za'), 'icon' => 'terrain', 'accent' => '#f1c62e', 'active' => true],
+        'mines' => ['name' => 'Dot.Mines', 'url' => env('DOT_MINES_URL', 'https://mines.infodot.co.za'), 'icon' => 'terrain', 'accent' => '#f1c62e', 'active' => true, 'sso' => false],
         'notify' => ['name' => 'Dot.Notify', 'url' => env('DOT_NOTIFY_URL', 'https://notify.infodot.co.za'), 'icon' => 'notifications', 'accent' => '#f0c33a', 'active' => true],
         'plug' => ['name' => 'Dot.Plug', 'url' => env('DOT_PLUG_URL', 'https://plug.infodot.co.za'), 'icon' => 'extension', 'accent' => '#f0c33a', 'active' => true],
         'press' => ['name' => 'Dot.Press', 'url' => env('DOT_PRESS_URL', 'https://pres.infodot.co.za'), 'icon' => 'newspaper', 'accent' => '#f0c33a', 'active' => true],

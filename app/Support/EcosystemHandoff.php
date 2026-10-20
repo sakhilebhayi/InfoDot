@@ -45,9 +45,28 @@ final class EcosystemHandoff
             return null;
         }
 
+        // A platform with its own sign-in is opened at its own login page: no launch page, no token.
+        if (self::hasNoReceiver($key)) {
+            return self::plainUrl($key);
+        }
+
         $safe = self::safeRedirect($redirect);
 
         return route('platform.launch', ['platform' => $key] + ($safe !== null ? ['redirect' => $safe] : []));
+    }
+
+    /** True for a platform that cannot redeem a handoff token ('sso' => false in the registry). */
+    public static function hasNoReceiver(string $key): bool
+    {
+        return (config('ecosystem.platforms', [])[$key]['sso'] ?? true) === false;
+    }
+
+    /** The platform's own front door (scheme, host and port from the trusted endpoint), or null when it must not be opened. */
+    public static function plainUrl(string $key): ?string
+    {
+        $endpoint = self::endpointFor(config('ecosystem.platforms', [])[$key] ?? null);
+
+        return $endpoint === null ? null : substr($endpoint, 0, -strlen('/auth/ecosystem')).'/';
     }
 
     /**
@@ -60,7 +79,7 @@ final class EcosystemHandoff
     public static function launchForm(User $user, string $key, ?string $redirect = null): ?array
     {
         $platform = config('ecosystem.platforms', [])[$key] ?? null;
-        $endpoint = self::endpointFor($platform);
+        $endpoint = self::hasNoReceiver($key) ? null : self::endpointFor($platform);
 
         if ($endpoint === null) {
             Log::warning('Ecosystem handoff refused: platform is inactive or its URL is not on a trusted https domain.', [

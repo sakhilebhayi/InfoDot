@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Support\EcosystemHandoff;
 use App\Support\Platforms;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
@@ -18,12 +19,17 @@ use Illuminate\Support\Str;
  */
 class PlatformLaunchController extends Controller
 {
-    public function __invoke(Request $request, string $platform): Response
+    public function __invoke(Request $request, string $platform): Response|RedirectResponse
     {
         $user = $request->user();
 
         // Bridge services are never opened by a person, even by a hand-made request.
         abort_if(Platforms::isInternal($platform), 404);
+
+        // A platform with its own sign-in has no receiver for a token: send the person to its front door.
+        if (EcosystemHandoff::hasNoReceiver($platform) && ($plain = EcosystemHandoff::plainUrl($platform)) !== null) {
+            return redirect()->away($plain);
+        }
 
         $redirect = $request->query('redirect');
         $form = EcosystemHandoff::launchForm($user, $platform, is_string($redirect) ? $redirect : null);
