@@ -19,7 +19,7 @@ PHP_BIN="${PHP_BIN:-php}"; BASE_DOMAIN="${BASE_DOMAIN:-infodot.co.za}"
 for K in "$@"; do
   case "$K" in
     infodot) PREFIX='InfoDot:' ;;
-    tasks|auction|ehail|notify|farms|finance|emall|billing|hr|tutor|design|pulse|plug|dopemine|memory|agents|central|engage|forms|projects|analytics) PREFIX="Dot\\.$K:" ;;
+    tasks|auction|ehail|notify|farms|finance|emall|billing|hr|tutor|design|pulse|plug|dopemine|memory|agents|central|engage|forms|projects|analytics|files|docs|press|sheet) PREFIX="Dot\\.$K:" ;;
     *) echo "unknown target $K" >&2; exit 2 ;;
   esac
   LINES="$(grep -E "^${PREFIX}[[:space:]]+[A-Z_0-9]+=" "$SECRETS_FILE" | sed -E "s/^${PREFIX}[[:space:]]+//; s/[[:space:]]+#.*$//" || true)"
@@ -37,7 +37,12 @@ if [ "\$K" = infodot ]; then
   APP="\$(find "\$D" -maxdepth 2 -name artisan -type f -exec dirname {} \; | sort -u)"
   [ "\$(printf '%s\n' "\$APP" | grep -c .)" = 1 ] || { echo "expected exactly one Laravel app under \$D, found: \${APP:-none}" >&2; exit 1; }
 else
-  APP="\$HOME/\$K.$BASE_DOMAIN/\$K"
+  # The host label is not always the key (press -> pres, sheet -> sheets, docs -> doc) and the app folder is not
+  # always named after it (Files lives in "dotfiles"), so find the one Laravel app under the host's docroot.
+  case "\$K" in press) L=pres ;; sheet) L=sheets ;; docs) L=doc ;; *) L="\$K" ;; esac
+  D="\$HOME/\$L.$BASE_DOMAIN"
+  APP="\$(find "\$D" -maxdepth 2 -name artisan -type f -exec dirname {} \; | sort -u)"
+  [ "\$(printf '%s\n' "\$APP" | grep -c .)" = 1 ] || { echo "expected exactly one Laravel app under \$D, found: \${APP:-none}" >&2; exit 1; }
 fi
 cd "\$APP"; [ -f .env ] || { echo ".env missing in \$APP" >&2; exit 1; }
 cp .env ".env.bak-secrets"; chmod 600 ".env.bak-secrets"
