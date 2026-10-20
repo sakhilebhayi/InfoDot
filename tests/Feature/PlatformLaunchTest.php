@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
@@ -157,14 +156,19 @@ class PlatformLaunchTest extends TestCase
         $this->get('/auth/ecosystem?token=not-a-token')->assertStatus(303)->assertRedirect('/login');
     }
 
-    public function test_the_sign_in_post_is_not_behind_csrf_because_it_comes_from_another_origin(): void
+    public function test_the_sign_in_post_is_not_rejected_for_a_missing_csrf_token_because_it_comes_from_another_origin(): void
     {
-        $route = Route::getRoutes()->getByName('auth.ecosystem');
-        $middleware = app('router')->gatherRouteMiddleware($route);
+        // CSRF verification is skipped while unit tests run, which hid HTTP 419 in production on the Laravel 13
+        // platforms: run the request in production mode, where the middleware is active.
+        $this->app['env'] = 'production';
+        $user = $this->user();
+        $token = $user->createToken('ecosystem-handoff', ['ecosystem:read'], now()->addMinute())->plainTextToken;
 
-        foreach ($middleware as $name) {
-            $this->assertStringNotContainsString('CsrfToken', is_string($name) ? $name : '', 'the cross-origin sign-in post cannot carry a CSRF token');
-        }
+        $response = $this->post('/auth/ecosystem', ['token' => $token], ['Origin' => 'http://files.localhost']);
+
+        $this->assertNotSame(419, $response->getStatusCode());
+        $response->assertRedirect(route('solutions'));
+        $this->assertAuthenticatedAs($user);
     }
 
     public function test_a_platform_with_its_own_sign_in_opens_at_its_front_door_and_no_token_is_minted(): void

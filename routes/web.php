@@ -24,7 +24,7 @@ Route::get('/', function () {
 });
 
 Route::match(['get', 'post'], '/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+    ->withoutMiddleware(['Illuminate\Foundation\Http\Middleware\PreventRequestForgery', 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken', 'Illuminate\Foundation\Http\Middleware\ValidateCsrfToken'])
     ->name('auth.ecosystem');
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
