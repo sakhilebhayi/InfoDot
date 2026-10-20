@@ -55,6 +55,73 @@
         </div>
     </div>
 
+    <section class="mb-8 ix-contrib" aria-labelledby="profile-contribution">
+        <h2 id="profile-contribution" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Contribution</h2>
+
+        <div class="ix-readouts">
+            <div class="ix-readout" style="border-left: 0;">
+                <x-ix.figure :value="$stats['questions']" />
+                <span class="block text-xs" style="color: var(--ix-text-3);">Questions asked</span>
+            </div>
+            <div class="ix-readout">
+                <x-ix.figure :value="$stats['answers']" />
+                <span class="block text-xs" style="color: var(--ix-text-3);">Answers given</span>
+            </div>
+            <div class="ix-readout">
+                <x-ix.figure :value="$stats['accepted']" />
+                <span class="block text-xs" style="color: var(--ix-text-3);">Accepted as the solution</span>
+            </div>
+        </div>
+        @unless ($isOwner)
+            <p class="ix-contrib__note">Counts cover public questions and answers only.</p>
+        @endunless
+
+        @if ($isOwner)
+            <div class="ix-points" aria-labelledby="points-heading">
+                <h3 id="points-heading">Dot Points</h3>
+                @if ($points)
+                    <p class="ix-points__balance"><strong>{{ number_format($points['balance']) }}</strong> you can redeem</p>
+                    <p class="ix-points__note">
+                        Points have no cash value and cannot be transferred. Each award lapses 12 months after you earn it.
+                        @if (! empty($points['expiring_soon']))
+                            <strong>{{ number_format($points['expiring_soon']['points']) }} lapse by {{ \Illuminate\Support\Carbon::parse($points['expiring_soon']['first_at'])->format('j M Y') }}.</strong>
+                        @elseif (! empty($points['next_expiry']))
+                            The next ones lapse on {{ \Illuminate\Support\Carbon::parse($points['next_expiry'])->format('j M Y') }}.
+                        @endif
+                    </p>
+                    <p class="ix-points__note">{{ number_format($points['total_earned']) }} earned in total.</p>
+
+                    @if (! empty($points['history']))
+                        <table class="ix-points__history">
+                            <caption class="sr-only">Your recent points history</caption>
+                            <thead><tr><th scope="col">Date</th><th scope="col">What</th><th scope="col">Points</th></tr></thead>
+                            <tbody>
+                                @foreach (array_slice($points['history'], 0, 10) as $row)
+                                    <tr>
+                                        <td>{{ \Illuminate\Support\Carbon::parse($row['at'])->format('j M Y') }}</td>
+                                        <td>
+                                            {{ $row['label'] }}
+                                            @if ($row['type'] === 'expire') <span class="ix-points__tag">lapsed</span> @endif
+                                            @if ($row['type'] === 'reverse') <span class="ix-points__tag">taken back</span> @endif
+                                            @if ($row['type'] === 'redeem') <span class="ix-points__tag">spent</span> @endif
+                                        </td>
+                                        <td>{{ $row['points'] > 0 ? '+' : '' }}{{ $row['points'] }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <p class="ix-points__note">Nothing earned yet. Points come from answers other people find useful, and from solutions that are accepted or verified.</p>
+                    @endif
+                @elseif ($pointsConfigured)
+                    <p class="ix-points__note">Your points are unavailable right now. Nothing is lost; they will show here when the points service is back.</p>
+                @else
+                    <p class="ix-points__note">Points are not switched on yet.</p>
+                @endif
+            </div>
+        @endif
+    </section>
+
     <section class="mb-8" aria-labelledby="profile-questions">
         <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Questions</h2>
 

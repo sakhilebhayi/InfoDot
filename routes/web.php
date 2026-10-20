@@ -62,7 +62,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/questions', 'App\Http\Controllers\Questions\QuestionsController@index')->name('questions');
     Route::get('/questions/ask', 'App\Http\Controllers\Questions\QuestionsController@seek')->name('seek');
-    Route::post('/questions/add', 'App\Http\Controllers\Questions\QuestionsController@add_question')->name('questions.add');
+    Route::post('/questions/add', 'App\Http\Controllers\Questions\QuestionsController@add_question')->middleware('throttle:10,1')->name('questions.add');
     Route::get('/question/view/{qid}', 'App\Http\Controllers\Questions\QuestionsController@view')->name('questions.view');
 
     // -------------------------------------------------------

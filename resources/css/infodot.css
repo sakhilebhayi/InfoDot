@@ -3866,3 +3866,214 @@ button.ix-regrow:focus-visible {
 .ix-pstep--empty {
     display: block;
 }
+
+/* -----------------------------------------------------------------------------------------------
+   Answers under a question: formal answers, the accepted one first and marked by a rule, not a badge.
+   ----------------------------------------------------------------------------------------------- */
+.ix-answers {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ix-rule-strong);
+}
+
+.ix-answers__title {
+    margin: 0 0 12px;
+    font: 700 16px/1.3 var(--ix-font);
+    color: var(--ix-text);
+}
+
+.ix-answers__status {
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    border-left: 3px solid var(--ix-documents);
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    font-size: 14px;
+}
+
+.ix-answers__empty {
+    margin: 0 0 16px;
+    color: var(--ix-text-2);
+    font-size: 14px;
+}
+
+.ix-answer {
+    padding: 14px 0 14px 14px;
+    border-left: 3px solid var(--ix-rule);
+    margin: 0 0 14px;
+}
+
+.ix-answer.is-accepted {
+    border-left-color: var(--ix-documents);
+    background: var(--ix-panel);
+}
+
+.ix-answer__flag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 8px;
+    color: var(--ix-documents);
+    font: 700 13px/1.2 var(--ix-font);
+}
+
+.ix-answer__flag .material-symbols-rounded {
+    font-size: 18px;
+}
+
+.ix-answer__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-top: 10px;
+    color: var(--ix-text-3);
+    font-size: 13px;
+}
+
+.ix-answer__meta a {
+    color: var(--ix-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ix-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ix-text-2);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
+.ix-link:hover {
+    color: var(--ix-text);
+}
+
+.ix-answer__report {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.ix-answer__report select,
+.ix-answerform textarea {
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    font: 400 15px/1.5 var(--ix-font);
+}
+
+.ix-answerform {
+    display: grid;
+    gap: 8px;
+    max-width: 68ch;
+    margin-top: 20px;
+}
+
+.ix-answerform label {
+    font: 700 14px/1.3 var(--ix-font);
+    color: var(--ix-text);
+}
+
+.ix-answerform textarea {
+    width: 100%;
+    min-height: 140px;
+    padding: 10px 12px;
+    resize: vertical;
+}
+
+.ix-answerform textarea:focus-visible,
+.ix-answer__report select:focus-visible,
+.ix-link:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+.ix-answerform .ix-btn {
+    justify-self: start;
+}
+
+.ix-error {
+    margin: 0;
+    color: var(--ix-files);
+    font-size: 14px;
+}
+
+/* Profile: contribution counts and the owner's Dot Points (three separate things: counts, redeemable points, history). */
+.ix-contrib__note {
+    margin: 8px 0 0;
+    color: var(--ix-text-3);
+    font-size: 13px;
+}
+
+.ix-points {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ix-rule);
+    max-width: 68ch;
+}
+
+.ix-points h3 {
+    margin: 0 0 6px;
+    font: 700 16px/1.3 var(--ix-font);
+}
+
+.ix-points__balance {
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: var(--ix-text-2);
+}
+
+.ix-points__balance strong {
+    font: 700 28px/1.1 var(--ix-font);
+    color: var(--ix-text);
+    margin-right: 4px;
+}
+
+.ix-points__note {
+    margin: 0 0 8px;
+    color: var(--ix-text-2);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ix-points__history {
+    width: 100%;
+    margin-top: 10px;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.ix-points__history th,
+.ix-points__history td {
+    padding: 6px 8px 6px 0;
+    border-bottom: 1px solid var(--ix-rule);
+    text-align: left;
+    vertical-align: top;
+}
+
+.ix-points__history th {
+    color: var(--ix-text-3);
+    font-weight: 600;
+}
+
+.ix-points__history td:last-child,
+.ix-points__history th:last-child {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.ix-points__tag {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border: 1px solid var(--ix-rule-strong);
+    color: var(--ix-text-3);
+    font-size: 12px;
+}

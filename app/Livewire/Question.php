@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use Illuminate\Support\Facades\Auth;
+use App\Services\Knowledge\LikeToggle;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -12,21 +12,21 @@ class Question extends Component
 
     public mixed $question = null;
 
-    public function storeLike(): void
+    public function storeLike(LikeToggle $likes): void
     {
-        $like = $this->model->likes()->where('user_id', Auth::id())->first();
-
-        if ($like) {
-            $like->delete();
-        } else {
-            $like = $this->model->likes()->make();
-            $like->user()->associate(auth()->user());
-            $like->save();
-        }
+        $likes->toggle($this->model, auth()->user());
     }
 
+    /**
+     * Marking a question solved by hand is the asker's call (or a moderator's). Before this check any signed-in
+     * person could call it. Accepting an answer (AnswerService) is the normal way and also marks it solved.
+     */
     public function markedAsSolved(): void
     {
+        $user = auth()->user();
+
+        abort_unless($this->model->user_id === $user->id || $user->isModerator(), 403);
+
         $this->model->update(['status' => 1]);
     }
 

@@ -22,6 +22,8 @@
                 <div class="ix-statement"><p class="ix-prose">{{ $question->description }}</p></div>
             @endif
 
+            <livewire:answers :question="$question" />
+
             <livewire:comments :model="$question" :question="$question" />
         </article>
 
