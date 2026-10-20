@@ -110,8 +110,8 @@ class EnterpriseShellTest extends TestCase
 
         Livewire::actingAs($user)->test(PlatformLink::class, ['platform' => 'files', 'label' => 'Files', 'icon' => 'folder', 'variant' => 'door'])
             ->call('open')
-            ->assertRedirectContains('https://files.infodot.co.za/auth/ecosystem?token=');
-        $this->assertDatabaseHas('personal_access_tokens', ['name' => 'ecosystem-handoff:files', 'tokenable_id' => $user->id]);
+            ->assertRedirect(route('platform.launch', ['platform' => 'files']));
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
 
         config(['ecosystem.platforms.docs.active' => false]);
         Livewire::actingAs($user)->test(PlatformLink::class, ['platform' => 'docs', 'label' => 'Documents', 'variant' => 'tab'])

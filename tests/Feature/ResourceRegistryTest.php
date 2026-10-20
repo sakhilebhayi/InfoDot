@@ -132,8 +132,9 @@ class ResourceRegistryTest extends TestCase
 
         $response->assertRedirect();
         $url = $response->headers->get('Location');
-        $this->assertStringStartsWith('https://files.infodot.co.za/auth/ecosystem?token=', $url);
-        $this->assertStringContainsString('&redirect='.rawurlencode('/o/'.$object), $url);
+        $this->assertStringStartsWith(url('/go/files'), $url);
+        $this->assertStringNotContainsString('token', $url);
+        $this->assertStringContainsString('redirect='.rawurlencode('/o/'.$object), $url);
         $this->assertSame($team->id, $member->fresh()->current_team_id, 'opening switches to the owning company');
     }
 
@@ -158,8 +159,9 @@ class ResourceRegistryTest extends TestCase
         $team->users()->attach($member, ['role' => 'editor']);
 
         $response = $this->actingAs($member)->get('/open/'.$resource->uuid);
-        $this->assertStringStartsWith('https://doc.infodot.co.za/auth/ecosystem?token=', $response->headers->get('Location'));
-        $this->assertStringContainsString('&redirect='.rawurlencode('/o/'.$object), $response->headers->get('Location'));
+        $this->assertStringStartsWith(url('/go/docs'), $response->headers->get('Location'));
+        $this->assertStringNotContainsString('token', $response->headers->get('Location'));
+        $this->assertStringContainsString('redirect='.rawurlencode('/o/'.$object), $response->headers->get('Location'));
 
         $ref = Reference::for($resource);
         $this->assertStringContainsString('-D-', $ref);
@@ -181,7 +183,8 @@ class ResourceRegistryTest extends TestCase
         // InfoDot does not decide for the platform (a document collaborator or a file share may
         // legitimately open it); it only says who the person is. Nothing about the object is shown here.
         $response->assertRedirect();
-        $this->assertStringStartsWith('https://files.infodot.co.za/auth/ecosystem?token=', $response->headers->get('Location'));
+        $this->assertStringStartsWith(url('/go/files'), $response->headers->get('Location'));
+        $this->assertStringNotContainsString('token', $response->headers->get('Location'));
         $this->assertSame($other->id, $outsider->fresh()->current_team_id, 'their workspace was not switched to the owning company');
     }
 

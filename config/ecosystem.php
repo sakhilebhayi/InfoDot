@@ -68,6 +68,10 @@ return [
 
     'handoff_ttl' => env('ECOSYSTEM_HANDOFF_TTL', 5),
 
+    // The token behind a platform switch is minted on the launch page and posted at once, so it only needs
+    // to live a moment (seconds, minimum 10).
+    'launch_ttl_seconds' => (int) env('ECOSYSTEM_LAUNCH_TTL_SECONDS', 60),
+
     /*
     |--------------------------------------------------------------------------
     | Trusted Handoff Domains

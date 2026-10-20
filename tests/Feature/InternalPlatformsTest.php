@@ -92,6 +92,14 @@ class InternalPlatformsTest extends TestCase
         Livewire::actingAs($user)->test(EcosystemWidget::class)->call('launch', 'memory')->assertNoRedirect();
 
         Livewire::actingAs($user)->test(DotSwitcher::class)->call('switchTo', 'files')->assertRedirect();
+        $this->assertSame(0, $user->tokens()->count(), 'the switcher mints nothing; the launch page does');
+
+        // Even a hand-typed launch URL cannot open a bridge service.
+        $this->actingAs($user)->get('/go/memory')->assertNotFound();
+        $this->actingAs($user)->get('/go/dopemine')->assertNotFound();
+        $this->assertSame(0, $user->tokens()->count());
+
+        $this->actingAs($user)->get('/go/files')->assertOk();
         $this->assertSame(1, $user->tokens()->count(), 'only the Files launch minted a token');
     }
 

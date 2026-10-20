@@ -9,18 +9,34 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\PersonalAccessToken;
 
+/**
+ * Signs a person in from a handoff token minted by a platform of the ecosystem.
+ *
+ * The token travels in the POST body of a form posted from a platform's subdomain, never in a URL. A GET with
+ * ?token= is still understood for links minted before this change, but nothing here puts a token in a URL, and
+ * a refused sign-in lands on the plain login page: the credential is not shown, echoed or kept anywhere.
+ */
 class EcosystemAuthController extends Controller
 {
     public function handle(Request $request): RedirectResponse
     {
-        $accessToken = PersonalAccessToken::findToken($request->query('token'));
+        // Login CSRF: a form on another site could sign a visitor in as someone else. A browser names the
+        // page that posted a cross-site form in Origin, so only this site and its platforms' subdomains pass.
+        if ($request->isMethod('post') && ! $this->postedFromOurDomain($request)) {
+            return $this->refused();
+        }
 
-        abort_if(
+        $token = $request->input('token');
+
+        $accessToken = is_string($token) && $token !== '' ? PersonalAccessToken::findToken($token) : null;
+
+        if (
             ! $accessToken
             || ! $accessToken->can('ecosystem:read')
-            || ($accessToken->expires_at && $accessToken->expires_at->isPast()),
-            403
-        );
+            || ($accessToken->expires_at && $accessToken->expires_at->isPast())
+        ) {
+            return $this->refused();
+        }
 
         /** @var User $user */
         $user = $accessToken->tokenable;
@@ -29,5 +45,27 @@ class EcosystemAuthController extends Controller
         Auth::login($user);
 
         return redirect()->route('solutions');
+    }
+
+    private function postedFromOurDomain(Request $request): bool
+    {
+        $origin = (string) $request->headers->get('Origin', '');
+        $host = $origin !== '' && $origin !== 'null'
+            ? parse_url($origin, PHP_URL_HOST)
+            : parse_url((string) $request->headers->get('Referer', ''), PHP_URL_HOST);
+
+        if (! is_string($host) || $host === '') {
+            return in_array($request->headers->get('Sec-Fetch-Site'), ['same-origin', 'same-site'], true);
+        }
+
+        $host = strtolower($host);
+        $self = strtolower($request->getHost());
+
+        return $host === $self || str_ends_with($host, '.'.$self);
+    }
+
+    private function refused(): RedirectResponse
+    {
+        return redirect('/login', 303)->with('status', 'We could not sign you in from that link. Please sign in below.');
     }
 }

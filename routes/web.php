@@ -3,6 +3,7 @@
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\PeopleController;
+use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\ResourceOpenController;
 use App\Livewire\EcosystemWidget;
 use Illuminate\Support\Facades\Route;
@@ -22,7 +23,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/auth/ecosystem', [EcosystemAuthController::class, 'handle'])->name('auth.ecosystem');
+Route::match(['get', 'post'], '/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+    ->name('auth.ecosystem');
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
@@ -38,6 +41,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/platforms', EcosystemWidget::class)->name('ecosystem.widget');
     Route::get('/open/{resource}', ResourceOpenController::class)->name('resources.open');
+    // Opens a platform signed in: a page that posts a single-use token to it. The token is never in a URL.
+    Route::get('/go/{platform}', PlatformLaunchController::class)->middleware('throttle:30,1')->name('platform.launch');
 
     // -------------------------------------------------------
     // People: the members of the company the person is acting for
