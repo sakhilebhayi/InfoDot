@@ -8,6 +8,7 @@ use App\Models\Solutions;
 use App\Models\User;
 use App\Services\Points\PointsClient;
 use App\Support\Knowledge\ContributionStats;
+use App\Support\Knowledge\ModerationStatus;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -153,6 +154,8 @@ class PagesController extends Controller
             // Points are the owner's own business: nobody else's profile view asks the ledger for them.
             'points' => $isOwner ? app(PointsClient::class)->summary((string) $get_profile->uuid) : null,
             'pointsConfigured' => $isOwner && app(PointsClient::class)->enabled(),
+            // Moderation of someone's content is their own business: only the owner's view asks.
+            'moderation' => $isOwner ? ModerationStatus::for($get_profile) : collect(),
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasKnowledgeVisibility;
+use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
@@ -11,11 +12,34 @@ class Solutions extends Model
 {
     use HasFactory;
     use HasKnowledgeVisibility;
+    use IsModerated;
     use Searchable;
 
     protected $fillable = [
         'user_id', 'team_id', 'visibility', 'solution_title', 'solution_description', 'tags', 'duration', 'duration_type', 'steps',
     ];
+
+    protected function casts(): array
+    {
+        return ['verified_at' => 'datetime'];
+    }
+
+    /** Hidden content leaves the search index (and comes back when restored). */
+    public function shouldBeSearchable(): bool
+    {
+        return ! $this->isHidden();
+    }
+
+    /** A moderator other than the author has checked that the procedure works. */
+    public function isVerified(): bool
+    {
+        return $this->verified_at !== null;
+    }
+
+    public function verifier()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
 
     public function toSearchableArray(): array
     {

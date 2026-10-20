@@ -16,9 +16,10 @@ final class ContributionStats
     public static function for(User $user, bool $ownerView): array
     {
         $questions = Questions::withoutGlobalScopes()->where('user_id', $user->id)
-            ->when(! $ownerView, fn ($q) => $q->where('visibility', Questions::VISIBILITY_PUBLIC))->count();
+            ->when(! $ownerView, fn ($q) => $q->where('visibility', Questions::VISIBILITY_PUBLIC)->whereNull('hidden_at'))->count();
 
         $answers = Answer::query()->where('user_id', $user->id)->where('status', Answer::PUBLISHED)
+            ->when(! $ownerView, fn ($q) => $q->whereNull('hidden_at'))
             ->when(! $ownerView, fn ($q) => $q->whereHas('question', fn ($qq) => $qq->where('visibility', Questions::VISIBILITY_PUBLIC)));
 
         return [

@@ -51,6 +51,7 @@
                         </a>
                         <p class="ix-sol__meta">
                             <span class="ix-ref">{{ \App\Support\Reference::for($solution) }}</span>
+                            @if ($solution->isVerified())<span class="ix-chip ix-chip--done">Verified by moderator</span>@endif
                             <span>
                                 @if ($solution->duration_type === 'infinite') Time unknown
                                 @else {{ $solution->duration }} {{ Str::plural(rtrim($solution->duration_type, 's'), $solution->duration) }}

@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use App\Models\Answer;
+use App\Models\ContentReport;
 use App\Models\Questions;
 use App\Services\Knowledge\AnswerService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 /**
@@ -57,9 +59,15 @@ class Answers extends Component
     public function report(AnswerService $service): void
     {
         abort_unless($this->reporting !== null, 422);
-        $service->report($this->answer($this->reporting), Auth::user(), $this->reason);
-        $this->reporting = null;
-        session()->flash('answer-status', 'Thanks. A moderator will look at it.');
+
+        try {
+            $service->report($this->answer($this->reporting), Auth::user(), $this->reason);
+            $this->reporting = null;
+            session()->flash('answer-status', 'Thanks. A moderator will look at it.');
+        } catch (ValidationException $e) {
+            // Own answer, already hidden, or too many reports this hour: say so next to the form instead of failing.
+            $this->addError('report', collect($e->errors())->flatten()->first());
+        }
     }
 
     public function render(AnswerService $service): View
@@ -71,11 +79,18 @@ class Answers extends Component
             ->orderByRaw('accepted_at is null')->orderBy('created_at')
             ->get();
 
+        // The answers this person has already reported, so the button is replaced by a plain statement.
+        $reported = ContentReport::where('reporter_id', $user->id)
+            ->where('reportable_type', (new Answer)->getMorphClass())
+            ->whereIn('reportable_id', $answers->pluck('id'))
+            ->pluck('reportable_id')->all();
+
         return view('livewire.answers', [
+            'reported' => $reported,
             'answers' => $answers,
             'service' => $service,
             'user' => $user,
-            'canAnswer' => $service->canSee($this->question, $user),
+            'canAnswer' => $service->canSee($this->question, $user) && ! $this->question->isHidden(),
         ]);
     }
 

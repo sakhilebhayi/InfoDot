@@ -4077,3 +4077,376 @@ button.ix-regrow:focus-visible {
     color: var(--ix-text-3);
     font-size: 12px;
 }
+
+/* -----------------------------------------------------------------------------------------------
+   Moderation: the moderators' desk, the notice on hidden content, solution verification.
+   Flat, bordered, no colour for decoration: colour only says state (hidden = warn, verified = ok).
+   ----------------------------------------------------------------------------------------------- */
+.ix-mod__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    margin: 0 0 16px;
+    border-bottom: 1px solid var(--ix-rule-strong);
+}
+
+.ix-mod__tabs a {
+    padding: 8px 0;
+    margin-bottom: -1px;
+    border-bottom: 3px solid transparent;
+    color: var(--ix-text-2);
+    font: 600 15px/1.3 var(--ix-font);
+    text-decoration: none;
+}
+
+.ix-mod__tabs a:hover {
+    color: var(--ix-text);
+}
+
+.ix-mod__tabs a[aria-current='page'] {
+    border-bottom-color: var(--ix-signal);
+    color: var(--ix-text);
+}
+
+.ix-mod__tabs a:focus-visible,
+.ix-mod__item a:focus-visible,
+.ix-mod__act summary:focus-visible,
+.ix-mod__history summary:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+.ix-mod__n {
+    margin-left: 6px;
+    color: var(--ix-text-3);
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.ix-mod__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin: 0 0 16px;
+}
+
+.ix-mod__filters label {
+    display: grid;
+    gap: 4px;
+    font: 600 13px/1.2 var(--ix-font);
+    color: var(--ix-text-2);
+}
+
+.ix-mod__empty {
+    margin: 24px 0;
+    color: var(--ix-text-2);
+}
+
+.ix-mod__list {
+    display: grid;
+    gap: 14px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-mod__item {
+    padding: 14px 16px;
+    background: var(--ix-panel);
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+}
+
+.ix-mod__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--ix-text-3);
+}
+
+.ix-mod__count {
+    color: var(--ix-text);
+    font-weight: 700;
+}
+
+.ix-mod__title {
+    margin: 0 0 4px;
+    font: 700 17px/1.3 var(--ix-font);
+    overflow-wrap: anywhere;
+}
+
+.ix-mod__title a,
+.ix-mod__by a {
+    color: var(--ix-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ix-mod__excerpt {
+    margin: 0 0 6px;
+    color: var(--ix-text-2);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.ix-mod__by {
+    margin: 0 0 8px;
+    color: var(--ix-text-3);
+    font-size: 13px;
+}
+
+.ix-mod__sub {
+    margin: 12px 0 4px;
+    font: 700 13px/1.3 var(--ix-font);
+    color: var(--ix-text-2);
+}
+
+.ix-mod__reports {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 14px;
+    color: var(--ix-text-2);
+}
+
+.ix-mod__reports li + li {
+    margin-top: 4px;
+}
+
+.ix-mod__detail {
+    display: block;
+    color: var(--ix-text-3);
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.ix-mod__facts {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0 0;
+    font-size: 14px;
+}
+
+.ix-mod__facts dt {
+    color: var(--ix-text-3);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.ix-mod__facts dd {
+    margin: 0;
+    color: var(--ix-text);
+    overflow-wrap: anywhere;
+}
+
+.ix-mod__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.ix-mod__act[open] {
+    flex: 1 0 100%;
+}
+
+.ix-mod__act summary {
+    list-style: none;
+}
+
+.ix-mod__act summary::-webkit-details-marker {
+    display: none;
+}
+
+.ix-mod__form {
+    display: grid;
+    gap: 8px;
+    width: min(100%, 62ch);
+    margin-top: 8px;
+    padding: 12px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-bg);
+}
+
+.ix-mod__form label,
+.ix-hidden__form label,
+.ix-verify__form label {
+    font: 700 13px/1.3 var(--ix-font);
+    color: var(--ix-text);
+}
+
+.ix-mod__form textarea,
+.ix-hidden__form textarea,
+.ix-verify__form textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    font: 400 15px/1.5 var(--ix-font);
+    resize: vertical;
+}
+
+.ix-mod__form textarea:focus-visible,
+.ix-hidden__form textarea:focus-visible,
+.ix-verify__form textarea:focus-visible,
+.ix-mod__filters select:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+.ix-mod__form .ix-btn,
+.ix-hidden__form .ix-btn,
+.ix-verify__form .ix-btn {
+    justify-self: start;
+}
+
+.ix-mod__history {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--ix-text-2);
+}
+
+.ix-mod__history summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.ix-mod__history ol {
+    margin: 8px 0 0;
+    padding-left: 18px;
+}
+
+.ix-mod__history li + li {
+    margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+    .ix-mod__item {
+        padding: 12px;
+    }
+
+    .ix-mod__actions .ix-mod__act {
+        width: 100%;
+    }
+}
+
+/* The notice on content a moderator hid (shown to its author and to moderators only). */
+.ix-hidden {
+    display: grid;
+    gap: 6px;
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--ix-warn);
+    background: var(--ix-warn-wash);
+    color: var(--ix-text);
+    font-size: 14px;
+    max-width: 68ch;
+}
+
+.ix-hidden--ok {
+    border-left-color: var(--ix-ok);
+    background: var(--ix-ok-wash);
+}
+
+.ix-hidden__title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    font: 700 14px/1.3 var(--ix-font);
+}
+
+.ix-hidden__title .material-symbols-rounded {
+    font-size: 18px;
+}
+
+.ix-hidden__reason,
+.ix-hidden__meta,
+.ix-hidden__outcome {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.ix-hidden__meta {
+    color: var(--ix-text-2);
+    font-size: 13px;
+}
+
+.ix-hidden__form {
+    display: grid;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.ix-hidden .ix-btn {
+    justify-self: start;
+}
+
+.ix-answer.is-hidden {
+    opacity: 0.85;
+    border-left-style: dashed;
+}
+
+.ix-report {
+    margin: 12px 0;
+}
+
+/* Verification of a solution. */
+.ix-verify {
+    margin: 0 0 20px;
+}
+
+.ix-verify h2 {
+    margin: 0 0 6px;
+    font: 700 13px/1.3 var(--ix-font);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ix-text-2);
+}
+
+.ix-verify__badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 4px;
+    color: var(--ix-ok);
+    font: 700 15px/1.3 var(--ix-font);
+}
+
+.ix-verify__badge .material-symbols-rounded {
+    font-size: 20px;
+}
+
+.ix-verify__form {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+/* Profile: what moderators did about the person's own content. */
+.ix-modstatus__list {
+    display: grid;
+    gap: 12px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+    max-width: 68ch;
+}
+
+.ix-modstatus__title {
+    margin: 0 0 2px;
+    font-size: 15px;
+}
+
+.ix-modstatus__title a {
+    color: var(--ix-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}

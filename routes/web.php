@@ -6,6 +6,7 @@ use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\ResourceOpenController;
 use App\Livewire\EcosystemWidget;
+use App\Livewire\Moderation\Queue as ModerationQueue;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -70,6 +71,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/user/profile/edit', 'App\Http\Controllers\PagesController@edit')->name('profile.edit');
     Route::get('/user/profile/{id}', 'App\Http\Controllers\PagesController@show')->name('profile.show');
+
+    // -------------------------------------------------------
+    // Moderation: reports, appeals and the audit trail. Moderators only.
+    // -------------------------------------------------------
+    Route::get('/moderation', ModerationQueue::class)->middleware('moderator')->name('moderation');
 
     // -------------------------------------------------------
     // Sub Services

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,6 +10,7 @@ use Illuminate\Support\Str;
 
 class Answer extends Model
 {
+    use IsModerated;
     use SoftDeletes;
 
     public const PUBLISHED = 'published';

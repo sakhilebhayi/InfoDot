@@ -53,6 +53,9 @@
             <a href="{{ route('ecosystem.widget') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('ecosystem.widget', 'subservices.*')) aria-current="page" @endif>Platforms</a>
             <a href="{{ route('people') }}" class="ix-tab" data-area="people" @if(request()->routeIs('people', 'teams.*', 'api-tokens.*')) aria-current="page" @endif>People</a>
             <a href="{{ route('analytics.dashboard') }}" class="ix-tab" data-area="analytics" @if(request()->routeIs('analytics.*')) aria-current="page" @endif>Analytics</a>
+            @if (Auth::user()->isModerator())
+                <a href="{{ route('moderation') }}" class="ix-tab" data-area="people" @if(request()->routeIs('moderation')) aria-current="page" @endif>Moderation</a>
+            @endif
         </nav>
 
         <div class="ix-top__search">

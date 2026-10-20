@@ -16,8 +16,15 @@
                 </button>
             </div>
 
-            <p class="ix-detail__kind"><span class="ix-q__state is-open" style="background:#1b2124;color:var(--ix-stencil)">Solution</span></p>
+            <p class="ix-detail__kind">
+                <span class="ix-q__state is-open" style="background:#1b2124;color:var(--ix-stencil)">Solution</span>
+                @if ($solution->isVerified())
+                    <span class="ix-q__state is-done">Verified by moderator</span>
+                @endif
+            </p>
             <h1 class="ix-detail__title">{{ $solution->solution_title }}</h1>
+
+            <livewire:hidden-notice kind="solution" :item-id="$solution->id" />
             <div class="ix-statement"><p class="ix-prose">{{ $solution->solution_description }}</p></div>
 
             @if ($tags->isNotEmpty())
@@ -75,6 +82,8 @@
                 </dl>
             </section>
 
+            <livewire:verify-solution :solution-id="$solution->id" />
+
             @if ($related->isNotEmpty())
                 <section class="ix-related">
                     <h2>More like this</h2>
@@ -88,6 +97,8 @@
                     </ul>
                 </section>
             @endif
+
+            <livewire:report-content kind="solution" :item-id="$solution->id" />
 
             <a href="{{ route('add') }}" class="ix-btn">Write another solution</a>
         </aside>
