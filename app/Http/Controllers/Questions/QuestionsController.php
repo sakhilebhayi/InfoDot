@@ -58,6 +58,13 @@ class QuestionsController extends Controller
         $question->description = $request->input('description');
         $question->save();
 
+        event(new \App\Events\Knowledge\QuestionSubmitted('infodot:question:'.$question->id, [
+            'question_id' => $question->id,
+            'author_uuid' => auth()->user()->uuid,
+            'tenant_team_id' => $question->team_id,
+            'visibility' => $question->visibility,
+        ]));
+
         $questions = Questions::all();
         // event(new QuestionWasAsked($question));
 

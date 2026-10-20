@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
@@ -40,6 +41,17 @@ class User extends Authenticatable implements MustVerifyEmail
      * TNTSearch reads the primary key out of this array; without 'id' every save of the
      * model throws "Undefined array key id" (it broke registration on 2026-10-17).
      */
+    protected static function booted(): void
+    {
+        static::creating(fn (self $user) => $user->uuid ??= (string) Str::uuid());
+    }
+
+    /** Moderators accept answers on others' questions, verify solutions and handle reports. Granted by an administrator. */
+    public function isModerator(): bool
+    {
+        return (bool) $this->is_moderator;
+    }
+
     public function toSearchableArray(): array
     {
         return [
