@@ -37,6 +37,30 @@ Tracked as R-2 in the roadmap. No upgrade is applied to production without the s
 - Secrets live in a mode-600 local file and host `.env` files; they were not committed (GitGuardian passes on the
   InfoDot and Analytics PRs).
 
+## S-2b Sign-in token in the URL (found by the owner 2026-10-20; fix in review)
+
+**Finding (high).** Switching platform sent the browser to `https://<app>/auth/ecosystem?token=<credential>&redirect=...`.
+The single-use sign-in credential therefore sat in the address bar, browser history, server access logs and
+Referer headers, and when the destination refused the sign-in (403/503) the person was left on a URL showing it.
+Present in InfoDot and all 24 receiving platforms. The token was already audience-bound, single-use and short
+lived (5 minutes), which limited but did not remove the exposure.
+
+**Fix.** InfoDot opens a platform through its own `/go/{platform}` page, which mints a 60-second single-use token
+and POSTs it in a form body. Receivers accept the POST (origin-checked, so a form on another site cannot sign a
+visitor in as someone else), and any refused sign-in redirects (303) to the plain login page with a generic
+message. Mines and Charts have their own sign-in and no receiver, so they now open at their own login and no token
+is minted. PRs: InfoDot #54 and one "Sign-in token: accept a POST, never show it" PR per receiving platform.
+Tests: `PlatformLaunchTest` (InfoDot) and `EcosystemSsoPostTest` (each platform) cover token-never-in-URL,
+cross-site POST refused without spending the token, nothing echoed on failure, CSRF exclusion, exact-origin check.
+
+**Rollout order matters:** deploy the receivers first, then InfoDot. Until InfoDot is deployed nothing changes. A
+follow-up removes the legacy GET path from the receivers.
+
+**Limits of this fix.** The token is in the response body of the launch page (hidden form field) for the signed-in
+person for a moment, and in the POST body in transit (HTTPS). Access logs no longer record it. Old bookmarked or
+already-sent links with `?token=` still work until the legacy GET is removed; they are spent on use or expire in
+5 minutes.
+
 ## S-3 Not yet assessed (no evidence either way)
 
 Tenant-isolation test coverage on the older platforms, MFA availability and enforcement, rate limiting on login and
