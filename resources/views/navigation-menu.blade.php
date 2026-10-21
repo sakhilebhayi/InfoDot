@@ -78,6 +78,9 @@
                     <a class="ix-pop__item" href="{{ route('profile.show', ['id' => Auth::id()]) }}">
                         <span class="material-symbols-rounded" aria-hidden="true">person</span>{{ __('Profile') }}
                     </a>
+                    <a class="ix-pop__item" href="{{ route('points') }}">
+                        <span class="material-symbols-rounded" aria-hidden="true">redeem</span>{{ __('Points') }}
+                    </a>
                     <a class="ix-pop__item" href="{{ route('profile.edit') }}">
                         <span class="material-symbols-rounded" aria-hidden="true">tune</span>{{ __('Settings') }}
                     </a>

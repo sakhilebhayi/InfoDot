@@ -4,6 +4,7 @@ use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
+use App\Http\Controllers\PointsController;
 use App\Http\Controllers\ResourceOpenController;
 use App\Livewire\EcosystemWidget;
 use App\Livewire\Moderation\Queue as ModerationQueue;
@@ -71,6 +72,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/user/profile/edit', 'App\Http\Controllers\PagesController@edit')->name('profile.edit');
     Route::get('/user/profile/{id}', 'App\Http\Controllers\PagesController@show')->name('profile.show');
+
+    // -------------------------------------------------------
+    // Dot Points: balance, rewards, redemptions. Server-to-server with the points service; always the signed-in person's own.
+    // -------------------------------------------------------
+    Route::get('/points', [PointsController::class, 'index'])->middleware('throttle:60,1')->name('points');
+    Route::post('/points/redeem', [PointsController::class, 'redeem'])->middleware('throttle:10,1')->name('points.redeem');
 
     // -------------------------------------------------------
     // Moderation: reports, appeals and the audit trail. Moderators only.
