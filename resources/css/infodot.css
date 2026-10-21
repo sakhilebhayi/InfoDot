@@ -4452,3 +4452,389 @@ button.ix-regrow:focus-visible {
     text-decoration: underline;
     text-underline-offset: 2px;
 }
+
+/* -----------------------------------------------------------------------------------------------
+   Dot Points screen (/points): balance, lapsing points, rewards with Redeem, redemptions, terms.
+   Flat and bordered; colour only says state (available/fulfilled = ok, failed = danger, lapsing = warn),
+   and every state also carries a word, so it never relies on colour alone.
+   ----------------------------------------------------------------------------------------------- */
+.ix-pts__notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 20px;
+    padding: 12px 14px;
+    border: 1px solid var(--ix-rule-strong);
+    border-left-width: 4px;
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-panel);
+}
+
+.ix-pts__notice p {
+    margin: 0;
+    max-width: 72ch;
+    font-weight: 600;
+}
+
+.ix-pts__notice .material-symbols-rounded {
+    font-size: 20px;
+    flex: none;
+}
+
+.ix-pts__notice--ok {
+    border-color: var(--ix-ok);
+}
+
+.ix-pts__notice--ok .material-symbols-rounded {
+    color: var(--ix-ok);
+}
+
+.ix-pts__notice--error {
+    border-color: var(--ix-danger);
+}
+
+.ix-pts__notice--error .material-symbols-rounded {
+    color: var(--ix-danger);
+}
+
+.ix-pts__down {
+    max-width: 62ch;
+    margin-bottom: 32px;
+    padding: 20px;
+    border: 1px dashed var(--ix-rule-strong);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.ix-pts__down h2,
+.ix-pts__section h2,
+.ix-pts__box h2 {
+    margin: 0 0 8px;
+    font: 700 18px/1.3 var(--ix-font);
+}
+
+.ix-pts__down p {
+    margin: 0 0 12px;
+    color: var(--ix-text-2);
+}
+
+.ix-pts__top {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.ix-pts__box {
+    padding: 16px 20px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.ix-pts__box p {
+    margin: 0 0 8px;
+}
+
+.ix-pts__balance {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 10px;
+    color: var(--ix-text-2);
+}
+
+.ix-pts__balance .ix-stencil-num {
+    font-size: 64px;
+    color: var(--ix-text);
+}
+
+.ix-pts__muted {
+    color: var(--ix-text-3);
+    font-size: 13px;
+}
+
+.ix-pts__warn {
+    color: var(--ix-warn);
+    font-weight: 600;
+}
+
+.ix-pts__section {
+    margin-bottom: 32px;
+}
+
+.ix-pts__kind {
+    margin-bottom: 22px;
+}
+
+.ix-pts__kind h3 {
+    margin: 0 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--ix-rule-strong);
+    font: 700 13px/1.3 var(--ix-font);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ix-text-2);
+}
+
+.ix-pts__list {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-pts__item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.ix-pts__what {
+    flex: 1 1 320px;
+    min-width: 0;
+}
+
+.ix-pts__what h4 {
+    margin: 0;
+    font: 650 16px/1.35 var(--ix-font);
+}
+
+.ix-pts__what p {
+    margin: 2px 0 0;
+    color: var(--ix-text-2);
+    max-width: 62ch;
+}
+
+.ix-pts__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-top: 6px !important;
+}
+
+.ix-pts__cost {
+    font-weight: 700;
+    color: var(--ix-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.ix-pts__tag {
+    padding: 1px 8px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    color: var(--ix-text-2);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ix-pts__tag--ok {
+    border-color: var(--ix-ok);
+    color: var(--ix-ok);
+}
+
+.ix-pts__redeem {
+    flex: 0 1 380px;
+    min-width: 0;
+}
+
+.ix-pts__redeem > summary {
+    list-style: none;
+    width: max-content;
+}
+
+.ix-pts__redeem > summary::-webkit-details-marker {
+    display: none;
+}
+
+.ix-pts__redeem > summary:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+/* The link from the profile's points panel to the points screen. */
+.ix-points__link {
+    color: var(--ix-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* The base .ix-btn:hover paints a light background over primary buttons, which leaves white text on light grey. */
+.ix-pts__redeem > summary.ix-btn--primary:hover,
+.ix-pts__redeem > summary.ix-btn--primary:active,
+.ix-pts__confirm .ix-btn--primary:hover,
+.ix-pts__confirm .ix-btn--primary:active {
+    background: var(--ix-signal);
+    border-color: var(--ix-signal);
+    color: var(--ix-signal-ink);
+}
+
+.ix-pts__redeem > summary.ix-btn--primary:active,
+.ix-pts__confirm .ix-btn--primary:active {
+    filter: brightness(0.9);
+}
+
+.ix-pts__redeem[open] > summary {
+    margin-bottom: 10px;
+}
+
+.ix-pts__confirm {
+    display: grid;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-bg);
+}
+
+.ix-pts__confirm h5 {
+    margin: 0;
+    font: 700 14px/1.3 var(--ix-font);
+}
+
+.ix-pts__confirm dl {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+}
+
+.ix-pts__confirm dl div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 10px;
+}
+
+.ix-pts__confirm dt {
+    flex: 0 0 7.5em;
+    color: var(--ix-text-3);
+}
+
+.ix-pts__confirm dd {
+    margin: 0;
+    flex: 1 1 10em;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.ix-pts__confirm p {
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: 13px;
+}
+
+.ix-pts__confirm .ix-btn {
+    justify-self: start;
+    white-space: normal;
+    height: auto;
+    min-height: 36px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.ix-pts__confirm .ix-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.ix-pts__table small {
+    display: block;
+}
+
+.ix-pts__status {
+    display: inline-block;
+    padding: 1px 8px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ix-pts__status--fulfilled {
+    border-color: var(--ix-ok);
+    color: var(--ix-ok);
+}
+
+.ix-pts__status--failed,
+.ix-pts__status--cancelled {
+    border-color: var(--ix-danger);
+    color: var(--ix-danger);
+}
+
+.ix-pts__note {
+    margin-top: 2px;
+    color: var(--ix-text-2);
+}
+
+.ix-pts__terms ul {
+    margin: 0;
+    padding-left: 1.2em;
+    max-width: 68ch;
+    color: var(--ix-text-2);
+}
+
+.ix-pts__terms li + li {
+    margin-top: 4px;
+}
+
+@media (max-width: 639px) {
+    .ix-pts__top {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ix-pts__balance .ix-stencil-num {
+        font-size: 52px;
+    }
+
+    .ix-pts__redeem {
+        flex-basis: 100%;
+    }
+
+    /* The redemptions table becomes one block per row so nothing scrolls sideways at phone width. */
+    .ix-pts__table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+    }
+
+    .ix-pts__table tr {
+        display: block;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--ix-rule);
+    }
+
+    .ix-pts__table tr:last-child {
+        border-bottom: 0;
+    }
+
+    .ix-pts__table td {
+        display: flex;
+        gap: 12px;
+        padding: 3px 0;
+        border: 0;
+    }
+
+    .ix-pts__table td::before {
+        content: attr(data-label);
+        flex: 0 0 5.5em;
+        color: var(--ix-text-3);
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .ix-pts__table td > * {
+        min-width: 0;
+    }
+
+    .ix-pts__table small {
+        display: inline;
+    }
+}

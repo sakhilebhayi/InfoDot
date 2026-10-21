@@ -118,6 +118,7 @@
                 @else
                     <p class="ix-points__note">Points are not switched on yet.</p>
                 @endif
+                <p class="ix-points__note"><a href="{{ route('points') }}" class="ix-points__link">Redeem points and see your redemptions</a></p>
             </div>
         @endif
     </section>
