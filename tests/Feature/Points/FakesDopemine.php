@@ -43,6 +43,7 @@ trait FakesDopemine
             if (preg_match('#^/api/points/[0-9a-f-]{36}$#', (string) $path)) {
                 $path = '/api/points/{uuid}';
             }
+            $path = preg_replace('#^/api/points/expiry-warnings/[A-Za-z0-9._-]+/result$#', '/api/points/expiry-warnings/{id}/result', (string) $path);
             $answer = $this->upstream[$request->method().' '.$path] ?? Http::response(['code' => 'not_found', 'message' => 'x'], 404);
 
             return is_callable($answer) ? $answer($request) : $answer;

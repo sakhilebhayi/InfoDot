@@ -4772,6 +4772,41 @@ button.ix-regrow:focus-visible {
     color: var(--ix-text-2);
 }
 
+.ix-pts__pref form {
+    max-width: 62ch;
+    padding: 16px 20px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.ix-pts__pref .ix-hint,
+.ix-pts__pref .ix-pts__muted {
+    margin: 6px 0 12px;
+}
+
+.ix-pts__check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ix-pts__check input {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    margin: 0;
+    accent-color: var(--ix-signal);
+    cursor: pointer;
+}
+
+.ix-pts__check input:focus-visible {
+    outline: 2px solid var(--ix-signal);
+    outline-offset: 2px;
+}
+
 .ix-pts__terms ul {
     margin: 0;
     padding-left: 1.2em;

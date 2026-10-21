@@ -168,6 +168,88 @@ class PointsClient
         return $records;
     }
 
+    /** What InfoDot may tell the points service about an expiry warning it was asked to email. */
+    public const EXPIRY_OUTCOMES = ['delivered', 'retry', 'permanent_failure'];
+
+    /**
+     * Expiry warnings that are due to be emailed (the service returns none when nothing is due, or when it is not set
+     * to let InfoDot deliver them). Rows not in the documented shape are skipped, never guessed at.
+     *
+     * @return list<ExpiryWarning>
+     *
+     * @throws PointsUnavailableException
+     */
+    public function expiryWarnings(int $limit = 100): array
+    {
+        $limit = max(1, min(100, $limit));
+        $response = $this->call('expiry_warnings', fn () => $this->request('')->get($this->endpoint('/api/points/expiry-warnings'), ['limit' => $limit]));
+
+        $warnings = [];
+        $skipped = 0;
+        foreach ($this->expectList($response, 'expiry_warnings') as $row) {
+            $date = is_array($row) && is_string($row['expires_on'] ?? null) && preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $row['expires_on'])
+                ? Carbon::createFromFormat('!Y-m-d', $row['expires_on']) : false;
+            if ($date && $date->format('Y-m-d') !== $row['expires_on']) {
+                $date = false; // 2026-13-45 would otherwise roll over into a real, wrong date.
+            }
+            if (! is_array($row) || ! $this->validWarningId($row['warning_id'] ?? null) || ! is_string($row['user_uuid'] ?? null)
+                || ! preg_match('/\A[A-Za-z0-9-]{1,64}\z/', $row['user_uuid']) || ! is_int($row['points'] ?? null) || $row['points'] < 1 || ! $date) {
+                $skipped++;
+
+                continue;
+            }
+            $warnings[] = new ExpiryWarning($row['warning_id'], $row['user_uuid'], $row['points'], $date);
+        }
+        if ($skipped > 0) {
+            $this->note('expiry_warnings', $response->status(), 'rows_skipped');
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * Tell the points service what happened to an expiry warning. Idempotent on its side, so repeating a report is safe.
+     *
+     * @throws ExpiryResultRefusedException the service said no (unknown warning, or an invalid report)
+     * @throws PointsUnavailableException the report did not get through; send it again later
+     */
+    public function reportExpiryResult(int|string $warningId, string $outcome): ExpiryResultReceipt
+    {
+        if (! $this->validWarningId($warningId) || ! in_array($outcome, self::EXPIRY_OUTCOMES, true)) {
+            throw new InvalidArgumentException('Unknown warning id or outcome.');
+        }
+        $body = (string) json_encode(['outcome' => $outcome], JSON_UNESCAPED_SLASHES);
+
+        $response = $this->call('expiry_result', fn () => $this->request($body)->withBody($body, 'application/json')
+            ->post($this->endpoint('/api/points/expiry-warnings/'.rawurlencode((string) $warningId).'/result')));
+
+        if ($response->successful()) {
+            $r = $response->json();
+            if (is_array($r) && (is_int($r['warning_id'] ?? null) || is_string($r['warning_id'] ?? null)) && is_string($r['state'] ?? null)) {
+                return new ExpiryResultReceipt((string) $r['warning_id'], $r['state']);
+            }
+            $this->note('expiry_result', $response->status(), 'malformed');
+            throw new PointsUnavailableException(PointsUnavailableException::MALFORMED);
+        }
+
+        $code = $this->codeOf($response);
+        if ($response->status() === 404 && $code === ExpiryResultRefusedException::NOT_FOUND) {
+            throw new ExpiryResultRefusedException(ExpiryResultRefusedException::NOT_FOUND);
+        }
+        if ($response->status() === 422 && $code === ExpiryResultRefusedException::INVALID) {
+            $this->note('expiry_result', 422, $code);
+            throw new ExpiryResultRefusedException(ExpiryResultRefusedException::INVALID);
+        }
+
+        $this->note('expiry_result', $response->status(), $code === '' ? 'unknown' : $code);
+        throw new PointsUnavailableException(PointsUnavailableException::MALFORMED);
+    }
+
+    private function validWarningId(mixed $id): bool
+    {
+        return (is_int($id) && $id > 0) || (is_string($id) && preg_match('/\A[A-Za-z0-9._-]{1,64}\z/', $id) === 1);
+    }
+
     /**
      * Send one signed request. Not configured, unreachable, a bad signature and server errors all become
      * PointsUnavailableException; any other status is returned for the caller to read.
