@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Questions;
 use App\Events\Knowledge\QuestionSubmitted;
 use App\Events\Questions\QuestionWasAsked;
 use App\Http\Controllers\Controller;
+use App\Models\Answer;
 use App\Models\Questions;
 use App\Support\Industry;
 use App\Support\Related;
@@ -14,7 +15,7 @@ class QuestionsController extends Controller
 {
     public function index()
     {
-        $questions = Questions::withCount(['likes', 'comments'])
+        $questions = Questions::withCount(['likes', 'comments', 'answers' => fn ($q) => $q->where('status', Answer::PUBLISHED)])
             ->with(['user', 'team'])
             ->latest()
             ->get();

@@ -144,9 +144,12 @@
                             @elseif ($row['appeal']->status === 'upheld')
                                 Appeal upheld {{ $row['appeal']->decided_at?->format('j M Y') }}.
                             @else
-                                Appeal denied {{ $row['appeal']->decided_at?->format('j M Y') }}@if (filled($row['appeal']->decision_note)): {{ $row['appeal']->decision_note }}@endif. This is final.
+                                Appeal denied {{ $row['appeal']->decided_at?->format('j M Y') }}. This is final.
                             @endif
                         </p>
+                        @if ($row['appeal'] !== null && ! $row['appeal']->isOpen() && filled($row['appeal']->decision_note))
+                            <p class="ix-points__note">Moderator's note: {{ $row['appeal']->decision_note }}</p>
+                        @endif
                     </li>
                 @endforeach
             </ul>

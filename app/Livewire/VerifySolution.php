@@ -45,6 +45,8 @@ class VerifySolution extends Component
             $action();
             $this->reset('note');
             $this->resetErrorBag();
+            // The "Verified by moderator" chip under the page title is drawn by the page, not by this component.
+            $this->dispatch('solution-verification', label: $this->solution()->isVerified() ? 'Verified by moderator' : '');
         } catch (ValidationException $e) {
             $this->resetErrorBag();
             $this->addError('note', collect($e->errors())->flatten()->first());

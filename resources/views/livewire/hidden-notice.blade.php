@@ -19,11 +19,12 @@
                         <button type="submit" class="ix-btn">Send appeal</button>
                     </form>
                 @elseif ($appeal->isOpen())
-                    <p class="ix-hidden__outcome"><strong>Your appeal is with the moderators.</strong> Sent {{ $appeal->created_at->diffForHumans() }}. A moderator who did not hide this will decide it.</p>
+                    <p class="ix-hidden__outcome" role="status"><strong>Your appeal is with the moderators.</strong> Sent {{ $appeal->created_at->diffForHumans() }}. A moderator who did not hide this will decide it.</p>
                 @else
-                    <p class="ix-hidden__outcome"><strong>Your appeal was {{ $appeal->status }}.</strong>
-                        @if (filled($appeal->decision_note)) {{ $appeal->decision_note }} @endif
-                        This decision is final.</p>
+                    <p class="ix-hidden__outcome"><strong>Your appeal was {{ $appeal->status }}.</strong> This decision is final.</p>
+                    @if (filled($appeal->decision_note))
+                        <p class="ix-hidden__reason">Moderator's note: {{ $appeal->decision_note }}</p>
+                    @endif
                 @endif
             @endif
 
@@ -33,8 +34,10 @@
         </aside>
     @elseif ($show && $restoredAppeal)
         <aside class="ix-hidden ix-hidden--ok" aria-label="Appeal outcome">
-            <p class="ix-hidden__outcome"><strong>Your appeal was upheld.</strong> A moderator showed this again on {{ $restoredAppeal->decided_at?->format('j M Y') }}.
-                @if (filled($restoredAppeal->decision_note)) {{ $restoredAppeal->decision_note }} @endif</p>
+            <p class="ix-hidden__outcome"><strong>Your appeal was upheld.</strong> A moderator showed this again on {{ $restoredAppeal->decided_at?->format('j M Y') }}.</p>
+            @if (filled($restoredAppeal->decision_note))
+                <p class="ix-hidden__reason">Moderator's note: {{ $restoredAppeal->decision_note }}</p>
+            @endif
         </aside>
     @endif
 </div>

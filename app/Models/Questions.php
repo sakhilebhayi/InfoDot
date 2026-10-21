@@ -39,6 +39,11 @@ class Questions extends Model
         return $this->morphMany(Comment::class, 'commentable');
     }
 
+    public function answers()
+    {
+        return $this->hasMany(Answer::class, 'question_id');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

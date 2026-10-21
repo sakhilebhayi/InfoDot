@@ -38,11 +38,12 @@
                 <ul class="ix-qlist">
                     @foreach ($waiting->concat($solved) as $question)
                         @php($isSolved = (int) $question->status === 1)
+                        @php($replies = $question->comments_count + $question->answers_count)
                         <li class="ix-q {{ $isSolved ? 'is-solved' : '' }}"
                             x-show="(show === 'all' || show === '{{ $isSolved ? 'done' : 'open' }}') && (q === '' || @js(strtolower($question->question.' '.$question->description)).includes(q.toLowerCase()))">
-                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-q__count" aria-label="{{ $question->comments_count }} {{ Str::plural('reply', $question->comments_count) }}">
-                                <span class="ix-stencil-num">{{ str_pad((string) min($question->comments_count, 99), 2, '0', STR_PAD_LEFT) }}</span>
-                                <small>{{ Str::plural('reply', $question->comments_count) }}</small>
+                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-q__count" aria-label="{{ $replies }} {{ Str::plural('reply', $replies) }}">
+                                <span class="ix-stencil-num">{{ str_pad((string) min($replies, 99), 2, '0', STR_PAD_LEFT) }}</span>
+                                <small>{{ Str::plural('reply', $replies) }}</small>
                             </a>
                             <div class="ix-q__body">
                                 <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-q__title">{{ $question->question }}</a>

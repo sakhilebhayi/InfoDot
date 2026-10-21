@@ -43,12 +43,14 @@ class Answers extends Component
     {
         $service->accept($this->answer($answerId), Auth::user());
         $this->question->refresh();
+        $this->dispatch('answer-changed', id: $answerId);
     }
 
     public function revoke(int $answerId, AnswerService $service): void
     {
         $service->revokeAcceptance($this->answer($answerId), Auth::user());
         $this->question->refresh();
+        $this->dispatch('answer-changed', id: $answerId);
     }
 
     public function startReport(int $answerId): void
