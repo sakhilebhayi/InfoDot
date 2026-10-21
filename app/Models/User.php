@@ -35,6 +35,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'points_expiry_emails' => 'boolean',
     ];
 
     /**
@@ -44,6 +45,12 @@ class User extends Authenticatable implements MustVerifyEmail
     protected static function booted(): void
     {
         static::creating(fn (self $user) => $user->uuid ??= (string) Str::uuid());
+    }
+
+    /** Whether the person wants an email before some of their Dot Points lapse. On unless they turned it off. */
+    public function wantsPointsExpiryEmails(): bool
+    {
+        return $this->points_expiry_emails ?? true;
     }
 
     /** Moderators accept answers on others' questions, verify solutions and handle reports. Granted by an administrator. */

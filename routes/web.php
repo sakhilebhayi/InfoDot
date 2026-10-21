@@ -78,6 +78,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/points', [PointsController::class, 'index'])->middleware('throttle:60,1')->name('points');
     Route::post('/points/redeem', [PointsController::class, 'redeem'])->middleware('throttle:10,1')->name('points.redeem');
+    Route::post('/points/expiry-emails', [PointsController::class, 'updateExpiryEmails'])->middleware('throttle:20,1')->name('points.expiry-emails');
 
     // -------------------------------------------------------
     // Moderation: reports, appeals and the audit trail. Moderators only.

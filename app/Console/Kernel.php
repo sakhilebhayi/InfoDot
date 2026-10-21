@@ -16,6 +16,9 @@ class Kernel extends ConsoleKernel
     {
         // Contribution events waiting for the Dot Points ledger (retried with growing delays; see RewardOutbox).
         $schedule->command('points:flush-outbox')->everyMinute()->withoutOverlapping()->onOneServer();
+
+        // Emails people before some of their points lapse (the points service pulls no addresses; see the command).
+        $schedule->command('points:deliver-expiry-warnings')->hourly()->withoutOverlapping()->onOneServer();
     }
 
     /**

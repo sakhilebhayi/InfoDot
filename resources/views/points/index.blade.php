@@ -166,6 +166,24 @@
         </section>
     @endif
 
+    <section class="ix-pts__section ix-pts__pref" id="expiry-emails" aria-labelledby="pts-pref">
+        <h2 id="pts-pref">Emails about lapsing points</h2>
+        <form method="POST" action="{{ route('points.expiry-emails') }}">
+            @csrf
+            <input type="hidden" name="points_expiry_emails" value="0">
+            <label class="ix-pts__check" for="pts-expiry-emails">
+                <input type="checkbox" id="pts-expiry-emails" name="points_expiry_emails" value="1" aria-describedby="pts-pref-hint pts-pref-state" @checked($expiryEmails)>
+                <span>Email me before my points expire</span>
+            </label>
+            <p class="ix-hint" id="pts-pref-hint">One plain email per batch of points about to lapse, with the number and the date. Nothing else.</p>
+            @error('points_expiry_emails')
+                <p class="ix-error" role="alert">Choose on or off, then save.</p>
+            @enderror
+            <p class="ix-pts__muted" id="pts-pref-state">Right now these emails are <strong>{{ $expiryEmails ? 'on' : 'off' }}</strong>.</p>
+            <button type="submit" class="ix-btn">Save</button>
+        </form>
+    </section>
+
     <section class="ix-pts__section ix-pts__terms" aria-labelledby="pts-terms">
         <h2 id="pts-terms">How points work</h2>
         <ul>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\Points\PointsClient;
 use App\Services\Points\PointsUnavailableException;
 use App\Services\Points\RedemptionRefusedException;
@@ -74,6 +75,7 @@ class PointsController extends Controller
             'history' => $history,
             'historyDown' => $configured && $history === null,
             'summaryDown' => $configured && $summary === null,
+            'expiryEmails' => $user->wantsPointsExpiryEmails(),
         ])->header('Cache-Control', 'no-store, private');
     }
 
@@ -122,6 +124,24 @@ class PointsController extends Controller
         $this->tickets->consume($token, ['level' => 'ok', 'message' => $message]);
 
         return $this->back('ok', $message);
+    }
+
+    /**
+     * The person's own switch for the "your points are about to lapse" email. A local preference: it works even when
+     * the points service is down, and it only ever changes the signed-in person's row.
+     */
+    public function updateExpiryEmails(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['points_expiry_emails' => ['required', 'in:0,1']]);
+        $on = $data['points_expiry_emails'] === '1';
+
+        // A query-builder update, not ->save(): this is one flag and should not re-index the person for search.
+        User::whereKey($request->user()->getKey())->update(['points_expiry_emails' => $on]);
+
+        return redirect()->route('points')->with('points_notice', [
+            'level' => 'ok',
+            'message' => $on ? 'We will email you before some of your points lapse.' : 'We will not email you about points that are about to lapse. You can still see them on this page.',
+        ]);
     }
 
     /**
