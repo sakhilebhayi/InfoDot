@@ -16,11 +16,9 @@
                 </button>
             </div>
 
-            <p class="ix-detail__kind">
+            <p class="ix-detail__kind" x-data="{ chip: @js($solution->isVerified() ? 'Verified by moderator' : '') }" @solution-verification.window="chip = $event.detail.label">
                 <span class="ix-q__state is-open" style="background:#1b2124;color:var(--ix-stencil)">Solution</span>
-                @if ($solution->isVerified())
-                    <span class="ix-q__state is-done">Verified by moderator</span>
-                @endif
+                <span class="ix-q__state is-done" x-show="chip" x-text="chip" @unless ($solution->isVerified()) x-cloak @endunless>@if ($solution->isVerified()) Verified by moderator @endif</span>
             </p>
             <h1 class="ix-detail__title">{{ $solution->solution_title }}</h1>
 
@@ -78,7 +76,7 @@
                     <div><dt>Written by</dt><dd><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a></dd></div>
                     <div><dt>Added</dt><dd>{{ $solution->created_at->diffForHumans() }}</dd></div>
                     <div><dt>Time it takes</dt><dd>@if ($solution->duration_type === 'infinite') Unknown @else {{ $solution->duration }} {{ Str::plural(rtrim($solution->duration_type, 's'), $solution->duration) }} @endif</dd></div>
-                    <div><dt>Visible to</dt><dd>{{ $solution->isPublic() ? 'Everyone' : 'Your company' }}</dd></div>
+                    <div><dt>Visible to</dt><dd>{{ $solution->isHidden() ? 'You and moderators' : ($solution->isPublic() ? 'Everyone' : 'Your company') }}</dd></div>
                 </dl>
             </section>
 

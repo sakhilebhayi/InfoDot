@@ -11,9 +11,9 @@
         <button type="button" class="ix-link" wire:click="$set('open', true)">Report this {{ $kind }}</button>
         @error('report') <p class="ix-error" role="alert">{{ $message }}</p> @enderror
     @else
-        <form wire:submit="send" class="ix-answer__report">
+        <form wire:submit="send" class="ix-answer__report" x-init="$nextTick(() => $refs.reason.focus())">
             <label for="report-reason-{{ $kind }}-{{ $itemId }}">What is wrong with it?</label>
-            <select id="report-reason-{{ $kind }}-{{ $itemId }}" wire:model="reason">
+            <select id="report-reason-{{ $kind }}-{{ $itemId }}" x-ref="reason" wire:model="reason">
                 @foreach (\App\Models\ContentReport::REASON_LABELS as $value => $label)
                     <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach

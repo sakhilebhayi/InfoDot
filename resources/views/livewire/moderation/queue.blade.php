@@ -108,7 +108,7 @@
                                     <p class="ix-hint">This is your own content, so another moderator has to handle it.</p>
                                 @elseif ($item['canModerate'])
                                     @if ($status === 'open')
-                                        <details class="ix-mod__act">
+                                        <details class="ix-mod__act" wire:ignore.self wire:key="dismiss-{{ $item['key'] }}">
                                             <summary class="ix-btn">Dismiss</summary>
                                             <form wire:submit="dismiss('{{ $item['key'] }}')" class="ix-mod__form">
                                                 <label for="dismiss-{{ $item['key'] }}">Why are these reports dismissed?</label>
@@ -120,7 +120,7 @@
                                     @endif
 
                                     @if (! $item['hidden'] && $status !== 'dismissed')
-                                        <details class="ix-mod__act">
+                                        <details class="ix-mod__act" wire:ignore.self wire:key="hide-{{ $item['key'] }}">
                                             <summary class="ix-btn ix-btn--danger">Hide</summary>
                                             <form wire:submit="hide('{{ $item['key'] }}')" class="ix-mod__form">
                                                 <label for="hide-{{ $item['key'] }}">Why is it hidden? The author will read this.</label>
@@ -133,7 +133,7 @@
                                             </form>
                                         </details>
                                     @elseif ($item['hidden'])
-                                        <details class="ix-mod__act">
+                                        <details class="ix-mod__act" wire:ignore.self wire:key="restore-{{ $item['key'] }}">
                                             <summary class="ix-btn">Restore</summary>
                                             <form wire:submit="restore('{{ $item['key'] }}')" class="ix-mod__form">
                                                 <label for="restore-{{ $item['key'] }}">Note (optional)</label>
@@ -146,7 +146,7 @@
                                 @endif
                             @elseif ($row['appeal']->isOpen())
                                 @if ($row['canDecide'])
-                                    <details class="ix-mod__act">
+                                    <details class="ix-mod__act" wire:ignore.self wire:key="uphold-{{ $row['appeal']->id }}">
                                         <summary class="ix-btn">Uphold</summary>
                                         <form wire:submit="uphold({{ $row['appeal']->id }})" class="ix-mod__form">
                                             <label for="uphold-{{ $row['appeal']->id }}">Note (optional)</label>
@@ -155,7 +155,7 @@
                                             <button type="submit" class="ix-btn ix-btn--primary">Uphold and show it again</button>
                                         </form>
                                     </details>
-                                    <details class="ix-mod__act">
+                                    <details class="ix-mod__act" wire:ignore.self wire:key="deny-{{ $row['appeal']->id }}">
                                         <summary class="ix-btn ix-btn--danger">Deny</summary>
                                         <form wire:submit="deny({{ $row['appeal']->id }})" class="ix-mod__form">
                                             <label for="deny-{{ $row['appeal']->id }}">Why is the appeal denied? The author will read this.</label>
@@ -172,7 +172,7 @@
                             @endif
                         </div>
 
-                        <details class="ix-mod__history">
+                        <details class="ix-mod__history" wire:ignore.self>
                             <summary>History ({{ $item['history']->count() }})</summary>
                             @if ($item['history']->isEmpty())
                                 <p class="ix-hint">No moderator has acted on this yet.</p>

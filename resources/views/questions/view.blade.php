@@ -35,7 +35,7 @@
                 <dl>
                     <div><dt>Asked by</dt><dd><a href="{{ route('profile.show', ['id' => $question->user->id]) }}">{{ $question->user->name }}</a></dd></div>
                     <div><dt>Asked</dt><dd>{{ $question->created_at->diffForHumans() }}</dd></div>
-                    <div><dt>Visible to</dt><dd>{{ $question->isPublic() ? 'Everyone' : 'Your company' }}</dd></div>
+                    <div><dt>Visible to</dt><dd>{{ $question->isHidden() ? 'You and moderators' : ($question->isPublic() ? 'Everyone' : 'Your company') }}</dd></div>
                     <div><dt>Status</dt><dd>{{ $solved ? 'Solved' : 'Waiting for an answer' }}</dd></div>
                 </dl>
             </section>

@@ -148,7 +148,9 @@ body.ix {
 }
 
 .ix :focus-visible {
-    outline: 2px solid var(--ix-signal);
+    /* --ix-signal resolves on :root, where the area colour is the dark slate, so in the dark theme a ring in it is
+       invisible against the page. --ix-focus is the neutral ink for the current theme. */
+    outline: 2px solid var(--ix-focus);
     outline-offset: 2px;
 }
 
@@ -3913,7 +3915,7 @@ button.ix-regrow:focus-visible {
     align-items: center;
     gap: 6px;
     margin: 0 0 8px;
-    color: var(--ix-documents);
+    color: var(--ix-ok);
     font: 700 13px/1.2 var(--ix-font);
 }
 
@@ -4002,7 +4004,7 @@ button.ix-regrow:focus-visible {
 
 .ix-error {
     margin: 0;
-    color: var(--ix-files);
+    color: var(--ix-danger);
     font-size: 14px;
 }
 
@@ -4341,7 +4343,7 @@ button.ix-regrow:focus-visible {
 .ix-hidden {
     display: grid;
     gap: 6px;
-    margin: 0 0 14px;
+    margin: 14px 0;
     padding: 12px 14px;
     border-left: 3px solid var(--ix-warn);
     background: var(--ix-warn-wash);

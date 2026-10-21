@@ -1,4 +1,6 @@
-<section class="ix-answers" aria-labelledby="answers-heading">
+{{-- The button that was pressed is replaced (and the answer moves), so focus goes to the answer itself. --}}
+<section class="ix-answers" aria-labelledby="answers-heading"
+         x-data @answer-changed.window="$nextTick(() => document.getElementById('answer-' + $event.detail.id)?.focus())">
     <h2 id="answers-heading" class="ix-answers__title">
         {{ $answers->count() === 1 ? '1 answer' : $answers->count().' answers' }}
     </h2>
@@ -8,7 +10,7 @@
     @endif
 
     @forelse ($answers as $answer)
-        <article class="ix-answer {{ $answer->isAccepted() ? 'is-accepted' : '' }} {{ $answer->isHidden() ? 'is-hidden' : '' }}" id="answer-{{ $answer->id }}">
+        <article class="ix-answer {{ $answer->isAccepted() ? 'is-accepted' : '' }} {{ $answer->isHidden() ? 'is-hidden' : '' }}" id="answer-{{ $answer->id }}" tabindex="-1">
             @if ($answer->isHidden())
                 <livewire:hidden-notice kind="answer" :item-id="$answer->id" :key="'hidden-'.$answer->id" />
             @endif
@@ -40,9 +42,9 @@
             </footer>
 
             @if ($reporting === $answer->id)
-                <form wire:submit="report" class="ix-answer__report">
+                <form wire:submit="report" class="ix-answer__report" x-init="$nextTick(() => $refs.reason.focus())">
                     <label for="reason-{{ $answer->id }}">What is wrong with it?</label>
-                    <select id="reason-{{ $answer->id }}" wire:model="reason">
+                    <select id="reason-{{ $answer->id }}" x-ref="reason" wire:model="reason">
                         <option value="spam">Spam</option>
                         <option value="duplicate">Duplicate of another answer</option>
                         <option value="low_quality">Not a real answer</option>
@@ -50,12 +52,19 @@
                         <option value="other">Something else</option>
                     </select>
                     <button type="submit" class="ix-btn">Send report</button>
+                    <button type="button" class="ix-link" wire:click="$set('reporting', null)">Cancel</button>
                     @error('report') <p class="ix-error" role="alert">{{ $message }}</p> @enderror
                 </form>
             @endif
         </article>
     @empty
-        <p class="ix-answers__empty">No one has answered yet. If you have done this before, tell the next person how.</p>
+        <p class="ix-answers__empty">
+            @if ($canAnswer)
+                No one has answered yet. If you have done this before, tell the next person how.
+            @else
+                No one has answered yet, and a hidden question cannot be answered.
+            @endif
+        </p>
     @endforelse
 
     @if ($canAnswer)
