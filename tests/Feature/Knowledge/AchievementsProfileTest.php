@@ -57,7 +57,7 @@ class AchievementsProfileTest extends TestCase
         config(['services.dopemine.url' => 'https://dopemine.test', 'services.dopemine.secret' => 'shared']);
         $me = $this->person();
         Http::fake([
-            'dopemine.test/api/points/'.$me->uuid => Http::response(['balance' => 17, 'total_earned' => 25, 'history' => []]),
+            'dopemine.test/api/points/'.$me->uuid => Http::response(['balance' => 913, 'total_earned' => 25, 'history' => []]),
             'dopemine.test/*' => Http::response([], 202),
         ]);
         $this->accepted($me);
@@ -74,11 +74,11 @@ class AchievementsProfileTest extends TestCase
         $this->assertNotNull($achievements);
         $this->assertFalse($this->contains($points, $achievements), 'the achievements section is not inside the points panel');
         $this->assertFalse($this->contains($achievements, $points), 'the points panel is not inside the achievements section');
-        $this->assertStringContainsString('17</strong> you can redeem', $html);
+        $this->assertStringContainsString('913</strong> you can redeem', $html);
         $this->assertStringContainsString('They are not points, cannot be redeemed, and are not a score', $html);
 
         // No number is shared between the two: the points balance never appears in the achievements, and milestones never in points.
-        $this->assertStringNotContainsString('17', $dom->saveHTML($achievements));
+        $this->assertStringNotContainsString('913', $dom->saveHTML($achievements));
         $this->assertStringNotContainsString('First accepted answer', $dom->saveHTML($points));
     }
 
