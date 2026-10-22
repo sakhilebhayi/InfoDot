@@ -74,6 +74,27 @@ jobs:
       - name: Run the fake-host test of the cron runner and its installer
         run: bash tools/test-dot-cron.sh
 
+  backup-host:
+    name: backup tool (fake host)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP (for the SQLite3 fallback path)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: none
+          extensions: sqlite3, pdo_sqlite
+      - name: Make sure the sqlite3 command line tool exists
+        run: command -v sqlite3 >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq sqlite3; }
+      - name: Syntax and lint
+        run: |
+          bash -n tools/backup-host.sh
+          shellcheck -S warning tools/backup-host.sh tools/test-backup-host.sh
+      - name: Run the fake-host test of the backup tool (real flock, real openssl, stub mysqldump/pg_dump/crontab)
+        run: bash tools/test-backup-host.sh
+
   migrations-mysql:
     # Production runs MySQL; the suite above runs SQLite, which accepts things MySQL refuses (the first deploy of the
     # answers table failed on 2026-10-20 because SQLite did not check that a foreign key matched the INT UNSIGNED

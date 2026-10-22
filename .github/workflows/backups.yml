@@ -1,0 +1,128 @@
+name: Backups
+
+# Backups of every Laravel app on the shared cPanel host (database, .env, uploads), encrypted on the host, one
+# archive per app per run: docs/programme/BACKUPS.md, roadmap item R-3. The tool is tools/backup-host.sh, installed
+# on the host as ~/bin/dot-backup. Fixed modes only, no free-form command, nothing here prints file contents.
+#
+#   install       copy the tool to ~/bin/dot-backup (syntax-checked first, checksum compared after), run its init
+#                 (creates ~/dot-backups and the passphrase file ONCE; the passphrase is never printed)
+#   inventory     read-only: apps found, driver, sizes, newest backup and its age, flags
+#   run           back up every app, or only the named keys; retention is applied to each app that succeeded
+#   verify        decrypt the newest archive of every app (or the named keys) into scratch, check, delete the scratch
+#   restore-test  restore the largest newest archive (or the named key) into the scratch folder with timings, run the
+#                 integrity check, delete it: the measurement for the RTO in BACKUPS.md. Never touches an app.
+#   schedule      add ONE nightly (02:40 server time) flocked cron line through the safe crontab block
+#   unschedule    remove that one line again
+#
+# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS (the same as the other host workflows).
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: install | inventory | run | verify | restore-test | schedule | unschedule
+        required: true
+        default: inventory
+        type: choice
+        options: [install, inventory, run, verify, restore-test, schedule, unschedule]
+      keys:
+        description: "App keys for run/verify (space separated), or ONE key for restore-test. Empty = all apps (restore-test: the largest)."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: host-backups
+  cancel-in-progress: false
+
+jobs:
+  backups:
+    name: ${{ inputs.mode }} backups
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    env:
+      MODE: ${{ inputs.mode }}
+      KEYS: ${{ inputs.keys }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the inputs
+        run: |
+          # printf adds the newline grep needs: an empty value has no line and would never match.
+          printf '%s\n' "$KEYS" | grep -Eq '^[a-z0-9 -]*$' || { echo "::error::keys may only contain a-z, 0-9, space and dash"; exit 1; }
+          case "$MODE" in
+            install|inventory|schedule|unschedule) [ -z "$KEYS" ] || { echo "::error::$MODE takes no keys"; exit 1; } ;;
+            restore-test) [ "$(printf '%s\n' "$KEYS" | wc -w)" -le 1 ] || { echo "::error::restore-test takes at most one key"; exit 1; } ;;
+            run|verify) ;;
+            *) echo "::error::unknown mode $MODE"; exit 1 ;;
+          esac
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Install the tool on the host
+        if: ${{ inputs.mode == 'install' }}
+        run: |
+          bash -n tools/backup-host.sh
+          SSH=(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes "$DEPLOY_USER@$DEPLOY_HOST")
+          "${SSH[@]}" 'mkdir -p "$HOME/bin"'
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes tools/backup-host.sh "$DEPLOY_USER@$DEPLOY_HOST:bin/dot-backup.new"
+          "${SSH[@]}" 'chmod 755 "$HOME/bin/dot-backup.new" && mv -f "$HOME/bin/dot-backup.new" "$HOME/bin/dot-backup"'
+          LOCAL="$(cksum < tools/backup-host.sh)"
+          REMOTE="$("${SSH[@]}" 'cksum < "$HOME/bin/dot-backup"')"
+          [ "$LOCAL" = "$REMOTE" ] || { echo "::error::the copy on the host differs from the repository (local $LOCAL, host $REMOTE)"; exit 1; }
+          echo "copied and checksum-compared: $LOCAL"
+          "${SSH[@]}" '"$HOME/bin/dot-backup" --help > /dev/null && echo "dot-backup --help: ok"'
+
+      - name: Run on the host
+        run: |
+          SSH=(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o ServerAliveInterval=30 "$DEPLOY_USER@$DEPLOY_HOST")
+          B='"$HOME/bin/dot-backup"'
+          case "$MODE" in
+            install)      CMD="$B init" ;;
+            inventory)    CMD="$B inventory" ;;
+            run)          CMD="$B --time run $KEYS" ;;
+            verify)       CMD="$B --time verify $KEYS" ;;
+            restore-test) CMD="$B restore-test $KEYS" ;;
+            schedule)     CMD="$B schedule" ;;
+            unschedule)   CMD="$B unschedule" ;;
+          esac
+          set -o pipefail
+          "${SSH[@]}" "$CMD" 2>&1 | tee host-output.txt
+
+      - name: Job summary
+        if: ${{ always() }}
+        run: |
+          {
+            echo "## Backups: ${MODE}${KEYS:+ ($KEYS)}"
+            echo
+            if [ -f host-output.txt ]; then
+              echo '```'
+              tail -n 250 host-output.txt
+              echo '```'
+            else
+              echo "No output from the host (the job stopped before running the command)."
+            fi
+            echo
+            case "$MODE" in
+              install)      echo "Next: dispatch **inventory**, then **run**, **verify**, **restore-test**, **schedule**." ;;
+              inventory)    echo "Apps flagged NO-BACKUP or STALE(>36h) need a **run**; any NO-* tool flag needs the tool installed on the host." ;;
+              run)          echo "Next: **verify**. A failed app is named above with a fixed reason; the others were still backed up." ;;
+              verify)       echo "Every line must say verify ok. A FAILED line names the archive; nothing is deleted by verify." ;;
+              restore-test) echo "Copy \`restore_seconds\`, \`archive_bytes\` and \`extracted_kb\` from the result line into the RPO/RTO table of docs/programme/BACKUPS.md." ;;
+              schedule)     echo "Nightly at 02:40 host time. Check the next morning with **inventory** (age under 36 h)." ;;
+              unschedule)   echo "The nightly line is gone; existing backups stay." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"
