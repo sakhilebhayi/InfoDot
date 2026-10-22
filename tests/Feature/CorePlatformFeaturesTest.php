@@ -10,6 +10,7 @@ use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Steps;
 use App\Models\Team;
+use App\Models\Topic;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -44,6 +45,7 @@ class CorePlatformFeaturesTest extends TestCase
         $user = $this->createVerifiedUserWithCurrentTeam();
 
         $response = $this->actingAs($user)->post('/questions/add', [
+            'topics' => [Topic::query()->value('id')],
             'question' => 'How do I register a business?',
             'description' => 'Need clear steps for registration in my country.',
         ]);
@@ -61,6 +63,7 @@ class CorePlatformFeaturesTest extends TestCase
         $user = $this->createVerifiedUserWithCurrentTeam();
 
         $response = $this->actingAs($user)->post('/solution/add', [
+            'topics' => [Topic::query()->value('id')],
             'solution_title' => 'How to register a business online',
             'solution_description' => 'A practical sequence to complete your registration.',
             'tags-input' => 'business registration, legal',

@@ -13,6 +13,7 @@ use App\Models\Answer;
 use App\Models\ContentReport;
 use App\Models\Questions;
 use App\Models\Team;
+use App\Models\Topic;
 use App\Models\User;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Knowledge\LikeToggle;
@@ -348,7 +349,7 @@ class AnswersTest extends TestCase
         Event::fake([QuestionSubmitted::class]);
         $asker = $this->person();
 
-        $this->actingAs($asker)->post('/questions/add', ['question' => 'How do I price a handmade product?', 'description' => 'Materials, time and a margin, but how much?'])->assertRedirect();
+        $this->actingAs($asker)->post('/questions/add', ['topics' => [Topic::query()->value('id')], 'question' => 'How do I price a handmade product?', 'description' => 'Materials, time and a margin, but how much?'])->assertRedirect();
 
         Event::assertDispatchedTimes(QuestionSubmitted::class, 1);
         Event::assertDispatched(QuestionSubmitted::class, fn ($e) => $e->facts['author_uuid'] === $asker->uuid && ! array_key_exists('question', $e->facts));

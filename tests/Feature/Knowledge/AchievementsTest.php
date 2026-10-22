@@ -11,6 +11,7 @@ use App\Listeners\RefreshAchievements;
 use App\Models\Answer;
 use App\Models\ModerationAppeal;
 use App\Models\Questions;
+use App\Models\Topic;
 use App\Models\User;
 use App\Models\UserAchievement;
 use App\Services\Knowledge\AchievementService;
@@ -406,12 +407,12 @@ class AchievementsTest extends TestCase
     {
         $me = $this->person();
 
-        $this->actingAs($me)->post('/questions/add', ['question' => 'How do I register a brand?', 'description' => 'I want the steps in order.', 'publish' => '1'])->assertRedirect('questions');
+        $this->actingAs($me)->post('/questions/add', ['topics' => [Topic::query()->value('id')], 'question' => 'How do I register a brand?', 'description' => 'I want the steps in order.', 'publish' => '1'])->assertRedirect('questions');
         $this->assertSame(['first_question'], $this->earned($me));
 
         // A company-only question is not public work, so it adds nothing.
         $other = $this->person();
-        $this->actingAs($other)->post('/questions/add', ['question' => 'Our internal supplier terms?', 'description' => 'Only for our company.'])->assertRedirect('questions');
+        $this->actingAs($other)->post('/questions/add', ['topics' => [Topic::query()->value('id')], 'question' => 'Our internal supplier terms?', 'description' => 'Only for our company.'])->assertRedirect('questions');
         $this->assertSame([], $this->earned($other));
     }
 

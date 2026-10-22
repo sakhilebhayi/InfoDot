@@ -166,6 +166,51 @@
         </section>
     @endif
 
+    <section class="ix-pts__section ix-pts__pref ix-suggest" id="topic-suggestions" aria-labelledby="pts-suggest">
+        <h2 id="pts-suggest">Questions you might be able to answer</h2>
+        <p class="ix-hint" id="pts-suggest-hint">When this is on, this page lists up to five open public questions in topics where one of your answers was accepted or one of your solutions was verified; only you see it, and nobody is told or ranked.</p>
+        @if (session('topic_suggestions_notice'))
+            <p class="ix-pts__muted" role="status">{{ session('topic_suggestions_notice') }}</p>
+        @endif
+        <form method="POST" action="{{ route('points.topic-suggestions') }}">
+            @csrf
+            <input type="hidden" name="topic_suggestions" value="0">
+            <label class="ix-pts__check" for="pts-topic-suggestions">
+                <input type="checkbox" id="pts-topic-suggestions" name="topic_suggestions" value="1" aria-describedby="pts-suggest-hint pts-suggest-state" @checked($topicSuggestionsOn)>
+                <span>Show me questions I might be able to answer</span>
+            </label>
+            @error('topic_suggestions')
+                <p class="ix-error" role="alert">Choose on or off, then save.</p>
+            @enderror
+            <p class="ix-pts__muted" id="pts-suggest-state">Right now this is <strong>{{ $topicSuggestionsOn ? 'on' : 'off' }}</strong>.</p>
+            <button type="submit" class="ix-btn">Save</button>
+        </form>
+
+        @if ($topicSuggestionsOn)
+            <div class="ix-suggest__list" aria-live="polite">
+                @if ($suggestionTopics->isEmpty())
+                    <p class="ix-pts__muted">Nothing to suggest yet. Once an answer of yours is accepted, or a solution of yours is verified, open questions in those topics will be listed here. There is no target and nothing to catch up on.</p>
+                @else
+                    <p class="ix-pts__muted">Based on your work in:
+                        @foreach ($suggestionTopics as $t)<a class="ix-topic" href="{{ $t->url() }}">{{ $t->name }}</a> @endforeach
+                    </p>
+                    @if ($suggestedQuestions->isEmpty())
+                        <p class="ix-pts__muted">No open questions in those topics right now.</p>
+                    @else
+                        <ul class="ix-suggest__items">
+                            @foreach ($suggestedQuestions as $suggested)
+                                <li>
+                                    <a href="{{ route('questions.view', ['qid' => $suggested->id]) }}">{{ $suggested->question }}</a>
+                                    <span class="ix-pts__muted">asked {{ $suggested->created_at->diffForHumans() }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                @endif
+            </div>
+        @endif
+    </section>
+
     <section class="ix-pts__section ix-pts__pref" id="expiry-emails" aria-labelledby="pts-pref">
         <h2 id="pts-pref">Emails about lapsing points</h2>
         <form method="POST" action="{{ route('points.expiry-emails') }}">

@@ -14,6 +14,8 @@
         </a>
     </div>
 
+    @include('topics._filter', ['route' => route('solutions')])
+
     @if ($solutions->isNotEmpty())
         <div x-data="{ q: '', sort: 'new' }">
             <div class="ix-board__bar" style="margin-bottom:16px">
@@ -61,6 +63,7 @@
                             <span>{{ $solution->comments_count }} {{ Str::plural('reply', $solution->comments_count) }}</span>
                             <span>{{ $solution->isPublic() ? 'Everyone' : 'Your company' }}</span>
                         </p>
+                        @include('topics._chips', ['item' => $solution])
                     </li>
                 @endforeach
             </ul>
@@ -74,6 +77,13 @@
                 </ul>
             </section>
         </div>
+    @elseif ($filterSlug !== '')
+        <section class="ix-empty">
+            <h2>{{ $filterSlug === 'none' ? 'Every solution you can see has a topic' : ($activeTopic ? 'No solutions under '.$activeTopic->name.' yet' : 'There is no topic with that address') }}</h2>
+            <p>{{ $activeTopic ? 'Nothing has been written under this topic, or nothing you can see.' : 'Pick a topic from the list, or clear the filter to see every solution.' }}</p>
+            <a href="{{ route('solutions') }}" class="ix-btn">Show every solution</a>
+            @if ($activeTopic)<a href="{{ route('add', ['topic' => $activeTopic->slug]) }}" class="ix-btn ix-btn--primary">Write the first one</a>@endif
+        </section>
     @else
         <section class="ix-empty ix-empty--start">
             <h2>{{ $team?->name ?? 'Your team' }} has no solutions yet</h2>

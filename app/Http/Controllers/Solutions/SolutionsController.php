@@ -5,31 +5,49 @@ namespace App\Http\Controllers\Solutions;
 use App\Http\Controllers\Controller;
 use App\Models\Solutions;
 use App\Models\Steps;
+use App\Models\Topic;
+use App\Services\Knowledge\TopicService;
 use App\Support\Industry;
 use App\Support\Related;
 use Illuminate\Http\Request;
 
 class SolutionsController extends Controller
 {
-    public function index()
+    public function index(Request $request, TopicService $topics)
     {
+        // ?topic=slug narrows the list; ?topic=none shows what has no topic yet. An unknown slug is simply an empty list.
+        $slug = trim((string) $request->query('topic', ''));
+        $untagged = $slug === 'none';
+        $topic = $slug !== '' && ! $untagged ? Topic::where('slug', $slug)->first() : null;
+
         $solutions = Solutions::withCount(['likes', 'comments'])
-            ->with(['user', 'team'])
+            ->with(['user', 'team', 'topics'])
+            ->when($untagged, fn ($q) => $q->untagged())
+            ->when($slug !== '' && ! $untagged, fn ($q) => $topic ? $q->inTopic($topic) : $q->whereRaw('0 = 1'))
             ->latest()
             ->get();
 
         return view('solutions.index', [
             'solutions' => $solutions,
             'industry' => Industry::for(auth()->user()->currentTeam),
+            'topicChoices' => $topics->choices(),
+            'activeTopic' => $topic,
+            'filterSlug' => $slug,
         ]);
     }
 
-    public function create()
+    public function create(Request $request, TopicService $topics)
     {
-        return view('solutions.create', ['industry' => Industry::for(auth()->user()->currentTeam)]);
+        $choices = $topics->choices();
+
+        return view('solutions.create', [
+            'industry' => Industry::for(auth()->user()->currentTeam),
+            'topicChoices' => $choices,
+            'preselectedTopic' => $choices->firstWhere('slug', (string) $request->query('topic'))?->id,
+        ]);
     }
 
-    public function add_solution(Request $request)
+    public function add_solution(Request $request, TopicService $topics)
     {
         $request->validate(
             [ // 1st array is field rules
@@ -43,10 +61,10 @@ class SolutionsController extends Controller
                 'solution_heading.*' => 'required|string|max:255',
                 'solution_body' => 'required|array',
                 'solution_body.*' => 'required|string',
-            ],
+            ] + TopicService::rules(),
             [ // 2nd array is the rules custom message
                 'required' => 'The :attribute field is mandatory.',
-            ]);
+            ] + TopicService::messages());
 
         $solution = new Solutions;
 
@@ -60,6 +78,7 @@ class SolutionsController extends Controller
         $solution->duration_type = $request->input('duration_type');
         $solution->steps = count($request->input('solution_heading'));
         $solution->save();
+        $topics->file($solution, $request->input('topics'));
 
         $steps = $request->input('solution_heading');
 
@@ -76,14 +95,16 @@ class SolutionsController extends Controller
         return redirect()->route('solutions');
     }
 
-    public function view_solution($id)
+    public function view_solution($id, TopicService $topics)
     {
-        $solution = Solutions::where('id', $id)->firstOrFail();
+        $solution = Solutions::where('id', $id)->with('topics')->firstOrFail();
 
         return view('solutions.view', [
             'solution' => $solution,
             'steps' => Steps::where('solution_id', $solution->id)->get(),
             'related' => Related::solutions($solution),
+            // Only a moderator who may correct this one is given the list to pick from.
+            'topicChoices' => $topics->canCorrect($solution, auth()->user()) ? $topics->choicesFor($solution) : null,
         ]);
     }
 }

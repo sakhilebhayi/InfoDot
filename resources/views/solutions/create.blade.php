@@ -32,6 +32,12 @@
                 @error('tags-input')<p class="ix-error">{{ $message }}</p>@enderror
             </div>
 
+            <div class="ix-field">
+                @include('topics._picker', ['choices' => $topicChoices, 'selected' => old('topics', $preselectedTopic ? [$preselectedTopic] : []), 'idPrefix' => 'sol-topic'])
+                @error('topics')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+                @error('topics.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            </div>
+
             <div class="ix-form__row">
                 <div class="ix-field">
                     <label class="ix-label" for="duration">Time it takes</label>
@@ -112,6 +118,7 @@
             <div class="ix-panel__body" style="display:grid;gap:16px;color:var(--ix-text-2)">
                 <p style="margin:0"><b style="color:var(--ix-text)">Title.</b> Short and specific. &ldquo;Register a business on the CIPC website&rdquo; beats &ldquo;Start a business&rdquo;.</p>
                 <p style="margin:0"><b style="color:var(--ix-text)">Description.</b> State the outcome and what is needed to get it, not a pitch.</p>
+                <p style="margin:0"><b style="color:var(--ix-text)">Topics.</b> Where it belongs. Pick the subject first, then add tags for the words someone would type when they are stuck.</p>
                 <p style="margin:0"><b style="color:var(--ix-text)">Tags.</b> The words someone would type when they are stuck.</p>
                 <p style="margin:0"><b style="color:var(--ix-text)">Time.</b> Realistic: &ldquo;1 week&rdquo; to register a business, not &ldquo;12 months&rdquo;.</p>
                 <p style="margin:0"><b style="color:var(--ix-text)">Steps.</b> Each step leads straight into the next, with nothing missing in between. Keep them brief but fully understandable.</p>

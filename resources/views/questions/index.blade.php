@@ -19,6 +19,8 @@
         <button type="submit" class="ix-askbar__go">Ask a question <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>
     </form>
 
+    @include('topics._filter', ['route' => route('questions')])
+
     @if ($total > 0)
         <div class="ix-board" x-data="{ show: 'all', q: '' }">
             <div class="ix-board__main">
@@ -54,6 +56,7 @@
                                     <span>{{ $question->created_at->diffForHumans() }}</span>
                                     <span>{{ $question->isPublic() ? 'Everyone' : 'Your company' }}</span>
                                 </p>
+                                @include('topics._chips', ['item' => $question])
                             </div>
                             <span class="ix-q__state {{ $isSolved ? 'is-done' : 'is-open' }}">{{ $isSolved ? 'Solved' : 'Waiting' }}</span>
                         </li>
@@ -76,6 +79,13 @@
                 </section>
             </aside>
         </div>
+    @elseif ($filterSlug !== '')
+        <section class="ix-empty">
+            <h2>{{ $filterSlug === 'none' ? 'Every question you can see has a topic' : ($activeTopic ? 'No questions under '.$activeTopic->name.' yet' : 'There is no topic with that address') }}</h2>
+            <p>{{ $activeTopic ? 'Nothing has been asked under this topic, or nothing you can see.' : 'Pick a topic from the list, or clear the filter to see every question.' }}</p>
+            <a href="{{ route('questions') }}" class="ix-btn">Show every question</a>
+            @if ($activeTopic)<a href="{{ route('seek', ['topic' => $activeTopic->slug]) }}" class="ix-btn ix-btn--primary">Ask the first one</a>@endif
+        </section>
     @else
         <section class="ix-empty ix-empty--start">
             <h2>{{ $team?->name ?? 'Your team' }} has no questions yet</h2>

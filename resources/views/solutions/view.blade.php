@@ -80,6 +80,8 @@
                 </dl>
             </section>
 
+            @include('topics._rail', ['item' => $solution, 'choices' => $topicChoices, 'action' => route('solutions.topics', ['id' => $solution->id]), 'kind' => 'solution'])
+
             <livewire:verify-solution :solution-id="$solution->id" />
 
             @if ($related->isNotEmpty())
