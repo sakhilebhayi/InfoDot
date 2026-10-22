@@ -37,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'points_expiry_emails' => 'boolean',
         'achievements_public' => 'boolean',
+        'topic_suggestions' => 'boolean',
     ];
 
     /**
@@ -52,6 +53,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function wantsPointsExpiryEmails(): bool
     {
         return $this->points_expiry_emails ?? true;
+    }
+
+    /** Whether the person asked to see "questions you might be able to answer" on their points page. Off until they switch it on. */
+    public function wantsTopicSuggestions(): bool
+    {
+        return (bool) $this->topic_suggestions;
     }
 
     /** Moderators accept answers on others' questions, verify solutions and handle reports. Granted by an administrator. */

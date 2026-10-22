@@ -47,14 +47,14 @@
 
         <nav class="ix-tabs" aria-label="Primary">
             <a href="{{ route('dashboard') }}" class="ix-tab" data-area="home" @if(request()->routeIs('dashboard')) aria-current="page" @endif>Home</a>
-            <a href="{{ route('questions') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('questions*', 'seek', 'solutions*', 'add')) aria-current="page" @endif>Knowledge</a>
+            <a href="{{ route('questions') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*')) aria-current="page" @endif>Knowledge</a>
             <livewire:platform-link platform="files" label="Files" icon="folder" variant="tab" />
             <livewire:platform-link platform="docs" label="Documents" icon="description" variant="tab" />
             <a href="{{ route('ecosystem.widget') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('ecosystem.widget', 'subservices.*')) aria-current="page" @endif>Platforms</a>
             <a href="{{ route('people') }}" class="ix-tab" data-area="people" @if(request()->routeIs('people', 'teams.*', 'api-tokens.*')) aria-current="page" @endif>People</a>
             <a href="{{ route('analytics.dashboard') }}" class="ix-tab" data-area="analytics" @if(request()->routeIs('analytics.*')) aria-current="page" @endif>Analytics</a>
             @if (Auth::user()->isModerator())
-                <a href="{{ route('moderation') }}" class="ix-tab" data-area="people" @if(request()->routeIs('moderation')) aria-current="page" @endif>Moderation</a>
+                <a href="{{ route('moderation') }}" class="ix-tab" data-area="people" @if(request()->routeIs('moderation*')) aria-current="page" @endif>Moderation</a>
             @endif
         </nav>
 

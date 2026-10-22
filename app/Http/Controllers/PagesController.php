@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Associates;
 use App\Models\Questions;
 use App\Models\Solutions;
+use App\Models\Topic;
 use App\Models\User;
 use App\Services\Knowledge\AchievementService;
 use App\Services\Points\PointsClient;
@@ -93,48 +94,67 @@ class PagesController extends Controller
 
     public function solution_search_results()
     {
-        $results = [];
-        $search_term = request()->search;
+        $search_term = (string) request()->query('search', '');
         $driver = \DB::connection()->getDriverName();
 
-        if ($driver === 'sqlite') {
-            $solutions = Solutions::where(function ($query) use ($search_term) {
+        // ?topic=slug narrows the results to one topic. With a topic and no words, everything under the topic is listed.
+        $topicSlug = trim((string) request()->query('topic', ''));
+        $topic = $topicSlug !== '' ? Topic::where('slug', $topicSlug)->first() : null;
+        $textSearch = ! ($topicSlug !== '' && trim($search_term) === '');
+
+        $solutions = Solutions::query();
+        $questions = Questions::query();
+
+        if ($textSearch && $driver === 'sqlite') {
+            $solutions->where(function ($query) use ($search_term) {
                 $query->where('solution_title', 'like', "%{$search_term}%")
                     ->orWhere('solution_description', 'like', "%{$search_term}%")
                     ->orWhere('tags', 'like', "%{$search_term}%");
-            })->orderBy('id', 'DESC')->paginate(5);
+            });
 
-            $questions = Questions::where(function ($query) use ($search_term) {
+            $questions->where(function ($query) use ($search_term) {
                 $query->where('question', 'like', "%{$search_term}%")
                     ->orWhere('description', 'like', "%{$search_term}%");
-            })->orderBy('id', 'DESC')->paginate(5);
-        } elseif ($driver === 'pgsql') {
+            });
+        } elseif ($textSearch && $driver === 'pgsql') {
             // No FULLTEXT index exists on Postgres (the migrations only create one when the driver is
             // mysql — see create_solutions_table.php / create_questions_table.php), and MySQL's
             // MATCH()...AGAINST() syntax used below isn't valid Postgres SQL at all. ILIKE is Postgres's
             // native case-insensitive LIKE, so this mirrors the sqlite branch above.
-            $solutions = Solutions::where(function ($query) use ($search_term) {
+            $solutions->where(function ($query) use ($search_term) {
                 $query->where('solution_title', 'ilike', "%{$search_term}%")
                     ->orWhere('solution_description', 'ilike', "%{$search_term}%")
                     ->orWhere('tags', 'ilike', "%{$search_term}%");
-            })->orderBy('id', 'DESC')->paginate(5);
+            });
 
-            $questions = Questions::where(function ($query) use ($search_term) {
+            $questions->where(function ($query) use ($search_term) {
                 $query->where('question', 'ilike', "%{$search_term}%")
                     ->orWhere('description', 'ilike', "%{$search_term}%");
-            })->orderBy('id', 'DESC')->paginate(5);
-        } else {
+            });
+        } elseif ($textSearch) {
             // mysql — a real FULLTEXT index backs these columns for this driver only.
-            $solutions = Solutions::whereRaw('MATCH (solution_title, solution_description, tags) AGAINST (?)', [$search_term])->orderBy('id', 'DESC')->paginate(5);
-            $questions = Questions::whereRaw('MATCH (question, description) AGAINST (?)', [$search_term])->orderBy('id', 'DESC')->paginate(5);
+            $solutions->whereRaw('MATCH (solution_title, solution_description, tags) AGAINST (?)', [$search_term]);
+            $questions->whereRaw('MATCH (question, description) AGAINST (?)', [$search_term]);
+        }
+
+        if ($topicSlug !== '') {
+            // A topic that does not exist matches nothing, rather than quietly ignoring the filter.
+            $topic ? $solutions->inTopic($topic) : $solutions->whereRaw('0 = 1');
+            $topic ? $questions->inTopic($topic) : $questions->whereRaw('0 = 1');
         }
 
         $results = [
-            'questions' => $questions,
-            'solutions' => $solutions,
+            'questions' => $questions->orderBy('id', 'DESC')->paginate(5)->withQueryString(),
+            'solutions' => $solutions->orderBy('id', 'DESC')->paginate(5)->withQueryString(),
         ];
 
-        return view('search_results', ['results' => $results]);
+        return view('search_results', [
+            'results' => $results,
+            'searchTerm' => $search_term,
+            'topicSlug' => $topicSlug,
+            'topicChoices' => Topic::active()->ordered()->get(),
+            'activeTopic' => $topic,
+        ]);
 
     }
 

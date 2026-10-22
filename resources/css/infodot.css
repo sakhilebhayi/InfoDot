@@ -5028,3 +5028,338 @@ button.ix-regrow:focus-visible {
 .ix-ach__share .ix-btn {
     margin-top: 8px;
 }
+
+/* -----------------------------------------------------------------------------------------------
+   Topics: the subject questions and solutions are filed under. Chips are plain labels that link to the topic page;
+   "Untagged" is drawn as an empty outline because nothing has been decided for it. No colour per topic: colour only
+   ever says state in this system.
+   ----------------------------------------------------------------------------------------------- */
+.ix-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-topic {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 9px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background: transparent;
+    color: var(--ix-text-2);
+    font: 600 12px/1 var(--ix-font);
+    text-decoration: none;
+}
+
+a.ix-topic:hover {
+    border-color: var(--ix-text);
+    color: var(--ix-text);
+}
+
+a.ix-topic:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+.ix-topic--none {
+    border-style: dashed;
+    color: var(--ix-text-3);
+    font-weight: 500;
+}
+
+.ix-sol .ix-topics {
+    padding: 0 16px 12px;
+    margin-top: 0;
+}
+
+.ix-topicsec .ix-topics {
+    margin: 0 0 8px;
+}
+
+.ix-topicsec__fix {
+    margin-top: 10px;
+}
+
+/* In the side rail the list scrolls in a short window, so the form never grows taller than the rail can show. */
+.ix-topicsec .ix-topicpick__grid {
+    grid-template-columns: 1fr;
+    max-height: 190px;
+}
+
+.ix-topicbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin: 0 0 16px;
+}
+
+.ix-topicbar label {
+    color: var(--ix-text-3);
+    font: 600 13px/1 var(--ix-font);
+}
+
+.ix-topicbar .ix-input {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.ix-topicbar__clear,
+.ix-topicbar__all {
+    color: var(--ix-text-2);
+    font: 600 13px/1.3 var(--ix-font);
+    text-decoration: underline;
+}
+
+.ix-topicbar__all {
+    margin-left: auto;
+}
+
+.ix-topicbar__clear:hover,
+.ix-topicbar__all:hover {
+    color: var(--ix-text);
+}
+
+.ix-topicpick {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.ix-topicpick legend {
+    padding: 0;
+}
+
+.ix-topicpick__count {
+    margin-left: 6px;
+    color: var(--ix-text);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ix-topicpick__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 2px 14px;
+    margin-top: 6px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 6px 10px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-panel);
+}
+
+.ix-topicpick__opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    color: var(--ix-text);
+    font: 500 14px/1.3 var(--ix-font);
+    cursor: pointer;
+}
+
+.ix-topicpick__opt input {
+    flex: none;
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--ix-signal);
+    cursor: pointer;
+}
+
+.ix-topicpick__opt input:disabled {
+    cursor: not-allowed;
+}
+
+.ix-topicpick__opt:has(input:disabled) {
+    color: var(--ix-text-3);
+    cursor: not-allowed;
+}
+
+.ix-topicpick__opt input:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+.ix-topicpick__opt small {
+    color: var(--ix-text-3);
+}
+
+.ix-topictable tbody th {
+    padding: 14px 16px;
+    background: transparent;
+    border-bottom: 1px solid var(--ix-rule);
+    color: var(--ix-text);
+    font-size: 15px;
+    font-weight: 600;
+    white-space: normal;
+}
+
+.ix-topictable tbody tr:last-child th {
+    border-bottom: 0;
+}
+
+.ix-topictable tbody tr:hover th {
+    background: var(--ix-hover);
+}
+
+.ix-topictable .sub {
+    display: block;
+    font-weight: 400;
+    white-space: normal;
+}
+
+.ix-topichint {
+    max-width: 72ch;
+    margin: 12px 0 0;
+}
+
+.ix-topichint a {
+    color: var(--ix-text);
+    text-decoration: underline;
+}
+
+.ix-topich2 {
+    margin: 0 0 10px;
+    font-family: var(--ix-font);
+    font-weight: 700;
+    font-size: 20px;
+}
+
+@media (max-width: 767px) {
+    .ix-topictable tbody th {
+        display: block;
+        padding: 0 0 4px;
+        border: 0;
+    }
+
+    .ix-topictable tbody tr:hover th {
+        background: none;
+    }
+
+    .ix-topictable td.num {
+        display: inline-flex;
+        gap: 6px;
+        margin-right: 16px;
+    }
+
+    .ix-topictable td.num::before {
+        content: attr(data-label);
+        color: var(--ix-text-3);
+        font-weight: 500;
+    }
+
+    .ix-topicbar__all {
+        margin-left: 0;
+    }
+
+    .ix-topicbar {
+        align-items: stretch;
+    }
+
+    .ix-topicbar .ix-input {
+        flex: 1 1 140px;
+    }
+}
+
+/* Moderators' topic desk */
+.ix-mod__views {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    margin: -4px 0 16px;
+}
+
+.ix-mod__views a {
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+    color: var(--ix-text-2);
+    font: 600 14px/1.3 var(--ix-font);
+    text-decoration: none;
+}
+
+.ix-mod__views a:hover {
+    color: var(--ix-text);
+}
+
+.ix-mod__views a[aria-current='page'] {
+    border-bottom-color: var(--ix-text);
+    color: var(--ix-text);
+}
+
+.ix-mod__views a:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+.ix-mod__subh {
+    margin: 0;
+    font: 700 16px/1.3 var(--ix-font);
+}
+
+.ix-topicadd {
+    margin: 0 0 20px;
+}
+
+.ix-topicadd .ix-input,
+.ix-topiclist .ix-mod__form .ix-input {
+    width: 100%;
+}
+
+.ix-topiclist .ix-mod__title {
+    margin-top: 6px;
+}
+
+.ix-topiclist .ix-mod__actions {
+    align-items: center;
+}
+
+/* Self-directed suggestions on the points page: a plain list for the signed-in person alone. */
+.ix-suggest .ix-hint {
+    max-width: 68ch;
+}
+
+.ix-suggest__list {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ix-rule);
+    max-width: 68ch;
+}
+
+.ix-suggest__list .ix-topic {
+    margin: 0 4px 4px 0;
+}
+
+.ix-suggest__items {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-suggest__items li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.ix-suggest__items li:last-child {
+    border-bottom: 0;
+}
+
+.ix-suggest__items a {
+    color: var(--ix-text);
+    font-weight: 600;
+    text-decoration: underline;
+    overflow-wrap: anywhere;
+}

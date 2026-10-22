@@ -7,6 +7,7 @@ use App\Livewire\Search;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
+use App\Models\Topic;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -131,6 +132,7 @@ class SignedInUiTest extends TestCase
         $user = $this->member();
 
         $base = [
+            'topics' => [Topic::query()->value('id')],
             'solution_title' => 'Register a business',
             'solution_description' => 'Everything needed to register.',
             'tags-input' => 'business, how to',

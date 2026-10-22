@@ -63,6 +63,7 @@
             </nav>
         </div>
         <div class="container px-4 items-center justify-between mt-24">
+            @include('topics._search_filter')
             <div class="mx-2 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 @if(!empty($results['questions']))
                     @foreach($results['questions'] as $question)
@@ -176,6 +177,7 @@
 
             <main class="w-full">
                 <div class="container px-4 items-center justify-between">
+                    @include('topics._search_filter')
                     <div class="mx-2 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                         @if(!empty($results['questions']))
                             @foreach($results['questions'] as $question)

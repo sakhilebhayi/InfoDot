@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
+use App\Models\Topic;
 use App\Models\User;
 
 /**
@@ -17,11 +18,11 @@ class NavSection
     {
         return match (true) {
             request()->routeIs('dashboard') => 'Home',
-            request()->routeIs('questions*', 'seek', 'solutions*', 'add') => 'Knowledge',
+            request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*') => 'Knowledge',
             request()->routeIs('ecosystem.widget', 'subservices.*') => 'Platforms',
             request()->routeIs('analytics.*') => 'Analytics',
             request()->routeIs('people') => 'People',
-            request()->routeIs('moderation') => 'Moderation',
+            request()->routeIs('moderation*') => 'Moderation',
             request()->routeIs('points*') => 'Points',
             request()->routeIs('profile.*') => 'Account',
             request()->routeIs('teams.*', 'api-tokens.*') => 'Administration',
@@ -39,11 +40,11 @@ class NavSection
     {
         return match (true) {
             request()->routeIs('dashboard') => ['home', 'GATE'],
-            request()->routeIs('questions*', 'seek', 'solutions*', 'add') => ['knowledge', 'KNOW'],
+            request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*') => ['knowledge', 'KNOW'],
             request()->routeIs('ecosystem.widget', 'subservices.*') => ['platforms', 'PLAT'],
             request()->routeIs('analytics.*') => ['analytics', 'DATA'],
             request()->routeIs('people') => ['people', 'CREW'],
-            request()->routeIs('moderation') => ['people', 'MODR'],
+            request()->routeIs('moderation*') => ['people', 'MODR'],
             request()->routeIs('points*') => ['people', 'PNTS'],
             request()->routeIs('profile.*') => ['people', 'ACCT'],
             request()->routeIs('teams.*', 'api-tokens.*') => ['people', 'ADMN'],
@@ -74,6 +75,9 @@ class NavSection
             request()->routeIs('analytics.*') => [['Analytics', null]],
             request()->routeIs('people') => [['People', null]],
             request()->routeIs('moderation') => [['Moderation', null]],
+            request()->routeIs('moderation.topics') => [['Moderation', route('moderation')], ['Topics', null]],
+            request()->routeIs('topics') => [$knowledge, ['Topics', null]],
+            request()->routeIs('topics.show') => [$knowledge, ['Topics', route('topics')], [self::title(Topic::class, 'name', request()->route('topic')?->getKey()), null]],
             request()->routeIs('points*') => [['Account', null], ['Dot Points', null]],
             request()->routeIs('profile.show') => [['Account', null], [self::title(User::class, 'name', request()->route('id')), null]],
             request()->routeIs('profile.edit') => [['Account', null], ['Settings', null]],

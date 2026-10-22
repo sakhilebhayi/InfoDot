@@ -24,6 +24,12 @@
 
 
         <div class="ix-field">
+            @include('topics._picker', ['choices' => $topicChoices, 'selected' => old('topics', $preselectedTopic ? [$preselectedTopic] : []), 'idPrefix' => 'ask-topic'])
+            @error('topics')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            @error('topics.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="ix-field">
             <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
                 <input type="checkbox" name="publish" value="1" style="margin-top:3px" @checked(old('publish'))>
                 <span>

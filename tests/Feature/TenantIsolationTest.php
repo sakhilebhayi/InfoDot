@@ -6,6 +6,7 @@ use App\Livewire\Search;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
+use App\Models\Topic;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -173,8 +174,8 @@ class TenantIsolationTest extends TestCase
 
     public function test_new_content_is_private_to_the_company_unless_published(): void
     {
-        $this->actingAs($this->adam)->post('/questions/add', ['question' => 'Private by default', 'description' => 'details'])->assertRedirect();
-        $this->actingAs($this->adam)->post('/questions/add', ['question' => 'Published on purpose', 'description' => 'details', 'publish' => '1'])->assertRedirect();
+        $this->actingAs($this->adam)->post('/questions/add', ['topics' => [Topic::query()->value('id')], 'question' => 'Private by default', 'description' => 'details'])->assertRedirect();
+        $this->actingAs($this->adam)->post('/questions/add', ['topics' => [Topic::query()->value('id')], 'question' => 'Published on purpose', 'description' => 'details', 'publish' => '1'])->assertRedirect();
 
         $private = Questions::withoutGlobalScopes()->where('question', 'Private by default')->first();
         $public = Questions::withoutGlobalScopes()->where('question', 'Published on purpose')->first();
