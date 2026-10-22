@@ -113,6 +113,15 @@ No backup inventory exists for the 13 SQLite databases or the older apps. Define
 `.env`, uploads), where (encrypted, off-host), how often, and perform one real restore into a scratch location.
 Acceptance: a written RPO/RTO from a measured restore.
 
+**Status (2026-10-22): on-host part built; off-host destination pending owner decision; first measured restore
+pending.** Built, not deployed: `tools/backup-host.sh` (database via the online-backup API / `mysqldump` /
+`pg_dump`, `.env`, `storage/app` uploads; one AES-256 archive per app with a sha256; retention newest 14 + one per
+month for 6 months; verify, scratch-only restore, optional off-host hook), `tools/test-backup-host.sh` (fake host, in
+CI) and the Backups workflow (install, inventory, run, verify, restore-test, schedule). The design, formats, key
+handling, restore procedure and the empty RPO/RTO table are in [BACKUPS.md](BACKUPS.md). Not done: no workflow has been
+run, nothing exists on the host yet, the off-host destination (S3-compatible, SFTP or pull) is the owner's choice, and
+no restore has been timed, so the acceptance (a written RPO/RTO from a measured restore) is not met.
+
 ## R-4 Finish Analytics wiring
 
 Owner step pending: `ANALYTICS_INGEST_URL` on the 11 publishing apps; then verify the first signed snapshot is
