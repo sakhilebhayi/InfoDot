@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\PeopleController;
@@ -72,6 +73,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/user/profile/edit', 'App\Http\Controllers\PagesController@edit')->name('profile.edit');
     Route::get('/user/profile/{id}', 'App\Http\Controllers\PagesController@show')->name('profile.show');
+    // Whether other people may see the signed-in person's achievements and public contributions. Always their own row.
+    Route::post('/user/profile/achievements-visibility', [AchievementsController::class, 'updateVisibility'])->middleware('throttle:20,1')->name('profile.achievements-visibility');
 
     // -------------------------------------------------------
     // Dot Points: balance, rewards, redemptions. Server-to-server with the points service; always the signed-in person's own.

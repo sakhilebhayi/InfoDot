@@ -36,6 +36,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
         'points_expiry_emails' => 'boolean',
+        'achievements_public' => 'boolean',
     ];
 
     /**
@@ -86,6 +87,17 @@ class User extends Authenticatable implements MustVerifyEmail
     public function solutions()
     {
         return $this->hasMany(Solutions::class);
+    }
+
+    public function achievements()
+    {
+        return $this->hasMany(UserAchievement::class);
+    }
+
+    /** Whether the person lets others see their achievements and public contributions. Off unless they chose it. */
+    public function sharesAchievements(): bool
+    {
+        return (bool) $this->achievements_public;
     }
 
     public function associates()
