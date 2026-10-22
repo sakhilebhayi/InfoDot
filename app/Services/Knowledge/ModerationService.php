@@ -3,6 +3,9 @@
 namespace App\Services\Knowledge;
 
 use App\Events\Knowledge\ContentModerationChanged;
+use App\Events\Knowledge\ContributionApproved;
+use App\Events\Knowledge\SolutionUnverified;
+use App\Events\Knowledge\SolutionVerified;
 use App\Models\Answer;
 use App\Models\ContentReport;
 use App\Models\ModerationAction;
@@ -10,6 +13,7 @@ use App\Models\ModerationAppeal;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -331,8 +335,9 @@ class ModerationService
             }
 
             $row->forceFill(['verified_at' => now(), 'verified_by' => $by->id])->save();
-            ModerationAction::record($row, $by, ModerationAction::VERIFIED, $note);
+            $action = ModerationAction::record($row, $by, ModerationAction::VERIFIED, $note);
             $this->announce($row, 'verified');
+            $this->tellLedger(new SolutionVerified('infodot:solution:'.$row->getKey(), $this->ledgerFacts($row, $action) + ['verified_by_uuid' => $by->uuid]));
 
             return true;
         });
@@ -352,11 +357,80 @@ class ModerationService
             }
 
             $row->forceFill(['verified_at' => null, 'verified_by' => null])->save();
-            ModerationAction::record($row, $by, ModerationAction::UNVERIFIED, $reason);
+            $action = ModerationAction::record($row, $by, ModerationAction::UNVERIFIED, $reason);
             $this->announce($row, 'unverified');
+            $this->tellLedger(new SolutionUnverified('infodot:solution:'.$row->getKey(), $this->ledgerFacts($row, $action) + ['unverified_by_uuid' => $by->uuid]));
 
             return true;
         });
+    }
+
+    /** Questions a moderator can approve for their reward: public, visible, not hidden, not theirs, and with no approval on record yet. */
+    public function awaitingApproval(User $by): Builder
+    {
+        return Questions::query()
+            ->where('visibility', Questions::VISIBILITY_PUBLIC)
+            ->whereNull('hidden_at')
+            ->where('user_id', '!=', $by->id)
+            ->whereNotExists(fn ($sub) => $sub->selectRaw('1')->from('moderation_actions')
+                ->whereColumn('moderation_actions.subject_id', 'questions.id')
+                ->where('moderation_actions.subject_type', (new Questions)->getMorphClass())
+                ->where('moderation_actions.action', ModerationAction::APPROVED));
+    }
+
+    /**
+     * A moderator other than the author approves a published question for its reward: the moderator's approval is the
+     * approval. Recorded once in the trail (a second approval changes nothing, writes nothing and sends nothing).
+     *
+     * @return bool false when it was already approved
+     */
+    public function approve(Questions $question, User $by): bool
+    {
+        $this->authorize($question, $by);
+
+        return DB::transaction(function () use ($question, $by): bool {
+            $row = $this->lock($question);
+
+            if ($row->isHidden()) {
+                throw ValidationException::withMessages(['approve' => 'A hidden question cannot be approved.']);
+            }
+
+            if (! $row->isPublic()) {
+                throw ValidationException::withMessages(['approve' => 'Only public questions are approved for a reward.']);
+            }
+
+            $already = ModerationAction::where('subject_type', $row->getMorphClass())->where('subject_id', $row->getKey())
+                ->where('action', ModerationAction::APPROVED)->exists();
+
+            if ($already) {
+                return false;
+            }
+
+            $action = ModerationAction::record($row, $by, ModerationAction::APPROVED);
+
+            $this->tellLedger(new ContributionApproved('infodot:question:'.$row->getKey(), $this->ledgerFacts($row, $action) + [
+                'kind' => 'question', 'approved_by_uuid' => $by->uuid,
+            ]));
+
+            return true;
+        });
+    }
+
+    /** What the points ledger needs to know about an item, as ids: who wrote it, where it lives, and which audit row caused this. */
+    private function ledgerFacts(Model $row, ModerationAction $action): array
+    {
+        return [
+            'author_uuid' => $row->user->uuid,
+            'tenant_team_id' => $row->team_id,
+            'visibility' => $row->visibility,
+            'event_key' => 'moderation_action:'.$action->id,
+        ];
+    }
+
+    /** Raise a ledger-bound event once the change is committed. */
+    private function tellLedger(object $event): void
+    {
+        DB::afterCommit(fn () => event($event));
     }
 
     /** Everything moderators have done about an item, oldest first. */

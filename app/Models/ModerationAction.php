@@ -31,9 +31,11 @@ class ModerationAction extends Model
 
     public const UNVERIFIED = 'unverified';
 
+    public const APPROVED = 'approved';
+
     public const ACTIONS = [
         self::DISMISSED, self::HIDDEN, self::RESTORED, self::ACCEPTANCE_REVOKED,
-        self::APPEAL_UPHELD, self::APPEAL_DENIED, self::VERIFIED, self::UNVERIFIED,
+        self::APPEAL_UPHELD, self::APPEAL_DENIED, self::VERIFIED, self::UNVERIFIED, self::APPROVED,
     ];
 
     /** What each action is called on screen. */
@@ -46,6 +48,7 @@ class ModerationAction extends Model
         self::APPEAL_DENIED => 'Appeal denied',
         self::VERIFIED => 'Verified',
         self::UNVERIFIED => 'Verification removed',
+        self::APPROVED => 'Approved for reward',
     ];
 
     protected $fillable = ['actor_id', 'actor_uuid', 'subject_type', 'subject_id', 'action', 'reason', 'report_id', 'appeal_id'];

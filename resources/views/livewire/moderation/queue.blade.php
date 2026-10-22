@@ -2,7 +2,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Moderation</h1>
-            <p class="ix-lede">Reports from members, and appeals from authors whose content was hidden. Every decision is written to a permanent trail.</p>
+            <p class="ix-lede">Reports from members, appeals from authors whose content was hidden, and questions waiting for your approval. Every decision is written to a permanent trail.</p>
         </div>
     </div>
 
@@ -13,8 +13,10 @@
     <nav class="ix-mod__tabs" aria-label="Moderation views">
         <a href="{{ route('moderation', ['tab' => 'reports']) }}" @if ($tab === 'reports') aria-current="page" @endif>Reports <span class="ix-mod__n">{{ $openReports }} open</span></a>
         <a href="{{ route('moderation', ['tab' => 'appeals']) }}" @if ($tab === 'appeals') aria-current="page" @endif>Appeals <span class="ix-mod__n">{{ $openAppeals }} open</span></a>
+        <a href="{{ route('moderation', ['tab' => 'approvals']) }}" @if ($tab === 'approvals') aria-current="page" @endif>Awaiting approval <span class="ix-mod__n">{{ $awaitingApproval }} waiting</span></a>
     </nav>
 
+    @if ($tab !== 'approvals')
     <div class="ix-mod__filters">
         <label>
             <span>Show</span>
@@ -36,11 +38,18 @@
             </label>
         @endif
     </div>
+    @endif
+
+    @if ($tab === 'approvals')
+        <p class="ix-hint">Public questions that are live and have not been approved yet, oldest first. Your approval is what lets the author's reward be paid. Your own questions are not listed: another moderator approves those.</p>
+    @endif
 
     @if ($rows->isEmpty())
         <p class="ix-mod__empty">
             @if ($tab === 'reports')
                 {{ $status === 'open' ? 'No open reports.' : 'No '.$status.' reports.' }}
+            @elseif ($tab === 'approvals')
+                No questions are waiting for approval.
             @else
                 {{ $status === 'open' ? 'No appeals are waiting.' : 'No '.$status.' appeals.' }}
             @endif
@@ -63,6 +72,8 @@
                             @if ($tab === 'reports')
                                 <span class="ix-mod__count">{{ $row['count'] }} {{ Str::plural('report', $row['count']) }}</span>
                                 <span class="ix-mod__age">first {{ $row['since']->diffForHumans() }}</span>
+                            @elseif ($tab === 'approvals')
+                                <span class="ix-mod__age">asked {{ $row['since']->diffForHumans() }}</span>
                             @else
                                 <span class="ix-mod__age">appealed {{ $row['appeal']->created_at->diffForHumans() }}</span>
                             @endif
@@ -143,6 +154,13 @@
                                             </form>
                                         </details>
                                     @endif
+                                @endif
+                            @elseif ($tab === 'approvals')
+                                @if ($item['canModerate'])
+                                    <button type="button" class="ix-btn ix-btn--primary" wire:click="approve('{{ $item['key'] }}')" wire:loading.attr="disabled">Approve for reward</button>
+                                    @error('approve.'.$item['key']) <p class="ix-error" role="alert">{{ $message }}</p> @enderror
+                                @else
+                                    <p class="ix-hint">This is your own content, so another moderator has to approve it.</p>
                                 @endif
                             @elseif ($row['appeal']->isOpen())
                                 @if ($row['canDecide'])

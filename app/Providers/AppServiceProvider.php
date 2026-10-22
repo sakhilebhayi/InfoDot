@@ -6,7 +6,11 @@ use App\Events\Knowledge\AnswerAcceptanceRevoked;
 use App\Events\Knowledge\AnswerAccepted;
 use App\Events\Knowledge\AnswerPublished;
 use App\Events\Knowledge\ContentModerationChanged;
+use App\Events\Knowledge\ContentReported;
+use App\Events\Knowledge\ContributionApproved;
 use App\Events\Knowledge\QuestionSubmitted;
+use App\Events\Knowledge\SolutionUnverified;
+use App\Events\Knowledge\SolutionVerified;
 use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Listeners\RefreshAchievements;
 use App\Models\File;
@@ -50,6 +54,12 @@ class AppServiceProvider extends ServiceProvider
             Event::listen($knowledgeEvent, ForwardKnowledgeEventToPoints::class);
             // Milestones follow the same facts; separate from the ledger and never able to fail the request.
             Event::listen($knowledgeEvent, RefreshAchievements::class);
+        }
+
+        // Moderator decisions the ledger needs to know about: a solution verified or unverified, a report, an approval.
+        // (No milestones follow these: ContentModerationChanged already refreshes them.)
+        foreach ([SolutionVerified::class, SolutionUnverified::class, ContentReported::class, ContributionApproved::class] as $moderationEvent) {
+            Event::listen($moderationEvent, ForwardKnowledgeEventToPoints::class);
         }
 
         // Hidden, restored, verified or unverified: these change what counts as contribution (they are not ledger events).
