@@ -12,7 +12,11 @@ use Illuminate\Support\Facades\Log;
  * A row is written when the event happens and sent later, so an outage of the ledger or of the queue loses nothing.
  * Failure handling: connection errors, 5xx and 429 are retried with growing delays (30 s, 2 min, 10 min, 30 min,
  * 1 h, then every 6 h, 25 attempts at most); 401/403 mean the shared secret is wrong, an operator problem, and are
- * retried slowly and logged as errors; any other 4xx is a bad event and is parked as failed, never retried.
+ * retried slowly and logged as errors; 409 and 425 ("too early": the ledger has not seen what the event builds on yet)
+ * are retried like an outage; any other 4xx is a bad event and is parked as failed, never retried.
+ *
+ * Order per contribution: an event waits while an earlier event about the same contribution is still undelivered, so an
+ * approval or a reversal can never overtake the publication it refers to.
  */
 class RewardOutbox
 {
@@ -49,6 +53,10 @@ class RewardOutbox
             ->orderBy('id')->limit($limit)->get();
 
         foreach ($due as $row) {
+            if ($this->waitsForEarlierEvent($row)) {
+                continue;
+            }
+
             try {
                 $response = $this->client->send(json_decode($row->payload, true));
             } catch (ConnectionException $e) {
@@ -63,7 +71,7 @@ class RewardOutbox
             if ($response->successful()) {
                 DB::table('reward_outbox')->where('id', $row->id)->update(['sent_at' => now(), 'last_error' => null, 'updated_at' => now()]);
                 $sent++;
-            } elseif ($response->serverError() || $response->status() === 429) {
+            } elseif ($response->serverError() || in_array($response->status(), [409, 425, 429], true)) {
                 $this->retryLater($row, 'HTTP '.$response->status());
             } elseif (in_array($response->status(), [401, 403], true)) {
                 Log::error('Points ledger refused our signature: the shared secret is wrong or missing on one side.', ['status' => $response->status()]);
@@ -75,6 +83,21 @@ class RewardOutbox
         }
 
         return $sent;
+    }
+
+    /** True while an earlier event about the same contribution has neither been delivered nor been parked. */
+    private function waitsForEarlierEvent(object $row): bool
+    {
+        $ref = json_decode($row->payload, true)['contribution_ref'] ?? null;
+
+        if (! is_string($ref)) {
+            return false;
+        }
+
+        return DB::table('reward_outbox')->where('id', '<', $row->id)->whereNull('sent_at')->whereNull('failed_at')
+            // The payload is JSON text; refs hold only letters, digits and colons, and the closing quote stops id 1 matching id 12.
+            ->where('payload', 'like', '%"contribution_ref":'.json_encode($ref, JSON_UNESCAPED_SLASHES).'%')
+            ->exists();
     }
 
     private function retryLater(object $row, string $error, ?int $minimumDelay = null): void

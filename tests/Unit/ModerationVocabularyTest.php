@@ -17,7 +17,7 @@ class ModerationVocabularyTest extends TestCase
     public function test_every_audit_action_has_a_label_and_the_list_matches_the_design(): void
     {
         $this->assertEqualsCanonicalizing(
-            ['dismissed', 'hidden', 'restored', 'acceptance_revoked', 'appeal_upheld', 'appeal_denied', 'verified', 'unverified'],
+            ['dismissed', 'hidden', 'restored', 'acceptance_revoked', 'appeal_upheld', 'appeal_denied', 'verified', 'unverified', 'approved'],
             ModerationAction::ACTIONS,
         );
         $this->assertEqualsCanonicalizing(ModerationAction::ACTIONS, array_keys(ModerationAction::LABELS));

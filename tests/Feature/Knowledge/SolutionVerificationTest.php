@@ -121,13 +121,13 @@ class SolutionVerificationTest extends TestCase
         $this->assertSame(0, DB::table('solutions')->whereNotNull('verified_at')->count());
     }
 
-    public function test_verification_sends_nothing_to_the_points_ledger_yet(): void
+    public function test_verification_is_queued_for_the_points_ledger_as_one_event(): void
     {
         Http::fake();
         $solution = $this->solution($this->person());
 
         app(ModerationService::class)->verify($solution, $this->moderator());
 
-        $this->assertSame(0, DB::table('reward_outbox')->count(), 'the ledger has no rule for infodot.solution.verified yet');
+        $this->assertSame(['infodot.solution.verified'], DB::table('reward_outbox')->pluck('type')->all());
     }
 }

@@ -196,11 +196,20 @@ class AnswerService
         if ($report->wasRecentlyCreated) {
             RateLimiter::hit($key, 3600);
 
+            $question = $item instanceof Answer ? $item->question : $item;
+
             event(new ContentReported(match (true) {
                 $item instanceof Answer => $item->reference(),
                 $item instanceof Solutions => 'infodot:solution:'.$item->getKey(),
                 default => 'infodot:question:'.$item->getKey(),
-            }, ['reason' => $reason, 'reporter_uuid' => $reporter->uuid]));
+            }, [
+                'reason' => $reason,
+                'report_id' => $report->id,
+                // Who wrote it and where it lives, for the points ledger. The reporter is deliberately not part of the event's facts.
+                'author_uuid' => $item->user->uuid,
+                'tenant_team_id' => $question->team_id,
+                'visibility' => $question->visibility,
+            ]));
         }
 
         return $report;

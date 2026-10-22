@@ -22,7 +22,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * The moderators' desk: reported items (one row per item, however many people reported it) and appeals against hides.
+ * The moderators' desk: reported items (one row per item, however many people reported it), appeals against hides, and
+ * questions waiting for a moderator's approval of their reward.
  * The page only asks; ModerationService decides who may do what and writes the audit trail.
  */
 class Queue extends Component
@@ -101,6 +102,19 @@ class Queue extends Component
         });
     }
 
+    /** A moderator approves a question for its reward. The service refuses the author and anyone who is not a moderator. */
+    public function approve(string $key, ModerationService $moderation): void
+    {
+        $item = $this->item($key);
+        abort_unless($item instanceof Questions, 404);
+
+        $this->attempt("approve.$key", function () use ($moderation, $item) {
+            return $moderation->approve($item, Auth::user())
+                ? 'Approved. The author\'s reward can now be paid.'
+                : 'Someone else has already approved this question.';
+        });
+    }
+
     public function uphold(int $appealId, ModerationService $moderation): void
     {
         $this->decide($appealId, true, $moderation);
@@ -152,14 +166,20 @@ class Queue extends Component
     public function render(ModerationService $moderation, AnswerService $answers): View
     {
         $me = Auth::user();
-        $tab = $this->tab === 'appeals' ? 'appeals' : 'reports';
-        $statuses = $tab === 'appeals' ? [ModerationAppeal::OPEN, ModerationAppeal::UPHELD, ModerationAppeal::DENIED] : ContentReport::STATUSES;
+        $tab = in_array($this->tab, ['appeals', 'approvals'], true) ? $this->tab : 'reports';
+        $statuses = match ($tab) {
+            'appeals' => [ModerationAppeal::OPEN, ModerationAppeal::UPHELD, ModerationAppeal::DENIED],
+            'approvals' => [],
+            default => ContentReport::STATUSES,
+        };
         $status = in_array($this->status, $statuses, true) ? $this->status : ModerationAppeal::OPEN;
         $reason = in_array($this->reason, ContentReport::REASONS, true) && $tab === 'reports' ? $this->reason : '';
 
-        $rows = $tab === 'appeals'
-            ? $this->appealRows($status, $me, $moderation, $answers)
-            : $this->reportRows($status, $reason, $me, $moderation, $answers);
+        $rows = match ($tab) {
+            'appeals' => $this->appealRows($status, $me, $moderation, $answers),
+            'approvals' => $this->approvalRows($me, $moderation, $answers),
+            default => $this->reportRows($status, $reason, $me, $moderation, $answers),
+        };
 
         return view('livewire.moderation.queue', [
             'tab' => $tab,
@@ -169,6 +189,7 @@ class Queue extends Component
             'rows' => $rows,
             'openReports' => DB::table('content_reports')->where('status', ContentReport::OPEN)->select('reportable_type', 'reportable_id')->groupBy('reportable_type', 'reportable_id')->get()->count(),
             'openAppeals' => ModerationAppeal::where('status', ModerationAppeal::OPEN)->count(),
+            'awaitingApproval' => $moderation->awaitingApproval($me)->count(),
             'moderation' => $moderation,
         ]);
     }
@@ -200,6 +221,19 @@ class Queue extends Component
                 'reports' => $reports,
             ];
         });
+
+        return $page;
+    }
+
+    /** Oldest first, so nobody's question waits behind newer ones. */
+    private function approvalRows(User $me, ModerationService $moderation, AnswerService $answers)
+    {
+        $page = $moderation->awaitingApproval($me)->with('user')->orderBy('created_at')->orderBy('id')->paginate(10);
+
+        $page->getCollection()->transform(fn (Questions $question) => [
+            'item' => $this->describe($question, $me, $moderation, $answers),
+            'since' => $question->created_at ?? now(),
+        ]);
 
         return $page;
     }
