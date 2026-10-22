@@ -4873,3 +4873,158 @@ button.ix-regrow:focus-visible {
         display: inline;
     }
 }
+
+/* -----------------------------------------------------------------------------------------------
+   Profile: achievements (milestones). A section of its own, never inside the Dot Points panel: they are not points.
+   Flat and bordered like the rest of the desk; no colour for decoration, no animation, nothing that counts down.
+   ----------------------------------------------------------------------------------------------- */
+.ix-ach {
+    /* The sticky header must not cover the heading when the page opens at #profile-achievements. */
+    scroll-margin-top: 96px;
+}
+
+@media (max-width: 639px) {
+    .ix-ach {
+        scroll-margin-top: 176px;
+    }
+}
+
+.ix-ach__title {
+    margin: 0 0 6px;
+    font-family: var(--ix-font);
+    font-weight: 700;
+    font-size: 20px;
+}
+
+.ix-ach__note {
+    margin: 0 0 12px;
+    max-width: 68ch;
+    color: var(--ix-text-2);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ix-ach__notice {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--ix-ok);
+    border-left-width: 4px;
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-panel);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.ix-ach__empty {
+    margin: 0 0 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+    color: var(--ix-text-2);
+}
+
+.ix-ach__list,
+.ix-ach__next {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 10px;
+    margin: 0 0 14px;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-ach__item,
+.ix-ach__next > li {
+    padding: 10px 12px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.ix-ach__name {
+    margin: 0 0 2px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.ix-ach__meaning,
+.ix-ach__progress-text {
+    margin: 0 0 4px;
+    color: var(--ix-text-2);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.ix-ach__date {
+    margin: 0;
+    color: var(--ix-text-3);
+    font-size: 13px;
+}
+
+.ix-ach__sub {
+    margin: 16px 0 8px;
+    font: 700 16px/1.3 var(--ix-font);
+}
+
+.ix-ach__bar {
+    display: block;
+    width: 100%;
+    height: 6px;
+    appearance: none;
+    border: 0;
+    border-radius: 0;
+    background: var(--ix-sunken);
+    accent-color: var(--ix-text-2);
+}
+
+.ix-ach__bar::-webkit-progress-bar {
+    background: var(--ix-sunken);
+}
+
+.ix-ach__bar::-webkit-progress-value {
+    background: var(--ix-text-2);
+}
+
+.ix-ach__bar::-moz-progress-bar {
+    background: var(--ix-text-2);
+}
+
+.ix-ach__portfolio {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.ix-ach__kind {
+    margin: 0 0 6px;
+    color: var(--ix-text-3);
+    font: 600 13px/1.3 var(--ix-font);
+}
+
+.ix-ach__portfolio ul {
+    margin: 0;
+    padding-left: 1.1em;
+}
+
+.ix-ach__portfolio li {
+    margin-bottom: 4px;
+    overflow-wrap: anywhere;
+}
+
+.ix-ach__portfolio a {
+    color: var(--ix-text);
+    text-decoration: underline;
+}
+
+.ix-ach__share {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ix-rule);
+    max-width: 68ch;
+}
+
+.ix-ach__share .ix-btn {
+    margin-top: 8px;
+}

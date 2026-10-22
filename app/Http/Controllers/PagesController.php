@@ -6,6 +6,7 @@ use App\Models\Associates;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\User;
+use App\Services\Knowledge\AchievementService;
 use App\Services\Points\PointsClient;
 use App\Support\Knowledge\ContributionStats;
 use App\Support\Knowledge\ModerationStatus;
@@ -151,6 +152,8 @@ class PagesController extends Controller
             'user' => $get_profile,
             'association' => $association,
             'stats' => ContributionStats::for($get_profile, $isOwner),
+            // Milestones are not points: their own data, their own section. Others only see them when the owner shares them.
+            'achievements' => app(AchievementService::class)->profileFor($get_profile, $isOwner),
             // Points are the owner's own business: nobody else's profile view asks the ledger for them.
             'points' => $isOwner ? app(PointsClient::class)->summary((string) $get_profile->uuid) : null,
             'pointsConfigured' => $isOwner && app(PointsClient::class)->enabled(),

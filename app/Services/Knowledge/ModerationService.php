@@ -2,6 +2,7 @@
 
 namespace App\Services\Knowledge;
 
+use App\Events\Knowledge\ContentModerationChanged;
 use App\Models\Answer;
 use App\Models\ContentReport;
 use App\Models\ModerationAction;
@@ -145,6 +146,8 @@ class ModerationService
                 ModerationAction::record($row, $by, ModerationAction::ACCEPTANCE_REVOKED, 'Hidden by a moderator: '.$reason);
             }
 
+            $this->announce($row, 'hidden');
+
             return true;
         });
     }
@@ -194,6 +197,7 @@ class ModerationService
 
             $this->unhide($row);
             ModerationAction::record($row, $by, ModerationAction::RESTORED, $note);
+            $this->announce($row, 'restored');
 
             ModerationAppeal::where('subject_type', $row->getMorphClass())->where('subject_id', $row->getKey())->where('status', ModerationAppeal::OPEN)
                 ->get()
@@ -209,6 +213,14 @@ class ModerationService
     private function unhide(Model $row): void
     {
         $row->forceFill(['hidden_at' => null, 'hidden_by' => null, 'hidden_reason' => null])->save();
+    }
+
+    /** Tell the milestone keeper, once the change is committed, that this content now counts (or stops counting) as contribution. */
+    private function announce(Model $row, string $change): void
+    {
+        $kind = self::kindOf($row);
+
+        DB::afterCommit(fn () => event(new ContentModerationChanged('infodot:'.$kind.':'.$row->getKey(), ['kind' => $kind, 'id' => $row->getKey(), 'change' => $change])));
     }
 
     /** The author of hidden content may appeal it, once per hide. */
@@ -287,6 +299,7 @@ class ModerationService
 
             if ($uphold && $row->isHidden()) {
                 $this->unhide($row);
+                $this->announce($row, 'restored');
             }
 
             ModerationAction::record($row, $by, $uphold ? ModerationAction::APPEAL_UPHELD : ModerationAction::APPEAL_DENIED, $note, null, $fresh->id);
@@ -319,6 +332,7 @@ class ModerationService
 
             $row->forceFill(['verified_at' => now(), 'verified_by' => $by->id])->save();
             ModerationAction::record($row, $by, ModerationAction::VERIFIED, $note);
+            $this->announce($row, 'verified');
 
             return true;
         });
@@ -339,6 +353,7 @@ class ModerationService
 
             $row->forceFill(['verified_at' => null, 'verified_by' => null])->save();
             ModerationAction::record($row, $by, ModerationAction::UNVERIFIED, $reason);
+            $this->announce($row, 'unverified');
 
             return true;
         });

@@ -123,6 +123,10 @@
         @endif
     </section>
 
+    @if ($achievements !== null)
+        @include('profile._achievements')
+    @endif
+
     @if ($isOwner && $moderation->isNotEmpty())
         <section class="mb-8 ix-modstatus" aria-labelledby="profile-moderation">
             <h2 id="profile-moderation" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Moderation of your content</h2>

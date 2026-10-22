@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Events\Knowledge\AnswerAcceptanceRevoked;
 use App\Events\Knowledge\AnswerAccepted;
 use App\Events\Knowledge\AnswerPublished;
+use App\Events\Knowledge\ContentModerationChanged;
 use App\Events\Knowledge\QuestionSubmitted;
 use App\Listeners\ForwardKnowledgeEventToPoints;
+use App\Listeners\RefreshAchievements;
 use App\Models\File;
 use App\Models\Folder;
 use App\Models\Questions;
@@ -46,7 +48,12 @@ class AppServiceProvider extends ServiceProvider
             AnswerAcceptanceRevoked::class,
         ] as $knowledgeEvent) {
             Event::listen($knowledgeEvent, ForwardKnowledgeEventToPoints::class);
+            // Milestones follow the same facts; separate from the ledger and never able to fail the request.
+            Event::listen($knowledgeEvent, RefreshAchievements::class);
         }
+
+        // Hidden, restored, verified or unverified: these change what counts as contribution (they are not ledger events).
+        Event::listen(ContentModerationChanged::class, RefreshAchievements::class);
 
         foreach ([
             'action-message',
