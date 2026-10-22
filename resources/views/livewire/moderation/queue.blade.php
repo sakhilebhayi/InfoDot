@@ -10,11 +10,7 @@
         <p class="ix-answers__status" role="status">{{ session('moderation-status') }}</p>
     @endif
 
-    <nav class="ix-mod__tabs" aria-label="Moderation views">
-        <a href="{{ route('moderation', ['tab' => 'reports']) }}" @if ($tab === 'reports') aria-current="page" @endif>Reports <span class="ix-mod__n">{{ $openReports }} open</span></a>
-        <a href="{{ route('moderation', ['tab' => 'appeals']) }}" @if ($tab === 'appeals') aria-current="page" @endif>Appeals <span class="ix-mod__n">{{ $openAppeals }} open</span></a>
-        <a href="{{ route('moderation', ['tab' => 'approvals']) }}" @if ($tab === 'approvals') aria-current="page" @endif>Awaiting approval <span class="ix-mod__n">{{ $awaitingApproval }} waiting</span></a>
-    </nav>
+    @include('livewire.moderation._tabs', ['current' => $tab, 'counts' => ['reports' => $openReports, 'appeals' => $openAppeals, 'approvals' => $awaitingApproval]])
 
     @if ($tab !== 'approvals')
     <div class="ix-mod__filters">

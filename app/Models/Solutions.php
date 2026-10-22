@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasKnowledgeVisibility;
+use App\Models\Concerns\HasTopics;
 use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,12 +13,23 @@ class Solutions extends Model
 {
     use HasFactory;
     use HasKnowledgeVisibility;
+    use HasTopics;
     use IsModerated;
     use Searchable;
 
     protected $fillable = [
         'user_id', 'team_id', 'visibility', 'solution_title', 'solution_description', 'tags', 'duration', 'duration_type', 'steps',
     ];
+
+    public function topicLinkTable(): string
+    {
+        return 'solution_topic';
+    }
+
+    public function topicLinkKey(): string
+    {
+        return 'solution_id';
+    }
 
     protected function casts(): array
     {

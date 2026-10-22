@@ -40,6 +40,8 @@
                 </dl>
             </section>
 
+            @include('topics._rail', ['item' => $question, 'choices' => $topicChoices, 'action' => route('questions.topics', ['qid' => $question->id]), 'kind' => 'question'])
+
             @if ($related->isNotEmpty())
                 <section class="ix-related">
                     <h2>More like this</h2>

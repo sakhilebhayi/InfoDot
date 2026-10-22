@@ -33,9 +33,20 @@ class ModerationAction extends Model
 
     public const APPROVED = 'approved';
 
+    public const TOPIC_ADDED = 'topic_added';
+
+    public const TOPIC_RENAMED = 'topic_renamed';
+
+    public const TOPIC_ACTIVATED = 'topic_activated';
+
+    public const TOPIC_DEACTIVATED = 'topic_deactivated';
+
+    public const TOPICS_SET = 'topics_set';
+
     public const ACTIONS = [
         self::DISMISSED, self::HIDDEN, self::RESTORED, self::ACCEPTANCE_REVOKED,
         self::APPEAL_UPHELD, self::APPEAL_DENIED, self::VERIFIED, self::UNVERIFIED, self::APPROVED,
+        self::TOPIC_ADDED, self::TOPIC_RENAMED, self::TOPIC_ACTIVATED, self::TOPIC_DEACTIVATED, self::TOPICS_SET,
     ];
 
     /** What each action is called on screen. */
@@ -49,6 +60,11 @@ class ModerationAction extends Model
         self::VERIFIED => 'Verified',
         self::UNVERIFIED => 'Verification removed',
         self::APPROVED => 'Approved for reward',
+        self::TOPIC_ADDED => 'Topic added',
+        self::TOPIC_RENAMED => 'Topic renamed',
+        self::TOPIC_ACTIVATED => 'Topic switched on',
+        self::TOPIC_DEACTIVATED => 'Topic switched off',
+        self::TOPICS_SET => 'Topics corrected',
     ];
 
     protected $fillable = ['actor_id', 'actor_uuid', 'subject_type', 'subject_id', 'action', 'reason', 'report_id', 'appeal_id'];

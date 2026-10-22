@@ -8,6 +8,7 @@ use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Models\ModerationAction;
 use App\Models\Questions;
 use App\Models\Team;
+use App\Models\Topic;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Knowledge\ModerationService;
 use App\Services\Points\RewardOutbox;
@@ -246,7 +247,7 @@ class ModerationEventsForwardingTest extends TestCase
     {
         Http::fake(['dopemine.test/*' => Http::sequence()->push('down', 503)->push(['status' => 'published'], 202)->push(['status' => 'awarded'], 202)]);
         $asker = $this->person();
-        $this->actingAs($asker)->post('/questions/add', ['question' => 'How do I price a handmade product?', 'description' => 'Materials, time and a margin, but how much?', 'publish' => '1'])->assertRedirect();
+        $this->actingAs($asker)->post('/questions/add', ['topics' => [Topic::query()->value('id')], 'question' => 'How do I price a handmade product?', 'description' => 'Materials, time and a margin, but how much?', 'publish' => '1'])->assertRedirect();
         $question = Questions::latest('id')->first();
         app(ModerationService::class)->approve($question, $this->moderator());
         $this->assertSame(['infodot.question.published', 'infodot.contribution.approved'], array_column($this->outbox(), 'type'));

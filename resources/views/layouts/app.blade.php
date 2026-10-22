@@ -47,6 +47,7 @@
                     <div class="ix-subnav__inner">
                         <a href="{{ route('questions') }}" @if(request()->routeIs('questions*', 'seek')) aria-current="page" @endif>Questions</a>
                         <a href="{{ route('solutions') }}" @if(request()->routeIs('solutions*', 'add')) aria-current="page" @endif>Solutions</a>
+                        <a href="{{ route('topics') }}" @if(request()->routeIs('topics*')) aria-current="page" @endif>Topics</a>
                     </div>
                 </nav>
             @endif

@@ -7,8 +7,12 @@ use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
 use App\Http\Controllers\ResourceOpenController;
+use App\Http\Controllers\TopicAssignmentController;
+use App\Http\Controllers\TopicsController;
+use App\Http\Controllers\TopicSuggestionsController;
 use App\Livewire\EcosystemWidget;
 use App\Livewire\Moderation\Queue as ModerationQueue;
+use App\Livewire\Moderation\Topics as ModerationTopics;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -67,6 +71,14 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/questions/ask', 'App\Http\Controllers\Questions\QuestionsController@seek')->name('seek');
     Route::post('/questions/add', 'App\Http\Controllers\Questions\QuestionsController@add_question')->middleware('throttle:10,1')->name('questions.add');
     Route::get('/question/view/{qid}', 'App\Http\Controllers\Questions\QuestionsController@view')->name('questions.view');
+    Route::post('/question/{qid}/topics', [TopicAssignmentController::class, 'question'])->whereNumber('qid')->middleware(['moderator', 'throttle:30,1'])->name('questions.topics');
+    Route::post('/solution/{id}/topics', [TopicAssignmentController::class, 'solution'])->whereNumber('id')->middleware(['moderator', 'throttle:30,1'])->name('solutions.topics');
+
+    // -------------------------------------------------------
+    // Topics: browse questions and solutions by subject
+    // -------------------------------------------------------
+    Route::get('/topics', [TopicsController::class, 'index'])->name('topics');
+    Route::get('/topics/{topic}', [TopicsController::class, 'show'])->name('topics.show');
 
     // -------------------------------------------------------
     // Profile Controller
@@ -82,11 +94,14 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/points', [PointsController::class, 'index'])->middleware('throttle:60,1')->name('points');
     Route::post('/points/redeem', [PointsController::class, 'redeem'])->middleware('throttle:10,1')->name('points.redeem');
     Route::post('/points/expiry-emails', [PointsController::class, 'updateExpiryEmails'])->middleware('throttle:20,1')->name('points.expiry-emails');
+    // Opt in to a list, for the signed-in person only, of open questions in the topics they have helped with.
+    Route::post('/points/topic-suggestions', [TopicSuggestionsController::class, 'update'])->middleware('throttle:20,1')->name('points.topic-suggestions');
 
     // -------------------------------------------------------
     // Moderation: reports, appeals and the audit trail. Moderators only.
     // -------------------------------------------------------
     Route::get('/moderation', ModerationQueue::class)->middleware('moderator')->name('moderation');
+    Route::get('/moderation/topics', ModerationTopics::class)->middleware('moderator')->name('moderation.topics');
 
     // -------------------------------------------------------
     // Sub Services

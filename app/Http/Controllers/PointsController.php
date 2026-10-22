@@ -8,6 +8,7 @@ use App\Services\Points\PointsUnavailableException;
 use App\Services\Points\RedemptionRefusedException;
 use App\Services\Points\RedemptionTickets;
 use App\Services\Points\Reward;
+use App\Support\Knowledge\TopicSuggestions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -64,6 +65,9 @@ class PointsController extends Controller
             }
         }
 
+        // Only when the person switched it on: a plain read of InfoDot's own records, for them alone. Off means not even computed.
+        $suggestionTopics = $user->wantsTopicSuggestions() ? TopicSuggestions::expertiseTopics($user) : null;
+
         $state = ! $configured ? 'not_configured' : ($summary === null && $rewards === null && $history === null ? 'unavailable' : 'ok');
 
         return response()->view('points.index', [
@@ -76,6 +80,9 @@ class PointsController extends Controller
             'historyDown' => $configured && $history === null,
             'summaryDown' => $configured && $summary === null,
             'expiryEmails' => $user->wantsPointsExpiryEmails(),
+            'topicSuggestionsOn' => $suggestionTopics !== null,
+            'suggestionTopics' => $suggestionTopics,
+            'suggestedQuestions' => $suggestionTopics !== null ? TopicSuggestions::questionsFor($user, $suggestionTopics) : null,
         ])->header('Cache-Control', 'no-store, private');
     }
 

@@ -4,6 +4,7 @@ namespace Tests\Feature\Knowledge;
 
 use App\Models\Questions;
 use App\Models\Team;
+use App\Models\Topic;
 use App\Models\User;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Points\PointsClient;
@@ -106,7 +107,7 @@ class PointsForwardingTest extends TestCase
         Http::fake();
         $asker = $this->person();
 
-        $this->actingAs($asker)->post('/questions/add', ['question' => 'How do I price a handmade product?', 'description' => 'Materials, time and a margin, but how much?'])->assertRedirect();
+        $this->actingAs($asker)->post('/questions/add', ['topics' => [Topic::query()->value('id')], 'question' => 'How do I price a handmade product?', 'description' => 'Materials, time and a margin, but how much?'])->assertRedirect();
 
         [$event] = $this->outbox();
         $this->assertSame('infodot.question.published', $event['type']);
