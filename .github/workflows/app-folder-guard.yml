@@ -20,22 +20,29 @@ name: App Folder Guard
 #                  is outside the deployed tree. Records / /up /login before, compares after; if any changed, restores the
 #                  previous docroot `.htaccess` and fails. Needs explicit pairs.
 #
+#   docroot-inventory  READ-ONLY inventory from the real host of what moving each docroot to `~/<host>.infodot.co.za/<key>/public`
+#                  depends on: layout, docroot index.php shim (verdict only), `.htaccess` directive NAMES of the docroot and of
+#                  `<key>/public`, symlinks, uploads, cron line COUNTS, sizes. Prints names, sizes and modes, never file contents;
+#                  writes nothing on the host (no file, no mode, no link, no crontab write). Empty `apps` = all platforms.
+#                  Output: job summary table + the raw output as artifact `docroot-inventory`. Host side:
+#                  tools/docroot-inventory-host.sh, tested by tools/test-docroot-inventory.sh.
+#
 # Fixed commands only (the host-side logic is tools/docroot-guard-host.sh, tested by tools/test-docroot-guard.sh).
 # `apps` is a list of "host:key" pairs, host label then app folder, e.g. "dopemine:dopemine engage:engage". The host label
 # is not always the key (press is pres, sheet is sheets, docs is doc) and the app folder is not always named after it
 # (Files' is `dotfiles`: files:dotfiles).
-# Secrets for apply, docroot, docroot-check: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS.
+# Secrets for apply, docroot, docroot-check, docroot-inventory: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS.
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: check | apply | docroot-check | docroot
+        description: check | apply | docroot-check | docroot | docroot-inventory
         required: true
         default: check
         type: choice
-        options: [check, apply, docroot-check, docroot]
+        options: [check, apply, docroot-check, docroot, docroot-inventory]
       apps:
-        description: 'Pairs host:key, space separated (apply and docroot need at least one; check and docroot-check default to all platforms)'
+        description: 'Pairs host:key, space separated (apply and docroot need at least one; check, docroot-check and docroot-inventory default to all platforms)'
         required: false
         default: ""
 
@@ -66,7 +73,7 @@ jobs:
           for a in $APPS; do printf '%s' "$a" | grep -Eq '^[a-z0-9-]+:[a-z0-9-]+$' || { echo "::error::bad pair [$a]"; exit 1; }; done
 
       - name: Set up SSH
-        if: ${{ inputs.mode == 'apply' || inputs.mode == 'docroot' || inputs.mode == 'docroot-check' }}
+        if: ${{ inputs.mode == 'apply' || inputs.mode == 'docroot' || inputs.mode == 'docroot-check' || inputs.mode == 'docroot-inventory' }}
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
@@ -227,3 +234,28 @@ jobs:
       - name: Job summary (docroot modes)
         if: ${{ always() && (inputs.mode == 'docroot' || inputs.mode == 'docroot-check') }}
         run: bash tools/docroot-guard-summary.sh "$MODE" docroot-actions.txt before.txt after.txt probe.txt docroot-undo.txt >> "$GITHUB_STEP_SUMMARY"
+
+      # ---- read-only inventory for moving the docroot to <key>/public (mode docroot-inventory) ----
+
+      - name: Inventory of the document roots (docroot-inventory, read-only)
+        if: ${{ inputs.mode == 'docroot-inventory' }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -o pipefail
+          LIST="${APPS:-$ALL_PLATFORMS}"   # validated words only; expanded on the host side of the command line
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" "bash -s -- $LIST" < tools/docroot-inventory-host.sh | tee docroot-inventory.txt
+
+      - name: Job summary (docroot-inventory)
+        if: ${{ always() && inputs.mode == 'docroot-inventory' }}
+        run: bash tools/docroot-inventory-summary.sh docroot-inventory.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the raw inventory (docroot-inventory)
+        if: ${{ always() && inputs.mode == 'docroot-inventory' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: docroot-inventory
+          path: docroot-inventory.txt
+          if-no-files-found: warn
+          retention-days: 30

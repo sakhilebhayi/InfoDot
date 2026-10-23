@@ -87,6 +87,19 @@ jobs:
       - name: Run the fake-host test of the docroot guard (the host script is the one the workflow deploys; curl is a shim)
         run: bash tools/test-docroot-guard.sh
 
+  docroot-inventory:
+    name: docroot inventory (fake host, read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and lint
+        run: |
+          bash -n tools/docroot-inventory-host.sh tools/docroot-inventory-summary.sh tools/test-docroot-inventory.sh
+          shellcheck -S warning tools/docroot-inventory-host.sh tools/docroot-inventory-summary.sh tools/test-docroot-inventory.sh
+      - name: Run the fake-host test of the docroot inventory (the host script is the one the workflow deploys; crontab is a stub that must only be read)
+        run: bash tools/test-docroot-inventory.sh
+
   backup-host:
     name: backup tool (fake host)
     runs-on: ubuntu-latest
