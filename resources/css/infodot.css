@@ -5363,3 +5363,77 @@ a.ix-topic:focus-visible {
     text-decoration: underline;
     overflow-wrap: anywhere;
 }
+
+/* Points page: the summary-email choice and what Dot.Memory holds, both for the signed-in person alone. */
+.ix-pts__choices {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
+}
+
+.ix-pts__choices legend {
+    padding: 0;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.ix-pts__choices .ix-pts__check + .ix-pts__check {
+    margin-top: 8px;
+}
+
+.ix-memory__facts {
+    max-width: 62ch;
+    margin: 14px 0 0;
+    padding-left: 1.2em;
+    color: var(--ix-text-2);
+}
+
+.ix-memory__facts li + li {
+    margin-top: 4px;
+}
+
+.ix-memory__held {
+    max-width: 62ch;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--ix-rule);
+}
+
+.ix-memory__held h3 {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.ix-memory .ix-pts__notice {
+    max-width: 62ch;
+    margin: 6px 0 12px;
+}
+
+.ix-memory__held form {
+    max-width: none;
+    margin-top: 12px;
+    padding: 0;
+    border: 0;
+    background: none;
+}
+
+.ix-memory__topics {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-memory__topics li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.ix-memory__topics li:last-child {
+    border-bottom: 0;
+}

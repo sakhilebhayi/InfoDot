@@ -229,6 +229,110 @@
         </form>
     </section>
 
+    <section class="ix-pts__section ix-pts__pref" id="digest-emails" aria-labelledby="pts-digest">
+        <h2 id="pts-digest">Summary emails</h2>
+        @if (session('digest_notice'))
+            <p class="ix-pts__muted" role="status">{{ session('digest_notice') }}</p>
+        @endif
+        <form method="POST" action="{{ route('points.digest-emails') }}">
+            @csrf
+            <fieldset class="ix-pts__choices" aria-describedby="pts-digest-hint pts-digest-state">
+                <legend>Would you like a short summary of the points you earn?</legend>
+                <label class="ix-pts__check" for="pts-digest-off">
+                    <input type="radio" id="pts-digest-off" name="points_digest" value="off" @checked($digestChoice === 'off')>
+                    <span>No, do not send me summaries</span>
+                </label>
+                <label class="ix-pts__check" for="pts-digest-week">
+                    <input type="radio" id="pts-digest-week" name="points_digest" value="week" @checked($digestChoice === 'week')>
+                    <span>Yes, on Mondays, for the week before</span>
+                </label>
+                <label class="ix-pts__check" for="pts-digest-month">
+                    <input type="radio" id="pts-digest-month" name="points_digest" value="month" @checked($digestChoice === 'month')>
+                    <span>Yes, on the 1st, for the month before</span>
+                </label>
+            </fieldset>
+            <p class="ix-hint" id="pts-digest-hint">One plain email with what you earned and what for, your balance, and any points about to lapse. It is sent only for a period in which you earned points, and never unless you choose it here.</p>
+            @error('points_digest')
+                <p class="ix-error" role="alert">Choose one of the three options, then save.</p>
+            @enderror
+            <p class="ix-pts__muted" id="pts-digest-state">Right now this is <strong>{{ ['off' => 'off', 'week' => 'weekly', 'month' => 'monthly'][$digestChoice] ?? 'off' }}</strong>.</p>
+            <button type="submit" class="ix-btn">Save</button>
+        </form>
+    </section>
+
+    <section class="ix-pts__section ix-pts__pref ix-memory" id="memory-sharing" aria-labelledby="pts-memory">
+        <h2 id="pts-memory">What Dot.Memory remembers</h2>
+        @php($memoryNotice = session('memory_notice'))
+        @if ($memoryNotice)
+            <div class="ix-pts__notice ix-pts__notice--{{ $memoryNotice['level'] === 'ok' ? 'ok' : 'error' }}" role="{{ $memoryNotice['level'] === 'ok' ? 'status' : 'alert' }}">
+                <span class="material-symbols-rounded" aria-hidden="true">{{ $memoryNotice['level'] === 'ok' ? 'check_circle' : 'error' }}</span>
+                <p>{{ $memoryNotice['message'] }}</p>
+            </div>
+        @endif
+
+        @if ($memory['state'] === 'unavailable')
+            <p class="ix-pts__muted">Dot.Memory is not connected to InfoDot yet, so there is nothing to switch on.</p>
+        @else
+            <form method="POST" action="{{ route('points.share-expertise') }}">
+                @csrf
+                <input type="hidden" name="share_expertise" value="0">
+                <label class="ix-pts__check" for="pts-share-expertise">
+                    <input type="checkbox" id="pts-share-expertise" name="share_expertise" value="1" aria-describedby="pts-memory-hint pts-memory-state" @checked($memory['state'] !== 'off')>
+                    <span>Let Dot.Memory remember the topics I help with</span>
+                </label>
+                <p class="ix-hint" id="pts-memory-hint">Topic and count only, no content. Turn it off any time and it is erased.</p>
+                @error('share_expertise')
+                    <p class="ix-error" role="alert">Choose on or off, then save.</p>
+                @enderror
+                <p class="ix-pts__muted" id="pts-memory-state">Right now this is <strong>{{ $memory['state'] === 'off' ? 'off' : 'on' }}</strong>.</p>
+                <button type="submit" class="ix-btn">Save</button>
+            </form>
+
+            <ul class="ix-memory__facts">
+                <li>When it is on, Memory is told that an answer of yours was accepted by someone else, or a solution of yours was verified by a moderator, in a topic. It is not told the question, the answer, your name or your email.</li>
+                <li>It is never used to rank or compare people.</li>
+                <li>If an acceptance or verification is removed later, or the content is hidden, Memory is not told to take that one back. The count stays until you turn this off, or until Memory's retention period (a year unless its operator sets otherwise) removes it.</li>
+            </ul>
+
+            @if ($memory['state'] !== 'off')
+                <div class="ix-memory__held" aria-live="polite">
+                    <h3>What Memory remembers about me</h3>
+                    @if ($memory['state'] === 'ok')
+                        @if ($memory['topics'] === [])
+                            <p class="ix-pts__muted">Nothing yet. A topic appears here after an answer of yours is accepted by someone else, or a solution of yours is verified.</p>
+                        @else
+                            <ul class="ix-memory__topics">
+                                @foreach ($memory['topics'] as $row)
+                                    <li>
+                                        <span class="ix-topic">{{ $row['name'] }}</span>
+                                        <span>{{ number_format($row['count']) }} {{ $row['count'] === 1 ? 'time' : 'times' }}</span>
+                                        @if (! empty($row['kinds']))
+                                            <small class="ix-pts__muted">
+                                                @foreach ($row['kinds'] as $kind => $n){{ $loop->first ? '' : ', ' }}{{ number_format($n) }} {{ $kind }}@endforeach
+                                            </small>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    @elseif ($memory['state'] === 'no_consent')
+                        <p class="ix-pts__muted">Dot.Memory does not hold your agreement, so it is keeping nothing about you. Switch this off and on again to record it afresh.</p>
+                    @else
+                        <p class="ix-pts__muted">Dot.Memory could not be reached, so we cannot show what it holds right now. Try this page again in a few minutes.</p>
+                    @endif
+                    @if ($memory['waiting'] > 0)
+                        <p class="ix-pts__muted">{{ number_format($memory['waiting']) }} {{ $memory['waiting'] === 1 ? 'entry is' : 'entries are' }} still on the way to Memory.</p>
+                    @endif
+
+                    <form method="POST" action="{{ route('points.share-expertise.erase') }}">
+                        @csrf
+                        <button type="submit" class="ix-btn">Turn off and erase everything Memory holds about me</button>
+                    </form>
+                </div>
+            @endif
+        @endif
+    </section>
+
     <section class="ix-pts__section ix-pts__terms" aria-labelledby="pts-terms">
         <h2 id="pts-terms">How points work</h2>
         <ul>
