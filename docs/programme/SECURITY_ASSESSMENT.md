@@ -82,6 +82,36 @@ wrote the deny file into the four folders; afterwards every probed path is 403 a
 Also seen: during one Tasks deploy the smoke check briefly saw `.env`, `artisan` and the SQLite file answer 200 (403 again on every
 later probe); cause unknown, so a short exposure window on Tasks during that deploy cannot be ruled out.
 
+## S-2d App-folder `.htaccess` not applied for a short window after a deploy (observed 2026-10-22; second layer built, not yet applied)
+
+**Observed (facts).** On 2026-10-22, right after `artisan up` on the first deploy that touched the app-folder guard, the public
+probe saw HTTP 200 for `/<key>/.env`, `artisan`, `composer.json`, `database/database.sqlite` and `vendor/autoload.php` on two
+apps, Dopemine and Ehail, for a few seconds. On both, a minute later, and on every later deploy, the same paths answered 403.
+A similar brief sighting during a Tasks deploy is recorded in S-2c. Whether anything requested those paths in those seconds is
+unknown; the raw access logs for them are where to look.
+
+**Suspected, not established.** The `Require all denied` `.htaccess` inside the app folder is sometimes not applied for a short
+time after the directory tree changed (LiteSpeed per-directory `.htaccess` cache). We have no measurement of the mechanism.
+
+**Second layer (built, not applied).** App Folder Guard modes `docroot-check` and `docroot` (`.github/workflows/app-folder-guard.yml`,
+host side `tools/docroot-guard-host.sh`) maintain a delimited block (`# BEGIN dot-app-folder-guard <key>` to `# END ...`) at the
+top of the DOCROOT's own `~/<host>.infodot.co.za/.htaccess`, a file deploys do not touch. It is one `mod_rewrite` rule,
+`^<key>/(.env*, .git*, artisan, composer.json/lock, package(-lock).json, phpunit.xml*, database/, storage/, vendor/, bootstrap/, config/, tests/, node_modules/)`
+answered with 403, matched case-insensitively and only directly under `/<key>/`; nothing else a route or asset could use.
+`probe-exposure.sh` now takes `PROBE_RETRIES` and `PROBE_WAIT` and prints every attempt, so "exposed for N seconds" and "persistently
+exposed" are told apart (any 200 still fails the probe). Tested against a temp docroot only (`tools/test-docroot-guard.sh`, CI job
+"docroot guard (fake host)"). **Not verified:** how LiteSpeed applies the rule on the real host, and whether it closes the window.
+
+**Owner steps, in order.**
+1. Dispatch `App Folder Guard` with mode `docroot-check` (empty `apps` = all platforms) and read the table: per pair, whether the
+   block would be written, replaced or is current, and the public probe timeline. Skipped lines mean the host label or app folder
+   in the pair is wrong (Files is `files:dotfiles`, Press `pres:press`, Sheet `sheets:sheet`, Docs `doc:doc`).
+2. Dispatch mode `docroot` with the pairs you accept (start with one, e.g. `dopemine:dopemine`). The run records `/`, `/up`, `/login`
+   before, writes the block, compares after, and restores the previous docroot `.htaccess` (or removes the file if there was none)
+   and fails if any of the three changed. A backup `.htaccess.before-docroot-guard` is kept on first change.
+3. Repeat for the rest; then on the next deploy of an app, watch the post-deploy probe timeline for a 200.
+4. Still open from S-2c: check the raw access logs for 200s on those paths, and move app folders out of the docroot.
+
 ## S-3 Not yet assessed (no evidence either way)
 
 Tenant-isolation test coverage on the older platforms, MFA availability and enforcement, rate limiting on login and

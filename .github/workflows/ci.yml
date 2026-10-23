@@ -74,6 +74,19 @@ jobs:
       - name: Run the fake-host test of the cron runner and its installer
         run: bash tools/test-dot-cron.sh
 
+  docroot-guard:
+    name: docroot guard (fake host)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and lint
+        run: |
+          bash -n tools/docroot-guard-host.sh tools/probe-exposure.sh tools/site-status.sh tools/docroot-guard-summary.sh tools/test-docroot-guard.sh
+          shellcheck -S warning tools/docroot-guard-host.sh tools/probe-exposure.sh tools/site-status.sh tools/docroot-guard-summary.sh tools/test-docroot-guard.sh
+      - name: Run the fake-host test of the docroot guard (the host script is the one the workflow deploys; curl is a shim)
+        run: bash tools/test-docroot-guard.sh
+
   backup-host:
     name: backup tool (fake host)
     runs-on: ubuntu-latest
