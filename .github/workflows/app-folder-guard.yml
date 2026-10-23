@@ -80,7 +80,7 @@ jobs:
       - name: Probe from outside
         run: |
           sleep 8   # the web server re-reads .htaccess lazily
-          if [ -n "$APPS" ]; then LIST="$APPS"; else LIST="tasks:tasks forms:forms files:files agents:agents analytics:analytics auction:auction billing:billing central:central design:design dopemine:dopemine ehail:ehail emall:emall engage:engage farms:farms finance:finance hr:hr memory:memory notify:notify plug:plug pres:press projects:projects pulse:pulse sheets:sheet tutor:tutor doc:doc"; fi
+          if [ -n "$APPS" ]; then LIST="$APPS"; else LIST="tasks:tasks forms:forms files:dotfiles agents:agents analytics:analytics auction:auction billing:billing central:central design:design dopemine:dopemine ehail:ehail emall:emall engage:engage farms:farms finance:finance hr:hr memory:memory notify:notify plug:plug pres:press projects:projects pulse:pulse sheets:sheet tutor:tutor doc:doc"; fi
           bash tools/probe-exposure.sh $LIST | tee probe.txt
         continue-on-error: true
         id: probe
