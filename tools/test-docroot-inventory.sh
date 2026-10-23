@@ -140,9 +140,9 @@ done
 reset; mk_std pres press; D="$(docroot pres)"
 printf '<?php\n$k = "%s";\nrequire __DIR__.%s;\n' "$SECRET4" "'/press/public/index.php'" > "$D/index.php"
 run pres:press
-check "custom shim (extra code): shim=custom, NEEDS-ATTENTION(custom-shim)" "has '$P: shim: custom' && v_is $P 'NEEDS-ATTENTION(custom-shim)'"
+check "custom shim (extra code): shim=custom, NEEDS-ATTENTION(custom-shim(SHIM-DOES-SOMETHING(other_code)))" "has '$P: shim: custom' && v_is $P 'NEEDS-ATTENTION(custom-shim(SHIM-DOES-SOMETHING(other_code)))'"
 check "custom shim: the content (a planted secret) is not printed" "lacks '$SECRET4'"
-check "custom shim: reason line present" "has '$P: reason: custom-shim'"
+check "custom shim: reason line present" "has '$P: reason: custom-shim(SHIM-DOES-SOMETHING(other_code))'"
 reset; mk_std pres press; D="$(docroot pres)"
 printf "<?php\nrequire __DIR__.'/other/public/index.php';\n" > "$D/index.php"; run pres:press
 check "shim pointing at another folder is custom" "has '$P: shim: custom'"
@@ -150,6 +150,128 @@ reset; mk_std pres press; D="$(docroot pres)"; head -c 9000 /dev/zero | tr '\0' 
 check "a 9000-byte index.php is custom without being read in full" "has '$P: shim: custom' && has '$P: docroot_index_php: file size=9000'"
 reset; mk_std pres press; D="$(docroot pres)"; rm "$D/index.php"; run pres:press
 check "no docroot index.php: shim=missing, reason" "has '$P: shim: missing' && v_has $P docroot-index.php-missing"
+
+# ================= 3b. what a custom docroot shim does (sanitised classification, never the content) =================
+setshim() { printf '%b' "$1" > "$D/index.php"; }   # %b: \n and \xHH in the argument become the real bytes
+fl() { has "$P: shim_$1: $2"; }
+nextra() { printf '%s\n' "$OUT" | grep -c "^$P: shim_extra: "; }
+SV_NONE='fl requires_public_index yes && fl requires_other none && fl sets_ini_or_env no && fl sends_headers no && fl app_path_differs no && fl defines no && fl other_code no'
+reset; mk_std pres press; D="$(docroot pres)"; run pres:press
+check "standard shim: no shim_extra line, no flag line, no shim verdict" "! printf '%s\n' \"\$OUT\" | grep -Eq '^$P: shim_(extra|requires|sets|sends|has|app|defines|other|public|verdict)'"
+reset; mk_std pres press; D="$(docroot pres)"
+setshim "<?php\n\n// the front controller\n/* a block comment\n   over two lines */\nrequire __DIR__ . '/press/public/index.php'; # trailing\n"
+run pres:press
+check "shim differing only by comments and whitespace: SHIM-SAFE-TO-DROP, all flags no, lines/bytes reported" "has '$P: shim: custom' && $SV_NONE && fl has_maintenance_include no && has '$P: shim_verdict: SHIM-SAFE-TO-DROP' && has '$P: shim_extra: lines=6 bytes=$(wc -c < "$D/index.php" | tr -d ' ')' && v_has $P 'custom-shim(SHIM-SAFE-TO-DROP)'"
+check "shim differing only by comments: no statement line is printed (the require is the standard one)" "[ \"\$(nextra)\" = 1 ]"
+for kw in require_once include include_once; do
+  setshim "<?php $kw __DIR__.'/press/public/index.php';\n"; run pres:press
+  check "shim using $kw for the standard path: SHIM-SAFE-TO-DROP" "has '$P: shim_verdict: SHIM-SAFE-TO-DROP'"
+done
+setshim "<?php\r\n\trequire(__DIR__.\"/press/public/index.php\");\r\n"; run pres:press
+check "CRLF, tab, parentheses and double quotes around the standard require: SHIM-SAFE-TO-DROP" "has '$P: shim_verdict: SHIM-SAFE-TO-DROP'"
+setshim "<?php\nrequire dirname(__FILE__).'/press/public/index.php';\n"; run pres:press
+check "dirname(__FILE__) form of the standard require: SHIM-SAFE-TO-DROP" "has '$P: shim_verdict: SHIM-SAFE-TO-DROP'"
+setshim "<?php require '$HOME/pres.infodot.co.za/press/public/index.php';\n"; run pres:press
+check "absolute path to the very same public/index.php: SHIM-SAFE-TO-DROP, the home directory is shown as ~" "has '$P: shim_verdict: SHIM-SAFE-TO-DROP' && has '$P: shim_extra: L1: require path=~/pres.infodot.co.za/press/public/index.php' && lacks '$HOME'"
+
+# the maintenance include (copied from Laravel's public/index.php) is safe to drop when public/index.php has it too
+printf '<?php\nif (file_exists($maintenance = __DIR__."/../storage/framework/maintenance.php")) { require $maintenance; }\n' > "$D/press/public/index.php"
+setshim "<?php\nif (file_exists(\$maintenance = __DIR__.'/press/storage/framework/maintenance.php')) {\n    require \$maintenance;\n}\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "maintenance include + standard require, public/index.php has the maintenance check: SHIM-SAFE-TO-DROP" "has '$P: shim_verdict: SHIM-SAFE-TO-DROP' && fl has_maintenance_include yes && fl public_has_maintenance yes && $SV_NONE"
+check "maintenance include: the two statements are listed without their paths' content" "has '$P: shim_extra: L2: if (file_exists(...maintenance...))' && has '$P: shim_extra: L3: require maintenance-include'"
+setshim "<?php\nrequire __DIR__.'/press/storage/framework/maintenance.php';\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "maintenance.php required by a literal path: counted as the maintenance include, not as 'other'" "has '$P: shim_verdict: SHIM-SAFE-TO-DROP' && fl has_maintenance_include yes && fl requires_other none"
+printf '<?php\n' > "$D/press/public/index.php"
+setshim "<?php\nif (file_exists(\$maintenance = __DIR__.'/press/storage/framework/maintenance.php')) { require \$maintenance; }\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "maintenance include but public/index.php has no maintenance check: SHIM-DOES-SOMETHING(maintenance_missing_in_public)" "has '$P: shim_verdict: SHIM-DOES-SOMETHING(maintenance_missing_in_public)' && fl public_has_maintenance no"
+setshim "<?php\nif (file_exists(\$m = __DIR__.'/press/storage/framework/maintenance.php')) { require \$evil; }\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "require of a variable that is not the one assigned in the maintenance check is NOT the maintenance include" "has '$P: shim_verdict: SHIM-DOES-SOMETHING(requires_other,maintenance_missing_in_public)' && fl requires_other %expr%"
+printf '<?php // maintenance\n' > "$D/press/public/index.php"; run pres:press
+check "same, with a maintenance check in public/index.php: only requires_other remains" "has '$P: shim_verdict: SHIM-DOES-SOMETHING(requires_other)'"
+printf '<?php\n' > "$D/press/public/index.php"
+
+# each thing a shim can do is a flag
+reset; mk_std pres press; D="$(docroot pres)"
+setshim "<?php\nini_set('display_errors', '1');\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "ini_set: sets_ini_or_env=yes, verdict SHIM-DOES-SOMETHING(sets_ini_or_env), pair reason carries it" "fl sets_ini_or_env yes && fl sends_headers no && fl requires_public_index yes && has '$P: shim_extra: L2: ini_set' && has '$P: shim_verdict: SHIM-DOES-SOMETHING(sets_ini_or_env)' && has '$P: reason: custom-shim(SHIM-DOES-SOMETHING(sets_ini_or_env))' && v_is $P 'NEEDS-ATTENTION(custom-shim(SHIM-DOES-SOMETHING(sets_ini_or_env)))'"
+setshim "<?php\nputenv('APP_ENV=production');\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "putenv: sets_ini_or_env=yes" "fl sets_ini_or_env yes && has '$P: shim_extra: L2: putenv' && has '$P: shim_verdict: SHIM-DOES-SOMETHING(sets_ini_or_env)'"
+setshim "<?php\n\$_SERVER['SCRIPT_NAME'] = '/index.php';\n\$_ENV['A'] = 'b';\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "\$_SERVER[...] / \$_ENV[...] assignment: sets_ini_or_env=yes, shown without the variable's key or value" "fl sets_ini_or_env yes && has '$P: shim_extra: L2: \$_SERVER[...] assignment' && has '$P: shim_extra: L3: \$_ENV[...] assignment' && lacks SCRIPT_NAME"
+setshim "<?php\nheader('X-Powered-By: custom');\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "header: sends_headers=yes, verdict SHIM-DOES-SOMETHING(sends_headers)" "fl sends_headers yes && fl sets_ini_or_env no && has '$P: shim_extra: L2: header' && has '$P: shim_verdict: SHIM-DOES-SOMETHING(sends_headers)' && lacks 'X-Powered-By'"
+setshim "<?php\nif (\$x) header('Location: /x');\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "header inside an if: still sends_headers=yes, plus other_code (a condition)" "fl sends_headers yes && fl other_code yes && has '$P: shim_extra: L2: if (...) [calls: header]'"
+setshim "<?php\ndefine('LARAVEL_START', microtime(true));\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "define: defines=yes, verdict SHIM-DOES-SOMETHING(defines)" "fl defines yes && has '$P: shim_extra: L2: define' && has '$P: shim_verdict: SHIM-DOES-SOMETHING(defines)'"
+setshim "<?php\nrequire __DIR__.'/other/public/index.php';\n"; run pres:press
+check "a different require path: requires_public_index=no, app_path_differs=yes, requires_other lists it" "fl requires_public_index no && fl app_path_differs yes && fl requires_other /other/public/index.php && has '$P: shim_extra: L2: require path=/other/public/index.php' && has '$P: shim_verdict: SHIM-DOES-SOMETHING(requires_other,app_path_differs)'"
+setshim "<?php\nrequire __DIR__.'/press/bootstrap/extra.php';\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "an extra require before the standard one: requires_other lists it, app path unchanged" "fl requires_public_index yes && fl app_path_differs no && fl requires_other /press/bootstrap/extra.php && has '$P: shim_verdict: SHIM-DOES-SOMETHING(requires_other)'"
+setshim "<?php\nrequire __DIR__.'/press/public/index.php';\nrequire_once __DIR__.'/press/vendor/after.php';\n"; run pres:press
+check "an extra require after the standard one: requires_other lists it" "fl requires_other /press/vendor/after.php && has '$P: shim_extra: L3: require_once path=/press/vendor/after.php'"
+setshim "<?php\nchdir(__DIR__.'/press');\nrequire __DIR__.'/press/public/index.php';\n"; run pres:press
+check "any other code (chdir): other_code=yes, shown as the function name only" "fl other_code yes && has '$P: shim_extra: L2: chdir(...)' && has '$P: shim_verdict: SHIM-DOES-SOMETHING(other_code)'"
+setshim "<?php\nrequire \$path;\n"; run pres:press
+check "require of an unknown variable: requires_other shows %expr%, no public index" "fl requires_public_index no && fl requires_other %expr% && fl app_path_differs yes"
+setshim "<?php\n\$app = require __DIR__.'/press/public/index.php';\n"; run pres:press
+check "an assignment around the require is other code" "fl other_code yes && fl requires_public_index yes"
+setshim "<?php\nini_set('a','b');\nheader('X: y');\ndefine('A', 1);\nrequire __DIR__.'/x/public/index.php';\n"; run pres:press
+check "several things at once: all their flags in the verdict, in a fixed order" "has '$P: shim_verdict: SHIM-DOES-SOMETHING(sets_ini_or_env,sends_headers,defines,requires_other,app_path_differs)'"
+setshim "<?php\n"; run pres:press
+check "a shim that requires nothing: app_path_differs=yes" "fl requires_public_index no && fl app_path_differs yes && has '$P: shim_verdict: SHIM-DOES-SOMETHING(app_path_differs)'"
+reset; mkdir -p "$(docroot projects)/projects/public"; D="$(docroot projects)"; : > "$D/projects/artisan"; : > "$D/projects/public/index.php"
+printf "<?php\nrequire __DIR__.'/projects/public/index.php';\n" > "$D/index.php"; printf "<?php require __DIR__.'/projects/public/index.php'; // x\n" > "$D/index.php"; run projects:projects
+check "another host/key pair classifies against its own folder" "has 'projects:projects: shim_verdict: SHIM-SAFE-TO-DROP'"
+reset; D="$(docroot projects)"; mkdir -p "$D" "$HOME/projects/public"; : > "$HOME/projects/artisan"; : > "$HOME/projects/public/index.php"
+printf "<?php\nrequire __DIR__.'/../projects/public/index.php';\n" > "$D/index.php"; run projects:projects
+check "app outside the docroot, shim requires it through ..: resolved to the app's public/index.php" "has 'projects:projects: shim_requires_public_index: yes' && has 'projects:projects: shim_app_path_differs: no' && has 'projects:projects: shim_extra: L2: require path=/../projects/public/index.php'"
+
+# ---- nothing secret or arbitrary is printed ----
+reset; mk_std pres press; D="$(docroot pres)"
+setshim "<?php\n// $SECRET1 in a line comment\n# $SECRET2 in a hash comment\n/* $SECRET3\n   $SECRET4 in a block comment */\n\$password = '$SECRET5';\nini_set('error_log', '$SECRET1-log');\nheader('X-Token: $SECRET2');\ndefine('API_KEY', '$SECRET3');\nputenv('SECRET=$SECRET4');\n\$_SERVER['HTTP_X_KEY'] = '$SECRET5';\nsecret_call('$SECRET1');\nrequire __DIR__.'/press/public/index.php?token=$SECRET4&x=$SECRET5';\nrequire __DIR__.'/p/$SECRET2/x.php';\nrequire 'https://user:pass$SECRET3@example.test/x.php';\nrequire __DIR__.'/press/0123456789abcdef0123456789abcdef/y.php';\nrequire __DIR__.'/press/dGhpc2lzYWJhc2U2NHRva2Vu/z.php';\nrequire __DIR__.'/press/mykey/w.php';\n"; run pres:press
+for s in "$SECRET1" "$SECRET2" "$SECRET3" "$SECRET4" "$SECRET5" "user:pass" "example.test" "0123456789abcdef" "dGhpc2lz" "mykey" "API_KEY" "display_errors" "X-Token" "HTTP_X_KEY" "secret_call"; do check "no leak from the shim: '$s' is not in the output" "lacks '$s'"; done
+check "require path query string is cut and replaced by <redacted>" "has '$P: shim_extra: L13: require path=/press/public/index.php?<redacted>'"
+check "sensitive-looking path pieces (token-like, hex, base64-like, 'key', a URL with credentials) are <redacted>" "printf '%s\n' \"\$OUT\" | grep -F 'require path=/press/<redacted>/y.php' | grep -q . && printf '%s\n' \"\$OUT\" | grep -F 'require path=/press/<redacted>/z.php' | grep -q . && printf '%s\n' \"\$OUT\" | grep -F 'require path=/press/<redacted>/w.php' | grep -q . && printf '%s\n' \"\$OUT\" | grep -Fx '$P: shim_extra: L15: require path=<redacted>' | grep -q ."
+check "the secret-named call and the assignments are shown as constructs only" "has '$P: shim_extra: L6: \$var assignment' && has '$P: shim_extra: L12: <redacted>(...)'"
+check "flags are still right with all of that planted (the query-string path is not the real public/index.php)" "fl sets_ini_or_env yes && fl sends_headers yes && fl defines yes && fl requires_public_index no && fl app_path_differs yes"
+check "every output line is still a header, a summary or a '<pair>: field: value' line" "! printf '%s\n' \"\$OUT\" | grep -vE '^(inventory: |summary: |[a-z0-9-]+:[a-z0-9-]+: [a-z_.]+: )' | grep -q ."
+
+# ---- the 40 line cap ----
+reset; mk_std pres press; D="$(docroot pres)"
+{ printf '<?php\n'; for i in $(seq 1 100); do printf 'foo%s();\n' "$i"; done; printf 'header("X: y");\nrequire __DIR__.%s;\n' "'/press/public/index.php'"; } > "$D/index.php"; run pres:press
+check "100+ statements: at most 40 shim_extra lines, the last says how many were not listed" "[ \"\$(nextra)\" -le 40 ] && [ \"\$(nextra)\" -ge 39 ] && printf '%s\n' \"\$OUT\" | grep -Eq '^$P: shim_extra: \.\.\. [0-9]+ additional statement\(s\) not listed\$'"
+check "40 line cap: the flags and the verdict still cover the statements past the cap (header was statement 101)" "fl sends_headers yes && fl other_code yes && v_has $P 'SHIM-DOES-SOMETHING(sends_headers,other_code)'"
+{ printf '<?php\n'; for i in $(seq 1 39); do printf 'foo%s();\n' "$i"; done; } > "$D/index.php"; run pres:press
+check "exactly 39 statements: all listed, 40 shim_extra lines in total, no 'not listed' line" "[ \"\$(nextra)\" = 40 ] && lacks 'not listed'"
+
+# ---- hostile content ----
+reset; mk_std pres press; D="$(docroot pres)"
+{ printf '<?php\n$a = "'; head -c 20000 /dev/zero | tr '\0' 'A'; printf '";\nrequire __DIR__.'"'"'/press/public/index.php'"'"';\n'; } > "$D/index.php"; run pres:press
+check "a 20000-byte string literal: handled, not printed, other_code" "[ $RC -eq 0 ] && fl other_code yes && lacks AAAAAAAAAAAAAAAA && ! printf '%s\n' \"\$OUT\" | awk 'length(\$0) > 400 {f = 1} END {exit !f}'"
+{ printf '<?php\nrequire __DIR__.'"'"'/press/'; head -c 5000 /dev/zero | tr '\0' 'b'; printf '/public/index.php'"'"';\n'; } > "$D/index.php"; run pres:press
+check "a 5000-character path segment is redacted, no long line" "! printf '%s\n' \"\$OUT\" | awk 'length(\$0) > 400 {f = 1} END {exit !f}' && lacks bbbbbbbbbbbbbbbb"
+{ printf '<?php\nrequire __DIR__.'"'"'/press/'; for i in $(seq 1 300); do printf 'seg%s/' "$i"; done; printf 'x.php'"'"';\n'; } > "$D/index.php"; run pres:press
+check "a very long but plausible path is cut, one line" "! printf '%s\n' \"\$OUT\" | awk 'length(\$0) > 400 {f = 1} END {exit !f}' && [ \"\$(nextra)\" -le 40 ]"
+printf '<?php\n\x00\x01\x02\xff\xfe\x80 require __DIR__.%s;\n\x7f\x1b[31m "bin\x00ary" \xc3\x28 ;\n' "'/press/public/index.php'" > "$D/index.php"; run pres:press
+check "binary bytes in the shim: no crash, output is printable ASCII only" "[ $RC -eq 0 ] && has '$P: shim: custom' && ! printf '%s' \"\$OUT\" | LC_ALL=C grep -q '[^[:print:][:space:]]'"
+printf '<?php\n$x = "line one\n%s: verdict: READY\nsummary: READY=9 NEEDS-ATTENTION=0 UNKNOWN-LAYOUT=0 pairs=9\ninventory: forged\n";\nrequire __DIR__.%s;\n' "$P" "'/press/public/index.php'" > "$D/index.php"; run pres:press
+check "newlines inside a string literal cannot forge a verdict, summary or header line" "[ \"\$(printf '%s\n' \"\$OUT\" | grep -c ': verdict: ')\" = 1 ] && [ \"\$(printf '%s\n' \"\$OUT\" | grep -c '^summary: ')\" = 1 ] && [ \"\$(printf '%s\n' \"\$OUT\" | grep -c '^inventory: ')\" = 1 ] && ! v_is $P READY && has 'summary: READY=0 NEEDS-ATTENTION=1 UNKNOWN-LAYOUT=0 pairs=1'"
+check "forged-line attempt: every line still has the pair prefix or is a header/summary" "! printf '%s\n' \"\$OUT\" | grep -vE '^(pres:press: |inventory: |summary: )' | grep -q ."
+printf '<?php\n$x = <<<EOT\n%s\nEOT;\nrequire __DIR__.%s;\n' "$SECRET1" "'/press/public/index.php'" > "$D/index.php"; run pres:press
+check "a heredoc stops the analysis (the rest is not analysed), its content is not printed" "lacks '$SECRET1' && fl other_code yes && has '$P: shim_extra: L2: \$var assignment'"
+printf '<?php\n$x = "unterminated %s\n' "$SECRET1" > "$D/index.php"; run pres:press
+check "an unterminated string: other_code, not printed" "lacks '$SECRET1' && fl other_code yes"
+printf '<?php\n/* never closed %s\nrequire __DIR__.%s;\n' "$SECRET1" "'/press/public/index.php'" > "$D/index.php"; run pres:press
+check "an unterminated block comment: the require inside it is not counted, other_code, not printed" "lacks '$SECRET1' && fl requires_public_index no && fl other_code yes"
+printf '<?php\n$s = `%s`;\nrequire __DIR__.%s;\n' "$SECRET1" "'/press/public/index.php'" > "$D/index.php"; run pres:press
+check "backticks (shell exec) are other code and the command is not printed" "lacks '$SECRET1' && fl other_code yes && has '$P: shim_extra: L2: \$var assignment'"
+printf 'plain text %s\n<?php require __DIR__.%s;\n' "$SECRET1" "'/press/public/index.php'" > "$D/index.php"; run pres:press
+check "text before <?php is inline html (output before headers), reported without its content" "lacks '$SECRET1' && has '$P: shim_extra: L1: inline-html' && fl other_code yes"
+head -c 100000 /dev/zero | tr '\0' ' ' > "$D/index.php"; printf '<?php header("x");' >> "$D/index.php"; run pres:press
+check "a shim over 64 KiB: only the first 64 KiB is analysed and that is said, other_code" "has '$P: shim_extra: lines=1 bytes=100018 (only the first 65536 bytes were analysed)' && fl other_code yes"
+reset; mk_std pres press; D="$(docroot pres)"; printf '<?php\nheader("x");\nrequire __DIR__.%s;\n' "'/press/public/index.php'" > "$D/index.php"; mkdir -p "$D/press/storage/$(printf 'new\nline')"; run pres:press
+check "a docroot with odd names and a custom shim: the output keeps its shape" "! printf '%s\n' \"\$OUT\" | grep -vE '^(pres:press: |inventory: |summary: )' | grep -q ."
 
 # ================= 4. public/.htaccess and friends missing =================
 reset; mk_std pres press; D="$(docroot pres)"; rm "$D/press/public/.htaccess"; run pres:press
@@ -325,6 +447,18 @@ S="$(bash "$SUM" "$W/inv.txt")"
 check "summary: a row per pair with layout, shim, diff, symlink count, uploads, cron, verdict" "printf '%s\n' \"\$S\" | grep -q '^| pres:press | standard | standard | yes | none | 3 | no | unknown | \*\*READY\*\* |\$' && printf '%s\n' \"\$S\" | grep -q '^| doc:doc | standard | standard | yes | docroot-only AddHandler | 4 | yes (docroot/storage) | unknown | \*\*NEEDS-ATTENTION\*\* |\$' && printf '%s\n' \"\$S\" | grep -q '^| nohost:x | - | - | - | - | 0 | - | - | \*\*UNKNOWN-LAYOUT\*\* |\$'"
 check "summary: reasons are listed under the table, the summary line is repeated" "printf '%s\n' \"\$S\" | grep -q '^- doc:doc: \`docroot-htaccess-directives-not-in-public(AddHandler)\`\$' && printf '%s\n' \"\$S\" | grep -q '^summary: READY=1 NEEDS-ATTENTION=1 UNKNOWN-LAYOUT=1 pairs=3\$'"
 S="$(bash "$SUM" /nonexistent)"; check "summary: a missing file gives an empty table and a note, exit 0" "printf '%s\n' \"\$S\" | grep -q 'No verdict lines found'"
+
+# custom shims in the job summary: a verdict in the shim column, a flags table, the statements, no secret
+reset; mk_std pres press; mk_std doc doc; mk_std files dotfiles
+printf "<?php\nini_set('x', '%s');\nrequire __DIR__.'/doc/public/index.php';\n" "$SECRET4" > "$(docroot doc)/index.php"
+printf "<?php\n// a comment %s\nrequire __DIR__.'/press/public/index.php';\n" "$SECRET4" > "$(docroot pres)/index.php"
+run pres:press doc:doc files:dotfiles; printf '%s\n' "$OUT" > "$W/inv2.txt"; S="$(bash "$SUM" "$W/inv2.txt")"
+check "summary: the shim column shows standard, custom (SAFE-TO-DROP) and custom (DOES-SOMETHING(flags))" "printf '%s\n' \"\$S\" | grep -q '^| files:dotfiles | standard | standard |' && printf '%s\n' \"\$S\" | grep -q '^| pres:press | standard | custom (SAFE-TO-DROP) |' && printf '%s\n' \"\$S\" | grep -q '^| doc:doc | standard | custom (DOES-SOMETHING(sets_ini_or_env)) |'"
+check "summary: a flags table for the custom shims only, with the verdict and the flags" "printf '%s\n' \"\$S\" | grep -q '^| pres:press | SHIM-SAFE-TO-DROP | yes | none | no | no | no | no | no | no | file size=' && printf '%s\n' \"\$S\" | grep -q '^| doc:doc | SHIM-DOES-SOMETHING(sets_ini_or_env) | yes | none | yes | no | no | no | no | no | file size=' && ! printf '%s\n' \"\$S\" | grep -q '^| files:dotfiles | SHIM-'"
+check "summary: the statements of a custom shim are listed, without any value" "printf '%s\n' \"\$S\" | grep -q '^- doc:doc:\$' && printf '%s\n' \"\$S\" | grep -qF '  - \`L2: ini_set\`' && ! printf '%s\n' \"\$S\" | grep -q '$SECRET4'"
+check "summary: the reason lists the shim verdict" "printf '%s\n' \"\$S\" | grep -qF -- '- doc:doc: \`custom-shim(SHIM-DOES-SOMETHING(sets_ini_or_env))\`'"
+printf '%s\n' "pres:press: verdict: READY" "pres:press: shim: custom" "pres:press: shim_verdict: SHIM-X|\`evil\`" > "$W/inv3.txt"; S="$(bash "$SUM" "$W/inv3.txt")"
+check "summary: a pipe or backtick in a field cannot break a table row" "! printf '%s\n' \"\$S\" | grep 'pres:press' | grep -q 'evil\`'"
 
 # ================= 12. READ-ONLY, dynamic: nothing in HOME changes; no temp files; crontab only read =================
 snap() { # a checksum listing of a whole tree: type, path, mode, mtime, content checksum or link target
