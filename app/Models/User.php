@@ -38,7 +38,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'points_expiry_emails' => 'boolean',
         'achievements_public' => 'boolean',
         'topic_suggestions' => 'boolean',
+        'share_expertise' => 'boolean',
     ];
+
+    /** The summary emails a person can choose between. 'off' is the default: nobody is sent one unless they opt in. */
+    public const POINTS_DIGEST_CHOICES = ['off', 'week', 'month'];
 
     /**
      * TNTSearch reads the primary key out of this array; without 'id' every save of the
@@ -53,6 +57,18 @@ class User extends Authenticatable implements MustVerifyEmail
     public function wantsPointsExpiryEmails(): bool
     {
         return $this->points_expiry_emails ?? true;
+    }
+
+    /** 'week' or 'month' when the person chose a Dot Points summary email; null (the default) when they did not. */
+    public function pointsDigestPeriod(): ?string
+    {
+        return in_array($this->points_digest, ['week', 'month'], true) ? $this->points_digest : null;
+    }
+
+    /** Whether Dot.Memory may remember the topics this person helps with. Off until they switch it on. */
+    public function sharesExpertise(): bool
+    {
+        return (bool) $this->share_expertise;
     }
 
     /** Whether the person asked to see "questions you might be able to answer" on their points page. Off until they switch it on. */

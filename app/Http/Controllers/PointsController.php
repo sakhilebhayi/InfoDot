@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\Participation\ExpertiseSharing;
 use App\Services\Points\PointsClient;
 use App\Services\Points\PointsUnavailableException;
 use App\Services\Points\RedemptionRefusedException;
@@ -26,7 +27,7 @@ class PointsController extends Controller
 
     private RedemptionTickets $tickets;
 
-    public function index(Request $request, PointsClient $points, RedemptionTickets $tickets): Response
+    public function index(Request $request, PointsClient $points, RedemptionTickets $tickets, ExpertiseSharing $sharing): Response
     {
         $this->points = $points;
         $this->tickets = $tickets;
@@ -80,6 +81,8 @@ class PointsController extends Controller
             'historyDown' => $configured && $history === null,
             'summaryDown' => $configured && $summary === null,
             'expiryEmails' => $user->wantsPointsExpiryEmails(),
+            'digestChoice' => $user->pointsDigestPeriod() ?? 'off',
+            'memory' => $sharing->overview($user),
             'topicSuggestionsOn' => $suggestionTopics !== null,
             'suggestionTopics' => $suggestionTopics,
             'suggestedQuestions' => $suggestionTopics !== null ? TopicSuggestions::questionsFor($user, $suggestionTopics) : null,
@@ -149,6 +152,25 @@ class PointsController extends Controller
             'level' => 'ok',
             'message' => $on ? 'We will email you before some of your points lapse.' : 'We will not email you about points that are about to lapse. You can still see them on this page.',
         ]);
+    }
+
+    /**
+     * The person's own choice of a summary email of what they earned: none (the default), weekly or monthly. A local
+     * preference like the one above: it works while the points service is down and only ever changes the signed-in row.
+     * Nobody is sent a summary unless they pick one here.
+     */
+    public function updateDigestEmails(Request $request): RedirectResponse
+    {
+        $data = $request->validate(['points_digest' => ['required', 'in:'.implode(',', User::POINTS_DIGEST_CHOICES)]]);
+
+        // A query-builder update, not ->save(): this is one flag and should not re-index the person for search.
+        User::whereKey($request->user()->getKey())->update(['points_digest' => $data['points_digest']]);
+
+        return redirect()->to(route('points').'#digest-emails')->with('digest_notice', match ($data['points_digest']) {
+            'week' => 'We will email you a short summary of your points each Monday, only in weeks when you earned some.',
+            'month' => 'We will email you a short summary of your points at the start of each month, only in months when you earned some.',
+            default => 'We will not email you summaries of your points.',
+        });
     }
 
     /**

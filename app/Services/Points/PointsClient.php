@@ -245,6 +245,139 @@ class PointsClient
         throw new PointsUnavailableException(PointsUnavailableException::MALFORMED);
     }
 
+    /** What InfoDot may tell the points service about a digest it was asked to email. */
+    public const DIGEST_OUTCOMES = ['delivered', 'retry', 'skipped'];
+
+    public const DIGEST_PERIODS = ['week', 'month'];
+
+    /**
+     * The digests that are due for the latest closed week or month (the service returns none while digests are switched
+     * off, or when nobody earned anything). Rows not in the documented shape are skipped, never guessed at.
+     *
+     * @return list<PointsDigest>
+     *
+     * @throws PointsUnavailableException
+     */
+    public function digests(string $period, int $limit = 100): array
+    {
+        if (! in_array($period, self::DIGEST_PERIODS, true)) {
+            throw new InvalidArgumentException('The period must be week or month.');
+        }
+        $limit = max(1, min(200, $limit));
+        $response = $this->call('digests', fn () => $this->request('')->get($this->endpoint('/api/points/digests'), ['period' => $period, 'limit' => $limit]));
+
+        $digests = [];
+        $skipped = 0;
+        foreach ($this->expectList($response, 'digests') as $row) {
+            $digest = is_array($row) ? $this->digestFrom($row, $period) : null;
+            if ($digest === null) {
+                $skipped++;
+
+                continue;
+            }
+            $digests[] = $digest;
+        }
+        if ($skipped > 0) {
+            $this->note('digests', $response->status(), 'rows_skipped');
+        }
+
+        return $digests;
+    }
+
+    /**
+     * Tell the points service what happened to a digest. Idempotent on its side, so repeating a report is safe.
+     *
+     * @throws DigestResultRefusedException the service said no (unknown digest, or an invalid report)
+     * @throws PointsUnavailableException the report did not get through; send it again later
+     */
+    public function reportDigestResult(string $digestId, string $outcome): DigestResultReceipt
+    {
+        if (! $this->validDigestId($digestId) || ! in_array($outcome, self::DIGEST_OUTCOMES, true)) {
+            throw new InvalidArgumentException('Unknown digest id or outcome.');
+        }
+        $body = (string) json_encode(['outcome' => $outcome], JSON_UNESCAPED_SLASHES);
+
+        $response = $this->call('digest_result', fn () => $this->request($body)->withBody($body, 'application/json')
+            ->post($this->endpoint('/api/points/digests/'.rawurlencode($digestId).'/result')));
+
+        if ($response->successful()) {
+            $r = $response->json();
+            if (is_array($r) && is_string($r['digest_id'] ?? null) && is_string($r['state'] ?? null)) {
+                return new DigestResultReceipt($r['digest_id'], $r['state']);
+            }
+            $this->note('digest_result', $response->status(), 'malformed');
+            throw new PointsUnavailableException(PointsUnavailableException::MALFORMED);
+        }
+
+        $code = $this->codeOf($response);
+        if ($response->status() === 404 && $code === DigestResultRefusedException::NOT_FOUND) {
+            throw new DigestResultRefusedException(DigestResultRefusedException::NOT_FOUND);
+        }
+        if ($response->status() === 422 && $code === DigestResultRefusedException::INVALID) {
+            $this->note('digest_result', 422, $code);
+            throw new DigestResultRefusedException(DigestResultRefusedException::INVALID);
+        }
+
+        $this->note('digest_result', $response->status(), $code === '' ? 'unknown' : $code);
+        throw new PointsUnavailableException(PointsUnavailableException::MALFORMED);
+    }
+
+    /** @param array<string, mixed> $row */
+    private function digestFrom(array $row, string $period): ?PointsDigest
+    {
+        $start = $this->plainDate($row['period_start'] ?? null);
+        $end = $this->plainDate($row['period_end'] ?? null);
+        if (! $this->validDigestId($row['digest_id'] ?? null) || ! is_string($row['user_uuid'] ?? null) || ! preg_match('/\A[A-Za-z0-9-]{1,64}\z/', $row['user_uuid'])
+            || ($row['period'] ?? null) !== $period || $start === null || $end === null || $end->lt($start)
+            || ! is_int($row['points_earned'] ?? null) || $row['points_earned'] < 1
+            || ! is_int($row['points_reversed'] ?? null) || $row['points_reversed'] < 0
+            || ! is_int($row['balance'] ?? null) || $row['balance'] < 0
+            || ! is_array($row['awards'] ?? null) || ! array_is_list($row['awards'])) {
+            return null;
+        }
+
+        $awards = [];
+        foreach ($row['awards'] as $award) {
+            if (! is_array($award) || ! is_string($award['rule_key'] ?? null) || ! is_string($award['label'] ?? null)
+                || ! is_int($award['count'] ?? null) || $award['count'] < 1 || ! is_int($award['points'] ?? null) || $award['points'] < 0) {
+                return null;
+            }
+            $awards[] = ['rule_key' => $award['rule_key'], 'label' => $award['label'], 'count' => $award['count'], 'points' => $award['points']];
+        }
+
+        $expiring = null;
+        if (($row['expiring_next_30_days'] ?? null) !== null) {
+            $e = $row['expiring_next_30_days'];
+            try {
+                $first = is_array($e) && is_string($e['first_at'] ?? null) ? Carbon::parse($e['first_at']) : null;
+            } catch (Throwable) {
+                $first = null;
+            }
+            if (! is_array($e) || ! is_int($e['points'] ?? null) || $e['points'] < 1 || $first === null) {
+                return null;
+            }
+            $expiring = ['points' => $e['points'], 'first_at' => $first];
+        }
+
+        return new PointsDigest($row['digest_id'], $row['user_uuid'], $period, $start, $end, $row['points_earned'], $awards, $row['points_reversed'], $row['balance'], $expiring);
+    }
+
+    /** A strict Y-m-d date (2026-13-45 would otherwise roll over into a real, wrong date). */
+    private function plainDate(mixed $value): ?Carbon
+    {
+        if (! is_string($value) || ! preg_match('/\A\d{4}-\d{2}-\d{2}\z/', $value)) {
+            return null;
+        }
+        $date = Carbon::createFromFormat('!Y-m-d', $value);
+
+        return $date && $date->format('Y-m-d') === $value ? $date : null;
+    }
+
+    private function validDigestId(mixed $id): bool
+    {
+        return is_string($id) && preg_match('/\A[A-Za-z0-9._-]{1,64}\z/', $id) === 1;
+    }
+
     private function validWarningId(mixed $id): bool
     {
         return (is_int($id) && $id > 0) || (is_string($id) && preg_match('/\A[A-Za-z0-9._-]{1,64}\z/', $id) === 1);
