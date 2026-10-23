@@ -1,4 +1,6 @@
-# Security assessment (baseline 2026-10-19)
+# Security assessment (baseline 2026-10-19, updated 2026-10-23)
+
+Sections S-2b to S-2f were added after the baseline; each states its own date. S-1 and S-3 are as of 2026-10-19 except where a status line says otherwise.
 
 Scope of this baseline: **dependency advisories only**, plus configuration facts already verified during the
 13-platform deployment. No penetration test, no manual authorisation review of the 14 platforms outside that
@@ -21,6 +23,10 @@ Repositories with advisories (17): Auction, Billing, Design, Dopemine, Ehail, Em
 Memory, Notify, Plug, Projects, Pulse, Tasks, Tutor (4 to 5 advisories each; Pulse 10). Clean in this audit (9):
 Agents, Analytics (composer), Central, Engage, Forms, Mines, Press, Sheet, docs. Dot.Charts' Laravel app is in `backend/` and was missed here at first; the later audit found 48
 advisories across 15 packages, 14 high (see REMEDIATION_ROADMAP.md R-2). Dot.Brain (JavaScript) was not audited.
+
+**Status (2026-10-23):** every 2026-10-19 advisory in this table was fixed and deployed on 2026-10-19; newer npm advisories (vite, launch-editor,
+follow-redirects) were cleared with lockfile-only `npm audit fix` in Central, Engage, Press, Sheet, docs and Charts; Forms #45 is open; Charts' dev-server-only
+Vite advisories and Tailwind 3 transitive build-tool advisories need a major upgrade and are undecided. See REMEDIATION_ROADMAP.md R-2.
 
 Remediation: `composer update` of the named packages (with dependencies), full suite per repository, PR, deploy.
 Tracked as R-2 in the roadmap. No upgrade is applied to production without the suite and the deploy smoke check.
@@ -64,6 +70,11 @@ person for a moment, and in the POST body in transit (HTTPS). Access logs no lon
 already-sent links with `?token=` still work until the legacy GET is removed; they are spent on use or expire in
 5 minutes.
 
+**Follow-up (done 2026-10-22 to 2026-10-23).** The legacy `GET /auth/ecosystem?token=` path was removed from all 25 receivers (one "Remove the legacy GET
+?token= sign-in path" PR each, merged and deployed): a GET now redirects to `/login` without reading the token, which is read only from the POST body.
+Verified 2026-10-23: a GET with a dummy token answered 302 to `/login` on every one of the 25 hosts (`curl -I`). The code-level claim that the token is
+not read comes from the PRs and their tests, not from the black-box check. Not verified live: a full signed-in click-through (owner step).
+
 ## S-2c Application folders served over HTTP (found 2026-10-20 by a deploy smoke check; contained the same day)
 
 **Finding (critical, pre-existing).** Dopemine, Engage, Memory and Sheet answered HTTP 200 for `/<key>/database/database.sqlite`
@@ -82,7 +93,7 @@ wrote the deny file into the four folders; afterwards every probed path is 403 a
 Also seen: during one Tasks deploy the smoke check briefly saw `.env`, `artisan` and the SQLite file answer 200 (403 again on every
 later probe); cause unknown, so a short exposure window on Tasks during that deploy cannot be ruled out.
 
-## S-2d App-folder `.htaccess` not applied for a short window after a deploy (observed 2026-10-22; second layer built, not yet applied)
+## S-2d App-folder `.htaccess` not applied for a short window after a deploy (observed 2026-10-22 and 2026-10-23; second layer applied 2026-10-23 and did not prevent it)
 
 **Observed (facts).** On 2026-10-22, right after `artisan up` on the first deploy that touched the app-folder guard, the public
 probe saw HTTP 200 for `/<key>/.env`, `artisan`, `composer.json`, `database/database.sqlite` and `vendor/autoload.php` on two
@@ -93,7 +104,23 @@ unknown; the raw access logs for them are where to look.
 **Suspected, not established.** The `Require all denied` `.htaccess` inside the app folder is sometimes not applied for a short
 time after the directory tree changed (LiteSpeed per-directory `.htaccess` cache). We have no measurement of the mechanism.
 
-**Second layer (built, not applied).** App Folder Guard modes `docroot-check` and `docroot` (`.github/workflows/app-folder-guard.yml`,
+**Observed again 2026-10-23 (facts from the deploy runs).** The post-deploy probe found the app folder answering HTTP 200 right after a deploy
+on Tasks (16:44 UTC, smoke check: `.env`, `artisan`, `database/database.sqlite`), then, after the docroot rule below had been written on every
+platform, on Finance (17:54 UTC), HR (18:16) and Pulse (18:28): nine sensitive paths each (including `.env`, `composer.json`, `database/database.sqlite`,
+`storage/logs/laravel.log`, `vendor/autoload.php`) answered 200 during one probe pass of about 5 to 6 seconds. Those three deploys had finished every
+earlier step, including the smoke check, and failed only at the final probe step, so they are red in Actions although the code was in place. The deploy
+probe makes one pass and does not retry, so **how long the paths stayed readable is not known**, and whether anything requested them is unknown (raw
+access logs). No later probe of those three sites is recorded in the workflow history; their current state was **not** re-probed by this update. Earlier
+sightings: Dopemine and Ehail on 2026-10-22 (above). Treat the production `.env` of the apps seen exposed (Dopemine, Ehail, Tasks, Finance, HR, Pulse) as
+possibly read until the access logs show otherwise: that is the owner's rotation decision (S-2f lists the open owner actions).
+
+**Second layer (applied 2026-10-23; did not prevent the window).** Dispatched by the owner: `docroot-check` (run 39990697168, 16:54 UTC); a first `docroot` run
+failed before any write because of a host-list read bug (run 39991231839, fixed in InfoDot #75); `docroot` on Dopemine alone (run 39991992409, 17:04); then on all 25
+platforms (run 39992191690, 17:05 to 17:11). Each run recorded `/`, `/up` and `/login` before and after, saw no sensitive path readable, and reported "the sites
+answer exactly what they answered before". The Finance, HR and Pulse sightings above came after that, so the block did not close the post-deploy window.
+The text that follows was written before it was applied.
+
+**Second layer (built, as designed before it was applied).** App Folder Guard modes `docroot-check` and `docroot` (`.github/workflows/app-folder-guard.yml`,
 host side `tools/docroot-guard-host.sh`) maintain a delimited block (`# BEGIN dot-app-folder-guard <key>` to `# END ...`) at the
 top of the DOCROOT's own `~/<host>.infodot.co.za/.htaccess`, a file deploys do not touch. It is one `mod_rewrite` rule,
 `^<key>/(.env*, .git*, artisan, composer.json/lock, package(-lock).json, phpunit.xml*, database/, storage/, vendor/, bootstrap/, config/, tests/, node_modules/)`
@@ -115,7 +142,7 @@ exposed" are told apart (any 200 still fails the probe). Tested against a temp d
 3. Repeat for the rest; then on the next deploy of an app, watch the post-deploy probe timeline for a 200.
 4. Still open from S-2c: check the raw access logs for 200s on those paths, and move app folders out of the docroot.
 
-## S-2e Document-root move: inventory (built, not run)
+## S-2e Document-root move: inventory (built; run 2026-10-23)
 
 **Plan (the owner moves each subdomain's document root; this section only prepares it).**
 1. Today the docroot is `~/<host>.infodot.co.za/` (an `index.php` shim, a copy of Laravel's `.htaccess`, symlinks such as `build -> <key>/public/build`) and the app folder `<key>/` sits inside it, so `.env`, databases, `vendor/` and logs are under the web root and rely on `Require all denied` files (S-2c, S-2d).
@@ -128,7 +155,43 @@ exposed" are told apart (any 200 still fails the probe). Tested against a temp d
 
 **Read-only guarantee.** The host script writes, creates, removes, renames and changes the mode of nothing, takes no lock, and reads the shared crontab with `crontab -l` only (once per run, retried when it answers empty; an empty answer is reported as `unknown`, never as 0 lines). The test greps the script for write operations and redirections, compares a checksum of the whole temp HOME (names, modes, mtimes, contents, link targets) before and after, runs it on a HOME with all write permission removed, and fails if the `crontab` stub is called with anything but `-l`. **Not verified:** behaviour on the real host (cPanel/LiteSpeed, the real `crontab`, GNU `awk` flavour there).
 
-**Owner step.** Dispatch `App Folder Guard` with mode `docroot-inventory` and empty `apps` (all platforms), open the job summary table and the reasons list, and keep the raw output (artifact `docroot-inventory`, 30 days). Nothing is changed on the host by this run.
+**Owner step (done).** Dispatch `App Folder Guard` with mode `docroot-inventory` and empty `apps` (all platforms), open the job summary table and the reasons list, and keep the raw output (artifact `docroot-inventory`, 30 days). Nothing is changed on the host by this run.
+
+**Result (run 40005518270, 2026-10-23 18:42 UTC, 25 pairs): READY=2, NEEDS-ATTENTION=23, UNKNOWN-LAYOUT=0.** Only Dopemine and Memory are READY. Reasons reported:
+- `.user.ini` and `php.ini` sit in the docroot, not in `public/`, and would stop applying after the move: Analytics, Billing, Farms, HR, Notify, Plug, Pulse.
+- `public/storage` is a broken link: Forms, Agents, Engage, Press, Sheet, docs.
+- A custom `index.php` shim, not the standard one: Files, Forms, Agents, Engage, Press, Projects, Sheet, docs.
+- Projects' layout differs (the app folder is `main`, not `projects`).
+- Tasks: docroot `.htaccess` directives and the authorization-header passthrough are not in `public/`, and `public/.htaccess` was missing (Dot.Tasks #26, merged 2026-10-23, tracks `public/.htaccess`).
+- Files other than the app in the docroot (source archives, `LICENSE`, `index.html`, `styles.css`, logos, `hot`, `index.coming-soon.bak`) on most of the others; the archives are S-2f.
+No document root has been moved. The plan above is unchanged; each `NEEDS-ATTENTION` reason has to be resolved or accepted per app first.
+
+## S-2f Source and build archives in public web roots (found 2026-10-23 by the inventory; moved by the owner the same day)
+
+**Finding (high, pre-existing).** The S-2e inventory listed 14 archive files at the top of public web roots, each served by the web server as a static file: five tarballs (Forms `Dot.Forms.tar.gz`, 513 MB; Engage
+`Dot.Engage.tar.gz`, 218 MB; Agents `dot-agents-full.tar.gz`, 53 MB; Sheet `Dot.Sheet-all-files-built-2026-03-30.tar.gz`, 49.5 MB; Press `dotpress_latest.tar.gz`, 0.6 MB) and nine small GitHub source zips (`Dot.<Name>-main.zip`, 28 KB to 276 KB:
+Tasks, Auction, Central, Design, Ehail, Emall, Finance, Projects, Tutor). The Sheet name says "all files built", so that archive may hold a complete build. **What is inside any of them has not been inspected by this programme**, and whether any was downloaded is unknown.
+
+**Action taken (owner-reported, not re-verified by this update).** On 2026-10-23 the owner moved the archives to a private quarantine folder outside the web roots and confirmed from outside that they now answer 404. This update did not re-probe the archive URLs. Count to reconcile: the owner's note says 13 archives (8 small zips); the inventory log lists 14 (9 small zips). The difference is not explained here.
+
+**Open owner actions.**
+1. List each archive's contents (file names only) to learn what could have been downloaded: `.env` files, databases, `vendor/`, keys.
+2. Review the raw web-server access logs for requests to those archive names, and for the paths in S-2c and S-2d.
+3. Rotate every secret that was inside an archive or an exposed `.env`, including `APP_KEY` (care: encrypted data and sessions depend on it), plus sessions and API tokens.
+4. Make the POPIA section 22 assessment if personal information may have been accessed.
+5. Add a check to the inventory or the deploy probe so an archive in a docroot fails the run.
+
+
+## S-2g Registration closed and read-only role (2026-10-21 to 2026-10-23)
+
+Public registration is closed on the 25 platform apps: `ALLOW_REGISTRATION` defaults to false and `/register` redirects to `/login` (accounts come from InfoDot). Dopemine first (#28,
+2026-10-21), Memory next (#34), then the rest on 2026-10-23. **Verified live 2026-10-23** (`curl -I https://<host>.infodot.co.za/register`): 302 to `/login` on agents, analytics,
+auction, billing, central, design, ehail, emall, engage, farms, files, finance, forms, hr, memory, notify, plug, pres, projects, pulse, sheets, tasks, tutor and doc (24 hosts); 404 on
+dopemine. Not one of the 25 answered anything else. Outside the 25: `charts` answers 404 and **`mines` answers 200 on `/register`** (Mines has its own sign-in and is not one of
+the 25 receivers; whether its registration should be closed is undecided). Host names: the Docs app is `doc`, Press is `pres`, Sheet is `sheets`; `brain.infodot.co.za` does not resolve (Dot.Brain has no host).
+
+A real read-only `viewer` role was added and enforced on every write path in Agents (#16), Engage (#46), Press (#48), Projects (#22) and Sheet (#54, a team role); Forms already had one; Central
+maps InfoDot's viewer to its read-only manager role. Agents also maps InfoDot companies to organisations (#17).
 
 ## S-3 Not yet assessed (no evidence either way)
 
