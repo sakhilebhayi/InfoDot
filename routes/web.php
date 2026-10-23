@@ -4,6 +4,8 @@ use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\ExpertiseSharingController;
+use App\Http\Controllers\LibraryController;
+use App\Http\Controllers\LibraryEntryController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\TopicAssignmentController;
 use App\Http\Controllers\TopicsController;
 use App\Http\Controllers\TopicSuggestionsController;
 use App\Livewire\EcosystemWidget;
+use App\Livewire\Moderation\Library as ModerationLibrary;
 use App\Livewire\Moderation\Queue as ModerationQueue;
 use App\Livewire\Moderation\Topics as ModerationTopics;
 use Illuminate\Support\Facades\Route;
@@ -82,6 +85,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/topics/{topic}', [TopicsController::class, 'show'])->name('topics.show');
 
     // -------------------------------------------------------
+    // Verified library: answers and solutions moderators have adopted. Read live from the source.
+    // -------------------------------------------------------
+    Route::get('/library', [LibraryController::class, 'index'])->name('library');
+
+    // -------------------------------------------------------
     // Profile Controller
     // -------------------------------------------------------
     Route::get('/user/profile/edit', 'App\Http\Controllers\PagesController@edit')->name('profile.edit');
@@ -108,6 +116,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/moderation', ModerationQueue::class)->middleware('moderator')->name('moderation');
     Route::get('/moderation/topics', ModerationTopics::class)->middleware('moderator')->name('moderation.topics');
+    // The Verified library desk: Dot.Brain's recommendations, the entries, and adding one by reference.
+    Route::get('/moderation/library', ModerationLibrary::class)->middleware('moderator')->name('moderation.library');
+    Route::post('/moderation/library', [LibraryEntryController::class, 'store'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.library.add');
 
     // -------------------------------------------------------
     // Sub Services

@@ -647,6 +647,14 @@ button.ix-avatar {
     filter: brightness(1.14);
 }
 
+/* The base .ix-btn:hover (same weight, earlier) paints a light background over a primary button, leaving white text on light grey. */
+.ix-btn.ix-btn--primary:hover,
+.ix-btn.ix-btn--primary:active {
+    background: var(--ix-signal);
+    border-color: var(--ix-signal);
+    color: var(--ix-signal-ink);
+}
+
 .ix-btn--ghost {
     border-color: transparent;
     background: transparent;
@@ -5436,4 +5444,156 @@ a.ix-topic:focus-visible {
 
 .ix-memory__topics li:last-child {
     border-bottom: 0;
+}
+
+/* Verified library: the page everyone reads, and the moderators' desk for it. */
+.ix-lib {
+    display: grid;
+    gap: 12px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-lib__item {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr);
+    border: 1px solid var(--ix-rule-strong);
+    background: var(--ix-panel);
+}
+
+.ix-lib__kind {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0;
+    background: #1b2124;
+    color: var(--ix-stencil);
+}
+
+.ix-lib__kind .ix-stencil-num {
+    font-size: 44px;
+    line-height: 0.95;
+}
+
+.ix-lib__kind small {
+    margin-top: 3px;
+    color: #f1f3f3;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.ix-lib__body {
+    min-width: 0;
+    padding: 14px 16px;
+}
+
+.ix-lib__title {
+    display: block;
+    color: var(--ix-text);
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+
+.ix-lib__title:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ix-lib__title:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+.ix-lib__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 10px 0 0;
+}
+
+.ix-lib__meta .ix-topics {
+    margin: 0;
+}
+
+.ix-lib__sec {
+    margin-top: 28px;
+}
+
+.ix-lib__sec > .ix-mod__subh {
+    margin-bottom: 10px;
+}
+
+.ix-lib__why {
+    display: grid;
+    gap: 6px;
+    margin: 6px 0 0;
+    padding-left: 18px;
+    font-size: 14px;
+}
+
+.ix-lib__why li {
+    padding-left: 2px;
+}
+
+.ix-lib__effect {
+    margin-left: 6px;
+    color: var(--ix-text-2);
+    font-weight: 600;
+}
+
+.ix-lib__more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.ix-lib__state {
+    margin: 0 0 12px;
+}
+
+.ix-lib__add {
+    max-width: 520px;
+}
+
+.ix-lib__add .ix-input {
+    width: 100%;
+}
+
+.ix-linkbtn {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ix-text);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.ix-linkbtn:focus-visible {
+    outline: 2px solid var(--ix-focus);
+    outline-offset: 2px;
+}
+
+@media (max-width: 639px) {
+    .ix-lib__item {
+        grid-template-columns: 60px minmax(0, 1fr);
+    }
+
+    .ix-lib__kind .ix-stencil-num {
+        font-size: 34px;
+    }
+
+    .ix-lib__kind small {
+        font-size: 9px;
+        letter-spacing: 0;
+    }
 }

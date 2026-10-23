@@ -231,6 +231,7 @@ class TopicService
             }
 
             $item->topics()->sync($ids->all());
+            $item->touch(); // So "changed since" (the candidates feed for Dot.Brain) sees the new topics.
 
             $names = fn ($topics) => $topics->isEmpty() ? 'none' : $topics->sortBy(['sort_order', 'id'])->pluck('name')->implode(', ');
             $reason = 'From: '.$names($before).'. To: '.$names($chosen).'.'.($note !== '' ? ' '.$note : '');
