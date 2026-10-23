@@ -3,6 +3,7 @@
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Http\Controllers\ExpertiseSharingController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
@@ -94,6 +95,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/points', [PointsController::class, 'index'])->middleware('throttle:60,1')->name('points');
     Route::post('/points/redeem', [PointsController::class, 'redeem'])->middleware('throttle:10,1')->name('points.redeem');
     Route::post('/points/expiry-emails', [PointsController::class, 'updateExpiryEmails'])->middleware('throttle:20,1')->name('points.expiry-emails');
+    // Opt-in summary emails of what the signed-in person earned (off unless they choose weekly or monthly).
+    Route::post('/points/digest-emails', [PointsController::class, 'updateDigestEmails'])->middleware('throttle:20,1')->name('points.digest-emails');
+    // Opt in to let Dot.Memory remember the topics the signed-in person helps with (default off; turning it off erases).
+    Route::post('/points/share-expertise', [ExpertiseSharingController::class, 'update'])->middleware('throttle:10,1')->name('points.share-expertise');
+    Route::post('/points/share-expertise/erase', [ExpertiseSharingController::class, 'erase'])->middleware('throttle:10,1')->name('points.share-expertise.erase');
     // Opt in to a list, for the signed-in person only, of open questions in the topics they have helped with.
     Route::post('/points/topic-suggestions', [TopicSuggestionsController::class, 'update'])->middleware('throttle:20,1')->name('points.topic-suggestions');
 

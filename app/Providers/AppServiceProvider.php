@@ -11,6 +11,7 @@ use App\Events\Knowledge\ContributionApproved;
 use App\Events\Knowledge\QuestionSubmitted;
 use App\Events\Knowledge\SolutionUnverified;
 use App\Events\Knowledge\SolutionVerified;
+use App\Listeners\ForwardKnowledgeEventToMemory;
 use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Listeners\RefreshAchievements;
 use App\Models\File;
@@ -60,6 +61,11 @@ class AppServiceProvider extends ServiceProvider
         // (No milestones follow these: ContentModerationChanged already refreshes them.)
         foreach ([SolutionVerified::class, SolutionUnverified::class, ContentReported::class, ContributionApproved::class] as $moderationEvent) {
             Event::listen($moderationEvent, ForwardKnowledgeEventToPoints::class);
+        }
+
+        // Opt-in only: an accepted answer or a verified solution of someone who let Dot.Memory remember their topics.
+        foreach ([AnswerAccepted::class, SolutionVerified::class] as $participationEvent) {
+            Event::listen($participationEvent, ForwardKnowledgeEventToMemory::class);
         }
 
         // Hidden, restored, verified or unverified: these change what counts as contribution (they are not ledger events).
