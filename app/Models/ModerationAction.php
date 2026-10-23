@@ -43,10 +43,17 @@ class ModerationAction extends Model
 
     public const TOPICS_SET = 'topics_set';
 
+    public const LIBRARY_ADOPTED = 'library_adopted';
+
+    public const LIBRARY_DECLINED = 'library_declined';
+
+    public const LIBRARY_WITHDRAWN = 'library_withdrawn';
+
     public const ACTIONS = [
         self::DISMISSED, self::HIDDEN, self::RESTORED, self::ACCEPTANCE_REVOKED,
         self::APPEAL_UPHELD, self::APPEAL_DENIED, self::VERIFIED, self::UNVERIFIED, self::APPROVED,
         self::TOPIC_ADDED, self::TOPIC_RENAMED, self::TOPIC_ACTIVATED, self::TOPIC_DEACTIVATED, self::TOPICS_SET,
+        self::LIBRARY_ADOPTED, self::LIBRARY_DECLINED, self::LIBRARY_WITHDRAWN,
     ];
 
     /** What each action is called on screen. */
@@ -65,6 +72,9 @@ class ModerationAction extends Model
         self::TOPIC_ACTIVATED => 'Topic switched on',
         self::TOPIC_DEACTIVATED => 'Topic switched off',
         self::TOPICS_SET => 'Topics corrected',
+        self::LIBRARY_ADOPTED => 'Adopted into the library',
+        self::LIBRARY_DECLINED => 'Library recommendation declined',
+        self::LIBRARY_WITHDRAWN => 'Withdrawn from the library',
     ];
 
     protected $fillable = ['actor_id', 'actor_uuid', 'subject_type', 'subject_id', 'action', 'reason', 'report_id', 'appeal_id'];

@@ -8,6 +8,8 @@ use App\Events\Knowledge\AnswerPublished;
 use App\Events\Knowledge\ContentModerationChanged;
 use App\Events\Knowledge\ContentReported;
 use App\Events\Knowledge\ContributionApproved;
+use App\Events\Knowledge\KnowledgeAdopted;
+use App\Events\Knowledge\LibraryEntryWithdrawn;
 use App\Events\Knowledge\QuestionSubmitted;
 use App\Events\Knowledge\SolutionUnverified;
 use App\Events\Knowledge\SolutionVerified;
@@ -57,9 +59,9 @@ class AppServiceProvider extends ServiceProvider
             Event::listen($knowledgeEvent, RefreshAchievements::class);
         }
 
-        // Moderator decisions the ledger needs to know about: a solution verified or unverified, a report, an approval.
+        // Moderator decisions the ledger needs to know about: a solution verified or unverified, a report, an approval, an adoption into the library or its withdrawal.
         // (No milestones follow these: ContentModerationChanged already refreshes them.)
-        foreach ([SolutionVerified::class, SolutionUnverified::class, ContentReported::class, ContributionApproved::class] as $moderationEvent) {
+        foreach ([SolutionVerified::class, SolutionUnverified::class, ContentReported::class, ContributionApproved::class, KnowledgeAdopted::class, LibraryEntryWithdrawn::class] as $moderationEvent) {
             Event::listen($moderationEvent, ForwardKnowledgeEventToPoints::class);
         }
 
@@ -102,6 +104,7 @@ class AppServiceProvider extends ServiceProvider
             Blade::component("vendor.jetstream.components.{$component}", "jet-{$component}");
         }
 
+        RateLimiter::for('knowledge-candidates', fn (Request $request) => Limit::perMinute((int) config('knowledge.candidates.per_minute', 60))->by($request->ip()));
         RateLimiter::for('ecosystem-redeem', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
 
         Relation::morphMap([

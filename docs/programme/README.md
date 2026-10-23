@@ -16,5 +16,6 @@ date), **estimated**, or **planned**. Nothing is scored or claimed without evide
 | [PLATFORM_SCORECARDS.md](PLATFORM_SCORECARDS.md) | rubric and release-gate baseline; no 100-point scores yet (insufficient evidence) |
 | [REMEDIATION_ROADMAP.md](REMEDIATION_ROADMAP.md) | written, prioritised from the baseline |
 | [BACKUPS.md](BACKUPS.md) | written 2026-10-22 for R-3: what is backed up, encryption and key handling, retention, restore procedure, off-host hook, empty RPO/RTO table (no measured restore yet) |
+| [VERIFIED_LIBRARY.md](VERIFIED_LIBRARY.md) | written for R-9 section 5: the Verified library, the candidates contract for Dot.Brain, the Memory recommendations it consumes, signing |
 | [EXECUTION_LOG.md](EXECUTION_LOG.md) | started |
 | ECOSYSTEM_ARCHITECTURE, PLATFORM_AUDIT (beyond the 13), SCALABILITY_PLAN, TEST_STRATEGY, DESIGN_SYSTEM, INTEGRATION_CONTRACTS, DISASTER_RECOVERY, DEPLOYMENT_RUNBOOK, INVESTOR_TECHNICAL_DUE_DILIGENCE | **not started**; written as the roadmap reaches them. Existing partial sources: `docs/metrics-contract.md` and `config/notify_events.php` (contracts), each repo's `docs/deployment.md` (runbooks) |

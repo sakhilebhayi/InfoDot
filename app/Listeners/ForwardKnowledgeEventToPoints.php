@@ -7,6 +7,8 @@ use App\Events\Knowledge\AnswerAccepted;
 use App\Events\Knowledge\AnswerPublished;
 use App\Events\Knowledge\ContentReported;
 use App\Events\Knowledge\ContributionApproved;
+use App\Events\Knowledge\KnowledgeAdopted;
+use App\Events\Knowledge\LibraryEntryWithdrawn;
 use App\Events\Knowledge\QuestionSubmitted;
 use App\Events\Knowledge\SolutionUnverified;
 use App\Events\Knowledge\SolutionVerified;
@@ -44,6 +46,15 @@ class ForwardKnowledgeEventToPoints
                 'reason' => 'The verification was removed.',
             ]),
             $event instanceof ContributionApproved => $this->envelope('infodot.contribution.approved', $event, $event->facts['author_uuid'], $event->facts['approved_by_uuid'], ['kind' => $event->facts['kind']]),
+            // A moderator adopted the contribution into the Verified library: the typed event is the approval, so it names the moderator.
+            $event instanceof KnowledgeAdopted => $this->envelope('infodot.knowledge.adopted', $event, $event->facts['author_uuid'], $event->facts['adopted_by_uuid'], [
+                'pack_ref' => $event->facts['pack_ref'],
+            ]),
+            // The adoption was withdrawn: take back only the adopted award, the same way an acceptance is taken back.
+            $event instanceof LibraryEntryWithdrawn => $this->envelope('infodot.contribution.reward_reversed', $event, $event->facts['author_uuid'], $event->facts['withdrawn_by_uuid'], [
+                'rule_key' => 'infodot.knowledge.adopted',
+                'reason' => 'The library entry was withdrawn.',
+            ]),
             // Only the reason travels: who reported it stays in InfoDot.
             $event instanceof ContentReported => $this->envelope('infodot.contribution.flagged', $event, $event->facts['author_uuid'], null, ['reason' => $event->facts['reason']]),
             default => null,
