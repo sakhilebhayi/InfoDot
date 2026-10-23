@@ -166,7 +166,7 @@ jobs:
         if: ${{ inputs.mode == 'docroot' }}
         run: |
           read -ra PAIRS <<< "$APPS"
-          read -ra HOSTS < <(printf '%s\n' "${PAIRS[@]}" | cut -d: -f1 | sort -u | tr '\n' ' ')
+          mapfile -t HOSTS < <(printf '%s\n' "${PAIRS[@]}" | cut -d: -f1 | sort -u)
           bash tools/site-status.sh "${HOSTS[@]}" | tee before.txt
 
       - name: Write the docroot block (docroot)
@@ -189,7 +189,7 @@ jobs:
           PROBE_WAIT: "5"
         run: |
           read -ra PAIRS <<< "$APPS"
-          read -ra HOSTS < <(printf '%s\n' "${PAIRS[@]}" | cut -d: -f1 | sort -u | tr '\n' ' ')
+          mapfile -t HOSTS < <(printf '%s\n' "${PAIRS[@]}" | cut -d: -f1 | sort -u)
           sleep 8   # the web server re-reads .htaccess lazily
           for _ in 1 2 3; do
             bash tools/site-status.sh "${HOSTS[@]}" > after.txt
