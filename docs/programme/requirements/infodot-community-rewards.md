@@ -1,6 +1,6 @@
 # Requirement: InfoDot community contributions and knowledge rewards
 
-Source: owner brief of 2026-10-19, stored here verbatim so it is built from the owner's words. **Status: not started.**
+Source: owner brief of 2026-10-19, stored here verbatim so it is built from the owner's words. **Status (2026-10-23): increments A to D delivered and deployed, E partly, the acceptance run (F) not done; see the status in REMEDIATION_ROADMAP.md R-9.**
 It joins the programme backlog as R-9 (see [REMEDIATION_ROADMAP.md](../REMEDIATION_ROADMAP.md)). First step when it
 starts: inspect what already exists (InfoDot questions/answers/moderation/profile pages, and the existing Dot Points
 scoring and ledger in Dot.Brain, Dot.Memory and Dot.Dopemine) before designing anything; reuse, do not duplicate.

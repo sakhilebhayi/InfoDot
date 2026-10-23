@@ -1,7 +1,8 @@
 # Verified library (R-9 section 5)
 
-Facts only. Built on branch `feat/r9-verified-library`; nothing here is live until the PR is merged and the deploy has
-run its migrations.
+Facts only. Merged as InfoDot #76 (2026-10-23 18:52 UTC) and deployed in the same minute (deploy run on commit baaa6eb succeeded). The Dot.Brain
+side (`services/infodot-knowledge`) has only been run as a dry run, and Dot.Memory's recommendations API (#35) was deployed at 18:50 UTC; no recommendation has
+been written yet (the first dry run, 2026-10-23 19:05 UTC, pulled 1 candidate with verdict `do_not_recommend`).
 
 A "Knowledge Pack" in InfoDot is a moderator-curated **Verified library** of answers and solutions. Adoption is a
 moderator decision only. Dot.Brain runs a rules-only recommender (no LLM): it pulls candidates from InfoDot, writes its
