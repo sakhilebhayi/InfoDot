@@ -115,6 +115,21 @@ exposed" are told apart (any 200 still fails the probe). Tested against a temp d
 3. Repeat for the rest; then on the next deploy of an app, watch the post-deploy probe timeline for a 200.
 4. Still open from S-2c: check the raw access logs for 200s on those paths, and move app folders out of the docroot.
 
+## S-2e Document-root move: inventory (built, not run)
+
+**Plan (the owner moves each subdomain's document root; this section only prepares it).**
+1. Today the docroot is `~/<host>.infodot.co.za/` (an `index.php` shim, a copy of Laravel's `.htaccess`, symlinks such as `build -> <key>/public/build`) and the app folder `<key>/` sits inside it, so `.env`, databases, `vendor/` and logs are under the web root and rely on `Require all denied` files (S-2c, S-2d).
+2. Target: the docroot is `~/<host>.infodot.co.za/<key>/public` (Laravel's standard layout). The app folder path does not change, so cron lines that use it keep working.
+3. Phase 1, this inventory (read-only): per app, what the move depends on. Phase 2: move one low-risk app, compare `/`, `/up`, `/login` and the assets before and after. Phase 3: the rest, one at a time, then retire the docroot shim, the docroot `.htaccess` copy and the `dot-app-folder-guard` blocks.
+4. Rollback per app: set the document root back to `~/<host>.infodot.co.za/` in cPanel (Domains). The old shim, `.htaccess` and symlinks stay in place until Phase 3.
+5. The inventory is mode `docroot-inventory` of `App Folder Guard`: host side `tools/docroot-inventory-host.sh`, tests `tools/test-docroot-inventory.sh` (CI job "docroot inventory (fake host, read-only)").
+
+**What it reports per pair** (names, sizes, modes and counts only; no file contents, no env values, no crontab lines): layout (`standard`, `renamed-folder`, `outside-docroot`, `docroot-is-app`, none; Projects is reported, not failed), the docroot top-level entries with symlink targets, the `public/` facts (`index.php`, `.htaccess`, `build`, `storage`, `images`, favicons, `robots.txt`), the `index.php` shim as `standard` or `custom`, the `.htaccess` directive names of the docroot and of `public/` with counts and a names-only difference, `.user.ini`/`php.ini`, crontab line counts, `public/` size and the file count under `public/storage`, uploads served through a symlink, and a verdict `READY`, `NEEDS-ATTENTION(<reasons>)` or `UNKNOWN-LAYOUT(<reason>)`. A `NEEDS-ATTENTION` is expected where cPanel's MultiPHP handler block or extra `Header` lines live only in the docroot `.htaccess`: those would stop applying after the move unless copied into the new docroot's `.htaccess`.
+
+**Read-only guarantee.** The host script writes, creates, removes, renames and changes the mode of nothing, takes no lock, and reads the shared crontab with `crontab -l` only (once per run, retried when it answers empty; an empty answer is reported as `unknown`, never as 0 lines). The test greps the script for write operations and redirections, compares a checksum of the whole temp HOME (names, modes, mtimes, contents, link targets) before and after, runs it on a HOME with all write permission removed, and fails if the `crontab` stub is called with anything but `-l`. **Not verified:** behaviour on the real host (cPanel/LiteSpeed, the real `crontab`, GNU `awk` flavour there).
+
+**Owner step.** Dispatch `App Folder Guard` with mode `docroot-inventory` and empty `apps` (all platforms), open the job summary table and the reasons list, and keep the raw output (artifact `docroot-inventory`, 30 days). Nothing is changed on the host by this run.
+
 ## S-3 Not yet assessed (no evidence either way)
 
 Tenant-isolation test coverage on the older platforms, MFA availability and enforcement, rate limiting on login and
