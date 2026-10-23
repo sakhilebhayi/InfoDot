@@ -189,6 +189,17 @@ mkdir -p "$(docroot pres)/press"
 out="$(run write pres:press)"; rc=$?
 check "write: docroot without a Laravel app (no artisan) is skipped, nothing written" "[ $rc -eq 3 ] && [ ! -e '$(docroot pres)/.htaccess' ]"
 
+# existing rules that mention /<key>/ outside the block are counted (never printed)
+reset; mk pres press; D="$(docroot pres)"
+{ OTHER_RULES; printf '%s\n' 'RewriteRule ^storage/(.*)$ press/storage/app/public/$1 [L]'; } > "$D/.htaccess"
+out="$(run plan pres:press)"
+check "plan counts a rule outside the block that mentions press/ (and prints no rule text)" "printf '%s' '$out' | grep -q '^pres:press: would-write (prepended) refs-outside-block=1\$'"
+out="$(run write pres:press)"; out2="$(run write pres:press)"
+check "write reports it too, and the block's own rule line is not counted" "printf '%s' '$out' | grep -q 'refs-outside-block=1' && printf '%s' '$out2' | grep -q '^pres:press: unchanged backup=kept refs-outside-block=1\$'"
+reset; mk pres press; D="$(docroot pres)"; OTHER_RULES > "$D/.htaccess"
+out="$(run plan pres:press)"
+check "no reference outside the block: no refs field" "! printf '%s' '$out' | grep -q refs-outside"
+
 # ---------- 8. symlink refused ----------
 reset; mk pres press; D="$(docroot pres)"
 printf 'x\n' > "$W/elsewhere"; ln -s "$W/elsewhere" "$D/.htaccess"

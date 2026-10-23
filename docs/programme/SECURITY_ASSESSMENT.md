@@ -106,6 +106,9 @@ exposed" are told apart (any 200 still fails the probe). Tested against a temp d
 1. Dispatch `App Folder Guard` with mode `docroot-check` (empty `apps` = all platforms) and read the table: per pair, whether the
    block would be written, replaced or is current, and the public probe timeline. Skipped lines mean the host label or app folder
    in the pair is wrong (Files is `files:dotfiles`, Press `pres:press`, Sheet `sheets:sheet`, Docs `doc:doc`).
+   `refs-outside-block=N` means N other lines in that docroot `.htaccess` mention `/<key>/`; read them on the host before applying,
+   because the new rule sits above them and would also catch an internal rewrite that lands on one of the listed names
+   (for example a router mapping `/storage/...` to `<key>/storage/app/public/...`). `/`, `/up` and `/login` would not show that.
 2. Dispatch mode `docroot` with the pairs you accept (start with one, e.g. `dopemine:dopemine`). The run records `/`, `/up`, `/login`
    before, writes the block, compares after, and restores the previous docroot `.htaccess` (or removes the file if there was none)
    and fails if any of the three changed. A backup `.htaccess.before-docroot-guard` is kept on first change.

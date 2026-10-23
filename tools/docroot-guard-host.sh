@@ -22,7 +22,8 @@
 # is created holding only the block; every byte outside the markers is left as it was (CRLF files keep CRLF, a missing
 # final newline stays missing); a one-time backup .htaccess.before-docroot-guard is made the first time and never
 # overwritten; before any change the previous file is kept in ~/.dot-docroot-guard/ (outside the docroot) for `undo`.
-# Prints one line per pair and never prints file contents. Exit: 0 ok, 2 bad input (nothing touched), 3 a pair was
+# Prints one line per pair and never prints file contents (only counts: refs-outside-block=N is the number of other
+# lines in the file that mention /<key>/, to review before applying). Exit: 0 ok, 2 bad input (nothing touched), 3 a pair was
 # skipped or refused (write/undo) or a file has unbalanced markers.
 set -uo pipefail
 
@@ -84,7 +85,7 @@ note() { # $1 = pair, rest = text
 }
 
 do_pair() { # $1 = action, $2 = pair
-  local action="$1" pair="$2" block host key docroot f cand cur existed result bk fnl mode snap abs
+  local action="$1" pair="$2" block refs extra host key docroot f cand cur existed result bk fnl mode snap abs
   host="${pair%%:*}"; key="${pair##*:}"
   docroot="$HOME/$host.$BASE"; f="$docroot/.htaccess"
   snap="$STATE/$host.$key.undo"; abs="$STATE/$host.$key.absent"
@@ -109,7 +110,12 @@ do_pair() { # $1 = action, $2 = pair
 
   cand="$(newtmp)"
   block="$(block_text "$key")"
+  extra=""
   if [ -f "$f" ]; then
+    # existing rules outside our block that mention /<key>/ (e.g. a router rewriting into the app folder): the new rule
+    # sits above them, so the owner should look at those lines before applying. Only the count is printed.
+    refs="$(awk -v k="$key/" -v b="# BEGIN $MARK $key" -v e="# END $MARK $key" '{ t = $0; sub(/\r$/, "", t); if (t == b) { i = 1; next } if (i) { if (t == e) i = 0; next } if (index($0, k)) n++ } END { print n + 0 }' "$f")"
+    [ "${refs:-0}" -gt 0 ] && extra=" refs-outside-block=$refs"
     existed=0
     grep -qxF -- "# BEGIN $MARK $key" "$f" && existed=1
     grep -qxF -- "# BEGIN $MARK $key$(printf '\r')" "$f" && existed=1
@@ -126,13 +132,13 @@ do_pair() { # $1 = action, $2 = pair
 
   if [ "$action" = plan ]; then
     case "$result" in unchanged) ;; replaced) result="would-replace" ;; *) result="would-write${result#written}" ;; esac
-    note "$pair" "$result"; return
+    note "$pair" "$result$extra"; return
   fi
 
   # write: stale undo state from an earlier run must never be reused
   rm -f "$snap" "$abs"
   if [ "$result" = unchanged ]; then
-    note "$pair" "unchanged backup=$( [ -e "$docroot/$BACKUP_NAME" ] && echo kept || echo none )"; return
+    note "$pair" "unchanged backup=$( [ -e "$docroot/$BACKUP_NAME" ] && echo kept || echo none )$extra"; return
   fi
   ( umask 077; mkdir -p "$STATE" ) || { note "$pair" "ERROR cannot create $STATE"; RC=3; return; }
   if [ -f "$f" ]; then cp -p "$f" "$snap"; else : > "$abs"; fi
@@ -148,7 +154,7 @@ do_pair() { # $1 = action, $2 = pair
   cur="$docroot/.htaccess.new.$$"; TMPS="$TMPS $cur"
   cp "$cand" "$cur" && chmod "$mode" "$cur" && mv -f "$cur" "$f" || { note "$pair" "ERROR writing .htaccess"; RC=3; return; }
   if ! cmp -s "$cand" "$f"; then note "$pair" "ERROR read-back differs"; RC=3; return; fi
-  note "$pair" "$result backup=$bk"
+  note "$pair" "$result backup=$bk$extra"
 }
 
 if [ "$ACTION" = undo ]; then
