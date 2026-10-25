@@ -92,6 +92,13 @@ jobs:
           for pair in "$@"; do
             host="${pair%%:*}"; key="${pair##*:}"; app="$HOME/$host.infodot.co.za/$key"
             [ -f "$app/artisan" ] || { echo "$pair: no Laravel app at $app, skipped" >&2; continue; }
+            # Once the document root is <app>/public, the app folder is not served and a deny file in it would 403 the site.
+            real="$(cd "$app" && pwd -P)"
+            cur="$(uapi --output=json DomainInfo single_domain_data domain="$host.infodot.co.za" 2>/dev/null | sed -n 's/.*"documentroot" *: *"\([^"]*\)".*/\1/p' | head -1)" || true
+            if [ -f "$app/.docroot-is-public" ] || { [ -n "$cur" ] && [ "$cur" = "$real/public" ]; }; then
+              echo "$pair: document root is already $key/public, guard skipped"
+              continue
+            fi
             if [ -f "$app/.htaccess" ] && grep -q 'Require all denied' "$app/.htaccess"; then
               echo "$pair: guard already present"
             elif [ -f "$app/.htaccess" ]; then

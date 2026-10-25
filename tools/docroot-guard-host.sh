@@ -84,6 +84,17 @@ note() { # $1 = pair, rest = text
   local p="$1"; shift; echo "$p: $*"
 }
 
+# True when the subdomain's document root is already <app>/public (the docroot move, SECURITY_ASSESSMENT.md S-2e): the
+# app folder is then not served at all, and neither a deny file in it nor a block in the old docroot is needed. The
+# host's own answer (uapi DomainInfo) decides; a `.docroot-is-public` marker in the app folder is the fallback.
+app_is_docroot_public() { # $1 = host label, $2 = app folder
+  local real cur
+  real="$(cd "$2" 2>/dev/null && pwd -P)" || return 1
+  [ -f "$2/.docroot-is-public" ] && return 0
+  cur="$(uapi --output=json DomainInfo single_domain_data domain="$1.$BASE" 2>/dev/null | sed -n 's/.*"documentroot" *: *"\([^"]*\)".*/\1/p' | head -1)" || true
+  [ -n "$cur" ] && [ "$cur" = "$real/public" ]
+}
+
 do_pair() { # $1 = action, $2 = pair
   local action="$1" pair="$2" block refs extra host key docroot f cand cur existed result bk fnl mode snap abs
   host="${pair%%:*}"; key="${pair##*:}"
@@ -105,6 +116,7 @@ do_pair() { # $1 = action, $2 = pair
 
   if [ ! -d "$docroot" ]; then note "$pair" "skipped (no docroot ~/$host.$BASE)"; [ "$action" = write ] && RC=3; return; fi
   if [ ! -f "$docroot/$key/artisan" ]; then note "$pair" "skipped (no Laravel app at ~/$host.$BASE/$key)"; [ "$action" = write ] && RC=3; return; fi
+  if app_is_docroot_public "$host" "$docroot/$key"; then note "$pair" "skipped (document root is already $key/public; nothing to guard)"; return; fi
   if [ -L "$f" ]; then note "$pair" "refused (.htaccess is a symlink)"; RC=3; return; fi
   if [ -e "$f" ] && [ ! -f "$f" ]; then note "$pair" "refused (.htaccess is not a regular file)"; RC=3; return; fi
 
