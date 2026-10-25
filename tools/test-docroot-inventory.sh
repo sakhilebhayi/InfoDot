@@ -273,6 +273,17 @@ check "a shim over 64 KiB: only the first 64 KiB is analysed and that is said, o
 reset; mk_std pres press; D="$(docroot pres)"; printf '<?php\nheader("x");\nrequire __DIR__.%s;\n' "'/press/public/index.php'" > "$D/index.php"; mkdir -p "$D/press/storage/$(printf 'new\nline')"; run pres:press
 check "a docroot with odd names and a custom shim: the output keeps its shape" "! printf '%s\n' \"\$OUT\" | grep -vE '^(pres:press: |inventory: |summary: )' | grep -q ."
 
+# Laravel's stock front controller copied to the docroot with the app folder in its paths (Engage, Sheet, Projects):
+# standard, droppable. A single changed token (the app folder, or an extra statement) makes it custom again.
+reset; mk_std pres press; D="$(docroot pres)"
+stock() { printf '%s\n' '<?php' '' 'use Illuminate\Foundation\Application;' 'use Illuminate\Http\Request;' '' "define('LARAVEL_START', microtime(true));" '' '// Determine if the application is in maintenance mode...' "if (file_exists(\$maintenance = __DIR__.'/$1/storage/framework/maintenance.php')) {" '    require $maintenance;' '}' '' '// Register the Composer autoloader...' "require __DIR__.'/$1/vendor/autoload.php';" '' '// Bootstrap Laravel and handle the request...' '/** @var Application $app */' "\$app = require_once __DIR__.'/$1/bootstrap/app.php';" '' '$app->handleRequest(Request::capture());'; }
+stock press > "$D/index.php"; run pres:press
+check "stock front controller with this app's folder: shim=standard, form reported, READY" "has '$P: shim: standard' && has '$P: shim_form: stock-front-controller' && v_is $P READY"
+stock other > "$D/index.php"; run pres:press
+check "stock front controller pointing at another folder: custom" "has '$P: shim: custom'"
+{ stock press; echo "ini_set('display_errors', '1');"; } > "$D/index.php"; run pres:press
+check "stock front controller plus one extra statement: custom" "has '$P: shim: custom' && v_has $P 'custom-shim('"
+
 # ================= 4. public/.htaccess and friends missing =================
 reset; mk_std pres press; D="$(docroot pres)"; rm "$D/press/public/.htaccess"; run pres:press
 check "public/.htaccess missing: NEEDS-ATTENTION with the reason" "v_has $P 'public/.htaccess-missing' && has '$P: public_htaccess: no' && has '$P: htaccess_public: missing'"

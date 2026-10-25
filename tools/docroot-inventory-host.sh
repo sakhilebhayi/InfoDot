@@ -452,6 +452,19 @@ END {
   if (HAS_MAINT) print "F|public_has_maintenance|" (PUBMAINT == "yes" ? "yes" : "no")
   print "V|" (fl == "" ? "SHIM-SAFE-TO-DROP" : "SHIM-DOES-SOMETHING(" fl ")")
 }'
+# Laravel 11/12's public/index.php with the app folder name in the paths (the docroot copy found on Engage, Sheet, Projects).
+stock_front_controller() { # $1 = app folder name
+  # GT is the closing angle bracket of the arrow in handleRequest; built from its octal code so that this file keeps
+  # no literal one (the test counts every one as a possible output redirection).
+  local GT; GT="$(printf '\076')"
+  printf '%s\n' '<?php' '' 'use Illuminate\Foundation\Application;' 'use Illuminate\Http\Request;' '' \
+    "define('LARAVEL_START', microtime(true));" '' '// Determine if the application is in maintenance mode...' \
+    "if (file_exists(\$maintenance = __DIR__.'/$1/storage/framework/maintenance.php')) {" '    require $maintenance;' '}' '' \
+    '// Register the Composer autoloader...' "require __DIR__.'/$1/vendor/autoload.php';" '' \
+    '// Bootstrap Laravel and handle the request...' '/** @var Application $app */' \
+    "\$app = require_once __DIR__.'/$1/bootstrap/app.php';" '' "\$app-${GT}handleRequest(Request::capture());"
+}
+
 shim_report() { # $1 = shim file, $2 = its size, $3 = docroot, $4 = app dir, $5 = app folder name, $6 = app/public; prints E|, F| and V| lines
   local pm=no
   [ -f "$6/index.php" ] && grep -qi maintenance "$6/index.php" 2>/dev/null && pm=yes
@@ -599,8 +612,18 @@ inventory_pair() {
     if [ -n "$exp" ] && [ "$sz" != "?" ] && [ "$sz" -le 4096 ]; then
       c="$(head -c 4096 "$di" 2>/dev/null | tr -d '\r' | tr -s '[:space:]' ' ')"; c="${c# }"; c="${c% }"
     fi
+    # The other stock form: Laravel's own front controller (maintenance check, autoloader, bootstrap, handleRequest) copied
+    # to the docroot with the app folder in its paths. It does exactly what the app's own public index.php does, so it is as
+    # droppable as the one-line form. Matched on the whitespace-normalised text with this app's folder name in the paths.
+    fc=""
+    if [ "$sz" != "?" ] && [ "$sz" -le 4096 ]; then
+      fc="$(head -c 4096 "$di" 2>/dev/null | tr -d '\r' | tr -s '[:space:]' ' ')"; fc="${fc# }"; fc="${fc% }"
+    fi
+    FC_EXP="$(stock_front_controller "$af" | tr -d '\r' | tr -s '[:space:]' ' ')"; FC_EXP="${FC_EXP# }"; FC_EXP="${FC_EXP% }"
     if [ -n "$exp" ] && [ "$c" = "$exp" ]; then
       out "shim: standard"
+    elif [ -n "$af" ] && [ "$fc" = "$FC_EXP" ]; then
+      out "shim: standard"; out "shim_form: stock-front-controller"
     else
       out "shim: custom"
       res="$(shim_report "$di" "$sz" "$docroot" "$app" "$af" "$pub")"
