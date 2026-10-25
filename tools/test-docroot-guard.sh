@@ -284,5 +284,21 @@ check "summary: a changed status is flagged" "printf '%s\n' '$sum' | grep -q '^|
 sum="$(bash "$ROOT/tools/docroot-guard-summary.sh" docroot-check "$W/act" /nonexistent /nonexistent /nonexistent)"
 check "summary works with missing files" "printf '%s\n' '$sum' | grep -q 'not probed'"
 
+# ---------- a moved app (document root already <app>/public) is left alone ----------
+reset; mk pres press; D="$(docroot pres)"
+: > "$D/press/.docroot-is-public"
+for act in plan write; do
+  out="$(run $act pres:press)"; rc=$?
+  check "moved app (marker): $act skips it, exit 0, writes nothing" "[ $rc -eq 0 ] && printf '%s' '$out' | grep -q '^pres:press: skipped (document root is already press/public' && [ ! -e '$D/.htaccess' ] && [ ! -e '$HOME/.dot-docroot-guard' ]"
+done
+reset; mk pres press; D="$(docroot pres)"; mkdir -p "$W/bin"
+REAL="$(cd "$D/press" && pwd -P)"
+printf '#!/bin/sh\nprintf %%s\\n '"'"'{"result":{"data":{"documentroot":"%s/public"}}}'"'"'\n' "$REAL" > "$W/bin/uapi"; chmod +x "$W/bin/uapi"
+out="$(PATH="$W/bin:$PATH" run write pres:press)"; rc=$?
+check "moved app (host says <app>/public): write skips it, exit 0, nothing written" "[ $rc -eq 0 ] && printf '%s' '$out' | grep -q 'skipped (document root is already' && [ ! -e '$D/.htaccess' ]"
+printf '#!/bin/sh\nprintf %%s\\n '"'"'{"result":{"data":{"documentroot":"/somewhere/else"}}}'"'"'\n' > "$W/bin/uapi"
+out="$(PATH="$W/bin:$PATH" run write pres:press)"; rc=$?
+check "unmoved app (host says another root): the guard block is still written" "[ $rc -eq 0 ] && printf '%s' '$out' | grep -q '^pres:press: written (new file)' && [ -e '$D/.htaccess' ]"
+
 echo; echo "$N checks, $( [ "$FAIL" = 0 ] && echo 'all passed' || echo 'SOME FAILED' )"
 exit "$FAIL"
