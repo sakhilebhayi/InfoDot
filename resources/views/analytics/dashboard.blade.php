@@ -38,6 +38,7 @@
     @endphp
 
     <style>
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; } }
         .ixa h2.ix-panel__head { margin: 0; }
         .ixa .ix-state-bar { margin-bottom: 0; }
         .ixa-stamp { font-family: var(--ix-font); font-size: 12px; color: var(--ix-text-3); }
