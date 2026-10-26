@@ -96,7 +96,7 @@
                                         <label class="block uppercase text-gray-700 text-xs font-bold mb-2" for="full-name">
                                             {{ __('Full Name') }}
                                         </label>
-                                        <input type="text" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('name') is-invalid @enderror" placeholder="Full Name" style="transition: all 0.15s ease 0s;" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus/>
+                                        <input aria-label="Full Name" type="text" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('name') is-invalid @enderror" placeholder="Full Name" style="transition: all 0.15s ease 0s;" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus/>
 
                                         @error('name')
                                             <span class="invalid-feedback" role="alert">
@@ -108,7 +108,7 @@
                                         <label class="block uppercase text-gray-700 text-xs font-bold mb-2" for="email">
                                             {{ __('Email Address') }}
                                         </label>
-                                        <input type="email" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('email') is-invalid @enderror" placeholder="Email" style="transition: all 0.15s ease 0s;" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus/>
+                                        <input aria-label="Email" type="email" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('email') is-invalid @enderror" placeholder="Email" style="transition: all 0.15s ease 0s;" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus/>
                                         @error('email')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -119,7 +119,7 @@
                                         <label class="block uppercase text-gray-700 text-xs font-bold mb-2" for="message">
                                             {{ __('Message') }}
                                         </label>
-                                        <textarea rows="4" name="message" cols="80" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('message') is-invalid @enderror" placeholder="Type a message..."></textarea>
+                                        <textarea aria-label="Type a message" rows="4" name="message" cols="80" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('message') is-invalid @enderror" placeholder="Type a message..."></textarea>
                                         @error('message')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
