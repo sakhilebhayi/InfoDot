@@ -10,7 +10,7 @@
                     @else
                         <div class="mx-auto justify-center grid grid-cols-3 gap-4 ">
                             <div>
-                                <button class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none"
+                                <button class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                                 type="button"
                                 onclick="toggleNavbar('example-collapse-navbar')">
                                     <i class="text-white fas fa-bars"></i>
@@ -47,11 +47,11 @@
                                     </li>
                                     <li class="flex items-center">
                                         @if (Route::has('login'))
-                                            <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign in
+                                            <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign in
                                                 </a>
                                         @endif
                                         @if (Route::has('register'))
-                                            <a href="{{ route('register') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign Up
+                                            <a href="{{ route('register') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign Up
                                                 </a>
                                         @endif
                                     </li>
@@ -67,16 +67,16 @@
             <div class="mx-2 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 @if(!empty($results['questions']))
                     @foreach($results['questions'] as $question)
-                        <div aria-label="group of cards" tabindex="0" class="focus:outline-none py-8 w-full">
+                        <div aria-label="group of cards" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-sm py-8 w-full">
                             <div tabindex="0" aria-label="card 1" class="mb-7 bg-white p-6 shadow rounded">
                                 <div class="flex items-center border-b border-gray-200 pb-4 mb-2">
                                     {{-- <img src="https://cdn.tuk.dev/assets/components/misc/doge-coin.png" alt="coin avatar" class="w-12 h-12 rounded-full" /> --}}
                                     <div class="flex items-start justify-between w-full">
                                         <div class="pl-3 w-full">
-                                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none text-xl font-medium leading-5 text-gray-800">
+                                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 rounded-sm text-xl font-medium leading-5 text-gray-800">
                                                 {{ $question->question }}
                                             </a>
-                                            <p tabindex="0" class="focus:outline-none text-sm leading-normal pt-2 text-gray-500">
+                                            <p tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 rounded-sm text-sm leading-normal pt-2 text-gray-500">
                                                 {{ $question->created_at->diffForHumans() }}
                                             </p>
                                         </div>
@@ -86,13 +86,13 @@
                                     </div>
                                 </div>
                                 <div class="px-2">
-                                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none text-sm leading-5 py-4 text-gray-600 mt-3 pt-3 line-clamp-3">
+                                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-600 focus-visible:ring-offset-2 rounded-sm text-sm leading-5 py-4 text-gray-600 mt-3 pt-3 line-clamp-3">
                                         {{ $question->question }}
                                     </a>
 
                                 </div>
                                 <div class="flex items-center justify-center border-t border-gray-200 pt-4 mt-3">
-                                    <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
+                                    <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
                                         Sign in to view
                                         </a>
                                 </div>
@@ -103,16 +103,16 @@
 
                 @if(!empty($results['solutions']))
                     @foreach($results['solutions'] as $solution)
-                        <div aria-label="group of cards" tabindex="0" class="focus:outline-none py-8 w-full">
+                        <div aria-label="group of cards" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-sm py-8 w-full">
                             <div tabindex="0" aria-label="card 1" class="mb-7 bg-white p-6 shadow rounded">
                                 <div class="flex items-center border-b border-gray-200 pb-4 mb-2">
                                     {{-- <img src="https://cdn.tuk.dev/assets/components/misc/doge-coin.png" alt="coin avatar" class="w-12 h-12 rounded-full" /> --}}
                                     <div class="flex items-start justify-between w-full">
                                         <div class="pl-3 w-full">
-                                            <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none text-xl font-medium leading-5 text-gray-800">
+                                            <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 rounded-sm text-xl font-medium leading-5 text-gray-800">
                                                 {{ $solution->solution_title }}
                                             </a>
-                                            <p tabindex="0" class="focus:outline-none text-sm leading-normal pt-2 text-gray-500">
+                                            <p tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 rounded-sm text-sm leading-normal pt-2 text-gray-500">
                                                 {{ $solution->created_at->diffForHumans() }}
                                             </p>
                                         </div>
@@ -122,11 +122,11 @@
                                     </div>
                                 </div>
                                 <div class="px-2">
-                                    <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none text-sm leading-5 py-4 text-gray-600 mt-3 pt-3 line-clamp-3">
+                                    <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-600 focus-visible:ring-offset-2 rounded-sm text-sm leading-5 py-4 text-gray-600 mt-3 pt-3 line-clamp-3">
                                         {{ $solution->solution_description }}
                                     </a>
                                     @if(!empty($solution->tags))
-                                        <div tabindex="0" class="focus:outline-none flex">
+                                        <div tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-sm flex">
                                             @php
                                                 $tags = explode(',', $solution->tags) ?? '';
                                             @endphp
@@ -139,7 +139,7 @@
                                     @endif
                                 </div>
                                 <div class="flex items-center justify-center border-t border-gray-200 pt-4 mt-3">
-                                    <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
+                                    <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
                                         Sign in to view
                                         </a>
                                 </div>
@@ -181,16 +181,16 @@
                     <div class="mx-2 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
                         @if(!empty($results['questions']))
                             @foreach($results['questions'] as $question)
-                                <div aria-label="group of cards" tabindex="0" class="focus:outline-none pt-8 w-full">
+                                <div aria-label="group of cards" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-sm pt-8 w-full">
                                     <div tabindex="0" aria-label="card 1" class="bg-white p-6 shadow rounded">
                                         <div class="flex items-center border-b border-gray-200 pb-4">
                                             {{-- <img src="https://cdn.tuk.dev/assets/components/misc/doge-coin.png" alt="coin avatar" class="w-12 h-12 rounded-full" /> --}}
                                             <div class="flex items-start justify-between w-full">
                                                 <div class="pl-3 w-full">
-                                                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none text-xl font-medium leading-5 text-gray-800">
+                                                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 rounded-sm text-xl font-medium leading-5 text-gray-800">
                                                         {{ $question->question }}
                                                     </a>
-                                                    <p tabindex="0" class="focus:outline-none text-sm leading-normal pt-2 text-gray-500">
+                                                    <p tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 rounded-sm text-sm leading-normal pt-2 text-gray-500">
                                                         {{ $question->created_at->diffForHumans() }}
                                                     </p>
                                                 </div>
@@ -200,13 +200,13 @@
                                             </div>
                                         </div>
                                         <div class="px-2">
-                                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none text-sm leading-5 py-4 text-gray-600 mt-3 pt-3 line-clamp-3">
+                                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-600 focus-visible:ring-offset-2 rounded-sm text-sm leading-5 py-4 text-gray-600 mt-3 pt-3 line-clamp-3">
                                                 {{ $question->question }}
                                             </a>
 
                                         </div>
                                         <div class="flex items-center justify-center border-t border-gray-200 pt-4 mt-3">
-                                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
+                                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
                                                 View Question
                                                 </a>
                                         </div>
@@ -217,16 +217,16 @@
 
                         @if(!empty($results['solutions']))
                             @foreach($results['solutions'] as $solution)
-                                <div aria-label="group of cards" tabindex="0" class="focus:outline-none py-8 w-full">
+                                <div aria-label="group of cards" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-sm py-8 w-full">
                                     <div tabindex="0" aria-label="card 1" class="mb-7 bg-white p-6 shadow rounded">
                                         <div class="flex items-center border-b border-gray-200 pb-4 mb-2">
                                             {{-- <img src="https://cdn.tuk.dev/assets/components/misc/doge-coin.png" alt="coin avatar" class="w-12 h-12 rounded-full" /> --}}
                                             <div class="flex items-start justify-between w-full">
                                                 <div class="pl-3 w-full">
-                                                    <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none text-xl font-medium leading-5 text-gray-800">
+                                                    <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 rounded-sm text-xl font-medium leading-5 text-gray-800">
                                                         {{ $solution->solution_title }}
                                                     </a>
-                                                    <p tabindex="0" class="focus:outline-none text-sm leading-normal pt-2 text-gray-500">
+                                                    <p tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 rounded-sm text-sm leading-normal pt-2 text-gray-500">
                                                         {{ $solution->created_at->diffForHumans() }}
                                                     </p>
                                                 </div>
@@ -236,11 +236,11 @@
                                             </div>
                                         </div>
                                         <div class="px-2">
-                                            <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none text-sm leading-5 py-4 text-gray-600 mt-3 pt-3 line-clamp-3">
+                                            <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-600 focus-visible:ring-offset-2 rounded-sm text-sm leading-5 py-4 text-gray-600 mt-3 pt-3 line-clamp-3">
                                                 {{ $solution->solution_description }}
                                             </a>
                                             @if(!empty($solution->tags))
-                                                <div tabindex="0" class="focus:outline-none flex">
+                                                <div tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-sm flex">
                                                     @php
                                                         $tags = explode(',', $solution->tags) ?? '';
                                                     @endphp
@@ -253,7 +253,7 @@
                                             @endif
                                         </div>
                                         <div class="flex items-center justify-center border-t border-gray-200 pt-4 mt-3">
-                                            <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
+                                            <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">
                                                 View Solution
                                                 </a>
                                         </div>
