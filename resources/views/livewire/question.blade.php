@@ -43,7 +43,7 @@
 
             <div class="flex justify-center">
                 @if(Auth()->user()->id === $model->user->id)
-                    <a href="#" class="inline-flex items-center
+                    <a href="#" aria-label="{{ $model->status == 0 ? 'Mark as solved' : 'Marked as solved' }}" class="inline-flex items-center
                     {{ $model->status == 0 ? 'text-red-400' : 'text-green-400' }}" wire:click.prevent="markedAsSolved">
                         <i class="fa fa-check-circle {{ $model->status == 0 ? 'text-red-400' : 'text-green-400' }} mt-1 mx-1" aria-hidden="true"></i>
                     </a>

@@ -4,7 +4,7 @@
             <div class="w-full px-4">
                 <a href="{{ route('solutions.view', ['id' => $solution->id]) }}" class="flex flex-col sm:flex-row rounded-3xl border border-[#434656]/35 bg-[rgba(49,57,77,0.55)] shadow-[0_12px_32px_rgba(0,0,0,0.28)] overflow-hidden transition hover:-translate-y-0.5 hover:border-[#8d90a2]/50" style="backdrop-filter:blur(20px);">
                     <div class="shrink-0 sm:w-56">
-                        <img src="https://source.unsplash.com/random/300x200?productivity,business" class="h-48 w-full object-cover sm:h-full">
+                        <img src="https://source.unsplash.com/random/300x200?productivity,business" alt="" class="h-48 w-full object-cover sm:h-full">
                         <div class="grid grid-cols-2 bg-[#131b2e] text-[#b7c8e1] text-sm">
                             <span class="flex justify-center items-center gap-1 py-3">
                                 <i class="fas fa-clock"></i>

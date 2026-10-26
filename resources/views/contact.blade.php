@@ -21,7 +21,7 @@
                                 Home
                             </a>
                         @else
-                            <button class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none" type="button" onclick="toggleNavbar('example-collapse-navbar')">
+                            <button aria-label="Toggle navigation menu" class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none" type="button" onclick="toggleNavbar('example-collapse-navbar')">
                                 <i class="text-white fas fa-bars"></i>
                             </button>
                     </div>

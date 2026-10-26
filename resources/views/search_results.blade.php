@@ -4,13 +4,13 @@
             <nav class="top-0 absolute z-50 w-full items-center px-2 py-3 navbar-expand-lg">
                 @if (Route::has('login'))
                     @auth
-                        <a href="{{ url('/questions') }}" class="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white">
+                        <a href="{{ url('/questions') }}" aria-label="Questions" class="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white">
 
                         </a>
                     @else
                         <div class="mx-auto justify-center grid grid-cols-3 gap-4 ">
                             <div>
-                                <button class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none"
+                                <button aria-label="Toggle navigation menu" class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none"
                                 type="button"
                                 onclick="toggleNavbar('example-collapse-navbar')">
                                     <i class="text-white fas fa-bars"></i>
