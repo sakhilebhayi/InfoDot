@@ -17,11 +17,11 @@
                 <div class="container px-4 mx-auto flex flex-wrap items-center justify-between">
                     <div class="w-full relative flex justify-between lg:w-auto lg:static lg:block lg:justify-start">
                         @auth
-                            <a href="{{ url('/questions') }}" class="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white">
+                            <a href="{{ url('/questions') }}" aria-label="Questions" class="text-sm font-bold leading-relaxed inline-block mr-4 py-2 whitespace-no-wrap uppercase text-white">
                                 Home
                             </a>
                         @else
-                            <button aria-label="Toggle navigation menu" class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none" type="button" onclick="toggleNavbar('example-collapse-navbar')">
+                            <button aria-label="Toggle navigation menu" class="cursor-pointer text-xl leading-none px-3 py-1 border border-solid border-transparent rounded bg-transparent block lg:hidden outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2" type="button" onclick="toggleNavbar('example-collapse-navbar')">
                                 <i class="text-white fas fa-bars"></i>
                             </button>
                     </div>
@@ -47,10 +47,10 @@
                             </li>
                             <li class="flex items-center">
                                 @if (Route::has('login'))
-                                    <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign in</a>
+                                    <a href="{{ route('login') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign in</a>
                                 @endif
                                 @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign Up</a>
+                                    <a href="{{ route('register') }}" class="bg-white text-gray-800 active:bg-gray-100 text-xs font-bold uppercase px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-800 focus-visible:ring-offset-2 lg:mr-1 lg:mb-0 ml-3 mb-3" type="button" style="transition: all 0.15s ease 0s;">Sign Up</a>
                                 @endif
                                 @endauth
                             </li>
@@ -96,7 +96,7 @@
                                         <label class="block uppercase text-gray-700 text-xs font-bold mb-2" for="full-name">
                                             {{ __('Full Name') }}
                                         </label>
-                                        <input aria-label="Full Name" type="text" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('name') is-invalid @enderror" placeholder="Full Name" style="transition: all 0.15s ease 0s;" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus/>
+                                        <input type="text" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('name') is-invalid @enderror" placeholder="Full Name" style="transition: all 0.15s ease 0s;" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus/>
 
                                         @error('name')
                                             <span class="invalid-feedback" role="alert">
@@ -108,7 +108,7 @@
                                         <label class="block uppercase text-gray-700 text-xs font-bold mb-2" for="email">
                                             {{ __('Email Address') }}
                                         </label>
-                                        <input aria-label="Email" type="email" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('email') is-invalid @enderror" placeholder="Email" style="transition: all 0.15s ease 0s;" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus/>
+                                        <input type="email" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('email') is-invalid @enderror" placeholder="Email" style="transition: all 0.15s ease 0s;" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus/>
                                         @error('email')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -119,7 +119,7 @@
                                         <label class="block uppercase text-gray-700 text-xs font-bold mb-2" for="message">
                                             {{ __('Message') }}
                                         </label>
-                                        <textarea aria-label="Type a message" rows="4" name="message" cols="80" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('message') is-invalid @enderror" placeholder="Type a message..."></textarea>
+                                        <textarea rows="4" name="message" cols="80" class="px-3 py-3 placeholder-gray-400 text-gray-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full @error('message') is-invalid @enderror" placeholder="Type a message..."></textarea>
                                         @error('message')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -127,7 +127,7 @@
                                         @enderror
                                     </div>
                                     <div class="text-center mt-6">
-                                        <button class="bg-gray-900 text-white active:bg-gray-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1" type="submit" style="transition: all 0.15s ease 0s;">
+                                        <button class="bg-gray-900 text-white active:bg-gray-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 mr-1 mb-1" type="submit" style="transition: all 0.15s ease 0s;">
                                             Send Message
                                         </button>
                                     </div>
