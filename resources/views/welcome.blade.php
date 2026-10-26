@@ -154,7 +154,7 @@
                 <!-- Real search, not decorative: posts to the same solution_search_results route (App\Http\Controllers\PagesController::solution_search_results) that already powers search across Questions and Solutions elsewhere in this app -->
                 <form action="{{ route('solution_search_results') }}" method="GET" class="w-full max-w-lg mb-8">
                     <div class="relative">
-                        <input aria-label="Ask: how do I connect a new platform?"
+                        <input
                             type="text"
                             name="search"
                             placeholder="Ask: how do I connect a new platform?"
