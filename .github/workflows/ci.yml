@@ -100,6 +100,19 @@ jobs:
       - name: Run the fake-host test of the docroot inventory (the host script is the one the workflow deploys; crontab is a stub that must only be read)
         run: bash tools/test-docroot-inventory.sh
 
+  access-log-review:
+    name: access log review (fake host, read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and lint
+        run: |
+          bash -n tools/access-log-review-host.sh tools/test-access-log-review.sh
+          shellcheck -S warning tools/access-log-review-host.sh tools/test-access-log-review.sh
+      - name: Run the fake-host test of the access log review (synthetic logs; no IP address or user agent may reach the output; nothing may be written)
+        run: bash tools/test-access-log-review.sh
+
   backup-host:
     name: backup tool (fake host)
     runs-on: ubuntu-latest
