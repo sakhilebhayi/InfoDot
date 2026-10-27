@@ -42,6 +42,8 @@
 
 - 2026-10-27: Backups (R-3) installed and run on the host for the first time, by the owner through the Backups workflow: 25 of 25 apps backed up, 25 archives verified, two restore tests (Memory 3.40 s and 1.25 s, integrity ok). Two tool defects found and fixed (InfoDot #96 real mysqldump error line; #97 `MYSQL_*` settings for Mines). Open: off-host destination, nightly schedule, Charts entry in `apps.list`, manual-swap timing. Details: BACKUPS.md.
 
+- 2026-10-27: off-host copy for Backups (R-3) set up: daily pull of `~/dot-backups` to the owner's Mac over SSH (restricted key and forced command on the host, no `--delete`, checksum and age check, LaunchAgent at 04:15). Tools and tests: `tools/backup-pull-serve.sh`, `tools/pull-dot-backups.sh`, `tools/test-backup-pull.sh` (22 checks, CI job `off-host pull`). Details: BACKUPS.md.
+
 ## 2026-10-21 to 2026-10-23: catch-up entry (sign-in, registration, R-9, backups, security findings, R-11)
 
 Written 2026-10-23 from the pull-request lists, deploy and workflow histories and live `curl -I` checks. PR numbers are in the roadmap and assessment sections named.
