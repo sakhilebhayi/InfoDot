@@ -290,7 +290,8 @@ mysql_dump() { # dst   (credentials only via a mode-600 defaults file, removed b
   hlp="$(mysqldump --help 2>/dev/null)"; case "$hlp" in *no-tablespaces*) extra="--no-tablespaces" ;; esac
   # shellcheck disable=SC2086
   if ! mysqldump --defaults-extra-file="$cnf" --single-transaction --quick $extra "$D_NAME" > "$dst" 2>"$W/err"; then
-    REASON=mysqldump_failed; DETAIL="$(head -n 1 "$W/err" 2>/dev/null)"; return 1
+    # MariaDB's mysqldump prints a "Deprecated program name" notice before the real error: show the first line that is not that notice
+    REASON=mysqldump_failed; DETAIL="$(grep -v 'Deprecated program name' "$W/err" 2>/dev/null | head -n 1)"; [ -n "$DETAIL" ] || DETAIL="$(head -n 1 "$W/err" 2>/dev/null)"; return 1
   fi
   dump_footer_ok "$dst" || { REASON=dump_incomplete; return 1; }
   return 0
