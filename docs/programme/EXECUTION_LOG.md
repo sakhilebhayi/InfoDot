@@ -46,6 +46,8 @@
 
 - 2026-10-27: Backups nightly schedule turned on (02:40 host time); Charts added to `~/.dot-backup/apps.list` and backed up: 26 apps, 26 archives verified. Crontab snapshot kept at `~/crontab-before-backup-schedule.txt` on the host. First overnight run not yet observed.
 
+- 2026-10-27: new requirement received (User Interaction Intelligence and automated UX improvement engine, sections 12 to 21 extending the Brand Feeling Engine brief); stored verbatim in requirements/dot-brain-ux-interaction-intelligence.md and added to the roadmap as R-12, after the current owner checklist and before R-10. Not started.
+
 ## 2026-10-21 to 2026-10-23: catch-up entry (sign-in, registration, R-9, backups, security findings, R-11)
 
 Written 2026-10-23 from the pull-request lists, deploy and workflow histories and live `curl -I` checks. PR numbers are in the roadmap and assessment sections named.
