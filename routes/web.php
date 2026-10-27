@@ -17,6 +17,7 @@ use App\Livewire\EcosystemWidget;
 use App\Livewire\Moderation\Library as ModerationLibrary;
 use App\Livewire\Moderation\Queue as ModerationQueue;
 use App\Livewire\Moderation\Topics as ModerationTopics;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -157,5 +158,10 @@ Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_s
 // ===============================================================
 
 // Liveness probe used by the deploy's smoke check and by monitoring. GET only, so
-// a POST answers a small 405 instead of reaching a controller.
-Route::get('/up', fn () => response('OK', 200, ['Content-Type' => 'text/plain']))->name('up');
+// a POST answers a small 405 instead of reaching a controller. One `select 1`: with the database down this is a
+// 500 (the exception text is not shown with APP_DEBUG=false), not a green "OK".
+Route::get('/up', function () {
+    DB::select('select 1');
+
+    return response('OK', 200, ['Content-Type' => 'text/plain']);
+})->name('up');
