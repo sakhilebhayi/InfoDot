@@ -34,3 +34,45 @@ To check whether an address is yours or GitHub's, compare the time with the depl
 3. If personal information may have been accessed, the POPIA section 22 notification assessment applies (see `POPIA_READINESS.md` once written).
 
 **Open after the first run.** Record the outcome (date of the run, the first day the logs cover, the counts) in `SECURITY_ASSESSMENT.md` under S-2f, and close or escalate items 2 to 4 there.
+
+## First result (run 40540815624, 2026-10-27, `times = yes`)
+
+113 log files, covering 2026-09-30 to 2026-10-27. The 403 totals per site show that every platform host was asked for these paths many times (24 to 613 per site) and the guard held. **The table has 34 rows of answered requests; 27 are explained, 7 are not.**
+
+**Explained: our own probes.** Every answered request on a platform host was a `curl` from one client, and each falls in the same minutes as a command this programme ran (Claude Code session transcripts hold the command times; the logs are in UTC, the first request of each burst lands within a minute of its command):
+
+| Log (UTC) | Sites | Our command |
+|---|---|---|
+| 2026-10-17 13:47 | Files archive, 2.4 MB | exposure probe of `/Dot.Files.tar.gz` at 13:47 |
+| 2026-10-20 15:53 to 15:57 | Dopemine, Engage, Memory, Sheet: `artisan`, `composer`, `database`, `laravel_log`, `phpunit` | the exposure checks and `probe-exposure.sh` of 15:53 to 15:57 on the day App Folder Guard was applied |
+| 2026-10-23 18:44 to 18:49 | Agents, Engage, Forms, Sheet archives | archive checks at 18:44 and 18:49 (the 8,000,001-byte rows are a size cap of the check) |
+| 2026-10-23 19:36 | Charts: `artisan`, `composer`, `database`, `laravel_log` | Charts exposure check at 19:36 |
+
+This is a match by time and by user agent, not a proof: the log carries an address and our commands ran from the owner's machine. To prove it, the owner compares the address in the private command below with the public address of the Mac that ran Claude Code. Note what the matched rows also mean: **the SQLite databases and Laravel logs of Dopemine, Engage, Memory, Sheet and Charts were genuinely downloadable and were downloaded in full by our own check.** The check may have saved copies on the Mac that ran it; delete any database or log files left under `/tmp` there.
+
+**Not explained: 7 rows, 2 sites (doc.infodot.co.za and infodot.co.za). Owner decision needed.**
+
+| Site | Day (UTC) | What | Size | Client |
+|---|---|---|---|---|
+| doc.infodot.co.za | 2026-10-01 19:00 | `archive`, `artisan`, `composer`, `database`, `laravel_log`, one request each in the same minute | **16 bytes each** | one browser-like client |
+| infodot.co.za | 2026-10-05 10:24 | `.env`-type file | 868 bytes | one browser-like client |
+| infodot.co.za | 2026-10-08 11:05 | `.git`-type path | 281 bytes | one browser-like client |
+
+Reading: the doc rows are five different paths that all returned the same 16 bytes. A real `artisan` file is 425 bytes (the platform rows above), so the body cannot be the file; it is most likely a catch-all reply. This is an inference from the sizes, not a verified fact. The two InfoDot rows cannot be classified from sizes: 868 bytes is in the range of a small `.env` or an `.env.example`, and 281 bytes is in the range of a `.git/config` or `.git/HEAD`. Our own session transcripts hold no request to infodot.co.za on those two days.
+
+**Private command for these three (cPanel Terminal, never a public log).** It prints address, time, path, status and size for the answered requests only:
+
+```bash
+for s in infodot.co.za doc.infodot.co.za; do echo "== $s"; { zcat -f ~/logs/$s*.gz 2>/dev/null; cat ~/access-logs/$s* 2>/dev/null; } \
+  | grep -aE '"(GET|HEAD) [^" ]*(%2e|\.env|\.git|\.sqlite|storage/logs|composer\.(json|lock)|/artisan|\.(zip|tar|tgz|7z|rar|bak))[^" ]* HTTP[^"]*" (200|206) [1-9]' \
+  | awk '{print $1, $4, $7, $9, $10}'; done
+```
+
+Then decide:
+
+- **Path is `/.env.example` or a `.git` path that is a static page of the app**: nothing secret was served; record and close.
+- **Path is `/.env` (868 bytes) on infodot.co.za and the client is not ours**: treat the InfoDot application secrets as copied. Rotate, in this order: database password, mail credentials, `APP_KEY` (check which columns are encrypted first; InfoDot's secrets are re-encrypted with `php artisan secrets:reencrypt` as done for Mines on 2026-10-25), the platform handoff signing secrets (S-2b), and sign everyone out. The window is unknown (the file was answered once on 2026-10-05; whether the file was served on other days is not in the logs read, which start on 2026-09-30).
+- **Path is a `.git` file (281 bytes) and is a real `.git/config`**: the remote URL may contain a token; revoke it, and find out why `.git` sits under the docroot.
+- **doc rows are a catch-all reply**: record and close.
+
+The logs reach back only to 2026-09-30. Anything before that is unknown.
