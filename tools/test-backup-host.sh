@@ -51,6 +51,7 @@ cnf=""; for a in "$@"; do case "$a" in --defaults-extra-file=*) cnf="${a#*=}";; 
 [ "$(ls -ld "$cnf" | cut -c1-10)" = "-rw-------" ] || { echo "stub: defaults file is not mode 600" >&2; exit 9; }
 echo "$cnf" >> "$STUB_LOG/cnf.paths"; cp "$cnf" "$STUB_LOG/cnf.copy"
 [ -n "${STUB_SLEEP:-}" ] && sleep "$STUB_SLEEP"
+if [ -n "${STUB_DEPRECATED:-}" ]; then echo "mysqldump: Deprecated program name. It will be removed in a future release, use '/usr/bin/mariadb-dump' instead" >&2; fi
 if [ -n "${STUB_FAIL:-}" ]; then echo "Access denied for user 'mines'@'localhost' (using password: YES) pw=$STUB_PW" >&2; exit 2; fi
 echo "-- MySQL dump (stub)"; echo "CREATE TABLE t (id int);"; echo "INSERT INTO t VALUES (1),(2),(3);"; echo "-- Dump completed on 2026-10-22 02:40:00"
 SH
@@ -250,6 +251,8 @@ MANIFEST_BEFORE=$(wc -l < "$BKR/manifest.log"); MINES_BEFORE=$(ls "$BKR/mines" |
 STUB_FAIL=1 runout bk run
 check "a failing mysqldump: run exits non-zero, the other 7 apps are still backed up" "[ $RC -ne 0 ] && echo \"\$OUT\" | grep -q '7 ok, 1 failed' && echo \"\$OUT\" | grep -q 'mines: FAILED (mysqldump_failed)'"
 check "the tool's own message is shown with the password redacted" "echo \"\$OUT\" | grep -q 'tool said: Access denied' && ! echo \"\$OUT\" | grep -q 'FAKEDBPW' && echo \"\$OUT\" | grep -q 'pw=\\*\\*\\*'"
+STUB_FAIL=1 STUB_DEPRECATED=1 runout bk run
+check "a deprecation notice before the real error does not hide it (MariaDB mysqldump)" "echo \"\$OUT\" | grep -q 'tool said: Access denied' && ! echo \"\$OUT\" | grep -q 'tool said: mysqldump: Deprecated'"
 check "the failure is in the manifest and no archive was kept for mines" "tail -n +$((MANIFEST_BEFORE + 1)) '$BKR/manifest.log' | grep -q 'key=mines .*status=failed reason=mysqldump_failed' && [ \$(ls '$BKR/mines' | wc -l) = $MINES_BEFORE ]"
 check "the staging area and credential files are cleaned up after a failure too" "[ -z \"\$(ls -A '$BKR/.stage')\" ] && [ -z \"\$(find '$H' -name my.cnf 2>/dev/null)\" ]"
 
