@@ -113,6 +113,20 @@ jobs:
       - name: Run the fake-host test of the access log review (synthetic logs; no IP address or user agent may reach the output; nothing may be written)
         run: bash tools/test-access-log-review.sh
 
+  popia-inventory:
+    name: personal data inventory (fixture)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and lint
+        run: |
+          python3 -m py_compile tools/popia-inventory.py
+          bash -n tools/test-popia-inventory.sh
+          shellcheck -S warning tools/test-popia-inventory.sh
+      - name: Run the fixture test (migrations, casts, dependencies, hosts; no value from any .env.example may reach the output)
+        run: bash tools/test-popia-inventory.sh
+
   backup-host:
     name: backup tool (fake host)
     runs-on: ubuntu-latest
