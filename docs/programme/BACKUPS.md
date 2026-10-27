@@ -6,9 +6,7 @@ Status (2026-10-27): **installed and run on the real host.** `install` created t
 `integrity=ok`. Two defects found by the first runs and fixed in the tool (InfoDot #96, #97): MariaDB's `mysqldump` prints a
 "Deprecated program name" notice that hid the real error, and Dot.Mines keeps its database login in `MYSQL_*` settings
 (`DB_PASSWORD` is empty), which the tool did not read; after the fix Mines backs up (32.7 MB database, 1.3 MB archive) and
-the second `verify` read 25 archives with 0 problems. **Not done:** the off-host copy (destination undecided), the nightly
-`schedule` on the host, a backup of Charts (its app sits at `charts/backend`, deeper than the tool's search; add it to
-`~/.dot-backup/apps.list`), and the owner-timed manual swap, so the RTO below is incomplete.
+the second `verify` read 25 archives with 0 problems. **Later the same day:** Charts (app at `charts/backend`, deeper than the tool's search) was added through `~/.dot-backup/apps.list` and backed up (26 of 26 apps, `verify` read 26 archives, 0 problems); the nightly `schedule` was turned on (cron line `40 2 * * *`, `flock -n`, log `~/dot-backups/cron.log`; the other 3 crontab lines untouched, 3 lines became 4). **Not done:** the owner-timed manual swap, so the RTO below is incomplete; the first overnight run and the 04:15 Mac pull have not been observed yet (check the next morning: `inventory` ages under about 6 h, `~/Backups/pull.log` showing 26 apps checked).
 **Off-host copy: pull to the owner's Mac (done 2026-10-27).** The Mac pulls `~/dot-backups` over SSH with rsync, once a day (04:15,
 macOS LaunchAgent `com.sakhile.dot-backup-pull`; a missed run happens on wake). First pull: 25 apps, 21 MB, 33 s, every newest archive
 matched its `.sha256`; a scheduler-started run followed (7 s). Design: (1) a dedicated ed25519 key on the Mac, no passphrase

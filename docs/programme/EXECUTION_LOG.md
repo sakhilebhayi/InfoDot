@@ -44,6 +44,8 @@
 
 - 2026-10-27: off-host copy for Backups (R-3) set up: daily pull of `~/dot-backups` to the owner's Mac over SSH (restricted key and forced command on the host, no `--delete`, checksum and age check, LaunchAgent at 04:15). Tools and tests: `tools/backup-pull-serve.sh`, `tools/pull-dot-backups.sh`, `tools/test-backup-pull.sh` (22 checks, CI job `off-host pull`). Details: BACKUPS.md.
 
+- 2026-10-27: Backups nightly schedule turned on (02:40 host time); Charts added to `~/.dot-backup/apps.list` and backed up: 26 apps, 26 archives verified. Crontab snapshot kept at `~/crontab-before-backup-schedule.txt` on the host. First overnight run not yet observed.
+
 ## 2026-10-21 to 2026-10-23: catch-up entry (sign-in, registration, R-9, backups, security findings, R-11)
 
 Written 2026-10-23 from the pull-request lists, deploy and workflow histories and live `curl -I` checks. PR numbers are in the roadmap and assessment sections named.
