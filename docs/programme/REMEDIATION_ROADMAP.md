@@ -22,6 +22,7 @@ final probe step after the code was in place (see S-2f).
 | R-9 Community rewards | **partly done**: increments A to D delivered and deployed, E partly (Brain recommendations and Memory APIs yes; expertise areas and non-email notifications no); F (acceptance run) not done | Acceptance run against section 11; owner steps listed under R-9 |
 | R-10 InfoDot landing page | **not started; stays LAST** | After everything else |
 | R-11 Dot.Brain Brand Feeling Engine | **partly done**: foundation merged (2026-10-23); scoring engine in an open PR; analysers and the Claude Skill not started | Owner review and ratification of the draft profiles; merge or amend Dot.Brain #32 |
+| R-12 User Interaction Intelligence and UX improvement engine | **not started** (brief stored 2026-10-27; extends R-11) | Inspection of Dot.Brain, Dot.Memory, Dot.Dopemine and Dot.Analytics first; POPIA decisions on consent, retention and prompts before any collection |
 
 ## R-1 Scheduler staleness after the 13 deploys (reliability, high)
 
@@ -288,6 +289,31 @@ document governs (the UI design guide and the product and design files conflict)
 citations are unverified.
 
 First step for whoever continues: the owner reviews and ratifies (or edits) the draft profiles and principles in a pull request.
+
+## R-12 User Interaction Intelligence and automated UX improvement engine (new requirement, 2026-10-27; not started)
+
+Owner brief stored verbatim in [requirements/dot-brain-ux-interaction-intelligence.md](requirements/dot-brain-ux-interaction-intelligence.md)
+(sections 12 to 21 of the Brand Feeling Engine brief): an interaction-tracking layer with a versioned event schema, a friction
+and stuck-point detection engine, a UX issue registry, a closed loop Brain (diagnose, propose) to Memory (coordinate) to Dopemine
+(measure before and after) with an honest outcome classification, a permission-aware dashboard, and strict privacy and reliability
+rules. The brief says it must extend R-11 and reuse existing infrastructure, not create a second analytics product.
+
+**Programme notes (written 2026-10-27, not part of the owner's brief; nothing here has been built or tested).**
+- **Inspect first, as the brief requires.** Questions the inspection must answer before any design: what Dot.Analytics already ingests
+  (it has an ingest endpoint and `ANALYTICS_INGEST_URL` is wired in code on 11 apps but not configured on the host yet); what
+  Dot.Memory and Dot.Dopemine really expose today (the brief forbids assigning capabilities they do not have); and where a runtime
+  can live. Dot.Brain is a specification repository plus CLI services run from a machine or GitHub Actions, not a running
+  application (ADR-0021), so an event pipeline and a dashboard inside "the Dot.Brain interface" need an explicit decision about the
+  running service that hosts them. That decision is the first design item, not an assumption.
+- **Owner decisions this depends on** (listed in `POPIA_READINESS.md` section 4): the responsible party and Information Officer,
+  retention periods, and what may be sent to AI models. Consent and notice wording, and a retention and deletion workflow, are
+  needed before any production collection. Session replay stays a separate, reviewed capability (brief section 18).
+- **Sequencing.** After the current owner checklist (backups observed, deploy waves, archives, POPIA decisions). R-10 stays last.
+  Suggested first increment: an inspection report, the event taxonomy and schema (versioned), the privacy design, and a
+  test-environment pipeline with clearly labelled synthetic events; InfoDot as the first product, behind a flag, as the brief says.
+- **What would make it fail honestly:** tracking that slows a page or blocks a form; events carrying form values or document text;
+  a score that rises because users click more; a "verified improvement" without enough sample size. The brief already rules these out;
+  they should become tests.
 
 ## Later phases
 
