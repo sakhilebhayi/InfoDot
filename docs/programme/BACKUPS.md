@@ -1,8 +1,15 @@
 # Backups and restore (roadmap R-3)
 
-Status (2026-10-22): **the on-host part is built and tested against a fake host; nothing is deployed or run on the real
-host yet.** The off-host destination is pluggable and not chosen. There is no measured restore yet, so the RPO/RTO
-table at the end is empty on purpose.
+Status (2026-10-27): **installed and run on the real host.** `install` created the passphrase and the backup folder; the first
+`run` backed up 24 of 25 apps in 14 seconds (Mines failed, see below); `verify` read every archive (sha256, `tar -t`, SQLite
+`PRAGMA integrity_check`, MySQL/PostgreSQL dump footers) with 0 problems; `restore-test` restored Memory twice with
+`integrity=ok`. Two defects found by the first runs and fixed in the tool (InfoDot #96, #97): MariaDB's `mysqldump` prints a
+"Deprecated program name" notice that hid the real error, and Dot.Mines keeps its database login in `MYSQL_*` settings
+(`DB_PASSWORD` is empty), which the tool did not read; after the fix Mines backs up (32.7 MB database, 1.3 MB archive) and
+the second `verify` read 25 archives with 0 problems. **Not done:** the off-host copy (destination undecided), the nightly
+`schedule`, a backup of Charts (its app sits at `charts/backend`, deeper than the tool's search; add it to
+`~/.dot-backup/apps.list`), and the owner-timed manual swap, so the RTO below is incomplete.
+The first runs were all on one account: the archives are NOT yet protected against losing the account or the host.
 
 Rule of this file, as for the rest of the programme: a statement is **verified** (with the proof named), **estimated**
 or **planned**. Nothing here is a measured number unless the table says so.
@@ -248,7 +255,13 @@ row below holds numbers from a real run.
 
 | Date (UTC) | Key restored | Archive bytes | Extracted KB | Restore seconds (measured) | Integrity result | Last successful backup age (RPO at test time) | Manual swap minutes (owner) | RTO = restore + swap |
 |---|---|---|---|---|---|---|---|---|
-| - | - | - | - | - | - | - | - | - |
+| 2026-10-27 19:36 | memory (largest archive) | 9,910,656 | 35,092 | 3.40 | integrity=ok, tables=25, rows=104,268 | about 9 min | not yet timed | restore term only: 3.4 s |
+| 2026-10-27 19:46 | memory (largest archive) | 9,910,656 | 35,092 | 1.25 | integrity=ok, tables=25, rows=104,268 | about 19 min | not yet timed | restore term only: 1.25 s |
+
+Reading the table: the restore term is a few seconds for the largest archive (Memory 9.9 MB; Central's SQLite database is 78 MB and
+Mines' MySQL dump 33 MB, both smaller archives). Whole-estate restore is not the sum of one app. The manual swap (section B) has not
+been timed, so **no RTO is claimed yet**. RPO today: the age of the newest archive (minutes after a manual run; 24 h at worst once
+`schedule` is on); off-host RPO is undefined until a destination exists.
 
 ## Known limits and risks
 
