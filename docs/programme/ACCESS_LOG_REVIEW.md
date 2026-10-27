@@ -37,7 +37,7 @@ To check whether an address is yours or GitHub's, compare the time with the depl
 
 ## First result (run 40540815624, 2026-10-27, `times = yes`)
 
-113 log files, covering 2026-09-30 to 2026-10-27. The 403 totals per site show that every platform host was asked for these paths many times (24 to 613 per site) and the guard held. **26 table rows are answered requests; 21 of them are explained, 5 are not.**
+113 log files, covering 2026-09-30 to 2026-10-27. The 403 totals per site show that every platform host was asked for these paths many times (24 to 613 per site) and the guard held. **The table has 34 rows of answered requests; 27 are explained, 7 are not.**
 
 **Explained: our own probes.** Every answered request on a platform host was a `curl` from one client, and each falls in the same minutes as a command this programme ran (Claude Code session transcripts hold the command times; the logs are in UTC, the first request of each burst lands within a minute of its command):
 
@@ -48,9 +48,9 @@ To check whether an address is yours or GitHub's, compare the time with the depl
 | 2026-10-23 18:44 to 18:49 | Agents, Engage, Forms, Sheet archives | archive checks at 18:44 and 18:49 (the 8,000,001-byte rows are a size cap of the check) |
 | 2026-10-23 19:36 | Charts: `artisan`, `composer`, `database`, `laravel_log` | Charts exposure check at 19:36 |
 
-This is a match by time and by user agent, not a proof: the log carries an address and our commands ran from the owner's machine. To prove it, the owner compares the address in the private command below with the public address of the Mac that ran Claude Code. Note what the matched rows also mean: **the SQLite databases and Laravel logs of Dopemine, Engage, Memory, Sheet and Charts were genuinely downloadable and were downloaded in full by our own check.** If nothing else asked, nothing left the host, but the copies the check wrote are on the owner's Mac (they were written to `/dev/null` or `/tmp`; delete any under `/tmp` that still exist).
+This is a match by time and by user agent, not a proof: the log carries an address and our commands ran from the owner's machine. To prove it, the owner compares the address in the private command below with the public address of the Mac that ran Claude Code. Note what the matched rows also mean: **the SQLite databases and Laravel logs of Dopemine, Engage, Memory, Sheet and Charts were genuinely downloadable and were downloaded in full by our own check.** The check may have saved copies on the Mac that ran it; delete any database or log files left under `/tmp` there.
 
-**Not explained: 5 rows, 3 sites. Owner decision needed.**
+**Not explained: 7 rows, 2 sites (doc.infodot.co.za and infodot.co.za). Owner decision needed.**
 
 | Site | Day (UTC) | What | Size | Client |
 |---|---|---|---|---|
