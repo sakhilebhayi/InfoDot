@@ -7,9 +7,22 @@ Status (2026-10-27): **installed and run on the real host.** `install` created t
 "Deprecated program name" notice that hid the real error, and Dot.Mines keeps its database login in `MYSQL_*` settings
 (`DB_PASSWORD` is empty), which the tool did not read; after the fix Mines backs up (32.7 MB database, 1.3 MB archive) and
 the second `verify` read 25 archives with 0 problems. **Not done:** the off-host copy (destination undecided), the nightly
-`schedule`, a backup of Charts (its app sits at `charts/backend`, deeper than the tool's search; add it to
+`schedule` on the host, a backup of Charts (its app sits at `charts/backend`, deeper than the tool's search; add it to
 `~/.dot-backup/apps.list`), and the owner-timed manual swap, so the RTO below is incomplete.
-The first runs were all on one account: the archives are NOT yet protected against losing the account or the host.
+**Off-host copy: pull to the owner's Mac (done 2026-10-27).** The Mac pulls `~/dot-backups` over SSH with rsync, once a day (04:15,
+macOS LaunchAgent `com.sakhile.dot-backup-pull`; a missed run happens on wake). First pull: 25 apps, 21 MB, 33 s, every newest archive
+matched its `.sha256`; a scheduler-started run followed (7 s). Design: (1) a dedicated ed25519 key on the Mac, no passphrase
+(FileVault is on); (2) on the host its `authorized_keys` line is `restrict,command="/home/infodotc/bin/backup-pull-serve"`, and that
+script (`tools/backup-pull-serve.sh`, 25 lines, checksum `383331a0...fabfd1`) accepts only `rsync --server --sender <short options and
+--dirs> . dot-backups/`: any other command, path, `..`, long option or injected text is answered `denied` and logged to
+`~/backup-pull-denied.log` (tested, 22 checks in `tools/test-backup-pull.sh`); (3) the Mac side (`tools/pull-dot-backups.sh`) runs
+`rsync -a` WITHOUT `--delete`, so a wiped host cannot wipe the copy; then checks each app's newest archive against its checksum
+and its age (alert after 36 h, macOS notification and `~/Backups/pull.log`); it removes local files older than 180 days. The
+host's identity was pinned after comparing its ED25519 fingerprint (`SHA256:AFEjK06c...XgLI`) from the Mac and from the host itself.
+Apple's rsync is openrsync (protocol 29): it sends options one letter at a time plus `--dirs`, which the script allows and nothing wider.
+Rollback: on the host `cp -p ~/authorized_keys.before-backup-pull ~/.ssh/authorized_keys`; on the Mac
+`launchctl bootout gui/$(id -u)/com.sakhile.dot-backup-pull` and delete the plist and `~/bin/pull-dot-backups.sh`.
+**The Mac copy is useless without the passphrase** (`~/.dot-backup/passphrase` on the host): keep it in a password manager as well.
 
 Rule of this file, as for the rest of the programme: a statement is **verified** (with the proof named), **estimated**
 or **planned**. Nothing here is a measured number unless the table says so.

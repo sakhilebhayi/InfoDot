@@ -127,6 +127,20 @@ jobs:
       - name: Run the fixture test (migrations, casts, dependencies, hosts; no value from any .env.example may reach the output)
         run: bash tools/test-popia-inventory.sh
 
+  backup-pull:
+    name: off-host pull (forced command + Mac script)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and lint
+        run: |
+          bash -n tools/pull-dot-backups.sh tools/test-backup-pull.sh
+          sh -n tools/backup-pull-serve.sh
+          shellcheck -S warning tools/pull-dot-backups.sh tools/backup-pull-serve.sh tools/test-backup-pull.sh
+      - name: Run the tests (the forced command allows only a read-only rsync of dot-backups; the pull flags bad checksums and stale archives)
+        run: bash tools/test-backup-pull.sh
+
   backup-host:
     name: backup tool (fake host)
     runs-on: ubuntu-latest
