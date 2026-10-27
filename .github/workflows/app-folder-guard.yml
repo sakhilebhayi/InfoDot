@@ -120,6 +120,9 @@ jobs:
         run: |
           sleep 8   # the web server re-reads .htaccess lazily
           read -ra LIST <<< "${APPS:-$ALL_PLATFORMS}"
+          # The main domain's own app folder (~/public_html/main) is not a <host>.infodot.co.za pair; the default
+          # review also probes it (found served 2026-10-27: S-2h).
+          [ -z "$APPS" ] && LIST+=(apex:main)
           bash tools/probe-exposure.sh "${LIST[@]}" | tee probe.txt
         continue-on-error: true
         id: probe

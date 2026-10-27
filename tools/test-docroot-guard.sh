@@ -241,13 +241,19 @@ P="$ROOT/tools/probe-exposure.sh"
 
 newstate
 out="$(bash "$P" pres:press)"; rc=$?
-check "probe, no env, all blocked: exit 0 and the old single-pass output" "[ $rc -eq 0 ] && [ \"\$(printf '%s\n' '$out' | head -1)\" = 'pres: site / 200 /up 200 | .env=403 .env.bak-secrets=403 artisan=403 composer.json=403 composer.lock=403 database/database.sqlite=403 storage/logs/laravel.log=403 vendor/autoload.php=403 phpunit.xml=403' ] && printf '%s' '$out' | tail -1 | grep -qx 'No app folder is readable.'"
+check "probe, no env, all blocked: exit 0 and the old single-pass output" "[ $rc -eq 0 ] && [ \"\$(printf '%s\n' '$out' | head -1)\" = 'pres: site / 200 /up 200 | .env=403 .env.bak-secrets=403 artisan=403 composer.json=403 composer.lock=403 package.json=403 database/database.sqlite=403 storage/logs/laravel.log=403 vendor/autoload.php=403 phpunit.xml=403' ] && printf '%s' '$out' | tail -1 | grep -qx 'No app folder is readable.'"
 check "probe, no env: no 'attempt' prefix" "! printf '%s' '$out' | grep -q attempt"
 
 newstate; echo "https://pres.infodot.co.za/press/.env 200" > "$W/table"
 out="$(bash "$P" pres:press)"; rc=$?
 check "probe, no env, exposed: exit 1, EXPOSED tag, old final line" "[ $rc -eq 1 ] && printf '%s' '$out' | grep -q '.env=200(EXPOSED)' && printf '%s' '$out' | tail -1 | grep -qx 'EXPOSED: at least one app folder answers over HTTP.'"
 
+newstate; echo "https://infodot.co.za/main/storage/logs/laravel.log 200" > "$W/table"
+out="$(bash "$P" apex:main)"; rc=$?
+check "probe, apex:main: the main domain's own app folder is probed at https://infodot.co.za/main/..., exposed -> exit 1" "[ $rc -eq 1 ] && printf '%s\n' '$out' | grep -q 'storage/logs/laravel.log=200(EXPOSED)'"
+newstate
+out="$(bash "$P" apex:main)"; rc=$?
+check "probe, apex:main, all blocked: exit 0" "[ $rc -eq 0 ] && printf '%s\n' '$out' | grep -q '^apex: site /'"
 newstate; echo "https://pres.infodot.co.za/press/.env 200,403,403" > "$W/table"
 out="$(PROBE_RETRIES=3 PROBE_WAIT=0 bash "$P" pres:press)"; rc=$?
 check "probe, transient window: exit still 1 (any 200 ever)" "[ $rc -eq 1 ]"

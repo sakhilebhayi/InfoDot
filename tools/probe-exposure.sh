@@ -3,6 +3,7 @@
 # a list of sensitive paths and prints only status codes. Exit 1 if any returns 200 (a 301/302 is the app
 # routing an unknown path to its login, not a served file), 0 when all are blocked or absent. Also checks the site itself still answers.
 #   tools/probe-exposure.sh dopemine:dopemine engage:engage ...      (host label : app folder under that host)
+#   tools/probe-exposure.sh apex:main                                 (the main domain: https://infodot.co.za/main/..., InfoDot's own app folder)
 #
 # Optional retries, to tell "exposed for a few seconds after a change" from "persistently exposed":
 #   PROBE_RETRIES=3 PROBE_WAIT=5 tools/probe-exposure.sh ...         (defaults: 1 attempt, 5 s between attempts)
@@ -19,7 +20,7 @@ case "$RETRIES" in ''|*[!0-9]*) echo "PROBE_RETRIES must be a whole number" >&2;
 case "$WAIT" in ''|*[!0-9]*) echo "PROBE_WAIT must be a whole number of seconds" >&2; exit 2 ;; esac
 if [ "$RETRIES" -lt 1 ] || [ "$RETRIES" -gt 20 ]; then echo "PROBE_RETRIES must be 1 to 20" >&2; exit 2; fi
 if [ "$WAIT" -gt 120 ]; then echo "PROBE_WAIT must be 0 to 120" >&2; exit 2; fi
-PATHS=(.env .env.bak-secrets artisan composer.json composer.lock database/database.sqlite storage/logs/laravel.log vendor/autoload.php phpunit.xml)
+PATHS=(.env .env.bak-secrets artisan composer.json composer.lock package.json database/database.sqlite storage/logs/laravel.log vendor/autoload.php phpunit.xml)
 NP=${#PATHS[@]}
 code() { curl -s -o /dev/null -m 15 -w '%{http_code}' "$1"; }
 
@@ -30,7 +31,7 @@ a=1
 while [ "$a" -le "$RETRIES" ]; do
   s=0
   for spec in "$@"; do
-    h="${spec%%:*}"; k="${spec##*:}"; url="https://$h.$BASE"
+    h="${spec%%:*}"; k="${spec##*:}"; url="https://$h.$BASE"; [ "$h" = apex ] && url="https://$BASE"
     prefix=""; [ "$RETRIES" -gt 1 ] && prefix="attempt $a/$RETRIES t+$((SECONDS - START))s: "
     line="${prefix}$h: site / $(code "$url/") /up $(code "$url/up") |"
     j=0

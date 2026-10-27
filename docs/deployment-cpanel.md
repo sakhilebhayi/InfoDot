@@ -37,3 +37,18 @@ Run **Deploy to Production** with `confirm=deploy`. It runs the test gate first.
 ## Not covered yet
 
 No Dot.Brain guardian health document, no backups, no scheduler probe.
+
+## The app folder is inside the web root: the guard block (S-2h)
+
+`~/public_html/main` sits inside the docroot, so every plain file under it is a URL unless something refuses it. On 2026-10-27 `/main/storage/logs/laravel.log` (37 MB), `/main/artisan`, `composer.json`, `composer.lock`, `package.json`, `phpunit.xml` and `vendor/autoload.php` answered 200, and two archives (`InfoDot-main.zip`, 103 MB, and `.well-known.zip`, 850 MB) sat at the top of the web root since 2026-06-29. The host's own dotfile rule kept `.env`, `.git` and the database path at 403. The rule that closes it is a block at the TOP of `~/public_html/.htaccess` (deploys do not touch that file):
+
+```
+# BEGIN dot-app-folder-guard main
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^main/(\.env.*|\.git.*|artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml.*|database/|storage/|vendor/|bootstrap/|config/|tests/|node_modules/) - [F,L,NC]
+</IfModule>
+# END dot-app-folder-guard main
+```
+
+It matches only names directly under `/main/`; assets (`/build/...`) and the app are unaffected. The deploy's last step ("Probe the application folder from outside") and the App Folder Guard `check` mode (pair `apex:main`) request those paths and turn red on a 200. Rollback of the rule: `mv ~/public_html/.htaccess.before-main-guard ~/public_html/.htaccess`. The archives were moved by hand to `~/quarantine-infodot-docroot/`. The proper end state is the same as the other platforms: document root `~/public_html/main/public`, which also removes the legacy docroot files (`index.php` shim, `vendor/`, `web.config`, `.DS_Store`).
