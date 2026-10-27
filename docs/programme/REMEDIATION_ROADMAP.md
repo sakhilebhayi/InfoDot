@@ -298,6 +298,8 @@ and stuck-point detection engine, a UX issue registry, a closed loop Brain (diag
 (measure before and after) with an honest outcome classification, a permission-aware dashboard, and strict privacy and reliability
 rules. The brief says it must extend R-11 and reuse existing infrastructure, not create a second analytics product.
 
+**Inspection done (read-only): [R12_INSPECTION.md](R12_INSPECTION.md).** Findings in one line: the closed loop (Brain thinks, Memory stores, executor acts) and the verdict vocabulary already exist in the intelligence loop (ADR-0015, Memory `LoopRecord`); Dopemine acts on certified engagement mechanics and does not measure UX fixes today; Analytics has the nearest before/after machinery but takes daily aggregates, not events; there is no interaction-event pipeline and Dot.Brain has no running service for a dashboard.
+
 **Programme notes (written 2026-10-27, not part of the owner's brief; nothing here has been built or tested).**
 - **Inspect first, as the brief requires.** Questions the inspection must answer before any design: what Dot.Analytics already ingests
   (it has an ingest endpoint and `ANALYTICS_INGEST_URL` is wired in code on 11 apps but not configured on the host yet); what
