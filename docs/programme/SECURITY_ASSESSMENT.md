@@ -204,3 +204,13 @@ API routes, security headers and CSP, file-upload handling beyond Design and Ema
 redaction, admin/operator privilege boundaries on the older platforms, dependency review for Dot.Brain, WAF
 behaviour of the hosting edge (a `waf-probe` workflow exists in Dot.Brain), and every item in the brief's sections
 8.5 and 8.6 (SAST, SBOM, licence checks, incident procedures, disclosure policy).
+
+## S-2h InfoDot's own app folder was served (found and closed 2026-10-27)
+
+**Finding (high, pre-existing since 2026-06-29).** The guard programme covered the `<host>.infodot.co.za` platforms only. The main domain's app folder `~/public_html/main` was inside the web root with no refusal rule. Checked from outside on 2026-10-27 (first 16 bytes only): `/main/storage/logs/laravel.log` (37 MB), `/main/artisan`, `/main/composer.json`, `/main/composer.lock`, `/main/package.json`, `/main/phpunit.xml` and `/main/vendor/autoload.php` answered 200 or 206; `/InfoDot-main.zip` (103 MB) and `/.well-known.zip` (850 MB) were loose in the web root. `.env`, `.git/config` and the database path were 403 (the host's own dotfile rule). Mines and Charts were already closed.
+
+**Closed the same day (owner ran the commands).** A refusal block at the top of `~/public_html/.htaccess` and the two archives moved to `~/quarantine-infodot-docroot/`. Re-checked from outside: all of the above 403/404; `/`, `/login`, `/up` 200, POST `/up` 405, `/build/manifest.json` 200. Permanent checks: InfoDot's deploy has a final public probe of `/main/...`; App Folder Guard `check` probes `apex:main`.
+
+**Access logs (30 Sep to 27 Oct, `ACCESS_LOG_REVIEW.md`).** No request for the Laravel log, `artisan`, `composer` files or either archive was answered on `infodot.co.za` in that period, except this programme's own probe on 2026-10-27. Before 30 Sep nothing is known. Two answered requests on that site remain unexplained: `/.env` (868 bytes, 2026-10-05 10:24 UTC, client 94.154.43.122, which had been refused with 403 at 09:25 and made no other request) and `/.git/config` (281 bytes, 2026-10-08 11:05 UTC, from 127.0.0.1 with a browser user agent). Neither file exists in `~/public_html` today; what answered is unknown. The `doc.infodot.co.za` rows of 2026-10-01 are this programme's own browser probe (16-byte range requests at 19:00:51 to 19:00:56) and are closed.
+
+**Open owner actions.** Rotate what the 2026-10-05 `.env` could have held (database password, mail password, `APP_KEY`); move the document root to `~/public_html/main/public` like the other platforms; review the quarantined archives' contents (names only) and delete them.

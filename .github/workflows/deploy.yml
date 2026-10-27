@@ -470,3 +470,23 @@ jobs:
           rm -rf "$WORK"
           [ "$FAILED" -eq 0 ] || { echo "::error::Smoke check failed: the deploy is NOT healthy."; exit 1; }
           echo "== Smoke check passed."
+
+      - name: Probe the application folder from outside
+        # Public requests only (no SSH, nothing is read): InfoDot's app folder (~/public_html/main) sits INSIDE the
+        # web root, so every plain file under it is a URL unless the docroot's .htaccess refuses it. Found serving
+        # its Laravel log (37 MB), artisan, composer files and vendor/autoload.php on 2026-10-27 (SECURITY_ASSESSMENT
+        # S-2h); the rule now lives at the top of ~/public_html/.htaccess. A 200 on any of these turns the run red.
+        run: |
+          set -uo pipefail
+          EXPOSED=0; UNREACHED=0
+          for P in .env artisan composer.json composer.lock package.json phpunit.xml vendor/autoload.php storage/logs/laravel.log database/database.sqlite; do
+            CODE=$(curl -s -o /dev/null -m 15 -w '%{http_code}' "$SITE_URL/main/$P" || true)
+            case "$CODE" in
+              200|206) echo "::error::EXPOSED /main/$P answered $CODE"; EXPOSED=1 ;;
+              000) echo "000 /main/$P (no answer)"; UNREACHED=$((UNREACHED + 1)) ;;
+              *) echo "$CODE /main/$P" ;;
+            esac
+          done
+          [ "$UNREACHED" -eq 0 ] || echo "::warning::$UNREACHED probe request(s) got no answer; those paths are unverified."
+          [ "$EXPOSED" -eq 0 ] || { echo "::error::InfoDot's app folder is readable over HTTP. Restore the rule block '# BEGIN dot-app-folder-guard main' at the top of ~/public_html/.htaccess (docs/deployment-cpanel.md)."; exit 1; }
+          echo "== App-folder probe: no sensitive path answered 200 or 206."
