@@ -48,6 +48,8 @@
 
 - 2026-10-27: new requirement received (User Interaction Intelligence and automated UX improvement engine, sections 12 to 21 extending the Brand Feeling Engine brief); stored verbatim in requirements/dot-brain-ux-interaction-intelligence.md and added to the roadmap as R-12, after the current owner checklist and before R-10. Not started.
 
+- 2026-10-27: Mines' full backup archive found in its public web root (101 MB, 200 from outside) and moved out by the owner the same day (S-2i). R-12 inspection report written (R12_INSPECTION.md). Docroot facts for the three remaining hosts: Central and Mines each track a root `.htaccess` that must be moved aside after a move (Central: deny file like docs; Mines: rewrite into `public/`); Charts serves a built frontend from its docroot with `/api` through a shim, so moving its root would need the deploy redesigned.
+
 ## 2026-10-21 to 2026-10-23: catch-up entry (sign-in, registration, R-9, backups, security findings, R-11)
 
 Written 2026-10-23 from the pull-request lists, deploy and workflow histories and live `curl -I` checks. PR numbers are in the roadmap and assessment sections named.

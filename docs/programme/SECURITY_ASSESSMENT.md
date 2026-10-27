@@ -218,3 +218,14 @@ behaviour of the hosting edge (a `waf-probe` workflow exists in Dot.Brain), and 
 **Hardened the same day.** The block was replaced by an allow-list (`RewriteRule ^main/(?!public/) - [F,L,NC]`: everything under `/main/` is refused except `public/`). Checked from outside: `/main/README.md`, `routes/web.php`, `app/Models/User.php`, `composer.json`, `artisan`, `storage/logs/laravel.log` and `.env` 403; `/main/public/robots.txt` 200; `/`, `/login`, `/up`, assets 200; POST `/up` 405. **The primary domain's document root cannot be changed on this hosting plan,** so the other platforms' end state (root = `<app>/public`) is not available for InfoDot; this rule plus the deploy's final probe and App Folder Guard `check` (`apex:main`) are the control. Ask the host whether it can change the primary root.
 
 **Still open.** Ask the host about the primary root; review the quarantined archives' contents (names only) and delete them.
+
+## S-2i Mines: a full backup archive in the public web root (found and closed 2026-10-27)
+
+**Finding (high, pre-existing since 2026-08-18).** The docroot-inventory run for `mines:mines` (a pair outside the 25-host fleet list) listed `mines-full-backup-20260818-111332.tar.gz` (101 MB) at the top of `~/mines.infodot.co.za`. From outside it answered 200 with 101,459,186 bytes. The archive's listing (names only) shows `mines/.env.production`, `mines/.env.example`, `mines/database/database.sqlite`, `mines/database/migrations/...`, `mines/vendor/` and the application source; no plain `mines/.env` was listed.
+
+**Closed the same day.** The owner moved it to `~/quarantine-mines-docroot/`; re-checked from outside: 404. The other files found by the host-wide scan are not reachable: `mines/database/backup-predeploy.sqlite`, `mines/.env.production` and `mines/phpstan-baseline.neon.bak` answer 403, and `Dot.Engage.tar.gz` (145 MB, inside Engage's app folder) answers 404 at both candidate URLs because Engage's document root is `engage/public`.
+
+**Access logs (30 Sep to 27 Oct).** No answered request for an archive on `mines.infodot.co.za`; nothing is known before 30 Sep, and the archive was public from 2026-08-18.
+
+**Open owner actions.** Say what `.env.production` and the 2026-08-18 `database.sqlite` held (variable names with value lengths, and the user count, can be read without printing values); rotate what the file held that is still in use (Mines' `APP_KEY` was rotated on 2026-10-25; the database, mail and API credentials were not part of that); then delete the archive. Lesson: the fleet inventory list did not include Mines or Charts, so loose files there were never reviewed; run the host-wide scan after any new host or app is added.
+
