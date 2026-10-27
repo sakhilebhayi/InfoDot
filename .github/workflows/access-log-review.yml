@@ -18,6 +18,10 @@ on:
         description: 'Only count requests on or after this day, YYYY-MM-DD (empty = every day the logs cover)'
         required: false
         default: ''
+      times:
+        description: 'yes = also print the day and minute of each answered request (no IP): to match them to our own probe runs'
+        required: false
+        default: 'no'
 
 permissions:
   contents: read
@@ -29,12 +33,14 @@ jobs:
     timeout-minutes: 15
     env:
       SINCE: ${{ inputs.since }}
+      TIMES: ${{ inputs.times }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Check the input
         run: |
           printf '%s\n' "$SINCE" | grep -Eq '^([0-9]{4}-[0-9]{2}-[0-9]{2})?$' || { echo "::error::since must be empty or YYYY-MM-DD"; exit 1; }
+          case "$TIMES" in yes|no|'') ;; *) echo "::error::times must be yes or no"; exit 1 ;; esac
 
       - name: Set up SSH
         env:
@@ -53,6 +59,7 @@ jobs:
         run: |
           set -o pipefail
           ARGS=""; [ -z "$SINCE" ] || ARGS="--since $SINCE"
+          [ "$TIMES" != yes ] || ARGS="$ARGS --times"
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" "bash -s -- $ARGS" < tools/access-log-review-host.sh | tee access-log-review.txt
 
       - name: Job summary

@@ -4,6 +4,8 @@
 
 **What the review does.** `tools/access-log-review-host.sh`, run by the workflow **Access Log Review** (Actions tab, no input needed; optional `since`), reads the raw logs under `~/access-logs` and `~/logs` on the host and counts, per site and per category, the requests that were **answered** (HTTP 200 or 206 with a body) for `.env`, `.git`, databases, Laravel logs, composer files, `vendor/autoload.php`, `artisan`, `phpunit.xml` and archives, and those that were **refused** (403). It writes nothing on the host. Because this repository and its job logs are public, it prints **counts, days and a user-agent family only**: never an IP address, a request line or a user-agent string. Percent-encoded dots (`%2e`) are decoded, so `/%2eenv` is counted as `.env`.
 
+The table lists **answered** requests only, with the **byte size** of what was returned (a real `.env` is a kilobyte or two; a page of tens of kilobytes returned with a 200 is the application's own page, not the file) and the **dates the logs cover**. Refused (403) requests are shown as one total per site. Run it with `times = yes` to also print the day and minute of each answered request (still no address), so it can be matched to our own probe and deploy runs in Actions.
+
 **Reading the table.**
 
 | You see | It means |

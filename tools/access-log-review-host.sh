@@ -3,7 +3,7 @@
 # ANSWERED (HTTP 200 or 206 with a body) for paths that must never be served, and on which days. This is the "check the
 # raw access logs" owner action from docs/programme/SECURITY_ASSESSMENT.md S-2c / S-2d / S-2f.
 #
-#   access-log-review-host.sh [--since YYYY-MM-DD]
+#   access-log-review-host.sh [--since YYYY-MM-DD] [--times]
 #
 # It runs ON the host (piped over SSH by .github/workflows/access-log-review.yml, the same way the docroot tools are) and
 # writes nothing: no file, no mode, no link. Its output is meant to be pasted into a PUBLIC repository's job log, so it
@@ -17,12 +17,13 @@
 # that also ask for these paths, so the user-agent family is printed: a burst of curl at deploy time is our own check.
 set -u -o pipefail
 
-SINCE=""
+SINCE=""; TIMES=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --since) SINCE="${2:-}"; shift 2 ;;
+    --times) TIMES=1; shift ;;
     -h|--help) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *) echo "usage: $0 [--since YYYY-MM-DD]" >&2; exit 2 ;;
+    *) echo "usage: $0 [--since YYYY-MM-DD] [--times]" >&2; exit 2 ;;
   esac
 done
 if [ -n "$SINCE" ]; then printf '%s\n' "$SINCE" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || { echo "--since must look like 2026-10-20" >&2; exit 2; }; fi
@@ -52,6 +53,8 @@ records() {
   for f in "${files[@]}"; do
     lab="$(label_of "$f")"
     case "$f" in *.gz) gzip -dc -- "$f" 2>/dev/null ;; *) cat -- "$f" 2>/dev/null ;; esac \
+      | sed -n '1p;$p' | grep -aoE '\[[0-9]{2}/[A-Za-z]{3}/[0-9]{4}' | sed -E 's/^\[//; s/^/__cover__\t/' | head -n 2
+    case "$f" in *.gz) gzip -dc -- "$f" 2>/dev/null ;; *) cat -- "$f" 2>/dev/null ;; esac \
       | grep -aiE "$PRE" \
       | awk -v lab="$lab" -v since="$SINCE" '
         function fam(u) {
@@ -72,7 +75,7 @@ records() {
           split(q[3], st, " "); status = st[1] + 0; bytes = st[2] + 0
           if (status != 200 && status != 206 && status != 403) next
           if (!match($0, /\[[0-9][0-9]\/[A-Za-z][A-Za-z][A-Za-z]\/[0-9][0-9][0-9][0-9]:/)) next
-          dstr = substr($0, RSTART + 1, 11)
+          dstr = substr($0, RSTART + 1, 11); tm = substr($0, RSTART + 13, 5)
           split(dstr, d, "/")
           mon = (index("JanFebMarAprMayJunJulAugSepOctNovDec", d[2]) + 2) / 3
           iso = sprintf("%04d-%02d-%02d", d[3], mon, d[1])
@@ -92,12 +95,14 @@ records() {
           if (c == "") next
           kind = (status == 403) ? "refused" : ((bytes > 0) ? "answered" : "")
           if (kind == "") next
-          print lab "\t" c "\t" kind "\t" iso "\t" $1 "\t" fam(ua)
+          print lab "\t" c "\t" kind "\t" iso "\t" $1 "\t" fam(ua) "\t" bytes "\t" tm
         }'
   done
 }
 
-records | awk -F'\t' -v nfiles="${#files[@]}" '
+records | awk -F'\t' -v nfiles="${#files[@]}" -v times="$TIMES" '
+  function iso_of(d,   x, m) { split(d, x, "/"); m = (index("JanFebMarAprMayJunJulAugSepOctNovDec", x[2]) + 2) / 3; return sprintf("%04d-%02d-%02d", x[3], m, x[1]) }
+  $1 == "__cover__" { c = iso_of($2); if (cmin == "" || c < cmin) cmin = c; if (c > cmax) cmax = c; next }
   {
     k = $1 SUBSEP $2
     if ($3 == "answered") {
@@ -105,41 +110,39 @@ records | awk -F'\t' -v nfiles="${#files[@]}" '
       if (!((k SUBSEP $5) in ip)) { ip[k SUBSEP $5] = 1; nip[k]++ }
       if (!((k SUBSEP $6) in uaseen)) { uaseen[k SUBSEP $6] = 1; ualist[k] = ualist[k] (ualist[k] == "" ? "" : ",") $6 }
       uac[k SUBSEP $6]++
+      if (!(k in bmin) || $7 + 0 < bmin[k]) bmin[k] = $7 + 0
+      if ($7 + 0 > bmax[k]) bmax[k] = $7 + 0
+      tl[k] = tl[k] (tl[k] == "" ? "" : " ") $4 "T" $8
       if (first[k] == "" || $4 < first[k]) first[k] = $4
       if ($4 > last[k]) last[k] = $4
-    } else ref[k]++
-    keys[k] = 1
+      keys[k] = 1
+    } else { ref[$1]++ }
   }
   END {
     print "access log review (counts only; answered = HTTP 200/206 with a body, refused = HTTP 403)"
-    print "log files read: " nfiles
-    any = 0
-    for (k in keys) {
-      split(k, a, SUBSEP)
-      line[a[1] "\t" a[2]] = k
-    }
-    m = 0; for (x in line) order[++m] = x
-    # simple insertion sort so the output is stable
-    for (i = 2; i <= m; i++) { v = order[i]; j = i - 1; while (j >= 1 && order[j] > v) { order[j + 1] = order[j]; j-- } order[j + 1] = v }
-    printf "%-34s %-16s %9s %8s  %-10s %-10s %7s  %s\n", "site", "category", "answered", "refused", "first day", "last day", "clients", "user agents (hits)"
-    for (i = 1; i <= m; i++) {
-      split(order[i], b, "\t"); k = line[order[i]]
-      n = split(ualist[k], u, ","); s = ""
-      for (t = 1; t <= n; t++) if (u[t] != "") s = s (s == "" ? "" : " ") u[t] "=" uac[k SUBSEP u[t]]
-      printf "%-34s %-16s %9d %8d  %-10s %-10s %7d  %s\n", b[1], b[2], ans[k] + 0, ref[k] + 0, (first[k] == "" ? "-" : first[k]), (last[k] == "" ? "-" : last[k]), nip[k] + 0, (s == "" ? "-" : s)
-      if (ans[k] > 0) any = 1
-    }
-    if (m == 0) print "(no request for a sensitive path was found in the logs read)"
+    print "log files read: " nfiles "; the files cover " (cmin == "" ? "unknown" : cmin) " to " (cmax == "" ? "unknown" : cmax)
     print ""
-    print any ? "ANSWERED requests exist: see the table (a burst of curl at deploy time is the project own probe; browser-like or scanner traffic is not)." : "nothing was ever answered for these paths in the logs read."
-    if (any) {
-      print "days with answered requests:"
-      for (kk in ans) { split(kk, a, SUBSEP) }
-      for (dk in day) { split(dk, a, SUBSEP); d2[a[1] " " a[2] " " a[3]] = day[dk] }
-      c2 = 0; for (x in d2) lines2[++c2] = x
-      for (i = 2; i <= c2; i++) { v = lines2[i]; j = i - 1; while (j >= 1 && lines2[j] > v) { lines2[j + 1] = lines2[j]; j-- } lines2[j + 1] = v }
-      for (i = 1; i <= c2 && i <= 60; i++) print "  " lines2[i] " -> " d2[lines2[i]]
-      if (c2 > 60) print "  ... " (c2 - 60) " more day rows"
+    m = 0; for (k in keys) { split(k, a, SUBSEP); order[++m] = a[1] "\t" a[2]; line[a[1] "\t" a[2]] = k }
+    for (i = 2; i <= m; i++) { v = order[i]; j = i - 1; while (j >= 1 && order[j] > v) { order[j + 1] = order[j]; j-- } order[j + 1] = v }
+    if (m == 0) {
+      print "ANSWERED: none. No request for a sensitive path was ever answered with a body in the logs read."
+    } else {
+      print "ANSWERED requests (200/206 with a body), by site and category:"
+      printf "%-30s %-16s %8s %-13s %-10s %-10s %7s  %s\n", "site", "category", "answered", "bytes", "first day", "last day", "clients", "user agents (hits)"
+      for (i = 1; i <= m; i++) {
+        split(order[i], b, "\t"); k = line[order[i]]
+        n = split(ualist[k], u, ","); s = ""
+        for (t = 1; t <= n; t++) if (u[t] != "") s = s (s == "" ? "" : " ") u[t] "=" uac[k SUBSEP u[t]]
+        by = (bmin[k] == bmax[k]) ? bmin[k] "" : bmin[k] ".." bmax[k]
+        printf "%-30s %-16s %8d %-13s %-10s %-10s %7d  %s\n", b[1], b[2], ans[k], by, first[k], last[k], nip[k], s
+        if (times) print "    at: " tl[k]
+      }
     }
+    print ""
+    r = 0; for (x in ref) { rs[++r] = x }
+    for (i = 2; i <= r; i++) { v = rs[i]; j = i - 1; while (j >= 1 && rs[j] > v) { rs[j + 1] = rs[j]; j-- } rs[j + 1] = v }
+    print "REFUSED (403) requests for those paths, per site (the guard held):"
+    for (i = 1; i <= r; i++) printf "  %-32s %d\n", rs[i], ref[rs[i]]
+    if (r == 0) print "  (none)"
   }
 '
