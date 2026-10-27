@@ -50,6 +50,8 @@
 
 - 2026-10-27: Mines' full backup archive found in its public web root (101 MB, 200 from outside) and moved out by the owner the same day (S-2i). R-12 inspection report written (R12_INSPECTION.md). Docroot facts for the three remaining hosts: Central and Mines each track a root `.htaccess` that must be moved aside after a move (Central: deny file like docs; Mines: rewrite into `public/`); Charts serves a built frontend from its docroot with `/api` through a shim, so moving its root would need the deploy redesigned.
 
+- 2026-10-27 21:00 UTC: InfoDot deployed (run 40582727103, owner-authorised) after a fresh InfoDot backup: Laravel v12.62.0 to v12.70.2, Livewire 3.8.11, flysystem 3.36.0, Symfony 7.4.21 (composer audit clean; the deploy gate, smoke check and the new `/main` app-folder probe all passed). Checked from outside afterwards: `/`, `/login`, `/up` 200, POST `/up` 405, both build assets 200, every `/main/...` path and `.env`/`.git/config` 403, the two archives 404, redeem with a bad token 401, `/go/tasks` without a session 302 to login, receivers' `/auth/ecosystem?token=x` 302 to their `/login`. A signed-in platform handoff cannot be tested from outside; the owner should sign in and open one platform.
+
 ## 2026-10-21 to 2026-10-23: catch-up entry (sign-in, registration, R-9, backups, security findings, R-11)
 
 Written 2026-10-23 from the pull-request lists, deploy and workflow histories and live `curl -I` checks. PR numbers are in the roadmap and assessment sections named.
