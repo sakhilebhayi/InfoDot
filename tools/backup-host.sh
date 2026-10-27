@@ -188,6 +188,17 @@ resolve_db() {
   D_USER="$(envget DB_USERNAME "$env")" || D_USER=""
   D_PASS="$(envget DB_PASSWORD "$env")" || D_PASS=""
   D_SOCK="$(envget DB_SOCKET "$env")" || D_SOCK=""
+  # An app can keep dedicated MYSQL_* settings with DB_* as the fallback (Dot.Mines' config/database.php:
+  # env('MYSQL_PASSWORD', env('DB_PASSWORD'))). The dedicated key wins when it is set, as in the app.
+  if [ "$drv" = mysql ]; then
+    local v
+    v="$(envget MYSQL_DATABASE "$env")" && [ -n "$v" ] && D_NAME="$v"
+    v="$(envget MYSQL_HOST "$env")" && [ -n "$v" ] && D_HOST="$v"
+    v="$(envget MYSQL_PORT "$env")" && [ -n "$v" ] && D_PORT="$v"
+    v="$(envget MYSQL_USERNAME "$env")" && [ -n "$v" ] && D_USER="$v"
+    v="$(envget MYSQL_PASSWORD "$env")" && [ -n "$v" ] && D_PASS="$v"
+    v="$(envget MYSQL_SOCKET "$env")" && [ -n "$v" ] && D_SOCK="$v"
+  fi
   [ -n "$D_HOST" ] || D_HOST=127.0.0.1
   if [ -z "$D_PORT" ]; then if [ "$drv" = pgsql ]; then D_PORT=5432; else D_PORT=3306; fi; fi
   return 0

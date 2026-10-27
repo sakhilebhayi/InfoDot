@@ -343,4 +343,12 @@ cat "$BKR/manifest.log" >> "$ALL"
 check "no fake secret (APP_KEY, DB passwords, mail password, the passphrase) appears in any output or in manifest.log" "! grep -q 'FAKEKEY\\|FAKEDBPW\\|FAKEPGPW\\|FAKEMAILPW' '$ALL' && ! grep -qF \"\$(cat '$PF')\" '$ALL'"
 check "no output printed file contents (no log line, no SQL)" "! grep -q 'LOGLINE-NOT-A-BACKUP\\|CREATE TABLE\\|INSERT INTO' '$ALL'"
 
+# ---- 19. an app with dedicated MYSQL_* settings (Dot.Mines in production) ----------------------------------------
+X="$H/extra.$D/extra"; mkapp "$X"
+{ ev "$KAPP" "base64:FAKEKEY-EXTRA="; printf '%s\n' DB_CONNECTION=mysql DB_HOST=127.0.0.1 DB_DATABASE=wrong_db DB_USERNAME=wrong_user DB_PASSWORD=
+  printf '%s\n' MYSQL_HOST=127.0.0.1 MYSQL_PORT=3306 MYSQL_DATABASE=right_db MYSQL_USERNAME=right_user 'MYSQL_PASSWORD="FAKEMYSQLKEYPW"'; } > "$X/.env"
+runout bk run extra
+check "MYSQL_* settings win over an empty DB_PASSWORD (the dump gets the dedicated user and password)" "[ $RC = 0 ] && echo \"\$OUT\" | grep -q 'extra: ok' && grep -q 'user=\"right_user\"' '$STUB_LOG/cnf.copy' && grep -q 'password=\"FAKEMYSQLKEYPW\"' '$STUB_LOG/cnf.copy' && tail -n 1 '$STUB_LOG/mysqldump.args' | grep -q right_db"
+cat "$BKR/manifest.log" >> "$ALL"
+
 [ $FAIL -eq 0 ] && echo "ALL PASSED" || { echo "SOME FAILED"; exit 1; }
