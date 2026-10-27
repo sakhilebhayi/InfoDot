@@ -46,9 +46,9 @@ No Dot.Brain guardian health document, no backups, no scheduler probe.
 # BEGIN dot-app-folder-guard main
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteRule ^main/(\.env.*|\.git.*|artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml.*|database/|storage/|vendor/|bootstrap/|config/|tests/|node_modules/) - [F,L,NC]
+RewriteRule ^main/(?!public/) - [F,L,NC]
 </IfModule>
 # END dot-app-folder-guard main
 ```
 
-It matches only names directly under `/main/`; assets (`/build/...`) and the app are unaffected. The deploy's last step ("Probe the application folder from outside") and the App Folder Guard `check` mode (pair `apex:main`) request those paths and turn red on a 200. Rollback of the rule: `mv ~/public_html/.htaccess.before-main-guard ~/public_html/.htaccess`. The archives were moved by hand to `~/quarantine-infodot-docroot/`. The proper end state is the same as the other platforms: document root `~/public_html/main/public`, which also removes the legacy docroot files (`index.php` shim, `vendor/`, `web.config`, `.DS_Store`).
+It refuses EVERYTHING under `/main/` except `public/` (an allow-list: no list of names to keep up to date, so a new file such as a README or a seeder is covered too). It was first written as a list of sensitive names on 2026-10-27 and replaced by this allow-list the same day. Assets (`/build/...`, served through the docroot symlink) and the app are unaffected. The primary domain's document root cannot be changed on this shared hosting plan (owner, 2026-10-27), so this rule is the permanent control unless the host changes the root. The deploy's last step ("Probe the application folder from outside") and the App Folder Guard `check` mode (pair `apex:main`) request those paths and turn red on a 200. Rollback of the rule: `mv ~/public_html/.htaccess.before-allowlist ~/public_html/.htaccess` (the earlier list-based version; before that, `.htaccess.before-main-guard` is the file without any block). The archives were moved by hand to `~/quarantine-infodot-docroot/`. The proper end state is the same as the other platforms: document root `~/public_html/main/public`, which also removes the legacy docroot files (`index.php` shim, `vendor/`, `web.config`, `.DS_Store`).
