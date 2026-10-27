@@ -1,0 +1,68 @@
+name: Access Log Review
+
+# Read-only review of the raw web-server access logs on the shared host: how many requests were ANSWERED (200/206 with
+# a body) for paths that must never be served (.env, .git, databases, Laravel logs, composer files, vendor/autoload,
+# artisan, phpunit.xml, archives), per site, per category and per day. This is the "check the raw access logs" owner
+# action in docs/programme/SECURITY_ASSESSMENT.md (S-2c, S-2d, S-2f).
+#
+# Fixed command on purpose -- this workflow must never become a general remote shell. The host side is
+# tools/access-log-review-host.sh (tested by tools/test-access-log-review.sh); it writes nothing on the host and prints
+# counts and days only: no IP address, no request line, no user agent text, because this repository and its job logs
+# are public. For the individual lines, run the commands in docs/programme/ACCESS_LOG_REVIEW.md in a private terminal.
+#
+# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY, DEPLOY_KNOWN_HOSTS.
+on:
+  workflow_dispatch:
+    inputs:
+      since:
+        description: 'Only count requests on or after this day, YYYY-MM-DD (empty = every day the logs cover)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: Review the raw access logs (read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SINCE: ${{ inputs.since }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the input
+        run: |
+          printf '%s\n' "$SINCE" | grep -Eq '^([0-9]{4}-[0-9]{2}-[0-9]{2})?$' || { echo "::error::since must be empty or YYYY-MM-DD"; exit 1; }
+
+      - name: Set up SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Review (read-only, counts only)
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -o pipefail
+          ARGS=""; [ -z "$SINCE" ] || ARGS="--since $SINCE"
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" "bash -s -- $ARGS" < tools/access-log-review-host.sh | tee access-log-review.txt
+
+      - name: Job summary
+        if: ${{ always() }}
+        run: |
+          { echo '### Access log review (counts only)'; echo; echo '```'; cat access-log-review.txt 2>/dev/null || echo '(no output)'; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: access-log-review
+          path: access-log-review.txt
