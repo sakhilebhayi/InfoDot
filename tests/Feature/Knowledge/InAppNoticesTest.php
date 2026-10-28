@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Knowledge;
 
+use App\Livewire\Comments;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\AnswerService;
@@ -10,6 +11,7 @@ use App\Services\Knowledge\ModerationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Livewire\Livewire;
 use Tests\Feature\Knowledge\Concerns\MakesCommunity;
 use Tests\TestCase;
 
@@ -183,5 +185,27 @@ class InAppNoticesTest extends TestCase
 
         $this->assertSame(2, app(InAppNotices::class)->prune());
         $this->assertSame(['b', 'c'], UserNotice::orderBy('ref')->pluck('ref')->all());
+    }
+
+    public function test_the_owner_is_told_when_someone_comments_and_a_comment_on_your_own_work_tells_nobody(): void
+    {
+        $asker = $this->person('Asker');
+        $reader = $this->person('Reader');
+        $question = $this->question($asker, 'public', 'How do I register a clothing brand?');
+
+        Livewire::actingAs($reader)->test(Comments::class, ['model' => $question, 'question' => $question])
+            ->set('newCommentState.body', 'Which province is the business in?')->call('postComment');
+
+        $this->assertSame([UserNotice::COMMENT_RECEIVED], $this->kinds($asker));
+        $this->assertSame([], $this->kinds($reader));
+
+        Livewire::actingAs($asker)->test(Comments::class, ['model' => $question, 'question' => $question])
+            ->set('newCommentState.body', 'Gauteng.')->call('postComment');
+
+        $this->assertSame([UserNotice::COMMENT_RECEIVED], $this->kinds($asker), 'replying on your own question tells nobody');
+
+        $page = $this->actingAs($asker)->get('/notifications')->assertOk()->getContent();
+        $this->assertStringContainsString('Someone commented on', $page);
+        $this->assertStringNotContainsString('Which province', $page, 'the comment text is not copied into the notice');
     }
 }

@@ -2,6 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Solutions;
+use App\Models\User;
+use App\Models\UserNotice;
+use App\Services\Knowledge\InAppNotices;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -59,6 +63,21 @@ class Comments extends Component
         $comment = $this->model->comments()->make(['body' => $this->newCommentState['body']]);
         $comment->user()->associate(auth()->user());
         $comment->save();
+
+        // The owner of the question or solution is told someone commented (often a request for more detail). Never the commenter,
+        // and never able to fail the comment itself.
+        try {
+            $owner = $this->model->user_id ? User::find($this->model->user_id) : null;
+            if ($owner !== null) {
+                app(InAppNotices::class)->record(
+                    UserNotice::COMMENT_RECEIVED, $owner,
+                    $this->model instanceof Solutions ? 'solution' : 'question', (int) $this->model->getKey(),
+                    'infodot:comment:'.$comment->getKey(), auth()->user(),
+                );
+            }
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         $this->newCommentState = ['body' => ''];
     }

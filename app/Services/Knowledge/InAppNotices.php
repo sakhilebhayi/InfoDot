@@ -109,6 +109,7 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => "Your answer to $title was accepted as the solution.",
             UserNotice::SOLUTION_VERIFIED => "Your solution $title was verified by a moderator.",
             UserNotice::KNOWLEDGE_REUSED => "Your work on $title was added to the knowledge library.",
+            UserNotice::COMMENT_RECEIVED => "Someone commented on $title. They may be asking for more detail.",
             default => 'Something happened to your work.',
         };
     }
@@ -120,6 +121,7 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => 'One of your answers was accepted, on a question that is no longer available.',
             UserNotice::SOLUTION_VERIFIED => 'A solution of yours was verified; it is no longer available.',
             UserNotice::KNOWLEDGE_REUSED => 'Some of your work was added to the knowledge library; it is no longer available.',
+            UserNotice::COMMENT_RECEIVED => 'Someone commented on something of yours that is no longer available.',
             default => 'Something happened to your work that is no longer available.',
         };
     }
