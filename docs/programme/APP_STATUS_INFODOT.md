@@ -12,9 +12,9 @@ branch `main`, deployed only by dispatch.
 | Laravel/Livewire/Symfony security advisories (1 critical, 2 high) | **done and deployed** | InfoDot #103; deploy run 40582727103 (2026-10-27 ~21:00 UTC); `composer audit --locked`: no advisories |
 | npm advisories (5 high, dev/build tree) | **done, not yet deployed** | #106 (lock only); production npm tree was already clean; 2 moderate left (`@tailwindcss/typography`, needs a semver-major change) |
 | App folder `~/public_html/main` served (log, artisan, composer, vendor) | **done** | allow-list rule at the top of `~/public_html/.htaccess` (`^main/(?!public/)` refused); outside probes 403; deploy now probes `/main/...` after every release (#93); S-2h |
-| Loose archives in the web root | **done** (moved); contents not yet reviewed | `InfoDot-main.zip` and `.well-known.zip` in `~/quarantine-infodot-docroot/`; 404 from outside. **Owner:** list names (commands in the checklist), then delete |
+| Loose archives in the web root | **done** | moved 2026-10-27, read by name 2026-10-28 and deleted: `InfoDot-main.zip` was a clean source zip; `.well-known.zip` was an old March installation (its `.env` secrets are rotated or placeholders; its database held 4 test accounts); S-2h |
 | Secrets possibly exposed by the unexplained 2026-10-05 `/.env` answer | **done (precaution)** | DB password, mailbox password and `APP_KEY` rotated 2026-10-27; sessions cleared; handoff checked |
-| `.DS_Store` files (served at `/.DS_Store`, `/img/.DS_Store`) | repo **done**, host copies **waiting on the owner** | #108 removes the tracked files and ignores them; the copies in `~/public_html` are removed by hand (command below) |
+| `.DS_Store` files (served at `/.DS_Store`, `/img/.DS_Store`) | **done** | #108 removed the tracked files; the owner removed the host copies on 2026-10-28; `/.DS_Store`, `/img/.DS_Store`, `/img/icons/.DS_Store`, `/main/public/.DS_Store` answer 403 |
 | Primary document root cannot move to `main/public` (plan limit) | **waiting on the owner** | ask the host; until then the allow-list rule is the control |
 | Access-log re-check | **later** | re-run `access-log-review.yml` with `since=2026-10-28` in about a week |
 
