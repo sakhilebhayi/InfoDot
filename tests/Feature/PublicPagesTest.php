@@ -16,10 +16,12 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Build your business with collective intelligence.', $html);
+        $this->assertStringContainsString('Find practical business solutions.', $html);
+        $this->assertStringContainsString('role="search"', $html);
+        $this->assertStringContainsString('name="search"', $html);
+        $this->assertStringContainsString('has-motion', $html);
+        $this->assertStringContainsString('prefers-reduced-motion', $html);
         $this->assertStringContainsString('knowledge base for a business', $html);
-        $this->assertStringContainsString('Start building your business', $html);
-        $this->assertStringContainsString('Explore questions and answers', $html);
         $this->assertStringContainsString(route('register'), $html);
         $this->assertStringContainsString(route('solution_search_results'), $html);
         $this->assertSame(1, substr_count($html, '<h1'));
@@ -31,7 +33,7 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        foreach (['PostgreSQL', 'shared database', 'likes on', 'Associates', 'guarantee', 'testimonial', 'compliant', 'certified', 'customers'] as $claim) {
+        foreach (['PostgreSQL', 'shared database', 'likes on', 'Associates', 'guarantee', 'testimonial', 'compliant', 'certified', 'trusted by', 'our customers', 'founder'] as $claim) {
             $this->assertStringNotContainsStringIgnoringCase($claim, strip_tags($html), "the page must not say: {$claim}");
         }
     }

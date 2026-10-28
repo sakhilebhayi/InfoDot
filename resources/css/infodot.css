@@ -5977,9 +5977,7 @@ a.ix-notices__text:hover {
     }
 
     .ix-top__inner--nav .ix-tabs {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        scrollbar-width: none;
+        flex-wrap: wrap;
     }
 }
 
@@ -6031,47 +6029,12 @@ a.ix-notices__text:hover {
 }
 
 /* Landing */
-.ix-pubhero {
-    background: var(--ix-top);
-    color: var(--ix-top-ink);
-}
-
-.ix-pubhero__inner {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 72px 24px 80px;
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-    gap: 48px;
-    align-items: center;
-}
-
-.ix-pubhero h1 {
-    margin: 0 0 20px;
-    max-width: 16ch;
-    font-weight: 700;
-    font-size: clamp(2.25rem, 4.6vw, 3.75rem);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    text-wrap: balance;
-}
-
-.ix-pubhero__lede {
-    margin: 0 0 28px;
-    max-width: 58ch;
-    color: var(--ix-top-ink-2);
-    font-size: 18px;
-    line-height: 1.6;
-    text-wrap: pretty;
-}
-
 .ix-pubhero__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
 }
 
-.ix-pubhero .ix-btn,
 .ix-pubcta .ix-btn {
     height: 46px;
     padding: 0 20px;
@@ -6081,53 +6044,19 @@ a.ix-notices__text:hover {
     color: var(--ix-top-ink);
 }
 
-.ix-pubhero .ix-btn:hover,
 .ix-pubcta .ix-btn:hover {
     background: #2b3439;
 }
 
-.ix-pubhero .ix-btn.ix-btn--primary,
 .ix-pubcta .ix-btn.ix-btn--primary {
     background: var(--ix-platforms);
     border-color: var(--ix-platforms);
     color: #1a1300;
 }
 
-.ix-pubhero .ix-btn.ix-btn--primary:hover,
 .ix-pubcta .ix-btn.ix-btn--primary:hover {
     background: var(--ix-platforms);
     filter: brightness(1.1);
-}
-
-.ix-pubhero__small {
-    margin: 16px 0 0;
-    color: var(--ix-top-ink-2);
-    font-size: 14px;
-}
-
-.ix-pubhero__small a {
-    color: var(--ix-top-ink);
-    text-underline-offset: 3px;
-}
-
-.ix-pubspecimen {
-    margin: 0;
-}
-
-.ix-pubspecimen .ix-qlist {
-    margin: 0;
-    border: 1px solid var(--ix-rule-strong);
-    background: var(--ix-panel);
-    color: var(--ix-text);
-    border-radius: var(--ix-radius);
-}
-
-.ix-pubspecimen figcaption {
-    margin-top: 12px;
-    max-width: 46ch;
-    color: var(--ix-top-ink-2);
-    font-size: 14px;
-    line-height: 1.5;
 }
 
 .ix-pubsec {
@@ -6139,12 +6068,8 @@ a.ix-notices__text:hover {
 .ix-pubsec--tint {
     max-width: none;
     background: var(--ix-sunken);
-}
-
-.ix-pubsec--tint > * {
-    max-width: 1232px;
-    margin-left: auto;
-    margin-right: auto;
+    padding-left: max(24px, calc((100vw - 1232px) / 2));
+    padding-right: max(24px, calc((100vw - 1232px) / 2));
 }
 
 .ix-pubsec h2 {
@@ -6316,18 +6241,13 @@ a.ix-notices__text:hover {
 }
 
 @media (max-width: 900px) {
-    .ix-pubhero__inner {
-        grid-template-columns: minmax(0, 1fr);
-        padding: 48px 16px 56px;
-        gap: 32px;
-    }
-
     .ix-pubsec {
         padding: 48px 16px;
     }
 
-    .ix-pubsec--tint > * {
-        max-width: none;
+    .ix-pubsec--tint {
+        padding-left: 16px;
+        padding-right: 16px;
     }
 
     .ix-pillar {
@@ -6345,5 +6265,531 @@ a.ix-notices__text:hover {
 
     .ix-pubcta__inner {
         padding: 40px 16px;
+    }
+}
+
+/* ---------------------------------------------------------------- landing: search first */
+
+/* Tokens for the hero. The photograph is always lit and clean; a flat wash keeps the type legible in both themes. */
+:root {
+    --lp-veil: rgba(248, 249, 249, 0.74);
+    --lp-search-shadow: 0 10px 34px rgba(20, 24, 26, 0.16), 0 2px 6px rgba(20, 24, 26, 0.1);
+    --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --lp-veil: rgba(14, 17, 18, 0.62);
+        --lp-search-shadow: 0 10px 34px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+}
+
+html,
+body {
+    overflow-x: clip;
+}
+
+.lp-hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    min-height: min(82vh, 760px);
+    overflow: clip;
+    background: var(--ix-sunken);
+}
+
+.lp-hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 42%;
+    transform-origin: 50% 40%;
+}
+
+.lp-hero__veil {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--lp-veil);
+}
+
+.lp-hero__inner {
+    width: 100%;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 72px 24px 80px;
+    text-align: center;
+}
+
+.lp-hero__title {
+    margin: 0 auto 14px;
+    max-width: 18ch;
+    color: var(--ix-text);
+    font-weight: 700;
+    font-size: clamp(2.2rem, 5.2vw, 3.9rem);
+    line-height: 1.05;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+}
+
+.lp-hero__sub {
+    margin: 0 auto 32px;
+    max-width: 52ch;
+    color: var(--ix-text);
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    line-height: 1.5;
+    text-wrap: balance;
+}
+
+/* The search box: the biggest thing on the page, the way a search engine's is */
+.lp-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 8px 8px 8px 22px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: 999px;
+    background: var(--ix-panel);
+    box-shadow: var(--lp-search-shadow);
+    transition: transform 220ms var(--lp-ease), box-shadow 220ms var(--lp-ease), border-color 160ms ease-out;
+}
+
+.lp-search:focus-within {
+    transform: translateY(-2px) scale(1.012);
+    border-color: var(--ix-signal);
+    box-shadow: var(--lp-search-shadow), 0 0 0 4px color-mix(in srgb, var(--ix-signal) 22%, transparent);
+}
+
+.lp-search__icon {
+    flex: none;
+    color: var(--ix-text-2);
+    font-size: 28px;
+}
+
+.lp-search__input {
+    flex: 1;
+    min-width: 0;
+    height: 56px;
+    padding: 0 6px;
+    border: 0;
+    background: transparent;
+    color: var(--ix-text);
+    font: 500 clamp(1rem, 2vw, 1.25rem) / 1 var(--ix-font);
+}
+
+.lp-search__input::placeholder {
+    color: var(--ix-text-3);
+}
+
+.lp-search__input:focus,
+.lp-search__input:focus-visible {
+    outline: none;
+}
+
+.lp-search__go {
+    flex: none;
+    height: 56px;
+    padding: 0 28px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ix-platforms);
+    color: #1a1300;
+    font: 700 16px/1 var(--ix-font);
+    cursor: pointer;
+    transition: transform 160ms var(--lp-ease), filter 160ms ease-out;
+}
+
+.lp-search__go:hover {
+    filter: brightness(1.08);
+}
+
+.lp-search__go:active {
+    transform: scale(0.97);
+}
+
+.lp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 22px auto 0;
+    padding: 0;
+    max-width: 760px;
+    list-style: none;
+}
+
+.lp-chips a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: 999px;
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    transition: transform 160ms var(--lp-ease), background-color 160ms ease-out;
+}
+
+.lp-chips a:hover {
+    background: var(--ix-sunken);
+    transform: translateY(-1px);
+}
+
+.lp-chips a:active {
+    transform: scale(0.97);
+}
+
+.lp-hero__ask {
+    margin: 18px 0 0;
+    color: var(--ix-text);
+    font-size: 15px;
+}
+
+.lp-hero__ask a {
+    color: var(--ix-text);
+    font-weight: 600;
+    text-underline-offset: 3px;
+}
+
+/* Sections under the hero */
+.lp-split {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 80px 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 56px;
+    align-items: center;
+}
+
+.lp-split--flip {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+}
+
+.lp-split--tint {
+    max-width: none;
+    background: var(--ix-sunken);
+    padding-left: max(24px, calc((100vw - 1232px) / 2));
+    padding-right: max(24px, calc((100vw - 1232px) / 2));
+}
+
+.lp-split h2,
+.lp-journey h2 {
+    margin: 0 0 10px;
+    font-weight: 650;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+    text-wrap: balance;
+}
+
+.lp-lede {
+    margin: 0 0 24px;
+    max-width: 62ch;
+    color: var(--ix-text-2);
+    font-size: 17px;
+    line-height: 1.65;
+    text-wrap: pretty;
+}
+
+.lp-photo {
+    margin: 0;
+}
+
+.lp-photo__frame,
+.lp-band__frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--ix-radius);
+    background: var(--ix-sunken);
+}
+
+.lp-photo__frame {
+    aspect-ratio: 4 / 5;
+}
+
+.lp-photo--tall .lp-photo__frame {
+    aspect-ratio: 3 / 4;
+}
+
+.lp-photo__frame img,
+.lp-band__frame img {
+    position: absolute;
+    top: -9%;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: 118%;
+    object-fit: cover;
+}
+
+.lp-photo__frame img {
+    object-position: 32% 40%;
+}
+
+.lp-checks {
+    margin: 0 0 24px;
+    padding: 0;
+    list-style: none;
+}
+
+.lp-checks li {
+    position: relative;
+    padding: 10px 0 10px 32px;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.lp-checks li::before {
+    content: "check";
+    position: absolute;
+    left: 0;
+    top: 9px;
+    font-family: 'Material Symbols Rounded';
+    font-size: 22px;
+    line-height: 1;
+    color: var(--ix-ok);
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+}
+
+.lp-btn {
+    height: 46px;
+    padding: 0 22px;
+    font-size: 15px;
+}
+
+/* The journey: seven stages, a line that fills as you scroll past them */
+.lp-journey {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 80px 24px 64px;
+}
+
+.lp-journey__head {
+    max-width: 68ch;
+    margin-bottom: 36px;
+}
+
+.lp-stages {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0 16px;
+    margin: 0;
+    padding: 28px 0 0;
+    list-style: none;
+}
+
+.lp-stages::before,
+.lp-stages::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.lp-stages::before {
+    right: 0;
+    background: var(--ix-rule);
+}
+
+.lp-stages::after {
+    width: 100%;
+    background: var(--ix-platforms);
+    transform: scaleX(var(--lp-progress, 1));
+    transform-origin: left center;
+}
+
+.lp-stages a {
+    display: block;
+    padding: 4px 0 8px;
+    color: var(--ix-text);
+    text-decoration: none;
+}
+
+.lp-stages strong {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 650;
+    font-size: 18px;
+}
+
+.lp-stages span {
+    display: block;
+    color: var(--ix-text-2);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.lp-stages a:hover strong {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.has-motion .lp-stages > li {
+    opacity: 0.5;
+    transition: opacity 400ms var(--lp-ease);
+}
+
+.has-motion .lp-stages > li.is-passed {
+    opacity: 1;
+}
+
+.lp-band {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+}
+
+.lp-band__frame {
+    aspect-ratio: 21 / 9;
+}
+
+.lp-band__frame img {
+    object-position: 50% 45%;
+}
+
+.lp-credits {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 24px 32px;
+    color: var(--ix-text-3);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.lp-credits a {
+    color: var(--ix-text-2);
+    text-underline-offset: 3px;
+}
+
+/* Motion: everything is visible by default. When motion is allowed (the has-motion flag), script-driven items start hidden and are
+   revealed by it; if the script does not finish, the failsafe class brings everything back. Only transform and opacity move. */
+.has-motion [data-hero],
+.has-motion [data-reveal] {
+    opacity: 0;
+}
+
+.has-motion.motion-failsafe [data-hero],
+.has-motion.motion-failsafe [data-reveal] {
+    opacity: 1;
+}
+
+@media (max-width: 900px) {
+    .lp-hero {
+        min-height: min(78vh, 680px);
+    }
+
+    .lp-hero__inner {
+        padding: 56px 16px 64px;
+    }
+
+    .lp-split,
+    .lp-split--flip {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
+        padding: 56px 16px;
+    }
+
+    .lp-split--flip .lp-photo {
+        order: -1;
+    }
+
+    .lp-split--tint {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .lp-photo__frame,
+    .lp-photo--tall .lp-photo__frame {
+        aspect-ratio: 4 / 3;
+    }
+
+    .lp-journey {
+        padding: 56px 16px 40px;
+    }
+
+    .lp-stages {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+        padding: 0 0 0 20px;
+    }
+
+    .lp-stages::before,
+    .lp-stages::after {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: auto;
+        width: 4px;
+        height: auto;
+    }
+
+    .lp-stages::after {
+        transform: scaleY(var(--lp-progress, 1));
+        transform-origin: center top;
+    }
+
+    .lp-band {
+        padding: 0 16px 56px;
+    }
+
+    .lp-band__frame {
+        aspect-ratio: 4 / 3;
+    }
+
+    .lp-search {
+        padding-left: 16px;
+    }
+
+    .lp-search__go {
+        padding: 0 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .lp-search__icon {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lp-search,
+    .lp-search__go,
+    .lp-chips a {
+        transition: none;
+    }
+}
+
+/* The landing's top bar has no search of its own (the page is the search): brand left, actions right. */
+.ix-top--public.is-landing .ix-top__inner:first-child {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+/* Two columns where a section is only words: the text, and where to read on */
+.lp-founder {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 48px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .lp-founder {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
     }
 }

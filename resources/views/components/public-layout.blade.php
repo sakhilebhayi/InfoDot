@@ -14,6 +14,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Big+Shoulders+Stencil+Display:wght@700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if ($landing)
+        {{-- Motion is added on top of a page that is complete without it: the flag is set before first paint only when the visitor has not asked for reduced motion. --}}
+        <script>if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.classList.add('has-motion'); }</script>
+        @vite(['resources/js/landing.js'])
+    @endif
     @livewireStyles
 </head>
 {{-- The shell for pages a visitor who is not signed in may open: the same top bar, band and footer as the app, without the company and the app tabs. --}}
@@ -21,15 +26,17 @@
     <a href="#main" class="ix-skip">Skip to content</a>
 
     <div class="ix-shell">
-        <header class="ix-top ix-top--public">
+        <header @class(['ix-top', 'ix-top--public', 'is-landing' => $landing])>
             <div class="ix-top__inner">
                 <a href="{{ url('/') }}" class="ix-brand" aria-label="InfoDot home">
                     <img src="{{ asset('img/logo_white.png') }}" alt="InfoDot" width="64" height="26">
                 </a>
 
-                <div class="ix-top__search">
-                    <livewire:search />
-                </div>
+                @unless ($landing)
+                    <div class="ix-top__search">
+                        <livewire:search />
+                    </div>
+                @endunless
 
                 <div class="ix-top__actions">
                     @auth

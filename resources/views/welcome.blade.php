@@ -2,75 +2,115 @@
     $platforms = collect(config('ecosystem.platforms', []))
         ->filter(fn ($p, $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && $key !== 'infodot')
         ->map(fn ($p) => $p['name'])->values();
+    $examples = ['How do I register a business?', 'How do I price my work?', 'How do I find customers?', 'How do I track my cash?', 'How do I hire my first person?'];
+    $search = fn (string $words) => route('solution_search_results', ['search' => $words]);
+    $first = auth()->check() ? \Illuminate\Support\Str::of(auth()->user()->name)->before(' ')->toString() : null;
 @endphp
-<x-public-layout landing title="InfoDot" description="InfoDot helps people start, run and grow a business: ask questions, learn from people who have been there, follow verified solutions, and open every Dot platform with one account.">
-    <section class="ix-pubhero" aria-labelledby="hero-title">
-        <div class="ix-pubhero__inner">
-            <div class="ix-pubhero__copy">
-                <h1 id="hero-title">Build your business with collective intelligence.</h1>
-                <p class="ix-pubhero__lede">Starting a business is easier when you do not have to figure everything out alone. Ask a question, learn from people who have been there, and follow solutions a moderator has checked. InfoDot is where the Dot.Eco-system keeps what it knows about running a business, and the one account that opens every Dot platform.</p>
-                <div class="ix-pubhero__actions">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="ix-btn ix-btn--primary">Open InfoDot</a>
-                    @else
-                        <a href="{{ route('register') }}" class="ix-btn ix-btn--primary">Start building your business</a>
-                        <a href="{{ route('solution_search_results') }}" class="ix-btn">Explore questions and answers</a>
-                    @endauth
-                </div>
-                @guest<p class="ix-pubhero__small">Already have an account? <a href="{{ route('login') }}">Sign in</a>.</p>@endguest
-            </div>
+<x-public-layout landing title="InfoDot" description="Search practical business solutions from people who have done it, or ask your own question. InfoDot is where the Dot.Eco-system keeps what it knows about running a business.">
+    <section class="lp-hero" aria-labelledby="hero-title">
+        <img class="lp-hero__bg" src="{{ asset('img/landing/hero-1920.jpg') }}" srcset="{{ asset('img/landing/hero-960.jpg') }} 960w, {{ asset('img/landing/hero-1920.jpg') }} 1920w" sizes="100vw" width="1920" height="1280" alt="" fetchpriority="high" decoding="async">
+        <div class="lp-hero__veil" aria-hidden="true"></div>
+        <div class="lp-hero__inner">
+            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Find practical business solutions.' }}</h1>
+            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'Search what business owners have learned, or ask your own question.' }}</p>
 
-            <figure class="ix-pubspecimen" aria-label="An example of how a question looks in InfoDot">
-                <ul class="ix-qlist">
-                    <li class="ix-q is-solved">
-                        <span class="ix-q__count" aria-hidden="true">
-                            <span class="ix-stencil-num">03</span>
-                            <small>replies</small>
-                        </span>
-                        <div class="ix-q__body">
-                            <span class="ix-q__title">How do I register a clothing brand?</span>
-                            <p class="ix-q__meta"><span class="ix-ref">NWFN-Q-000014</span><span>Your company</span></p>
-                        </div>
-                        <span class="ix-q__state is-done">Solved</span>
-                    </li>
-                </ul>
-                <figcaption>An example. Every question and solution carries your company's code and a reference, so it can be found, quoted and trusted.</figcaption>
-            </figure>
+            <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>
+                <label for="lp-q" class="ix-sr">Search practical business solutions</label>
+                <span class="material-symbols-rounded lp-search__icon" aria-hidden="true">search</span>
+                <input id="lp-q" class="lp-search__input" type="search" name="search" placeholder="How do I register a business?" autocomplete="off" data-examples="{{ json_encode($examples) }}">
+                <button type="submit" class="lp-search__go">Search</button>
+            </form>
+
+            <ul class="lp-chips" aria-label="Things people look up" data-hero>
+                <li><a href="{{ $search('register') }}">Register a company</a></li>
+                <li><a href="{{ $search('price') }}">Set a price</a></li>
+                <li><a href="{{ $search('customers') }}">Find customers</a></li>
+                <li><a href="{{ $search('cash') }}">Manage cash</a></li>
+                <li><a href="{{ $search('hire') }}">Hire someone</a></li>
+            </ul>
+            <p class="lp-hero__ask" data-hero>Can't find it? <a href="{{ route('seek') }}">Ask a new question</a>.</p>
         </div>
     </section>
 
-    <section class="ix-pubsec" aria-labelledby="start-title">
-        <h2 id="start-title">Start where you are</h2>
-        <p class="ix-pubsec__lede">Come with an undeveloped idea or an established problem. Each of these opens something that works today. Those that need an account ask you to sign in first and bring you back.</p>
-        <ul class="ix-intents">
-            <li><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}" class="ix-intent"><span><strong>I want to start a business</strong><span>Read the first steps others wrote down: setting up a company, inviting people, finding your way around.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
-            <li><a href="{{ route('seek') }}" class="ix-intent"><span><strong>I have a problem to solve</strong><span>Ask in plain words. Someone who has faced it can answer, and you accept the answer that worked.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
-            <li><a href="{{ route('solution_search_results') }}" class="ix-intent"><span><strong>I want to learn from people who have done it</strong><span>Search the public questions and solutions before you ask. Most problems have been met before.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
-            <li><a href="{{ route('solutions') }}" class="ix-intent"><span><strong>I need a procedure I can follow</strong><span>Solutions are written as numbered steps, and a moderator marks the ones they have checked.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
-            <li><a href="{{ route('register') }}" class="ix-intent"><span><strong>I want to share what I know</strong><span>Answer a question or write a solution. Your name stays on it and the person who asked decides if it helped.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
-            <li><a href="{{ route('login') }}" class="ix-intent"><span><strong>I want one place to open my business tools</strong><span>Sign in once and open any live Dot platform without signing in again.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
-        </ul>
+    <section class="lp-split" aria-labelledby="start-title">
+        <figure class="lp-photo" data-reveal>
+            <div class="lp-photo__frame" data-parallax>
+                <img src="{{ asset('img/landing/seamstress.jpg') }}" width="1200" height="800" alt="A seamstress at her sewing machine, with racks of colourful fabric behind her" loading="lazy" decoding="async">
+            </div>
+        </figure>
+        <div class="lp-split__body">
+            <h2 id="start-title" data-reveal>Start where you are</h2>
+            <p class="lp-lede" data-reveal>Come with an undeveloped idea or an established problem. Each of these opens something that works today. Those that need an account ask you to sign in first and bring you back.</p>
+            <ul class="ix-intents" data-reveal>
+                <li><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}" class="ix-intent"><span><strong>I want to start a business</strong><span>Read the first steps others wrote down.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+                <li><a href="{{ route('seek') }}" class="ix-intent"><span><strong>I have a problem to solve</strong><span>Ask in plain words. You accept the answer that worked.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+                <li><a href="{{ route('solution_search_results') }}" class="ix-intent"><span><strong>I want to learn from people who have done it</strong><span>Search the public questions and solutions before you ask.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+                <li><a href="{{ route('solutions') }}" class="ix-intent"><span><strong>I need a procedure I can follow</strong><span>Solutions are numbered steps, and a moderator marks the ones they have checked.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+                <li><a href="{{ route('register') }}" class="ix-intent"><span><strong>I want to share what I know</strong><span>Your name stays on your answer, and the person who asked decides if it helped.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+                <li><a href="{{ route('login') }}" class="ix-intent"><span><strong>I want one place to open my business tools</strong><span>Sign in once and open any live Dot platform without signing in again.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+            </ul>
+        </div>
     </section>
 
-    <section class="ix-pubsec ix-pubsec--tint" aria-labelledby="how-title">
-        <h2 id="how-title">What InfoDot does today</h2>
-        <p class="ix-pubsec__lede">InfoDot is a knowledge base for a business's questions and verified solutions, and it connects the platforms around it. Nothing on this page describes a feature that is not there.</p>
+    <section class="lp-split lp-split--flip lp-split--tint" aria-labelledby="alone-title">
+        <div class="lp-split__body">
+            <h2 id="alone-title" data-reveal>You are not figuring this out alone.</h2>
+            <p class="lp-lede" data-reveal>Behind every answer is someone who has run into the same wall. You ask, people who know reply, and you decide what actually helped. What you learn is kept, filed and findable, so the next person does not start from nothing, and neither do you.</p>
+            <ul class="lp-checks" data-reveal>
+                <li>You choose which answer solved it. Nobody ranks your problem for you.</li>
+                <li>Your company's questions stay with your company unless you make them public.</li>
+                <li>You are told when someone answers, comments, accepts or verifies your work.</li>
+            </ul>
+            <p data-reveal><a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Create your account</a></p>
+        </div>
+        <figure class="lp-photo lp-photo--tall" data-reveal>
+            <div class="lp-photo__frame" data-parallax>
+                <img src="{{ asset('img/landing/couturiere.jpg') }}" width="1000" height="1500" alt="A smiling tailor holding up the garment she is working on" loading="lazy" decoding="async">
+            </div>
+        </figure>
+    </section>
+
+    <section class="lp-journey" aria-labelledby="journey-title">
+        <div class="lp-journey__head">
+            <h2 id="journey-title" data-reveal>Wherever you are in building your business</h2>
+            <p class="lp-lede" data-reveal>Pick the stage you are in and see what people have written about it. Every one of these is a search, so what you find is whatever has been shared.</p>
+        </div>
+        <ol class="lp-stages" data-journey>
+            <li data-stage><a href="{{ $search('idea') }}"><strong>Explore</strong><span>Test an idea before you spend money on it.</span></a></li>
+            <li data-stage><a href="{{ $search('plan') }}"><strong>Plan</strong><span>Costs, funding and the first milestones.</span></a></li>
+            <li data-stage><a href="{{ $search('register') }}"><strong>Establish</strong><span>Registration, suppliers, pricing and set-up.</span></a></li>
+            <li data-stage><a href="{{ $search('customers') }}"><strong>Launch</strong><span>Your first customers and your first sale.</span></a></li>
+            <li data-stage><a href="{{ $search('cash') }}"><strong>Operate</strong><span>Money, stock, people and the daily run.</span></a></li>
+            <li data-stage><a href="{{ $search('profit') }}"><strong>Improve</strong><span>Find the bottleneck and fix it.</span></a></li>
+            <li data-stage><a href="{{ $search('grow') }}"><strong>Grow</strong><span>New customers, new products, more capacity.</span></a></li>
+        </ol>
+    </section>
+
+    <figure class="lp-band" data-reveal>
+        <div class="lp-band__frame" data-parallax>
+            <img src="{{ asset('img/landing/market.jpg') }}" width="1400" height="1050" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" loading="lazy" decoding="async">
+        </div>
+    </figure>
+
+    <section class="ix-pubsec" aria-labelledby="how-title">
+        <h2 id="how-title" data-reveal>What InfoDot does today</h2>
+        <p class="ix-pubsec__lede" data-reveal>InfoDot is a knowledge base for a business's questions and verified solutions, and it connects the platforms around it. Nothing on this page describes a feature that is not there.</p>
         <div class="ix-pillars">
-            <article class="ix-pillar">
+            <article class="ix-pillar" data-reveal>
                 <p class="ix-pillar__plate ix-pillar__plate--knowledge" aria-hidden="true">LEARN</p>
                 <div>
                     <h3>Learn from collective experience</h3>
                     <p>Questions are answered by the people in your company and, where a question is made public, by the wider community. The person who asked accepts the answer that solved it, and it is stamped SOLVED. Solutions are written as steps, and a moderator can mark one as verified. There are no likes and no follower counts to chase: what counts is whether it helped.</p>
                 </div>
             </article>
-            <article class="ix-pillar">
+            <article class="ix-pillar" data-reveal>
                 <p class="ix-pillar__plate ix-pillar__plate--platforms" aria-hidden="true">KEEP</p>
                 <div>
                     <h3>Keep what your business learns</h3>
                     <p>Everything is filed by topic and carries a reference, so a good answer is found again instead of asked again. Your company's questions stay with your company unless someone chooses to make them public. You are told when someone answers, comments, accepts or verifies your work.</p>
                 </div>
             </article>
-            <article class="ix-pillar">
+            <article class="ix-pillar" data-reveal>
                 <p class="ix-pillar__plate ix-pillar__plate--analytics" aria-hidden="true">CONNECT</p>
                 <div>
                     <h3>Connect the rest of your business</h3>
@@ -80,29 +120,43 @@
         </div>
     </section>
 
-    <section class="ix-pubsec" aria-labelledby="trust-title">
-        <h2 id="trust-title">Trusted answers, not noise</h2>
+    <section class="ix-pubsec ix-pubsec--tint" aria-labelledby="trust-title">
+        <h2 id="trust-title" data-reveal>Trusted answers, not noise</h2>
         <dl class="ix-pubfacts">
-            <div><dt>Company first, public by choice</dt><dd>A question is visible to your company by default. It becomes public only when someone explicitly chooses that, and another company can never open it.</dd></div>
-            <div><dt>Every answer shows how it earned its place</dt><dd>Accepted by the person who asked, or verified by a moderator who did not write it. Nobody approves their own work.</dd></div>
-            <div><dt>Hidden is recorded, not erased</dt><dd>When a moderator hides something, the reason is kept and the author can appeal.</dd></div>
-            <div><dt>Guidance, not advice</dt><dd>Legal, tax and financial questions get answers from people's experience. Check them with a professional before you rely on them.</dd></div>
+            <div data-reveal><dt>Company first, public by choice</dt><dd>A question is visible to your company by default. It becomes public only when someone explicitly chooses that, and another company can never open it.</dd></div>
+            <div data-reveal><dt>Every answer shows how it earned its place</dt><dd>Accepted by the person who asked, or verified by a moderator who did not write it. Nobody approves their own work.</dd></div>
+            <div data-reveal><dt>Hidden is recorded, not erased</dt><dd>When a moderator hides something, the reason is kept and the author can appeal.</dd></div>
+            <div data-reveal><dt>Guidance, not advice</dt><dd>Legal, tax and financial questions get answers from people's experience. Check them with a professional before you rely on them.</dd></div>
         </dl>
     </section>
 
-    <section class="ix-pubsec ix-pubsec--tint" aria-labelledby="eco-title">
-        <h2 id="eco-title">The Dot.Eco-system around it</h2>
-        <p class="ix-pubsec__lede">InfoDot is the front door to more than a dozen platforms that are built and deployed, among them:</p>
-        <ul class="ix-platlist" aria-label="Some Dot platforms">
+    <section class="ix-pubsec" aria-labelledby="eco-title">
+        <h2 id="eco-title" data-reveal>The Dot.Eco-system around it</h2>
+        <p class="ix-pubsec__lede" data-reveal>InfoDot is the front door to more than a dozen platforms that are built and deployed, among them:</p>
+        <ul class="ix-platlist" aria-label="Some Dot platforms" data-reveal>
             @foreach ($platforms->take(14) as $name)<li>{{ $name }}</li>@endforeach
         </ul>
-        <p class="ix-pubsec__lede">Sign in to see which ones you can open and to go straight to them.</p>
+        <p class="ix-pubsec__lede" data-reveal>Sign in to see which ones you can open and to go straight to them.</p>
+    </section>
+
+    <section class="ix-pubsec ix-pubsec--tint" aria-labelledby="who-title">
+        <div class="lp-founder">
+            <div>
+                <h2 id="who-title" data-reveal>Built in the open</h2>
+                <p class="ix-pubsec__lede" data-reveal>InfoDot is one platform in the Dot.Eco-system. It is built with an AI-assisted workflow: a person decides what gets built and the rules it must follow, reviews what ships, and runs it in production. We say what works today and nothing more.</p>
+            </div>
+            <ul class="ix-intents" data-reveal>
+                <li><a href="{{ route('about') }}" class="ix-intent"><span><strong>About InfoDot</strong><span>Why it exists and how it is run.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+                <li><a href="{{ route('features') }}" class="ix-intent"><span><strong>What it does</strong><span>Everything that works today.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+                <li><a href="{{ route('faqs') }}" class="ix-intent"><span><strong>Questions people ask</strong><span>Who sees your question, and how answers are trusted.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
+            </ul>
+        </div>
     </section>
 
     <section class="ix-pubcta" aria-labelledby="cta-title">
         <div class="ix-pubcta__inner">
-            <h2 id="cta-title">Bring your first question.</h2>
-            <div class="ix-pubhero__actions">
+            <h2 id="cta-title" data-reveal>Bring your first question.</h2>
+            <div class="ix-pubhero__actions" data-reveal>
                 @auth
                     <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">Ask a question</a>
                 @else
@@ -112,4 +166,11 @@
             </div>
         </div>
     </section>
+
+    <p class="lp-credits">Photographs from Wikimedia Commons, cropped and resized, each under CC BY-SA 4.0:
+        <a href="https://commons.wikimedia.org/wiki/File:Openspace_wao_coworking.jpg" rel="noopener">"Openspace wao coworking"</a> by WAO Coworking,
+        <a href="https://commons.wikimedia.org/wiki/File:A_seamstress_at_work.jpg" rel="noopener">"A seamstress at work"</a> by Rwebogora,
+        <a href="https://commons.wikimedia.org/wiki/File:Couturi%C3%A8re_3.jpg" rel="noopener">"Couturière 3"</a> by Metchyves,
+        <a href="https://commons.wikimedia.org/wiki/File:Greenmarket,_Cape_Town_(P1050987).jpg" rel="noopener">"Greenmarket, Cape Town"</a> by Matti Blume.
+    </p>
 </x-public-layout>
