@@ -168,7 +168,9 @@ class DeliverPointsDigestsTest extends TestCase
 
     public function test_the_email_has_none_of_the_pressure_comparison_or_streak_language(): void
     {
-        $user = $this->person();
+        // A fixed name: the greeting is part of the text scanned for banned words, and a random one can contain one
+        // ("Frankie" contains "rank", which failed CI on 2026-10-27).
+        $user = $this->person(['name' => 'Thandi Nkosi']);
         $this->due($user, ['points_reversed' => 3, 'expiring_next_30_days' => ['points' => 4, 'first_at' => '2026-11-01T00:00:00+00:00']]);
 
         $this->run_();
