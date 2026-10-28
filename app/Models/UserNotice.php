@@ -16,7 +16,9 @@ class UserNotice extends Model
 
     public const KNOWLEDGE_REUSED = 'knowledge_reused';
 
-    public const KINDS = [self::ANSWER_RECEIVED, self::ANSWER_ACCEPTED, self::SOLUTION_VERIFIED, self::KNOWLEDGE_REUSED];
+    public const COMMENT_RECEIVED = 'comment_received';
+
+    public const KINDS = [self::ANSWER_RECEIVED, self::ANSWER_ACCEPTED, self::SOLUTION_VERIFIED, self::KNOWLEDGE_REUSED, self::COMMENT_RECEIVED];
 
     public $timestamps = false;
 
