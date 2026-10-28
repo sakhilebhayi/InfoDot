@@ -5890,3 +5890,35 @@ a.ix-notices__text:hover {
     font-size: 14px;
     font-variant-numeric: tabular-nums;
 }
+
+/* The note a visitor who is not signed in sees above public results */
+.ix-guestnote {
+    margin: 0 0 16px;
+    max-width: 68ch;
+}
+
+/* Filter bars (words, topic) on a phone: one field per row with its label above, so nothing floats at a corner */
+@media (max-width: 640px) {
+    .ix-topicbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+    }
+
+    .ix-topicbar label:not(:first-child) {
+        margin-top: 8px;
+    }
+
+    .ix-topicbar .ix-input,
+    .ix-topicbar .ix-btn {
+        width: 100%;
+    }
+
+    .ix-topicbar .ix-btn {
+        margin-top: 8px;
+    }
+
+    .ix-topicbar__all {
+        margin-left: 0;
+    }
+}

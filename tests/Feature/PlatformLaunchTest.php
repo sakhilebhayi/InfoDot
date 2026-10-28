@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Support\EcosystemHandoff;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -176,12 +177,12 @@ class PlatformLaunchTest extends TestCase
         $user = $this->user();
         config(['ecosystem.platforms.mines.url' => 'https://mines.infodot.co.za', 'ecosystem.platforms.mines.active' => true]);
 
-        $this->assertTrue(\App\Support\EcosystemHandoff::hasNoReceiver('mines'));
-        $this->assertTrue(\App\Support\EcosystemHandoff::hasNoReceiver('charts'));
-        $this->assertFalse(\App\Support\EcosystemHandoff::hasNoReceiver('files'));
+        $this->assertTrue(EcosystemHandoff::hasNoReceiver('mines'));
+        $this->assertTrue(EcosystemHandoff::hasNoReceiver('charts'));
+        $this->assertFalse(EcosystemHandoff::hasNoReceiver('files'));
 
         // The switcher goes straight there ...
-        $this->assertSame('https://mines.infodot.co.za/', \App\Support\EcosystemHandoff::launchUrl($user, 'mines'));
+        $this->assertSame('https://mines.infodot.co.za/', EcosystemHandoff::launchUrl($user, 'mines'));
 
         // ... and a hand-typed launch URL does the same, with no token and no form.
         $this->actingAs($user)->get('/go/mines')->assertRedirect('https://mines.infodot.co.za/');
@@ -189,6 +190,6 @@ class PlatformLaunchTest extends TestCase
 
         // A look-alike host is still refused.
         config(['ecosystem.platforms.mines.url' => 'https://mines.infodot.app']);
-        $this->assertNull(\App\Support\EcosystemHandoff::launchUrl($user, 'mines'));
+        $this->assertNull(EcosystemHandoff::launchUrl($user, 'mines'));
     }
 }

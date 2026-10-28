@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Livewire\DotSwitcher;
-use App\Livewire\EcosystemWidget;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\EcosystemHandoff;

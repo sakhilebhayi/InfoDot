@@ -89,4 +89,40 @@ class SearchResultsPageTest extends TestCase
         $this->assertStringNotContainsString('secret register', $html);
         $this->assertStringContainsString('No match yet', $html);
     }
+
+    public function test_a_visitor_who_is_not_signed_in_gets_the_public_shell_not_the_old_layout(): void
+    {
+        $owner = $this->person();
+        $this->question($owner, 'public', 'How do I register a clothing brand?');
+
+        $html = $this->get('/solution-results?search=register')->assertOk()->getContent();
+
+        $this->assertStringContainsString('<title>Search · InfoDot</title>', $html);
+        $this->assertStringContainsString('class="ix-top"', $html);
+        $this->assertStringContainsString('class="ix-band"', $html);
+        $this->assertStringContainsString('Sign in', $html);
+        $this->assertStringContainsString('Create account', $html);
+        $this->assertStringContainsString('public questions and solutions only', $html);
+        $this->assertStringContainsString('How do I register a clothing brand?', $html);
+        $this->assertSame(1, substr_count($html, '<h1'));
+        $this->assertStringNotContainsString('fa-facebook', $html, 'the old social strip is gone');
+    }
+
+    public function test_the_page_never_ends_blank_when_there_is_nothing_to_list(): void
+    {
+        $guest = $this->get('/solution-results')->assertOk()->getContent();
+        $this->assertStringContainsString('Nothing has been shared publicly yet', $guest);
+        $this->assertStringContainsString(route('login'), $guest);
+
+        $signedIn = $this->actingAs($this->person())->get('/solution-results')->assertOk()->getContent();
+        $this->assertStringContainsString('Nothing has been shared publicly yet', $signedIn);
+        $this->assertStringContainsString(route('seek'), $signedIn);
+    }
+
+    public function test_a_company_only_question_is_never_shown_to_a_visitor(): void
+    {
+        $this->question($this->person(), 'company', 'Our private register of suppliers');
+
+        $this->get('/solution-results?search=register')->assertOk()->assertDontSee('private register');
+    }
 }
