@@ -167,4 +167,32 @@ class PublicPagesTest extends TestCase
         $this->assertStringNotContainsString('>About<', $m[1]);
         $this->assertStringContainsString('>About</a>', $html, 'About is still in the footer');
     }
+
+    public function test_the_legal_pages_use_the_site_shell_with_a_contents_list_and_keep_their_words(): void
+    {
+        foreach (['/policy' => ['Privacy Policy', 'Who we are', 'BluePin Inc'], '/terms' => ['Terms &amp; Conditions', 'Your account', 'BluePin'], '/cookies' => ['Cookie Policy', 'Cookies we set', 'infodot_session']] as $path => [$title, $heading, $text]) {
+            $html = $this->get($path)->assertOk()->getContent();
+
+            $this->assertStringContainsString('class="ix-top ix-top--public"', $html, $path);
+            $this->assertStringContainsString('class="ix-legal"', $html, $path);
+            $this->assertStringContainsString('aria-label="On this page"', $html, $path);
+            $this->assertSame(1, substr_count($html, '<h1'), $path);
+            $this->assertStringContainsString($title, $html, $path);
+            $this->assertMatchesRegularExpression('/<h2 id="[a-z0-9-]+">[^<]*'.preg_quote($heading, '/').'/', $html, $path);
+            $this->assertStringContainsString($text, $html, $path);
+            $this->assertStringContainsString('Last updated', $html, $path);
+        }
+        $this->assertStringContainsString('class="ix-tablewrap"', $this->get('/cookies')->getContent(), 'the cookie table scrolls inside itself on a phone');
+    }
+
+    public function test_every_contents_link_points_at_a_heading_that_exists(): void
+    {
+        $html = $this->get('/policy')->assertOk()->getContent();
+        preg_match_all('/<a href="#([a-z0-9-]+)">/', $html, $links);
+
+        $this->assertNotEmpty($links[1]);
+        foreach ($links[1] as $id) {
+            $this->assertStringContainsString('<h2 id="'.$id.'">', $html);
+        }
+    }
 }
