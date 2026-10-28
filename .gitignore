@@ -17,3 +17,5 @@ yarn-error.log
 
 # Livewire serves its own script from the installed package; a published copy goes stale on every upgrade.
 /public/vendor/livewire
+
+.DS_Store
