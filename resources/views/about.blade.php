@@ -17,6 +17,15 @@
             <li><strong>No guarantees.</strong> InfoDot shares experience. It does not replace an accountant, a lawyer or an adviser, and it cannot promise that a business will succeed.</li>
         </ul>
 
+        <h2 id="photo-credits">Photograph credits</h2>
+        <p>The photographs on the home page come from Wikimedia Commons. Each was cropped and resized, and each is shared under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).</p>
+        <ul>
+            <li><a href="https://commons.wikimedia.org/wiki/File:Openspace_wao_coworking.jpg" rel="noopener">"Openspace wao coworking"</a> by WAO Coworking</li>
+            <li><a href="https://commons.wikimedia.org/wiki/File:A_seamstress_at_work.jpg" rel="noopener">"A seamstress at work"</a> by Rwebogora</li>
+            <li><a href="https://commons.wikimedia.org/wiki/File:Couturi%C3%A8re_3.jpg" rel="noopener">"Couturière 3"</a> by Metchyves</li>
+            <li><a href="https://commons.wikimedia.org/wiki/File:Greenmarket,_Cape_Town_(P1050987).jpg" rel="noopener">"Greenmarket, Cape Town"</a> by Matti Blume</li>
+        </ul>
+
         <h2>Get in touch</h2>
         <p>Questions, ideas or concerns: use the <a href="{{ route('contact') }}">contact form</a>. For anything about your personal information, write to <a href="mailto:privacy@infodot.co.za">privacy@infodot.co.za</a>. If something on InfoDot is wrong, see <a href="{{ route('complains') }}">how to complain</a>.</p>
 

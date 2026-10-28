@@ -8,5 +8,6 @@
         <a href="{{ route('policy') }}">Privacy</a>
         <a href="{{ route('cookies') }}">Cookies</a>
         <a href="{{ route('terms') }}">Terms</a>
+        <a href="{{ route('about') }}#photo-credits">Photo credits</a>
     </nav>
 </footer>

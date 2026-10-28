@@ -16,10 +16,12 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Build your business with collective intelligence.', $html);
+        $this->assertStringContainsString('Find practical business solutions.', $html);
+        $this->assertStringContainsString('role="search"', $html);
+        $this->assertStringContainsString('name="search"', $html);
+        $this->assertStringContainsString('has-motion', $html);
+        $this->assertStringContainsString('prefers-reduced-motion', $html);
         $this->assertStringContainsString('knowledge base for a business', $html);
-        $this->assertStringContainsString('Start building your business', $html);
-        $this->assertStringContainsString('Explore questions and answers', $html);
         $this->assertStringContainsString(route('register'), $html);
         $this->assertStringContainsString(route('solution_search_results'), $html);
         $this->assertSame(1, substr_count($html, '<h1'));
@@ -31,7 +33,7 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        foreach (['PostgreSQL', 'shared database', 'likes on', 'Associates', 'guarantee', 'testimonial', 'compliant', 'certified', 'customers'] as $claim) {
+        foreach (['PostgreSQL', 'shared database', 'likes on', 'Associates', 'guarantee', 'testimonial', 'compliant', 'certified', 'trusted by', 'our customers', 'founder'] as $claim) {
             $this->assertStringNotContainsStringIgnoringCase($claim, strip_tags($html), "the page must not say: {$claim}");
         }
     }
@@ -61,6 +63,17 @@ class PublicPagesTest extends TestCase
         foreach (['/', '/about', '/features', '/faqs', '/complains', '/contact'] as $path) {
             $this->assertDoesNotMatchRegularExpression('/sakhile|bhayi/i', $this->get($path)->getContent(), $path);
         }
+    }
+
+    public function test_the_photographs_are_credited_on_the_about_page_and_linked_from_the_footer(): void
+    {
+        $about = $this->get('/about')->assertOk()->getContent();
+
+        foreach (['WAO Coworking', 'Rwebogora', 'Metchyves', 'Matti Blume', 'CC BY-SA 4.0'] as $credit) {
+            $this->assertStringContainsString($credit, $about);
+        }
+        $this->assertStringContainsString('id="photo-credits"', $about);
+        $this->assertStringContainsString('/about#photo-credits', $this->get('/')->getContent());
     }
 
     public function test_the_public_pages_use_no_pronoun_for_the_founder(): void
