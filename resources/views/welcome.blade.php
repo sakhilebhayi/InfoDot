@@ -157,6 +157,7 @@
                         <input
                             type="text"
                             name="search"
+                            aria-label="Search Questions and Solutions"
                             placeholder="Ask: how do I connect a new platform?"
                             class="w-full pl-6 pr-14 py-4 rounded-full bg-[var(--paper)] text-[var(--ink)] placeholder-[var(--ink-soft)] font-body text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[var(--gold)] shadow-[0_16px_40px_-16px_rgba(0,0,0,0.5)]"
                         >
@@ -197,7 +198,7 @@
                         <div class="w-14 h-14 rounded-full flex items-center justify-center mb-5" style="background: {{ $c['color'] }};">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">{!! $c['icon'] !!}</svg>
                         </div>
-                        <h3 class="font-display font-semibold text-lg text-[var(--ink)] mb-2">{{ $c['title'] }}</h3>
+                        <h2 class="font-display font-semibold text-lg text-[var(--ink)] mb-2">{{ $c['title'] }}</h2>
                         <p class="text-sm text-[var(--ink-soft)] leading-relaxed">{{ $c['body'] }}</p>
                     </div>
                 @endforeach
