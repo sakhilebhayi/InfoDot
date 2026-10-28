@@ -1,8 +1,8 @@
 @php
-    // Every live platform that has a logo of its own, in the config's order.
+    // Every live platform that has a logo of its own, in the config's order. The files are the platforms' logos trimmed to their artwork, so they all fill their tile alike.
     $platforms = collect(config('ecosystem.platforms', []))
-        ->filter(fn ($p, $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && $key !== 'infodot' && file_exists(resource_path('img/apps/'.$key.'.png')))
-        ->map(fn ($p, $key) => ['name' => $p['name'], 'logo' => \Illuminate\Support\Facades\Vite::asset('resources/img/apps/'.$key.'.png')])->values();
+        ->filter(fn ($p, $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && $key !== 'infodot' && file_exists(public_path('img/landing/platforms/'.$key.'.png')))
+        ->map(fn ($p, $key) => ['name' => $p['name'], 'logo' => asset('img/landing/platforms/'.$key.'.png')])->values();
     $examples = ['How do I register a business?', 'How do I price my work?', 'How do I find customers?', 'How do I track my cash?', 'How do I hire my first person?'];
     $search = fn (string $words) => route('solution_search_results', ['search' => $words]);
     $first = auth()->check() ? \Illuminate\Support\Str::of(auth()->user()->name)->before(' ')->toString() : null;
@@ -136,7 +136,7 @@
         <p class="ix-pubsec__lede" data-reveal>InfoDot is the front door to more than a dozen platforms that are built and deployed, among them:</p>
         <ul class="lp-logos" aria-label="Some Dot platforms">
             @foreach ($platforms as $platform)
-                <li data-reveal><img src="{{ $platform['logo'] }}" alt="{{ $platform['name'] }}" width="112" height="112" loading="lazy" decoding="async"></li>
+                <li data-reveal><img src="{{ $platform['logo'] }}" alt="{{ $platform['name'] }}" loading="lazy" decoding="async"></li>
             @endforeach
         </ul>
         <p class="ix-pubsec__lede" data-reveal>Sign in to see which ones you can open and to go straight to them.</p>

@@ -152,5 +152,6 @@ class PublicPagesTest extends TestCase
             $this->assertStringContainsString('alt="'.$name.'"', $html);
         }
         $this->assertStringNotContainsString('class="ix-platlist"', $html, 'no longer a list of names');
+        $this->assertStringContainsString('/img/landing/platforms/files.png', $html, 'the trimmed logos, so every tile is filled alike');
     }
 }
