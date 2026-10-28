@@ -6884,3 +6884,27 @@ body {
 .ix-search .ix-input:focus {
     box-shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.55);
 }
+
+/* The Tailwind forms plugin draws a blue border and a blue 1px ring on every focused input[type=search]. Search fields here never show it: the field
+   keeps its own look, and the hero box carries the focus (it lifts and darkens its border). */
+.ix input[type='search']:focus,
+.ix input[type='search']:focus-visible {
+    outline: none;
+    border-color: var(--ix-text);
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-ring-color: transparent;
+}
+
+.ix .lp-search .lp-search__input:focus,
+.ix .lp-search .lp-search__input:focus-visible {
+    border-color: transparent;
+}
+
+.ix .ix-search .ix-input:focus,
+.ix .ix-search .ix-input:focus-visible {
+    border-color: transparent;
+    outline: 2px solid #f0bc2e;
+    outline-offset: 0;
+    box-shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.55);
+}
