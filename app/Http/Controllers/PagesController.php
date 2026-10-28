@@ -9,6 +9,7 @@ use App\Models\Topic;
 use App\Models\User;
 use App\Services\Knowledge\AchievementService;
 use App\Services\Points\PointsClient;
+use App\Services\Ux\UxSignals;
 use App\Support\Knowledge\ContributionStats;
 use App\Support\Knowledge\ModerationStatus;
 use Auth;
@@ -147,6 +148,12 @@ class PagesController extends Controller
             'questions' => $questions->orderBy('id', 'DESC')->paginate(5)->withQueryString(),
             'solutions' => $solutions->orderBy('id', 'DESC')->paginate(5)->withQueryString(),
         ];
+
+        // R-12: a search that finds nothing is a friction signal. Only the fact is counted: never the words searched for.
+        if ($textSearch && trim($search_term) !== '' && request()->query('page') === null) {
+            $found = $results['questions']->total() + $results['solutions']->total();
+            app(UxSignals::class)->record($found === 0 ? 'search.empty' : 'search.run', '/solution-results', $found === 0 ? 'failure' : 'success');
+        }
 
         return view('search_results', [
             'results' => $results,
