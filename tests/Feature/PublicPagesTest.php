@@ -155,4 +155,16 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('/img/landing/platforms/files.png', $html, 'the trimmed logos, so every tile is filled alike');
         $this->assertStringNotContainsString('alt="Dot.Agents"', $html, 'the one mark without wording is not in the wall');
     }
+
+    public function test_the_visitor_tab_row_has_only_the_two_search_oriented_links(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+        preg_match('/<nav class="ix-tabs" aria-label="About InfoDot">(.*?)<\/nav>/s', $html, $m);
+
+        $this->assertStringContainsString('Questions people ask', $m[1]);
+        $this->assertStringContainsString('Browse public answers', $m[1]);
+        $this->assertStringNotContainsString('What it does', $m[1]);
+        $this->assertStringNotContainsString('>About<', $m[1]);
+        $this->assertStringContainsString('>About</a>', $html, 'About is still in the footer');
+    }
 }

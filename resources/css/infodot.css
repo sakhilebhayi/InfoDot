@@ -6360,8 +6360,8 @@ body {
 
 .lp-search:focus-within {
     transform: translateY(-2px) scale(1.012);
-    border-color: var(--ix-signal);
-    box-shadow: var(--lp-search-shadow), 0 0 0 4px color-mix(in srgb, var(--ix-signal) 22%, transparent);
+    border-color: var(--ix-text);
+    box-shadow: var(--lp-search-shadow);
 }
 
 .lp-search__icon {
@@ -6871,4 +6871,16 @@ body {
     width: calc(100% - 36px);
     height: calc(100% - 28px);
     object-fit: contain;
+}
+
+/* Search bars never show the blue form-field ring: the box itself lifts and its border darkens (the hero), or its own gold outline shows (the top bar). */
+.ix-topicbar .ix-input[type='search']:focus,
+.ix-topicbar .ix-input[type='search']:focus-visible {
+    outline: none;
+    border-color: var(--ix-text);
+    box-shadow: none;
+}
+
+.ix-search .ix-input:focus {
+    box-shadow: 0 10px 28px -14px rgba(0, 0, 0, 0.55);
 }

@@ -49,8 +49,6 @@
             </div>
             <div class="ix-top__inner ix-top__inner--nav">
                 <nav class="ix-tabs" aria-label="About InfoDot">
-                    <a href="{{ route('features') }}" class="ix-tab" @if (request()->routeIs('features')) aria-current="page" @endif>What it does</a>
-                    <a href="{{ route('about') }}" class="ix-tab" @if (request()->routeIs('about')) aria-current="page" @endif>About</a>
                     <a href="{{ route('faqs') }}" class="ix-tab" @if (request()->routeIs('faqs')) aria-current="page" @endif>Questions people ask</a>
                     <a href="{{ route('solution_search_results') }}" class="ix-tab" @if (request()->routeIs('solution_search_results')) aria-current="page" @endif>Browse public answers</a>
                 </nav>
