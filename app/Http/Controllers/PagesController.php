@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ContactMessage;
 use App\Models\Associates;
 use App\Models\Questions;
 use App\Models\Solutions;
@@ -14,6 +15,7 @@ use App\Support\Knowledge\ContributionStats;
 use App\Support\Knowledge\ModerationStatus;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Jetstream;
 
@@ -31,22 +33,28 @@ class PagesController extends Controller
 
     public function contactSend(Request $request)
     {
-        // dd($request->all());
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required',
-            'message' => 'required',
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email:rfc', 'max:190'],
+            'message' => ['required', 'string', 'min:10', 'max:4000'],
+            'website' => ['nullable', 'max:0'], // a field people never see: only a script fills it
         ]);
 
-        $details = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'message' => $request->message,
-        ];
+        $to = config('mail.contact_to');
 
-        // Need to fix this email feature
-        // \Mail::to('testmail@gmail.com')->send(new \App\Mail\MailContact($details));
-        return redirect()->route('contact')->with('success', 'Message Sent Successfully');
+        if (! filled($to)) {
+            return redirect()->route('contact')->withInput()->withErrors(['message' => 'The contact form is not connected to a mailbox yet, so your message was not sent. Please write to one of the addresses on this page.']);
+        }
+
+        try {
+            Mail::to($to)->send(new ContactMessage($data['name'], $data['email'], $data['message']));
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()->route('contact')->withInput()->withErrors(['message' => 'Your message could not be sent just now. Please try again in a few minutes or write to one of the addresses on this page.']);
+        }
+
+        return redirect()->route('contact')->with('success', 'Thank you. Your message has been sent.');
     }
 
     public function faqs(Request $request)

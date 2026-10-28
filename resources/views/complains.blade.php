@@ -1,14 +1,16 @@
-<x-guest-layout>
-    <div class="pt-4 bg-gray-800">
-        <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0">
-            <div>
-                <x-jet-authentication-card-logo />
-            </div>
+<x-public-layout title="How to complain" band="INFO" crumb="How to complain" description="How to report content or raise a complaint about InfoDot, and what happens next.">
+    <article class="ix-prose">
+        <h1 class="ix-h1">How to complain</h1>
+        <p class="ix-lede">Tell us what is wrong and we will answer you.</p>
 
-            <div class="w-full sm:max-w-2xl mt-6 p-6 bg-white shadow-md overflow-hidden sm:rounded-lg prose">
-                <h1 class="title text-center">Complains</h1>
-            </div>
-        </div>
-    </div>
-    @include('layouts.footer')
-</x-guest-layout>
+        <h2>Content you think breaks the rules</h2>
+        <p>Use the <strong>Report</strong> link on the question, answer or solution. A moderator reads it, decides and records why. The person who wrote it can appeal, and moderators cannot decide on their own work.</p>
+
+        <h2>Anything else</h2>
+        <p>Use the <a href="{{ route('contact') }}">contact form</a> and say what happened, where, and what you would like us to do. Please do not include passwords or other secrets.</p>
+
+        <h2>Your personal information</h2>
+        <p>Write to <a href="mailto:privacy@infodot.co.za">privacy@infodot.co.za</a>. If you are not satisfied with the answer you can complain to the Information Regulator of South Africa.</p>
+
+    </article>
+</x-public-layout>

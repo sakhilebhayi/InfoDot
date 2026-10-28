@@ -1,7 +1,9 @@
 <footer class="ix-foot">
     <span>&copy; {{ date('Y') }} InfoDot</span>
     <nav aria-label="Legal">
+        <a href="{{ route('features') }}">What it does</a>
         <a href="{{ route('about') }}">About</a>
+        <a href="{{ route('faqs') }}">Questions</a>
         <a href="{{ route('contact') }}">Contact</a>
         <a href="{{ route('policy') }}">Privacy</a>
         <a href="{{ route('cookies') }}">Cookies</a>

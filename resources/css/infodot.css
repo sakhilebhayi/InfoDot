@@ -5922,3 +5922,428 @@ a.ix-notices__text:hover {
         margin-left: 0;
     }
 }
+
+/* ---------------------------------------------------------------- public pages: landing, about, what it does, questions */
+
+/* The top bar for visitors: logo left, search centred, account actions right, a tab row beneath. */
+.ix-top--public .ix-top__inner:first-child {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 540px) minmax(0, 1fr);
+    align-items: center;
+    gap: 0 20px;
+}
+
+.ix-top--public .ix-brand {
+    justify-self: start;
+}
+
+.ix-top--public .ix-top__search {
+    max-width: none;
+    min-width: 0;
+    width: 100%;
+    padding: 0;
+    justify-self: center;
+}
+
+.ix-top--public .ix-top__actions {
+    margin-left: 0;
+    justify-self: end;
+}
+
+.ix-top__inner--nav {
+    min-height: 44px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ix-top__inner--nav .ix-tabs {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 767px) {
+    .ix-top--public .ix-top__inner:first-child {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0 12px;
+        padding-bottom: 8px;
+    }
+
+    .ix-top--public .ix-top__search {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        margin-top: 8px;
+    }
+
+    .ix-top--public .ix-top__actions {
+        padding: 10px 0 0;
+    }
+
+    .ix-top__inner--nav .ix-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+    }
+}
+
+/* Reading pages: about, what it does, questions, complaints */
+.ix-prose {
+    max-width: 68ch;
+}
+
+.ix-prose .ix-lede {
+    margin: 8px 0 0;
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+.ix-prose h2 {
+    margin: 32px 0 6px;
+    font-weight: 650;
+    font-size: 19px;
+    line-height: 1.3;
+}
+
+.ix-prose p,
+.ix-prose li {
+    font-size: 16px;
+    line-height: 1.65;
+    text-wrap: pretty;
+}
+
+.ix-prose p {
+    margin: 0 0 12px;
+}
+
+.ix-prose ul {
+    margin: 0 0 12px;
+    padding-left: 20px;
+}
+
+.ix-prose li {
+    margin: 0 0 8px;
+}
+
+.ix-prose a:not(.ix-btn) {
+    color: var(--ix-signal-text);
+    text-underline-offset: 3px;
+}
+
+.ix-prose .ix-btn {
+    margin: 12px 8px 0 0;
+}
+
+/* Landing */
+.ix-pubhero {
+    background: var(--ix-top);
+    color: var(--ix-top-ink);
+}
+
+.ix-pubhero__inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 72px 24px 80px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+    gap: 48px;
+    align-items: center;
+}
+
+.ix-pubhero h1 {
+    margin: 0 0 20px;
+    max-width: 16ch;
+    font-weight: 700;
+    font-size: clamp(2.25rem, 4.6vw, 3.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+.ix-pubhero__lede {
+    margin: 0 0 28px;
+    max-width: 58ch;
+    color: var(--ix-top-ink-2);
+    font-size: 18px;
+    line-height: 1.6;
+    text-wrap: pretty;
+}
+
+.ix-pubhero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ix-pubhero .ix-btn,
+.ix-pubcta .ix-btn {
+    height: 46px;
+    padding: 0 20px;
+    font-size: 15px;
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.4);
+    color: var(--ix-top-ink);
+}
+
+.ix-pubhero .ix-btn:hover,
+.ix-pubcta .ix-btn:hover {
+    background: #2b3439;
+}
+
+.ix-pubhero .ix-btn.ix-btn--primary,
+.ix-pubcta .ix-btn.ix-btn--primary {
+    background: var(--ix-platforms);
+    border-color: var(--ix-platforms);
+    color: #1a1300;
+}
+
+.ix-pubhero .ix-btn.ix-btn--primary:hover,
+.ix-pubcta .ix-btn.ix-btn--primary:hover {
+    background: var(--ix-platforms);
+    filter: brightness(1.1);
+}
+
+.ix-pubhero__small {
+    margin: 16px 0 0;
+    color: var(--ix-top-ink-2);
+    font-size: 14px;
+}
+
+.ix-pubhero__small a {
+    color: var(--ix-top-ink);
+    text-underline-offset: 3px;
+}
+
+.ix-pubspecimen {
+    margin: 0;
+}
+
+.ix-pubspecimen .ix-qlist {
+    margin: 0;
+    border: 1px solid var(--ix-rule-strong);
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    border-radius: var(--ix-radius);
+}
+
+.ix-pubspecimen figcaption {
+    margin-top: 12px;
+    max-width: 46ch;
+    color: var(--ix-top-ink-2);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.ix-pubsec {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 64px 24px;
+}
+
+.ix-pubsec--tint {
+    max-width: none;
+    background: var(--ix-sunken);
+}
+
+.ix-pubsec--tint > * {
+    max-width: 1232px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.ix-pubsec h2 {
+    margin: 0 0 8px;
+    font-weight: 650;
+    font-size: 28px;
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+}
+
+.ix-pubsec__lede {
+    margin: 0 0 24px;
+    max-width: 64ch;
+    color: var(--ix-text-2);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.ix-pubsec__lede a {
+    color: var(--ix-signal-text);
+    text-underline-offset: 3px;
+}
+
+/* Where to start: a ledger of intents, each a real destination */
+.ix-intents {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--ix-rule-strong);
+}
+
+.ix-intent {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 8px;
+    border-bottom: 1px solid var(--ix-rule);
+    color: var(--ix-text);
+    text-decoration: none;
+}
+
+.ix-intent:hover {
+    background: var(--ix-sunken);
+}
+
+.ix-intent strong {
+    display: block;
+    font-weight: 650;
+    font-size: 18px;
+    line-height: 1.3;
+}
+
+.ix-intent span span {
+    display: block;
+    max-width: 66ch;
+    margin-top: 2px;
+    color: var(--ix-text-2);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Three things it does: area plates beside the text, like the platforms register */
+.ix-pillars {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid var(--ix-rule-strong);
+}
+
+.ix-pillar {
+    display: grid;
+    grid-template-columns: 168px minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.ix-pillar__plate {
+    align-self: start;
+    margin: 0;
+    padding: 12px 14px;
+    font-family: 'Big Shoulders Stencil Display', var(--ix-font);
+    font-weight: 800;
+    font-size: 32px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: #fff;
+}
+
+.ix-pillar__plate--knowledge { background: var(--ix-knowledge); }
+.ix-pillar__plate--platforms { background: var(--ix-platforms); color: #1a1300; }
+.ix-pillar__plate--analytics { background: var(--ix-analytics); }
+
+.ix-pillar h3 {
+    margin: 0 0 6px;
+    font-weight: 650;
+    font-size: 20px;
+    line-height: 1.3;
+}
+
+.ix-pillar p {
+    margin: 0;
+    max-width: 66ch;
+    font-size: 16px;
+    line-height: 1.65;
+}
+
+.ix-pubfacts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 48px;
+    margin: 0;
+}
+
+.ix-pubfacts dt {
+    margin: 0 0 4px;
+    font-weight: 650;
+    font-size: 17px;
+}
+
+.ix-pubfacts dd {
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.ix-platlist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-platlist li {
+    padding: 6px 12px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-panel);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.ix-pubcta {
+    background: var(--ix-top);
+    color: var(--ix-top-ink);
+}
+
+.ix-pubcta__inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 56px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px 32px;
+}
+
+.ix-pubcta h2 {
+    margin: 0;
+    font-weight: 700;
+    font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+}
+
+@media (max-width: 900px) {
+    .ix-pubhero__inner {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 48px 16px 56px;
+        gap: 32px;
+    }
+
+    .ix-pubsec {
+        padding: 48px 16px;
+    }
+
+    .ix-pubsec--tint > * {
+        max-width: none;
+    }
+
+    .ix-pillar {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .ix-pillar__plate {
+        justify-self: start;
+    }
+
+    .ix-pubfacts {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ix-pubcta__inner {
+        padding: 40px 16px;
+    }
+}

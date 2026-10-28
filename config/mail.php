@@ -91,6 +91,16 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Contact form recipient
+    |--------------------------------------------------------------------------
+    |
+    | Where messages from the public contact form are delivered. Until it is set (CONTACT_TO_ADDRESS) the form is not
+    | shown and the page lists the published addresses instead, so no message is ever accepted and dropped.
+    */
+    'contact_to' => env('CONTACT_TO_ADDRESS'),
+
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
