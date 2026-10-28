@@ -139,8 +139,8 @@ class PublicPagesTest extends TestCase
         $results = $this->get('/solution-results?search=register')->assertOk()->getContent();
         $this->assertMatchesRegularExpression('/class="ix-btn ix-btn--arrow"[^>]*aria-label="Search"[^>]*><span class="ix-arrow"/', $results);
         $this->assertMatchesRegularExpression('/class="ix-search__go"[^>]*aria-label="Search questions and solutions"[^>]*>\s*<span class="ix-arrow"/', $results, 'the top-bar search');
-        $this->assertStringContainsString('/img/arrow-mask.png', $results);
-        $this->assertFileExists(public_path('img/arrow-mask.png'));
+        $this->assertStringContainsString('--ix-arrow-url', $results);
+        $this->assertFileExists(resource_path('img/arrow-mask.png'));
     }
 
     public function test_the_platforms_on_the_landing_page_are_shown_as_logos_with_their_names_as_alt_text(): void
@@ -152,7 +152,6 @@ class PublicPagesTest extends TestCase
             $this->assertStringContainsString('alt="'.$name.'"', $html);
         }
         $this->assertStringNotContainsString('class="ix-platlist"', $html, 'no longer a list of names');
-        $this->assertStringContainsString('/img/landing/platforms/files.png', $html, 'the trimmed logos, so every tile is filled alike');
         $this->assertStringNotContainsString('alt="Dot.Agents"', $html, 'the one mark without wording is not in the wall');
     }
 
@@ -194,5 +193,21 @@ class PublicPagesTest extends TestCase
         foreach ($links[1] as $id) {
             $this->assertStringContainsString('<h2 id="'.$id.'">', $html);
         }
+    }
+
+    public function test_the_landing_images_and_the_arrow_are_part_of_the_build_that_the_deploy_publishes(): void
+    {
+        // Only public/build is copied to the document root on deploy; an image kept anywhere else in public/ would be a 404 on the live site.
+        $manifestPath = public_path('build/manifest.json');
+        if (! is_file($manifestPath)) {
+            $this->markTestSkipped('No built manifest in this environment.');
+        }
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
+
+        foreach (['resources/img/arrow-mask.png', 'resources/img/landing/hero-1920.jpg', 'resources/img/landing/hero-960.jpg', 'resources/img/landing/seamstress.jpg', 'resources/img/landing/couturiere.jpg', 'resources/img/landing/market.jpg', 'resources/img/landing/platforms/files.png'] as $key) {
+            $this->assertArrayHasKey($key, $manifest, $key.' is not in the build, so the live site would not have it');
+        }
+        $this->assertDirectoryDoesNotExist(public_path('img/landing'), 'landing images belong in resources/img so they ship with the build');
+        $this->assertFileDoesNotExist(public_path('img/arrow-mask.png'));
     }
 }
