@@ -31,7 +31,8 @@ if (root.classList.contains('has-motion') && !reduce) {
     // If anything below fails to run, show the page rather than leave it blank.
     const failsafe = window.setTimeout(() => root.classList.add('motion-failsafe'), 3500);
 
-    const hero = gsap.timeline({ defaults: { ease: 'expo.out' }, onComplete: () => window.clearTimeout(failsafe) });
+    // The failsafe only matters if the animation never starts (a script error, a throttled tab); once it has started it is not needed.
+    const hero = gsap.timeline({ defaults: { ease: 'expo.out' }, onStart: () => window.clearTimeout(failsafe) });
     hero
         .fromTo('.lp-hero__bg', { scale: 1.08 }, { scale: 1, duration: 2.4, ease: 'power2.out' }, 0)
         .fromTo('.lp-hero__title', { y: 28, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.1)
