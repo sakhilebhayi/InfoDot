@@ -6,16 +6,17 @@
 #   tools/audit-dependencies.sh [Repo ...]      default: every repository below
 set -uo pipefail
 OWNER="${OWNER:-sakhilebhayi}"
-REPOS=("$@"); [ ${#REPOS[@]} -gt 0 ] || REPOS=(Agents Analytics Auction Billing Central Charts Design Dopemine Ehail Emall Engage Farms Files Finance Forms HR Memory Mines Notify Plug Press Projects Pulse Sheet Tasks Tutor docs)
+REPOS=("$@"); [ ${#REPOS[@]} -gt 0 ] || REPOS=(Agents Analytics Auction Billing Central Charts Design Dopemine Ehail Emall Engage Farms Files Finance Forms HR Memory Mines Notify Plug Press Projects Pulse Sheet Tasks Tutor docs InfoDot)
 W="$(mktemp -d)"; trap 'rm -rf "$W"' EXIT
 FOUND=0
 OUT="| Repo | composer advisories | npm (prod) high/critical |\n|---|---|---|\n"
 for R in "${REPOS[@]}"; do
-  mkdir -p "$W/$R"; B=$(gh repo view "$OWNER/Dot.$R" --json defaultBranchRef --jq .defaultBranchRef.name 2>/dev/null)
+  RN="Dot.$R"; [ "$R" = InfoDot ] && RN="InfoDot"   # InfoDot's repository has no Dot. prefix
+  mkdir -p "$W/$R"; B=$(gh repo view "$OWNER/$RN" --json defaultBranchRef --jq .defaultBranchRef.name 2>/dev/null)
   [ -n "$B" ] || { OUT+="| $R | repo not readable | |\n"; FOUND=1; continue; }
   P=""; [ "$R" = Charts ] && P="backend/"   # Dot.Charts keeps its Laravel app in backend/
   for f in composer.json composer.lock package-lock.json; do
-    gh api "repos/$OWNER/Dot.$R/contents/$P$f?ref=$B" -H "Accept: application/vnd.github.raw" > "$W/$R/$f" 2>/dev/null || rm -f "$W/$R/$f"
+    gh api "repos/$OWNER/$RN/contents/$P$f?ref=$B" -H "Accept: application/vnd.github.raw" > "$W/$R/$f" 2>/dev/null || rm -f "$W/$R/$f"
   done
   C="n/a"; if [ -f "$W/$R/composer.lock" ] && [ -f "$W/$R/composer.json" ]; then
     C=$(cd "$W/$R" && composer audit --locked --no-interaction --format=json 2>/dev/null | python3 -c "
