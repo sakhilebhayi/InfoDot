@@ -105,7 +105,7 @@ class InAppNoticesTest extends TestCase
         $page = $this->actingAs($asker)->get('/notifications')->assertOk()->getContent();
         $this->assertStringContainsString('Someone answered your question', $page);
         $this->assertStringContainsString('How do I register a clothing brand?', $page);
-        $this->assertStringContainsString('Unread', $page);
+        $this->assertStringContainsString('(unread)', $page);
         $this->assertStringNotContainsString('Helper', $page, 'no other person is named');
 
         $notice = UserNotice::where('user_id', $asker->id)->first();
@@ -207,5 +207,32 @@ class InAppNoticesTest extends TestCase
         $page = $this->actingAs($asker)->get('/notifications')->assertOk()->getContent();
         $this->assertStringContainsString('Someone commented on', $page);
         $this->assertStringNotContainsString('Which province', $page, 'the comment text is not copied into the notice');
+    }
+
+    public function test_the_page_sits_in_the_account_area_with_its_band_and_splits_new_from_earlier(): void
+    {
+        $asker = $this->person('Asker');
+        $this->answer($this->question($asker), $this->person('Helper'));
+        $this->answer($this->question($asker, 'public', 'A second question for the list'), $this->person('Helper2'));
+        app(InAppNotices::class)->markRead($asker, (int) UserNotice::where('user_id', $asker->id)->min('id'));
+
+        $page = $this->actingAs($asker)->get('/notifications')->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-area="people"', $page, 'it has an area, not the home layout');
+        $this->assertStringContainsString('class="ix-band"', $page);
+        $this->assertStringContainsString('NOTE', $page);
+        $this->assertStringContainsString('id="notices-new"', $page);
+        $this->assertStringContainsString('id="notices-earlier"', $page);
+        $this->assertStringContainsString('class="ix-bell"', $page, 'the bell is in the top bar');
+    }
+
+    public function test_newest_comes_first(): void
+    {
+        $u = $this->person();
+        foreach ([['old', 5], ['mid', 3], ['new', 1]] as [$ref, $hours]) {
+            UserNotice::create(['user_id' => $u->id, 'kind' => UserNotice::ANSWER_RECEIVED, 'subject_type' => 'question', 'subject_id' => 1, 'ref' => $ref, 'created_at' => now()->subHours($hours)]);
+        }
+
+        $this->assertSame(['new', 'mid', 'old'], app(InAppNotices::class)->page($u)->getCollection()->pluck('ref')->all());
     }
 }

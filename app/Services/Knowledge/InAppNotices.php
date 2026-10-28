@@ -50,7 +50,7 @@ class InAppNotices
     /** @return LengthAwarePaginator<UserNotice> */
     public function page(User $user, int $perPage = 30)
     {
-        return UserNotice::where('user_id', $user->id)->orderByDesc('id')->paginate($perPage);
+        return UserNotice::where('user_id', $user->id)->orderByDesc('created_at')->orderByDesc('id')->paginate($perPage);
     }
 
     public function markRead(User $user, int $noticeId): ?UserNotice
@@ -100,9 +100,22 @@ class InAppNotices
         return $gone;
     }
 
+    /** The short plate shown beside a notice: what kind of thing happened. */
+    public static function label(string $kind): string
+    {
+        return match ($kind) {
+            UserNotice::ANSWER_RECEIVED => 'Answer',
+            UserNotice::COMMENT_RECEIVED => 'Comment',
+            UserNotice::ANSWER_ACCEPTED => 'Accepted',
+            UserNotice::SOLUTION_VERIFIED => 'Verified',
+            UserNotice::KNOWLEDGE_REUSED => 'Library',
+            default => 'Update',
+        };
+    }
+
     private function words(string $kind, string $title): string
     {
-        $title = '“'.mb_strimwidth(trim($title), 0, 90, '…').'”';
+        $title = '“'.\Illuminate\Support\Str::limit(trim($title), 90, '…', true).'”';
 
         return match ($kind) {
             UserNotice::ANSWER_RECEIVED => "Someone answered your question $title.",

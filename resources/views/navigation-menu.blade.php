@@ -66,6 +66,12 @@
         <div class="ix-top__actions">
             <livewire:dot-switcher />
 
+            @php($bellUnread = app(\App\Services\Knowledge\InAppNotices::class)->unreadCount(Auth::user()))
+            <a href="{{ route('notices') }}" class="ix-bell" aria-label="{{ $bellUnread > 0 ? __('Notifications, :n unread', ['n' => $bellUnread]) : __('Notifications') }}" @if(request()->routeIs('notices*')) aria-current="page" @endif>
+                <span class="material-symbols-rounded" aria-hidden="true">notifications</span>
+                @if ($bellUnread > 0)<span class="ix-bell__count" aria-hidden="true">{{ $bellUnread > 99 ? '99+' : $bellUnread }}</span>@endif
+            </a>
+
             <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
                 <button type="button" class="ix-avatar" @click="open = !open" :aria-expanded="open" aria-haspopup="true" aria-label="{{ __('Account menu') }}">
                     @if (Auth::user()->profile_photo_path != null)
@@ -79,7 +85,7 @@
                     <a class="ix-pop__item" href="{{ route('profile.show', ['id' => Auth::id()]) }}">
                         <span class="material-symbols-rounded" aria-hidden="true">person</span>{{ __('Profile') }}
                     </a>
-                    @php($unreadNotices = app(\App\Services\Knowledge\InAppNotices::class)->unreadCount(Auth::user()))
+                    @php($unreadNotices = $bellUnread)
                     <a class="ix-pop__item" href="{{ route('notices') }}">
                         <span class="material-symbols-rounded" aria-hidden="true">notifications</span>{{ __('Notifications') }}@if ($unreadNotices > 0) <span class="ix-pop__count" aria-label="{{ $unreadNotices }} unread">{{ $unreadNotices > 99 ? '99+' : $unreadNotices }}</span>@endif
                     </a>
