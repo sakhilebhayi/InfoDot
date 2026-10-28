@@ -7,6 +7,9 @@ use Illuminate\View\View;
 
 class GuestLayout extends Component
 {
+    /** The page name shown in the tab, e.g. "Sign in"; the site name is added. */
+    public function __construct(public ?string $title = null) {}
+
     /**
      * Get the view / contents that represents the component.
      *

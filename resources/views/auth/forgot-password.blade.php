@@ -1,8 +1,10 @@
-<x-guest-layout>
+<x-guest-layout title="Reset your password">
     <x-jet-authentication-card>
         <x-slot name="logo">
             <x-jet-authentication-card-logo />
         </x-slot>
+
+        <h1 class="ix-auth-title">Reset your password</h1>
 
         <div class="mb-4 text-sm text-[var(--ink-soft)]">
             {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
