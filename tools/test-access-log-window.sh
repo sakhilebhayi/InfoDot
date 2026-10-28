@@ -18,6 +18,7 @@ L() { printf '%s - - [28/Oct/2026:%s +0200] "GET %s HTTP/1.1" %s %s "-" "%s"\n' 
   L 203.0.113.7 19:28:30 / 200 5000 'curl/8.5.0'
 } > "$HOME/access-logs/dopemine.example.test"
 L 198.51.100.9 19:28:23 /mines/.env 200 900 'curl/8.5.0' > "$HOME/access-logs/mines.example.test"
+# shellcheck disable=SC2034  # read inside eval by check
 before="$(cd "$HOME" && find . -type f -exec cksum {} + | sort | cksum)"
 OUT="$(bash "$TOOL" dopemine 2026-10-28 19:28:00 19:29:00 2>&1)"
 check "lists the three in-window sensitive requests" '[ "$(printf "%s\n" "$OUT" | grep -c "status=")" = 3 ]'
