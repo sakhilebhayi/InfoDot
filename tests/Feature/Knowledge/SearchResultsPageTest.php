@@ -74,6 +74,7 @@ class SearchResultsPageTest extends TestCase
         $html = $this->actingAs($me)->get('/solution-results?search=Register')->assertOk()->getContent();
 
         $this->assertStringContainsString('qpage=2', $html);
+        $this->assertStringContainsString('Page 1 of 2', $html);
         $this->assertStringNotContainsString('spage=2', $html, 'the solutions list has its own page counter');
         $this->assertSame(10, substr_count($html, 'class="ix-q__title"'));
     }

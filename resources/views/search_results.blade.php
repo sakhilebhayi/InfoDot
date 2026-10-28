@@ -211,7 +211,7 @@
                             </li>
                         @endforeach
                     </ul>
-                    {{ $results['questions']->links() }}
+                    @include('partials.pager', ['pager' => $results['questions'], 'label' => 'Questions'])
                 </section>
             @endif
 
@@ -241,7 +241,7 @@
                             </li>
                         @endforeach
                     </ul>
-                    {{ $results['solutions']->links() }}
+                    @include('partials.pager', ['pager' => $results['solutions'], 'label' => 'Solutions'])
                 </section>
             @endif
         @endif
