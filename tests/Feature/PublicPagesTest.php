@@ -65,6 +65,17 @@ class PublicPagesTest extends TestCase
         }
     }
 
+    public function test_the_photographs_are_credited_on_the_about_page_and_linked_from_the_footer(): void
+    {
+        $about = $this->get('/about')->assertOk()->getContent();
+
+        foreach (['WAO Coworking', 'Rwebogora', 'Metchyves', 'Matti Blume', 'CC BY-SA 4.0'] as $credit) {
+            $this->assertStringContainsString($credit, $about);
+        }
+        $this->assertStringContainsString('id="photo-credits"', $about);
+        $this->assertStringContainsString('/about#photo-credits', $this->get('/')->getContent());
+    }
+
     public function test_the_public_pages_use_no_pronoun_for_the_founder(): void
     {
         foreach (['/', '/about'] as $path) {
