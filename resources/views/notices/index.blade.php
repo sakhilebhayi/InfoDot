@@ -51,7 +51,7 @@
             </section>
         @endforeach
 
-        {{ $page->links() }}
+        @include('partials.pager', ['pager' => $page, 'label' => 'Notifications'])
     @endif
 
     <form method="POST" action="{{ route('notices.preference') }}" class="ix-notices__pref">

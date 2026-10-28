@@ -145,12 +145,12 @@ class PagesController extends Controller
         }
 
         $results = [
-            'questions' => $questions->orderBy('id', 'DESC')->paginate(5)->withQueryString(),
-            'solutions' => $solutions->orderBy('id', 'DESC')->paginate(5)->withQueryString(),
+            'questions' => $questions->with('user:id,name')->withCount(['comments', 'answers'])->orderBy('id', 'DESC')->paginate(10, ['*'], 'qpage')->withQueryString(),
+            'solutions' => $solutions->with('user:id,name')->orderBy('id', 'DESC')->paginate(10, ['*'], 'spage')->withQueryString(),
         ];
 
         // R-12: a search that finds nothing is a friction signal. Only the fact is counted: never the words searched for.
-        if ($textSearch && trim($search_term) !== '' && request()->query('page') === null) {
+        if ($textSearch && trim($search_term) !== '' && request()->query('qpage') === null && request()->query('spage') === null) {
             $found = $results['questions']->total() + $results['solutions']->total();
             app(UxSignals::class)->record($found === 0 ? 'search.empty' : 'search.run', '/solution-results', $found === 0 ? 'failure' : 'success');
         }

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserNotice;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Str;
 
 /**
  * In-app notices for contributors. `record()` is the only writer; it is called from a listener that can never fail the
@@ -115,7 +116,7 @@ class InAppNotices
 
     private function words(string $kind, string $title): string
     {
-        $title = '“'.\Illuminate\Support\Str::limit(trim($title), 90, '…', true).'”';
+        $title = '“'.Str::limit(trim($title), 90, '…', true).'”';
 
         return match ($kind) {
             UserNotice::ANSWER_RECEIVED => "Someone answered your question $title.",

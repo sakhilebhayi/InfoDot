@@ -5875,3 +5875,18 @@ a.ix-notices__text:hover {
         min-height: 44px;
     }
 }
+
+/* Previous / next under a list */
+.ix-pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 0;
+}
+
+.ix-pager__where {
+    color: var(--ix-text-2);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+}
