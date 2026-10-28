@@ -6838,10 +6838,16 @@ body {
     }
 }
 
-/* The platforms around InfoDot, as their own logos */
+/* The platforms around InfoDot, as their own logos. Every tile is the same size and the same graphite ground (the top bar's): the logos are mostly pale
+   (yellow discs, light wordmarks), which show clearly on it. The few logos with dark parts were lightened in their copies here so they show too.
+   Each logo is trimmed to its artwork, so they all fill their tile alike. */
+:root {
+    --lp-logo-ground: #1b2124;
+}
+
 .lp-logos {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
     gap: 12px;
     margin: 0 0 20px;
     padding: 0;
@@ -6849,18 +6855,20 @@ body {
 }
 
 .lp-logos li {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 1;
-    padding: 14px;
-    border: 1px solid var(--ix-rule);
+    position: relative;
+    height: 104px;
     border-radius: var(--ix-radius);
-    background: #fff;
+    background: var(--lp-logo-ground);
 }
 
 .lp-logos img {
+    position: absolute;
+    top: 14px;
+    right: 18px;
+    bottom: 14px;
+    left: 18px;
     display: block;
-    width: 100%;
-    height: 100%;
+    width: calc(100% - 36px);
+    height: calc(100% - 28px);
     object-fit: contain;
 }
