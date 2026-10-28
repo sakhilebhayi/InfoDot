@@ -108,10 +108,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Syntax and lint
         run: |
-          bash -n tools/access-log-review-host.sh tools/test-access-log-review.sh
-          shellcheck -S warning tools/access-log-review-host.sh tools/test-access-log-review.sh
+          bash -n tools/access-log-review-host.sh tools/test-access-log-review.sh tools/access-log-window-host.sh tools/test-access-log-window.sh
+          shellcheck -S warning tools/access-log-review-host.sh tools/test-access-log-review.sh tools/access-log-window-host.sh tools/test-access-log-window.sh
       - name: Run the fake-host test of the access log review (synthetic logs; no IP address or user agent may reach the output; nothing may be written)
-        run: bash tools/test-access-log-review.sh
+        run: bash tools/test-access-log-review.sh && bash tools/test-access-log-window.sh
 
   popia-inventory:
     name: personal data inventory (fixture)

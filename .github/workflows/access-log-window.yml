@@ -1,0 +1,61 @@
+name: Access Log Window
+
+# Read-only. Lists the requests for never-served paths on one site inside one short time window: status, bytes, category,
+# user-agent family. No address, no path. Used to settle whether a deploy-probe 200 was a real file answer.
+# Same SSH secrets and read-only posture as access-log-review.yml.
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: 'Site label prefix, e.g. dopemine'
+        required: true
+      day:
+        description: 'Server day, YYYY-MM-DD'
+        required: true
+      from:
+        description: 'Start, HH:MM:SS (server clock)'
+        required: true
+      to:
+        description: 'End, HH:MM:SS (server clock)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  window:
+    name: Review one window (read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SITE: ${{ inputs.site }}
+      DAY: ${{ inputs.day }}
+      FROM_T: ${{ inputs.from }}
+      TO_T: ${{ inputs.to }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the inputs
+        run: |
+          printf '%s\n' "$SITE" | grep -Eq '^[a-z][a-z0-9-]{1,31}$' || { echo "::error::bad site"; exit 1; }
+          printf '%s\n' "$DAY" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' || { echo "::error::bad day"; exit 1; }
+          printf '%s\n%s\n' "$FROM_T" "$TO_T" | grep -Eq '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' || { echo "::error::bad time"; exit 1; }
+
+      - name: Set up SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Review (read-only)
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -o pipefail
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes "$DEPLOY_USER@$DEPLOY_HOST" "bash -s -- $SITE $DAY $FROM_T $TO_T" < tools/access-log-window-host.sh | tee window.txt
