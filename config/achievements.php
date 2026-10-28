@@ -24,6 +24,14 @@
 return [
     'version' => 1,
 
+    /*
+     | Areas of expertise on the profile. Not self-declared: a topic is listed only where at least `min_work` pieces of
+     | qualifying work (answers somebody else accepted, solutions a moderator other than you verified; public, not hidden,
+     | never help you gave yourself) are filed under it. It is a plain count, taken back with the work, never a rank.
+     | Shown to others only when the person shares their achievements.
+     */
+    'expertise' => ['min_work' => 2, 'max_areas' => 5],
+
     'metrics' => [
         'questions' => ['label' => 'questions asked'],
         'answers' => ['label' => 'answers given'],

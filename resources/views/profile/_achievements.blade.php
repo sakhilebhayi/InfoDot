@@ -42,6 +42,19 @@
         </ul>
     @endif
 
+    @if (! empty($achievements['expertise']))
+        <h3 class="ix-ach__sub" id="ach-expertise">Areas of expertise</h3>
+        <p class="ix-ach__note">Topics where other people accepted your answers or a moderator verified your solutions. They come from the work, not from a label you chose, and a topic leaves the list if the work behind it is hidden or un-accepted.{{ $isOwner ? ' '.($achievements['shared'] ? 'Other people see this list on your profile.' : 'Other people cannot see this list unless you share your achievements below.') : '' }}</p>
+        <ul class="ix-ach__areas" aria-labelledby="ach-expertise">
+            @foreach ($achievements['expertise'] as $area)
+                <li data-expertise="{{ $area['slug'] }}">
+                    <a href="{{ route('topics.show', ['topic' => $area['slug']]) }}">{{ $area['name'] }}</a>
+                    <span class="ix-hint">{{ $area['accepted'] }} accepted {{ \Illuminate\Support\Str::plural('answer', $area['accepted']) }}@if ($area['verified'] > 0), {{ $area['verified'] }} verified {{ \Illuminate\Support\Str::plural('solution', $area['verified']) }}@endif</span>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
     @php($portfolio = $achievements['portfolio'])
     @if ($portfolio['accepted_total'] + $portfolio['verified_total'] > 0)
         <h3 class="ix-ach__sub" id="ach-portfolio">Public contributions</h3>

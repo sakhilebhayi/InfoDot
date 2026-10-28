@@ -15,6 +15,7 @@ use App\Events\Knowledge\SolutionUnverified;
 use App\Events\Knowledge\SolutionVerified;
 use App\Listeners\ForwardKnowledgeEventToMemory;
 use App\Listeners\ForwardKnowledgeEventToPoints;
+use App\Listeners\RecordInAppNotice;
 use App\Listeners\RefreshAchievements;
 use App\Models\File;
 use App\Models\Folder;
@@ -63,6 +64,11 @@ class AppServiceProvider extends ServiceProvider
         // (No milestones follow these: ContentModerationChanged already refreshes them.)
         foreach ([SolutionVerified::class, SolutionUnverified::class, ContentReported::class, ContributionApproved::class, KnowledgeAdopted::class, LibraryEntryWithdrawn::class] as $moderationEvent) {
             Event::listen($moderationEvent, ForwardKnowledgeEventToPoints::class);
+        }
+
+        // In-app notices to the person an event is about: an answer to their question, an accepted answer, a verified solution, work added to the library.
+        foreach ([AnswerPublished::class, AnswerAccepted::class, SolutionVerified::class, KnowledgeAdopted::class] as $noticeEvent) {
+            Event::listen($noticeEvent, RecordInAppNotice::class);
         }
 
         // Opt-in only: an accepted answer or a verified solution of someone who let Dot.Memory remember their topics.

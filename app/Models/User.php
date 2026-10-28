@@ -37,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'points_expiry_emails' => 'boolean',
         'achievements_public' => 'boolean',
+        'notices_in_app' => 'boolean',
         'topic_suggestions' => 'boolean',
         'share_expertise' => 'boolean',
     ];
@@ -115,6 +116,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function achievements()
     {
         return $this->hasMany(UserAchievement::class);
+    }
+
+    /** Whether the person wants in-app notices about their own work. On unless they switched it off. */
+    public function wantsInAppNotices(): bool
+    {
+        return (bool) ($this->notices_in_app ?? true);
     }
 
     /** Whether the person lets others see their achievements and public contributions. Off unless they chose it. */
