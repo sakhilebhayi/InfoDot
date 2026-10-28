@@ -195,17 +195,18 @@ class PublicPagesTest extends TestCase
         }
     }
 
-    public function test_the_landing_images_and_the_arrow_are_part_of_the_build_that_the_deploy_publishes(): void
+    public function test_the_landing_images_and_the_arrow_are_in_the_files_the_build_picks_up(): void
     {
-        // Only public/build is copied to the document root on deploy; an image kept anywhere else in public/ would be a 404 on the live site.
-        $manifestPath = public_path('build/manifest.json');
-        if (! is_file($manifestPath)) {
-            $this->markTestSkipped('No built manifest in this environment.');
+        // Only public/build is copied to the document root on deploy, and the build takes images from the globs in resources/js/app.js.
+        // An image kept anywhere else in public/ would be a 404 on the live site. (The committed manifest is stale by design, so the
+        // source of the build is checked rather than the manifest.)
+        $app = (string) file_get_contents(resource_path('js/app.js'));
+        foreach (['../img/landing/*.jpg', '../img/landing/platforms/*.png', '../img/arrow-mask.png'] as $glob) {
+            $this->assertStringContainsString($glob, $app, $glob.' is not globbed into the build');
         }
-        $manifest = json_decode((string) file_get_contents($manifestPath), true);
 
-        foreach (['resources/img/arrow-mask.png', 'resources/img/landing/hero-1920.jpg', 'resources/img/landing/hero-960.jpg', 'resources/img/landing/seamstress.jpg', 'resources/img/landing/couturiere.jpg', 'resources/img/landing/market.jpg', 'resources/img/landing/platforms/files.png'] as $key) {
-            $this->assertArrayHasKey($key, $manifest, $key.' is not in the build, so the live site would not have it');
+        foreach (['arrow-mask.png', 'landing/hero-1920.jpg', 'landing/hero-960.jpg', 'landing/seamstress.jpg', 'landing/couturiere.jpg', 'landing/market.jpg', 'landing/platforms/files.png'] as $file) {
+            $this->assertFileExists(resource_path('img/'.$file));
         }
         $this->assertDirectoryDoesNotExist(public_path('img/landing'), 'landing images belong in resources/img so they ship with the build');
         $this->assertFileDoesNotExist(public_path('img/arrow-mask.png'));
