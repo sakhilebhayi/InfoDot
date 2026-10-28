@@ -30,9 +30,9 @@ InfoDot is the central identity hub for the Dot Ecosystem — a unified gateway 
 - Solutions hub — community knowledge base with polymorphic likes
 - Q&A forum with threaded comments
 - Team management — invitations, roles, and multi-tenancy
-- Real-time notifications via Laravel Reverb
+- Notifications feed (stored notifications). Laravel Reverb is configured for broadcasting, but only one event (`QuestionWasAsked`) broadcasts and no page listens yet, so there are no real-time notifications today
 - Full-text search across solutions, questions, and users
-- Social graph — follow users, build your network
+- Associates — follow and unfollow other users (the follow button exists; follower and following lists are not built)
 - Ecosystem widget — one-click launch into any registered platform, grouped by category
 - File uploads backed by AWS S3 or local disk
 
