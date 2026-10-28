@@ -1,6 +1,8 @@
 @php
     // Every live platform that has a logo of its own, in the config's order. The files are the platforms' logos trimmed to their artwork, so they all fill their tile alike.
     $platforms = collect(config('ecosystem.platforms', []))
+        // Only logos that carry the platform's name: the Dot.Agents mark has no wording, so it is left out of the wall.
+        ->reject(fn ($p, $key) => $key === 'agents')
         ->filter(fn ($p, $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && $key !== 'infodot' && file_exists(public_path('img/landing/platforms/'.$key.'.png')))
         ->map(fn ($p, $key) => ['name' => $p['name'], 'logo' => asset('img/landing/platforms/'.$key.'.png')])->values();
     $examples = ['How do I register a business?', 'How do I price my work?', 'How do I find customers?', 'How do I track my cash?', 'How do I hire my first person?'];
