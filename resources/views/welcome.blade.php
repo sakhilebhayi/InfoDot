@@ -3,15 +3,15 @@
     $platforms = collect(config('ecosystem.platforms', []))
         // Only logos that carry the platform's name: the Dot.Agents mark has no wording, so it is left out of the wall.
         ->reject(fn ($p, $key) => $key === 'agents')
-        ->filter(fn ($p, $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && $key !== 'infodot' && file_exists(public_path('img/landing/platforms/'.$key.'.png')))
-        ->map(fn ($p, $key) => ['name' => $p['name'], 'logo' => asset('img/landing/platforms/'.$key.'.png')])->values();
+        ->filter(fn ($p, $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && $key !== 'infodot' && file_exists(resource_path('img/landing/platforms/'.$key.'.png')))
+        ->map(fn ($p, $key) => ['name' => $p['name'], 'logo' => \Illuminate\Support\Facades\Vite::asset('resources/img/landing/platforms/'.$key.'.png')])->values();
     $examples = ['How do I register a business?', 'How do I price my work?', 'How do I find customers?', 'How do I track my cash?', 'How do I hire my first person?'];
     $search = fn (string $words) => route('solution_search_results', ['search' => $words]);
     $first = auth()->check() ? \Illuminate\Support\Str::of(auth()->user()->name)->before(' ')->toString() : null;
 @endphp
 <x-public-layout landing title="InfoDot" description="Search practical business solutions from people who have done it, or ask your own question. InfoDot is where the Dot.Eco-system keeps what it knows about running a business.">
     <section class="lp-hero" aria-labelledby="hero-title">
-        <img class="lp-hero__bg" src="{{ asset('img/landing/hero-1920.jpg') }}" srcset="{{ asset('img/landing/hero-960.jpg') }} 960w, {{ asset('img/landing/hero-1920.jpg') }} 1920w" sizes="100vw" width="1920" height="1280" alt="" fetchpriority="high" decoding="async">
+        <img class="lp-hero__bg" src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-960.jpg') }} 960w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }} 1920w" sizes="100vw" width="1920" height="1280" alt="" fetchpriority="high" decoding="async">
         <div class="lp-hero__veil" aria-hidden="true"></div>
         <div class="lp-hero__inner">
             <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Find practical business solutions.' }}</h1>
@@ -38,7 +38,7 @@
     <section class="lp-split" aria-labelledby="start-title">
         <figure class="lp-photo" data-reveal>
             <div class="lp-photo__frame" data-parallax>
-                <img src="{{ asset('img/landing/seamstress.jpg') }}" width="1200" height="800" alt="A seamstress at her sewing machine, with racks of colourful fabric behind her" loading="lazy" decoding="async">
+                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/seamstress.jpg') }}" width="1200" height="800" alt="A seamstress at her sewing machine, with racks of colourful fabric behind her" loading="lazy" decoding="async">
             </div>
         </figure>
         <div class="lp-split__body">
@@ -68,7 +68,7 @@
         </div>
         <figure class="lp-photo lp-photo--tall" data-reveal>
             <div class="lp-photo__frame" data-parallax>
-                <img src="{{ asset('img/landing/couturiere.jpg') }}" width="1000" height="1500" alt="A smiling tailor holding up the garment she is working on" loading="lazy" decoding="async">
+                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/couturiere.jpg') }}" width="1000" height="1500" alt="A smiling tailor holding up the garment she is working on" loading="lazy" decoding="async">
             </div>
         </figure>
     </section>
@@ -91,7 +91,7 @@
 
     <figure class="lp-band" data-reveal>
         <div class="lp-band__frame" data-parallax>
-            <img src="{{ asset('img/landing/market.jpg') }}" width="1400" height="1050" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" loading="lazy" decoding="async">
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}" width="1400" height="1050" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" loading="lazy" decoding="async">
         </div>
     </figure>
 
