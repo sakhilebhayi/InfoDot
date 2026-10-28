@@ -59,11 +59,11 @@ class AuthenticationFlowSmokeTest extends TestCase
     public function test_guest_marketing_pages_render_shared_navigation(): void
     {
         $pages = [
-            '/about' => 'About',
-            '/faqs' => 'Frequently Asked Questions',
-            '/features' => 'Features',
+            '/about' => 'About InfoDot',
+            '/faqs' => 'Questions people ask',
+            '/features' => 'What InfoDot does',
             '/terms' => 'Terms &amp; Conditions',
-            '/complains' => 'Complains',
+            '/complains' => 'How to complain',
         ];
 
         foreach ($pages as $path => $heading) {

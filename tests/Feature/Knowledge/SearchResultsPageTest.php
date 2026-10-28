@@ -98,7 +98,7 @@ class SearchResultsPageTest extends TestCase
         $html = $this->get('/solution-results?search=register')->assertOk()->getContent();
 
         $this->assertStringContainsString('<title>Search · InfoDot</title>', $html);
-        $this->assertStringContainsString('class="ix-top"', $html);
+        $this->assertStringContainsString('class="ix-top ix-top--public"', $html);
         $this->assertStringContainsString('class="ix-band"', $html);
         $this->assertStringContainsString('Sign in', $html);
         $this->assertStringContainsString('Create account', $html);
