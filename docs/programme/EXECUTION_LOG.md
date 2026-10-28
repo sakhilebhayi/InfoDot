@@ -80,3 +80,9 @@ Written 2026-10-23 from the pull-request lists, deploy and workflow histories an
 - **R-12 first increment.** Dot.Brain #40 (merged): `services/ux-interactions`, `schemas/ux-interaction-event.schema.json`, ADR-0025 (proposed; owner decisions D1 to D3 open). A contract only: no product emits an event and nothing measures anything.
 - **R-9.** Acceptance table updated for the collusion safeguard (pairs only; criterion 4 mostly met, tests only).
 - No InfoDot application code changed in this entry.
+
+## 2026-10-28 night: R-9 and R-12 build (owner: "start with R-9 and do R-12, no need to ask permission")
+
+- **R-9, InfoDot #117 (merged):** in-app notifications and expertise areas on the profile (see `R9_ACCEPTANCE.md` criterion 10). 856 tests pass; checks green except Perch Scan (heuristic, 13 low-confidence findings). **Not deployed:** the production deploy was refused by the session's auto-mode classifier (Production Deploy) and was not retried; a fresh backup (`Backups` run, key `infodot`: ok) was taken before it. To ship: dispatch the InfoDot deploy (`confirm=deploy`) and check `/`, `/login`, `/up`, `/notifications`, assets, `POST /up` 405 and the `/main` probes.
+- **R-12, InfoDot #118 (merged):** friction signals, aggregate counts only, off unless `UX_SIGNALS=true` (`R12_UX_SIGNALS.md`). Same deploy still to do; the migrations `user_notices`, `users.notices_in_app` and `ux_daily_counts` run with it.
+- Migrations are additive and guarded; both new tables hold no text and no other person's name.
