@@ -18,7 +18,7 @@ class NavSection
     {
         return match (true) {
             request()->routeIs('dashboard') => 'Home',
-            request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*', 'library') => 'Knowledge',
+            request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*', 'library', 'solution_search_results') => 'Knowledge',
             request()->routeIs('ecosystem.widget', 'subservices.*') => 'Platforms',
             request()->routeIs('analytics.*') => 'Analytics',
             request()->routeIs('people') => 'People',
@@ -41,7 +41,7 @@ class NavSection
     {
         return match (true) {
             request()->routeIs('dashboard') => ['home', 'GATE'],
-            request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*', 'library') => ['knowledge', 'KNOW'],
+            request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*', 'library', 'solution_search_results') => ['knowledge', 'KNOW'],
             request()->routeIs('ecosystem.widget', 'subservices.*') => ['platforms', 'PLAT'],
             request()->routeIs('analytics.*') => ['analytics', 'DATA'],
             request()->routeIs('people') => ['people', 'CREW'],
@@ -81,6 +81,7 @@ class NavSection
             request()->routeIs('moderation.friction') => [['Moderation', route('moderation')], ['Where people struggle', null]],
             request()->routeIs('moderation.library*') => [['Moderation', route('moderation')], ['Verified library', null]],
             request()->routeIs('library') => [$knowledge, ['Library', null]],
+            request()->routeIs('solution_search_results') => [$knowledge, ['Search', null]],
             request()->routeIs('topics') => [$knowledge, ['Topics', null]],
             request()->routeIs('topics.show') => [$knowledge, ['Topics', route('topics')], [self::title(Topic::class, 'name', request()->route('topic')?->getKey()), null]],
             request()->routeIs('points*') => [['Account', null], ['Dot Points', null]],
