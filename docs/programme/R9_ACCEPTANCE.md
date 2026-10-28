@@ -25,7 +25,7 @@ Legend: **met** = covered by passing tests that assert the criterion; **partly**
 
 ## Result
 
-Nine of twelve criteria are met by passing tests (1, 2, 3, 5, 7, 9 fully; 6 and 8 in tests only), two are partly met (4, 10, and 12 for accessibility and performance), and one cannot be tested yet (11). **The brief should not be marked complete.** What stands between this and complete:
+Eight of twelve criteria are met by passing tests (1, 2, 3, 5, 7 and 9 fully; 6 and 8 in tests only, not checked live), three are partly met (4, 10, and 12 for accessibility and performance), and one cannot be tested yet (11). **The brief should not be marked complete.** What stands between this and complete:
 
 1. **Collusion and vote-manipulation safeguards (criterion 4)**: a design decision first (what pattern counts as collusion, and what happens: hold for moderator review is the conservative choice that fits the existing approval desk), then a test with a pair of accounts.
 2. **Other platforms feeding the ledger (criterion 11, brief section 10)**: choose which platform contributes first; the intake already validates a platform prefix.
