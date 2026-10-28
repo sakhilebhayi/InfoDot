@@ -4950,6 +4950,32 @@ button.ix-regrow:focus-visible {
     background: var(--ix-panel);
 }
 
+.ix-ach__areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    margin: 0 0 14px;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-ach__areas > li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 12px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.ix-ach__areas > li .ix-hint {
+    margin: 0;
+    font-weight: 400;
+}
+
 .ix-ach__name {
     margin: 0 0 2px;
     font-weight: 700;
@@ -5596,4 +5622,55 @@ a.ix-topic:focus-visible {
         font-size: 9px;
         letter-spacing: 0;
     }
+}
+
+/* Notifications page and the unread count in the account menu */
+.ix-pop__count {
+    margin-left: auto;
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--ix-text);
+    color: var(--ix-panel);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+}
+
+.ix-notices {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-notices__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.ix-notices__item.is-unread {
+    border-color: var(--ix-text-2);
+}
+
+.ix-notices__text {
+    color: var(--ix-text);
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.ix-notices__flag {
+    margin-left: 6px;
+    color: var(--ix-text);
+}
+
+.ix-notices__pref {
+    margin-top: 24px;
 }

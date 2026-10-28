@@ -10,6 +10,7 @@ use App\Models\UserAchievement;
 use App\Support\Knowledge\AchievementEvaluator;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Keeps a person's milestones equal to what their current work earns. `sync()` is the only writer: it counts what
@@ -100,7 +101,7 @@ class AchievementService
             ->map(fn (UserAchievement $a) => ['key' => $a->key, 'name' => $catalogue[$a->key]['name'], 'meaning' => $catalogue[$a->key]['meaning'], 'earned_at' => $a->earned_at])
             ->values();
 
-        $profile = ['earned' => $earned, 'shared' => $user->sharesAchievements(), 'portfolio' => $this->portfolio($user)];
+        $profile = ['earned' => $earned, 'shared' => $user->sharesAchievements(), 'portfolio' => $this->portfolio($user), 'expertise' => $this->expertise($user)];
 
         if ($ownerView) {
             $labels = config('achievements.metrics', []);
@@ -109,6 +110,60 @@ class AchievementService
         }
 
         return $profile;
+    }
+
+    /**
+     * Where a person's work is concentrated, from actual contribution history and nothing they declared: each topic with at
+     * least `achievements.expertise.min_work` qualifying pieces of work filed under it, most first, topic name as tie-break.
+     * The same work rules as the milestones (public, not hidden, accepted or verified by somebody else). Topics that were
+     * switched off still label old work, so they still count. An item with several topics counts once under each.
+     *
+     * @return list<array{slug: string, name: string, accepted: int, verified: int, work: int}>
+     */
+    public function expertise(User $user): array
+    {
+        $min = max(1, (int) config('achievements.expertise.min_work', 2));
+        $max = max(1, (int) config('achievements.expertise.max_areas', 5));
+
+        $publicQuestions = Questions::withoutGlobalScopes()->where('visibility', Questions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->select('id');
+
+        $acceptedIds = Answer::withoutGlobalScope('moderation-visibility')
+            ->where('user_id', $user->id)->where('status', Answer::PUBLISHED)->whereNull('hidden_at')->where('is_self_answer', false)
+            ->whereNotNull('accepted_at')->whereNotNull('accepted_by')->where('accepted_by', '!=', $user->id)
+            ->whereIn('question_id', $publicQuestions)->get(['id', 'question_id']);
+
+        $accepted = $acceptedIds->isEmpty() ? collect() : DB::table('question_topic')
+            ->whereIn('question_id', $acceptedIds->pluck('question_id')->unique()->all())
+            ->get(['question_id', 'topic_id']);
+
+        $counts = []; // topic id => [accepted, verified]
+        foreach ($acceptedIds as $answer) {
+            foreach ($accepted->where('question_id', $answer->question_id) as $link) {
+                $counts[$link->topic_id][0] = ($counts[$link->topic_id][0] ?? 0) + 1;
+            }
+        }
+
+        $verifiedIds = $this->verifiedSolutions($user)->pluck('id')->all();
+        if ($verifiedIds !== []) {
+            foreach (DB::table('solution_topic')->whereIn('solution_id', $verifiedIds)->get(['solution_id', 'topic_id']) as $link) {
+                $counts[$link->topic_id][1] = ($counts[$link->topic_id][1] ?? 0) + 1;
+            }
+        }
+
+        if ($counts === []) {
+            return [];
+        }
+
+        $topics = DB::table('topics')->whereIn('id', array_keys($counts))->get(['id', 'slug', 'name'])->keyBy('id');
+
+        return collect($counts)
+            ->map(fn (array $c, $topicId) => [
+                'slug' => (string) $topics[$topicId]->slug, 'name' => (string) $topics[$topicId]->name,
+                'accepted' => (int) ($c[0] ?? 0), 'verified' => (int) ($c[1] ?? 0), 'work' => (int) (($c[0] ?? 0) + ($c[1] ?? 0)),
+            ])
+            ->filter(fn (array $t) => $t['work'] >= $min)
+            ->sort(fn (array $a, array $b) => [$b['work'], $a['name']] <=> [$a['work'], $b['name']])
+            ->take($max)->values()->all();
     }
 
     /**

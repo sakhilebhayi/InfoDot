@@ -1,0 +1,126 @@
+<?php
+
+namespace App\Services\Knowledge;
+
+use App\Models\Questions;
+use App\Models\Solutions;
+use App\Models\User;
+use App\Models\UserNotice;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\UniqueConstraintViolationException;
+
+/**
+ * In-app notices for contributors. `record()` is the only writer; it is called from a listener that can never fail the
+ * request that raised the event. Rules, so nobody is nagged and nothing private leaks:
+ *  - only the person the event is about is told, never the person who did it (nobody is notified of their own act);
+ *  - nothing is recorded for a person who switched notices off;
+ *  - the same fact is one notice however often the event is raised (unique per person, kind and reference);
+ *  - a notice holds no words; the page writes them from what the viewer may see, so a question that was hidden or made
+ *    private afterwards shows as "no longer available", not as its title.
+ */
+class InAppNotices
+{
+    public function record(string $kind, User $recipient, string $subjectType, int $subjectId, string $ref, ?User $actor = null): bool
+    {
+        if (! in_array($kind, UserNotice::KINDS, true) || ! $recipient->wantsInAppNotices()) {
+            return false;
+        }
+
+        if ($actor !== null && $actor->is($recipient)) {
+            return false;
+        }
+
+        try {
+            UserNotice::create([
+                'user_id' => $recipient->id, 'kind' => $kind, 'subject_type' => $subjectType,
+                'subject_id' => $subjectId, 'ref' => mb_substr($ref, 0, 96), 'created_at' => now(),
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function unreadCount(User $user): int
+    {
+        return UserNotice::where('user_id', $user->id)->whereNull('read_at')->count();
+    }
+
+    /** @return LengthAwarePaginator<UserNotice> */
+    public function page(User $user, int $perPage = 30)
+    {
+        return UserNotice::where('user_id', $user->id)->orderByDesc('id')->paginate($perPage);
+    }
+
+    public function markRead(User $user, int $noticeId): ?UserNotice
+    {
+        $notice = UserNotice::where('user_id', $user->id)->whereKey($noticeId)->first();
+
+        if ($notice !== null && $notice->read_at === null) {
+            $notice->forceFill(['read_at' => now()])->save();
+        }
+
+        return $notice;
+    }
+
+    public function markAllRead(User $user): int
+    {
+        return UserNotice::where('user_id', $user->id)->whereNull('read_at')->update(['read_at' => now()]);
+    }
+
+    /** Read notices older than $readDays and any notice older than $anyDays go. @return int rows removed */
+    public function prune(int $readDays = 90, int $anyDays = 365): int
+    {
+        return UserNotice::where(fn ($q) => $q->whereNotNull('read_at')->where('created_at', '<', now()->subDays($readDays)))
+            ->orWhere('created_at', '<', now()->subDays($anyDays))->delete();
+    }
+
+    /**
+     * What to show for one notice, from what the signed-in person may see now. `url` is null when the item cannot be opened.
+     *
+     * @return array{text: string, url: ?string}
+     */
+    public function describe(UserNotice $notice): array
+    {
+        $gone = ['text' => $this->gone($notice->kind), 'url' => null];
+
+        if ($notice->subject_type === 'question') {
+            $q = Questions::find($notice->subject_id);
+
+            return $q === null || $q->isHidden() ? $gone : ['text' => $this->words($notice->kind, (string) $q->question), 'url' => route('questions.view', ['qid' => $q->id])];
+        }
+
+        if ($notice->subject_type === 'solution') {
+            $s = Solutions::find($notice->subject_id);
+
+            return $s === null || $s->isHidden() ? $gone : ['text' => $this->words($notice->kind, (string) $s->solution_title), 'url' => route('solutions.view', ['id' => $s->id])];
+        }
+
+        return $gone;
+    }
+
+    private function words(string $kind, string $title): string
+    {
+        $title = '“'.mb_strimwidth(trim($title), 0, 90, '…').'”';
+
+        return match ($kind) {
+            UserNotice::ANSWER_RECEIVED => "Someone answered your question $title.",
+            UserNotice::ANSWER_ACCEPTED => "Your answer to $title was accepted as the solution.",
+            UserNotice::SOLUTION_VERIFIED => "Your solution $title was verified by a moderator.",
+            UserNotice::KNOWLEDGE_REUSED => "Your work on $title was added to the knowledge library.",
+            default => 'Something happened to your work.',
+        };
+    }
+
+    private function gone(string $kind): string
+    {
+        return match ($kind) {
+            UserNotice::ANSWER_RECEIVED => 'Someone answered a question of yours that is no longer available.',
+            UserNotice::ANSWER_ACCEPTED => 'One of your answers was accepted, on a question that is no longer available.',
+            UserNotice::SOLUTION_VERIFIED => 'A solution of yours was verified; it is no longer available.',
+            UserNotice::KNOWLEDGE_REUSED => 'Some of your work was added to the knowledge library; it is no longer available.',
+            default => 'Something happened to your work that is no longer available.',
+        };
+    }
+}

@@ -29,6 +29,9 @@ class Kernel extends ConsoleKernel
         // Participation events waiting for Dot.Memory (only for people who opted in; retried with growing delays).
         $schedule->command('participation:flush-outbox')->everyMinute()->withoutOverlapping()->onOneServer();
 
+        // In-app notifications: read ones go after 90 days, any after a year.
+        $schedule->command('notices:prune')->dailyAt('03:20')->withoutOverlapping()->onOneServer();
+
         // What moderators decided about Dot.Brain's library recommendations, waiting to be reported to Dot.Memory (retried with growing delays).
         $schedule->command('library:flush-outcomes')->everyMinute()->withoutOverlapping()->onOneServer();
     }

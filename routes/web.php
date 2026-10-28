@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\ExpertiseSharingController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
+use App\Http\Controllers\NoticesController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
@@ -97,6 +98,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/user/profile/{id}', 'App\Http\Controllers\PagesController@show')->name('profile.show');
     // Whether other people may see the signed-in person's achievements and public contributions. Always their own row.
     Route::post('/user/profile/achievements-visibility', [AchievementsController::class, 'updateVisibility'])->middleware('throttle:20,1')->name('profile.achievements-visibility');
+
+    // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).
+    Route::get('/notifications', [NoticesController::class, 'index'])->middleware('throttle:60,1')->name('notices');
+    Route::get('/notifications/{id}/open', [NoticesController::class, 'open'])->whereNumber('id')->middleware('throttle:60,1')->name('notices.open');
+    Route::post('/notifications/read-all', [NoticesController::class, 'readAll'])->middleware('throttle:20,1')->name('notices.read-all');
+    Route::post('/notifications/preference', [NoticesController::class, 'preference'])->middleware('throttle:20,1')->name('notices.preference');
 
     // -------------------------------------------------------
     // Dot Points: balance, rewards, redemptions. Server-to-server with the points service; always the signed-in person's own.
