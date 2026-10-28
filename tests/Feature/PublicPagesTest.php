@@ -130,4 +130,27 @@ class PublicPagesTest extends TestCase
         $this->post('/contact-send', ['name' => 'Thandi', 'email' => 't@example.test', 'message' => 'Hello, can you help me?'])
             ->assertSessionHasErrors('message')->assertSessionMissing('success');
     }
+
+    public function test_every_search_button_is_the_arrow_from_the_infodot_logo(): void
+    {
+        $landing = $this->get('/')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/class="lp-search__go"[^>]*aria-label="Search"[^>]*><span class="ix-arrow"/', $landing);
+
+        $results = $this->get('/solution-results?search=register')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/class="ix-btn ix-btn--arrow"[^>]*aria-label="Search"[^>]*><span class="ix-arrow"/', $results);
+        $this->assertMatchesRegularExpression('/class="ix-search__go"[^>]*aria-label="Search questions and solutions"[^>]*>\s*<span class="ix-arrow"/', $results, 'the top-bar search');
+        $this->assertStringContainsString('/img/arrow-mask.png', $results);
+        $this->assertFileExists(public_path('img/arrow-mask.png'));
+    }
+
+    public function test_the_platforms_on_the_landing_page_are_shown_as_logos_with_their_names_as_alt_text(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('class="lp-logos"', $html);
+        foreach (['Dot.Files', 'Dot.Analytics', 'Dot.Tasks'] as $name) {
+            $this->assertStringContainsString('alt="'.$name.'"', $html);
+        }
+        $this->assertStringNotContainsString('class="ix-platlist"', $html, 'no longer a list of names');
+    }
 }

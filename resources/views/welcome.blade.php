@@ -1,7 +1,8 @@
 @php
+    // Every live platform that has a logo of its own, in the config's order.
     $platforms = collect(config('ecosystem.platforms', []))
-        ->filter(fn ($p, $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && $key !== 'infodot')
-        ->map(fn ($p) => $p['name'])->values();
+        ->filter(fn ($p, $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && $key !== 'infodot' && file_exists(resource_path('img/apps/'.$key.'.png')))
+        ->map(fn ($p, $key) => ['name' => $p['name'], 'logo' => \Illuminate\Support\Facades\Vite::asset('resources/img/apps/'.$key.'.png')])->values();
     $examples = ['How do I register a business?', 'How do I price my work?', 'How do I find customers?', 'How do I track my cash?', 'How do I hire my first person?'];
     $search = fn (string $words) => route('solution_search_results', ['search' => $words]);
     $first = auth()->check() ? \Illuminate\Support\Str::of(auth()->user()->name)->before(' ')->toString() : null;
@@ -18,7 +19,7 @@
                 <label for="lp-q" class="ix-sr">Search practical business solutions</label>
                 <span class="material-symbols-rounded lp-search__icon" aria-hidden="true">search</span>
                 <input id="lp-q" class="lp-search__input" type="search" name="search" placeholder="How do I register a business?" autocomplete="off" data-examples="{{ json_encode($examples) }}">
-                <button type="submit" class="lp-search__go">Search</button>
+                <button type="submit" class="lp-search__go" aria-label="Search"><x-ix.arrow /></button>
             </form>
 
             <ul class="lp-chips" aria-label="Things people look up" data-hero>
@@ -133,8 +134,10 @@
     <section class="ix-pubsec" aria-labelledby="eco-title">
         <h2 id="eco-title" data-reveal>The Dot.Eco-system around it</h2>
         <p class="ix-pubsec__lede" data-reveal>InfoDot is the front door to more than a dozen platforms that are built and deployed, among them:</p>
-        <ul class="ix-platlist" aria-label="Some Dot platforms" data-reveal>
-            @foreach ($platforms->take(14) as $name)<li>{{ $name }}</li>@endforeach
+        <ul class="lp-logos" aria-label="Some Dot platforms">
+            @foreach ($platforms as $platform)
+                <li data-reveal><img src="{{ $platform['logo'] }}" alt="{{ $platform['name'] }}" width="112" height="112" loading="lazy" decoding="async"></li>
+            @endforeach
         </ul>
         <p class="ix-pubsec__lede" data-reveal>Sign in to see which ones you can open and to go straight to them.</p>
     </section>
