@@ -14,6 +14,7 @@ use App\Http\Controllers\ResourceOpenController;
 use App\Http\Controllers\TopicAssignmentController;
 use App\Http\Controllers\TopicsController;
 use App\Http\Controllers\TopicSuggestionsController;
+use App\Http\Controllers\UxFrictionController;
 use App\Livewire\EcosystemWidget;
 use App\Livewire\Moderation\Library as ModerationLibrary;
 use App\Livewire\Moderation\Queue as ModerationQueue;
@@ -123,6 +124,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Moderation: reports, appeals and the audit trail. Moderators only.
     // -------------------------------------------------------
     Route::get('/moderation', ModerationQueue::class)->middleware('moderator')->name('moderation');
+    Route::get('/moderation/friction', [UxFrictionController::class, 'index'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.friction');
     Route::get('/moderation/topics', ModerationTopics::class)->middleware('moderator')->name('moderation.topics');
     // The Verified library desk: Dot.Brain's recommendations, the entries, and adding one by reference.
     Route::get('/moderation/library', ModerationLibrary::class)->middleware('moderator')->name('moderation.library');

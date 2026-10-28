@@ -32,6 +32,9 @@ class Kernel extends ConsoleKernel
         // In-app notifications: read ones go after 90 days, any after a year.
         $schedule->command('notices:prune')->dailyAt('03:20')->withoutOverlapping()->onOneServer();
 
+        // Interaction signal counts (R-12) are kept for the retention period only.
+        $schedule->command('ux:prune')->dailyAt('03:30')->withoutOverlapping()->onOneServer();
+
         // What moderators decided about Dot.Brain's library recommendations, waiting to be reported to Dot.Memory (retried with growing delays).
         $schedule->command('library:flush-outcomes')->everyMinute()->withoutOverlapping()->onOneServer();
     }

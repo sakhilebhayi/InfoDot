@@ -22,7 +22,7 @@ final probe step after the code was in place (see S-2f).
 | R-9 Community rewards | **partly done**: increments A to D delivered and deployed, E partly (Brain recommendations and Memory APIs yes; expertise areas and non-email notifications no); F (acceptance run) done 2026-10-28 (`R9_ACCEPTANCE.md`: 8 of 12 met, 4 mostly met since the pair-collusion safeguard, Dopemine #46, deployed 2026-10-28) | Live two-account check (owner); other platforms feeding the ledger; expertise areas and non-email notifications; rings of 3+ accounts |
 | R-10 InfoDot landing page | **not started; stays LAST** | After everything else |
 | R-11 Dot.Brain Brand Feeling Engine | **partly done**: foundation merged (2026-10-23); scoring engine in an open PR; analysers and the Claude Skill not started | Owner review and ratification of the draft profiles; merge or amend Dot.Brain #32 |
-| R-12 User Interaction Intelligence and UX improvement engine | **not started** (brief stored 2026-10-27; extends R-11) | Inspection of Dot.Brain, Dot.Memory, Dot.Dopemine and Dot.Analytics first; POPIA decisions on consent, retention and prompts before any collection |
+| R-12 User Interaction Intelligence and UX improvement engine | **first increment built 2026-10-28**: Dot.Brain event contract merged (#40, ADR-0025 proposed); InfoDot friction signals (aggregate counts, rules, moderator page; `R12_UX_SIGNALS.md`), **off until the owner sets `UX_SIGNALS=true`** | Owner: switch on, privacy-policy wording, ADR-0025 decisions D1 to D3; then client-side signals, Dot.Analytics ingest, Memory loop record, other platforms |
 
 ## R-1 Scheduler staleness after the 13 deploys (reliability, high)
 
