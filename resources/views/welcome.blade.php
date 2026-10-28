@@ -99,11 +99,6 @@
         <p class="ix-pubsec__lede">Sign in to see which ones you can open and to go straight to them.</p>
     </section>
 
-    <section class="ix-pubsec" aria-labelledby="who-title">
-        <h2 id="who-title">Built by one founder, in the open</h2>
-        <p class="ix-pubsec__lede">InfoDot is designed and run by Sakhile Bhayi, a mine control systems engineer and full stack developer turned founder, in South Africa. It is built with an AI-assisted workflow: a person decides what gets built and the rules it must follow, reviews what ships, and runs it in production. <a href="{{ route('about') }}">Read more about InfoDot</a>.</p>
-    </section>
-
     <section class="ix-pubcta" aria-labelledby="cta-title">
         <div class="ix-pubcta__inner">
             <h2 id="cta-title">Bring your first question.</h2>

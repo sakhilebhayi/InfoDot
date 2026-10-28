@@ -56,6 +56,13 @@ class PublicPagesTest extends TestCase
         }
     }
 
+    public function test_no_public_page_names_a_person(): void
+    {
+        foreach (['/', '/about', '/features', '/faqs', '/complains', '/contact'] as $path) {
+            $this->assertDoesNotMatchRegularExpression('/sakhile|bhayi/i', $this->get($path)->getContent(), $path);
+        }
+    }
+
     public function test_the_public_pages_use_no_pronoun_for_the_founder(): void
     {
         foreach (['/', '/about'] as $path) {
@@ -69,7 +76,7 @@ class PublicPagesTest extends TestCase
         config(['mail.contact_to' => null]);
         Mail::fake();
 
-        $this->get('/contact')->assertOk()->assertDontSee('Send message')->assertSee('info@sakhilebhayi.com');
+        $this->get('/contact')->assertOk()->assertDontSee('Send message')->assertSee('privacy@infodot.co.za');
 
         $response = $this->post('/contact-send', ['name' => 'Thandi', 'email' => 't@example.test', 'message' => 'Hello, can you help me?']);
 

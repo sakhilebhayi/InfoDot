@@ -6,7 +6,6 @@
         <h2>Write to us</h2>
         <ul>
             <li><strong>About your personal information:</strong> <a href="mailto:privacy@infodot.co.za">privacy@infodot.co.za</a></li>
-            <li><strong>About InfoDot and the Dot.Eco-system, investing or partnering:</strong> <a href="mailto:info@sakhilebhayi.com">info@sakhilebhayi.com</a></li>
         </ul>
         <p>If a question or answer on InfoDot is wrong or breaks the rules, use the report link on it, or see <a href="{{ route('complains') }}">how to complain</a>. Please do not send passwords or other secrets.</p>
 
