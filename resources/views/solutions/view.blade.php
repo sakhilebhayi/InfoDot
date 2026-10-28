@@ -44,7 +44,7 @@
                     @endif
                 </div>
                 @if ($count > 0)
-                    <div class="ix-proc__bar" aria-hidden="true"><span :style="'width:' + (n ? done.length / n * 100 : 0) + '%'"></span></div>
+                    <div class="ix-proc__bar" aria-hidden="true"><span :style="'transform:scaleX(' + (n ? done.length / n : 0) + ')'"></span></div>
                 @endif
 
                 <ol class="ix-proc__list">

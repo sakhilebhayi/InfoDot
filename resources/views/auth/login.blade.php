@@ -1,8 +1,10 @@
-<x-guest-layout>
+<x-guest-layout title="Sign in">
     <x-jet-authentication-card>
         <x-slot name="logo">
             <x-jet-authentication-card-logo />
         </x-slot>
+
+        <h1 class="ix-auth-title">Sign in</h1>
 
         <div class="text-[var(--ink-soft)] text-center mb-5 text-sm">
             Sign in with your credentials
@@ -26,7 +28,7 @@
 
             <div class="mt-4">
                 <x-jet-label for="password" value="{{ __('Password') }}" />
-                <x-jet-input class="block mt-1 w-full" id="password" type="password" name="password" required autocomplete="current-password" />
+                <x-password-input class="block mt-1 w-full" id="password" name="password" required autocomplete="current-password" />
             </div>
 
             <div class="block mt-4">

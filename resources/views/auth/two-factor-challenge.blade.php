@@ -1,8 +1,10 @@
-<x-guest-layout>
+<x-guest-layout title="Check it is you">
     <x-jet-authentication-card>
         <x-slot name="logo">
             <x-jet-authentication-card-logo />
         </x-slot>
+
+        <h1 class="ix-auth-title">Check it is you</h1>
 
         <div x-data="{ recovery: false }">
             <div class="mb-4 text-sm text-[var(--ink-soft)]" x-show="! recovery">

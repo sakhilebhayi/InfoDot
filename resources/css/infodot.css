@@ -1939,7 +1939,7 @@ button.ix-dir__item:hover:not([disabled]) {
 
 @media (prefers-reduced-motion: no-preference) {
     .ix-stamp {
-        animation: ix-stamp 0.28s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+        animation: ix-stamp 0.28s var(--ix-ease) both;
     }
 }
 
@@ -3770,9 +3770,11 @@ button.ix-regrow:focus-visible {
 
 .ix-proc__bar span {
     display: block;
+    width: 100%;
     height: 100%;
     background: var(--ix-documents);
-    transition: width 0.2s var(--ix-ease);
+    transform-origin: left center;
+    transition: transform 0.2s var(--ix-ease);
 }
 
 .ix-proc__list {
@@ -3895,7 +3897,8 @@ button.ix-regrow:focus-visible {
 .ix-answers__status {
     margin: 0 0 12px;
     padding: 8px 12px;
-    border-left: 3px solid var(--ix-documents);
+    border: 1px solid var(--ix-documents);
+    border-radius: var(--ix-radius-sm);
     background: var(--ix-panel);
     color: var(--ix-text);
     font-size: 14px;
@@ -3909,7 +3912,7 @@ button.ix-regrow:focus-visible {
 
 .ix-answer {
     padding: 14px 0 14px 14px;
-    border-left: 3px solid var(--ix-rule);
+    border-left: 1px solid var(--ix-rule-strong);
     margin: 0 0 14px;
 }
 
@@ -4353,7 +4356,8 @@ button.ix-regrow:focus-visible {
     gap: 6px;
     margin: 14px 0;
     padding: 12px 14px;
-    border-left: 3px solid var(--ix-warn);
+    border: 1px solid var(--ix-warn);
+    border-radius: var(--ix-radius-sm);
     background: var(--ix-warn-wash);
     color: var(--ix-text);
     font-size: 14px;
@@ -4473,7 +4477,6 @@ button.ix-regrow:focus-visible {
     margin: 0 0 20px;
     padding: 12px 14px;
     border: 1px solid var(--ix-rule-strong);
-    border-left-width: 4px;
     border-radius: var(--ix-radius-sm);
     background: var(--ix-panel);
 }
@@ -4916,7 +4919,6 @@ button.ix-regrow:focus-visible {
     margin: 0 0 12px;
     padding: 10px 12px;
     border: 1px solid var(--ix-ok);
-    border-left-width: 4px;
     border-radius: var(--ix-radius-sm);
     background: var(--ix-panel);
     font-weight: 600;
@@ -5799,4 +5801,77 @@ a.ix-notices__text:hover {
     font-size: 11px;
     line-height: 17px;
     text-align: center;
+}
+
+/* Touch targets (WCAG 2.5.8): on touch screens and narrow windows, small links and controls get a real hit area.
+   Desktop keeps its compact look. */
+@media (pointer: coarse), (max-width: 640px) {
+    .ix-foot nav a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 4px;
+    }
+
+    .ix-crumbs a,
+    .ix-topic,
+    .ix-topicbar__all,
+    .ix-link,
+    .ix-copy {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+    }
+}
+
+/* Sign-in pages: a real heading and a password field that can be checked before it is sent */
+.ix-auth-title {
+    margin: 0 0 12px;
+    font-weight: 650;
+    font-size: 22px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-align: center;
+}
+
+.ix-pw {
+    position: relative;
+}
+
+.ix-pw .ix-input {
+    padding-right: 48px;
+}
+
+.ix-pw__toggle {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: var(--ix-radius-sm);
+    background: transparent;
+    color: var(--ix-text-2);
+    cursor: pointer;
+}
+
+.ix-pw__toggle:hover {
+    color: var(--ix-text);
+    background: var(--ix-hover);
+}
+
+.ix-pw__toggle .material-symbols-rounded {
+    font-size: 22px;
+}
+
+@media (pointer: coarse), (max-width: 640px) {
+    .ix-auth-card a.underline,
+    .ix-auth-links a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+    }
 }
