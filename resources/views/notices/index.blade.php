@@ -1,5 +1,7 @@
 <x-app-layout>
-    @php($notice = session('notices_notice'))
+    @php($flash = session('notices_notice'))
+    @php($new = $rows->filter(fn ($r) => $r['notice']->read_at === null))
+    @php($earlier = $rows->filter(fn ($r) => $r['notice']->read_at !== null))
 
     <div class="ix-pagehead">
         <div>
@@ -9,13 +11,15 @@
         @if ($unread > 0)
             <form method="POST" action="{{ route('notices.read-all') }}">
                 @csrf
-                <button type="submit" class="ix-btn">Mark all as read</button>
+                <button type="submit" class="ix-btn">
+                    <span class="material-symbols-rounded" aria-hidden="true">done_all</span>Mark all as read
+                </button>
             </form>
         @endif
     </div>
 
-    @if ($notice)
-        <p class="ix-pts__muted" role="status">{{ $notice }}</p>
+    @if ($flash)
+        <p class="ix-pts__muted" role="status">{{ $flash }}</p>
     @endif
 
     @if ($rows->isEmpty())
@@ -24,22 +28,28 @@
             <p>{{ $wants ? 'When someone answers your question, or a moderator verifies your solution, it will be listed here.' : 'Notifications are off, so nothing new is being recorded.' }}</p>
         </section>
     @else
-        <ul class="ix-notices" aria-label="Your notifications">
-            @foreach ($rows as $row)
-                @php($n = $row['notice'])
-                <li class="ix-notices__item {{ $n->read_at === null ? 'is-unread' : '' }}" data-notice="{{ $n->kind }}">
-                    @if ($row['url'])
-                        <a href="{{ route('notices.open', ['id' => $n->id]) }}" class="ix-notices__text">{{ $row['text'] }}</a>
-                    @else
-                        <span class="ix-notices__text">{{ $row['text'] }}</span>
-                    @endif
-                    <span class="ix-hint">
-                        <time datetime="{{ $n->created_at->toIso8601String() }}">{{ $n->created_at->format('j M Y, H:i') }}</time>
-                        @if ($n->read_at === null) <strong class="ix-notices__flag">Unread</strong> @endif
-                    </span>
-                </li>
-            @endforeach
-        </ul>
+        @foreach ([['New', 'notices-new', $new], ['Earlier', 'notices-earlier', $earlier]] as [$heading, $id, $group])
+            @continue($group->isEmpty())
+            <section class="ix-notices" aria-labelledby="{{ $id }}">
+                <h2 class="ix-notices__heading" id="{{ $id }}">{{ $heading }} <span class="ix-notices__n">{{ $group->count() }}</span></h2>
+                <ul class="ix-notices__list">
+                    @foreach ($group as $row)
+                        @php($n = $row['notice'])
+                        <li class="ix-notices__item {{ $n->read_at === null ? 'is-unread' : '' }}" data-notice="{{ $n->kind }}">
+                            <span class="ix-notices__kind">{{ \App\Services\Knowledge\InAppNotices::label($n->kind) }}</span>
+                            <p class="ix-notices__body">
+                                @if ($row['url'])
+                                    <a href="{{ route('notices.open', ['id' => $n->id]) }}" class="ix-notices__text">{{ $row['text'] }}@if ($n->read_at === null)<span class="ix-sr"> (unread)</span>@endif</a>
+                                @else
+                                    <span class="ix-notices__text is-gone">{{ $row['text'] }}@if ($n->read_at === null)<span class="ix-sr"> (unread)</span>@endif</span>
+                                @endif
+                            </p>
+                            <time class="ix-notices__time" datetime="{{ $n->created_at->toIso8601String() }}" title="{{ $n->created_at->format('j M Y, H:i') }}">{{ $n->created_at->diffForHumans() }}</time>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endforeach
 
         {{ $page->links() }}
     @endif
