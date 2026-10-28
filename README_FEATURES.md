@@ -1,5 +1,8 @@
 # InfoDot - Comprehensive Feature Documentation
 
+> **Status of this document (2026-10-28).** It dates from the original build and has not been kept in step with the code: the stack versions in the technology sections are out of date (for example Livewire is 3.x, not 2.12). The feature lists were spot-checked on 2026-10-28 against the models, views and routes; the lines for likes, the social graph and real-time notifications were corrected. `README.md` and `docs/programme/` hold the current, verified description.
+
+
 **InfoDot** is a modern web platform designed for entrepreneurs and professionals to search, discover, and share practical business solutions and insights. It combines a knowledge-sharing platform with team collaboration features, enabling users to connect, contribute, and solve business challenges collaboratively.
 
 ---
@@ -47,7 +50,7 @@ A Q&A system allowing users to ask business-related questions and get community 
 - **Question Title & Description**: Detailed question formulation with searchable text
 - **Status Tracking**: Monitor question status (open, resolved, etc.)
 - **Answer Comments**: Community members can respond with answers and advice
-- **Like Answers**: Vote on helpful answers to surface quality content
+- **Likes**: Questions and Solutions can be liked (answers cannot be liked)
 - **Search Questions**: Full-text search across question titles and descriptions
 - **Question Ownership**: Users maintain profiles of their asked questions
 - **Mark as Solved**: Solution seekers can mark questions as solved
@@ -65,7 +68,7 @@ Comprehensive user profiles showcasing expertise, contributions, and social conn
 - **Gravatar Integration**: Automatically fetch user avatars from Gravatar using MD5 email hashing
 - **Activity History**: View user's contributed solutions and asked questions
 - **Associates/Connections**: Build professional networks by connecting with other users
-- **Social Graph**: See followers and following relationships
+- **Social Graph**: Follow and unfollow other users ("Associates"); follower and following lists are not built
 - **Profile Editing**: Users can update personal information and settings
 - **Profile Access Control**: Guest users cannot view profiles (redirected to login)
 
@@ -387,12 +390,12 @@ Users can create and manage teams for collaborative work.
 - **Alpine.js 3.7.1**: Lightweight JavaScript framework
 - **Vue.js 2.6.14**: Progressive JavaScript framework
 - **Tiptap 1.32.2**: Rich text editor
-- **Pusher.js 7.0.3**: Real-time messaging
+- **Pusher.js 7.0.3**: Client library for Laravel Echo (present; nothing listens yet)
 - **Bootstrap 5.1.3**: CSS framework (legacy support)
 
 **Real-Time Communication:**
-- **Pusher**: Real-time message broadcasting
-- **Laravel Echo**: Client-side real-time listening
+- **Pusher / Reverb**: configured for broadcasting; one event (`QuestionWasAsked`) broadcasts
+- **Laravel Echo**: initialised in `resources/js/bootstrap.js`; no page uses `window.Echo` yet
 - **WebSockets**: Self-hosted WebSocket server via BeyondCode
 
 **Database:**
