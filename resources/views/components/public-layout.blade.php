@@ -17,7 +17,7 @@
     @if ($landing)
         {{-- Motion is added on top of a page that is complete without it: the flag is set before first paint only when the visitor has not asked for reduced motion. --}}
         <script>if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.classList.add('has-motion'); }</script>
-        @vite(['resources/js/landing.js'])
+        {!! \App\Support\OptionalVite::tags('resources/js/landing.js') !!}
     @endif
     @livewireStyles
 </head>
