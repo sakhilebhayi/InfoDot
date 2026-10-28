@@ -12,7 +12,7 @@
             <option value="{{ $activeTopic->slug }}" selected>{{ $activeTopic->name }} (retired)</option>
         @endif
     </select>
-    <button type="submit" class="ix-btn">Search</button>
+    <button type="submit" class="ix-btn ix-btn--arrow" aria-label="Search"><x-ix.arrow /></button>
     @if ($topicSlug !== '')<a class="ix-topicbar__clear" href="{{ route('solution_search_results', ['search' => $searchTerm]) }}">Any topic</a>@endif
 </form>
 @if ($topicSlug !== '' && ! $activeTopic)

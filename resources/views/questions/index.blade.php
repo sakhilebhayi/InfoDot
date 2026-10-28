@@ -16,7 +16,7 @@
     <form class="ix-askbar" action="{{ route('seek') }}" method="GET" role="search">
         <label for="askbar-q" class="ix-askbar__label">Ask</label>
         <input id="askbar-q" name="question" type="text" maxlength="255" class="ix-askbar__input" placeholder="{{ $industry['ask_title'] }}" autocomplete="off">
-        <button type="submit" class="ix-askbar__go">Ask a question <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button>
+        <button type="submit" class="ix-askbar__go">Ask a question <x-ix.arrow /></button>
     </form>
 
     @include('topics._filter', ['route' => route('questions')])

@@ -35,7 +35,7 @@
         <kbd class="ix-kbd" aria-hidden="true" x-show="!open">Ctrl K</kbd>
 
         <button type="submit" class="ix-search__go" aria-label="Search questions and solutions">
-            <span class="material-symbols-rounded" aria-hidden="true">search</span>
+            <x-ix.arrow />
         </button>
     </form>
 
