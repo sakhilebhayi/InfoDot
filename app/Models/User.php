@@ -37,6 +37,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'points_expiry_emails' => 'boolean',
         'achievements_public' => 'boolean',
+        'badges_visible' => 'boolean',
         'notices_in_app' => 'boolean',
         'reputation_opt_out' => 'boolean',
         'topic_suggestions' => 'boolean',
@@ -129,6 +130,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function wantsInAppNotices(): bool
     {
         return (bool) ($this->notices_in_app ?? true);
+    }
+
+    /** Whether the person's specialist badges are shown (beside their answers and on their profile). On unless they hid them. */
+    public function showsBadges(): bool
+    {
+        return (bool) ($this->badges_visible ?? true);
     }
 
     /** Whether the person lets others see their achievements and public contributions. Off unless they chose it. */

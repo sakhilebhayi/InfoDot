@@ -106,6 +106,9 @@ class SeminarService
             $this->tell(UserNotice::SEMINAR_CANCELLED, $seminar, 'cancelled');
         }
 
+        // If Dot Points were already queued for hosting this seminar, take them back (nothing happens when none were).
+        app(SeminarHostPoints::class)->reverseIfAwarded($seminar);
+
         // Everyone who paid is refunded in full; anyone part-way through paying is released.
         foreach (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'pending'])->get() as $reg) {
             if ($reg->payment_status === 'paid') {

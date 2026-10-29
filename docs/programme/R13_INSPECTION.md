@@ -108,4 +108,7 @@ Until one of these exists, seminars are listed, registered for, reminded and att
 | Dot.Billing extra-seat pricing, pro-rata invoice, settlement-gated entitlement | PR Dot.Billing#30 (set a price in the database to enable; no price, nothing is sold) |
 | Brain ADR-0026 (reputation and tiers, proposed) | PR Dot.Brain#41 |
 | Per-person reputation opt-out (deletes what is stored), own-data download, reciprocal-acceptance discount | built after the session above (PR on `feat/r13-reputation-optout`) |
-| Seminar video, paid seminars, specialist badges, full ring detection, Billing screens for buying seats | not built; see `R13_SEMINAR_VIDEO_PLAN.md` and ADR-0026 D1 to D4 |
+| Specialist badges (public, opt-out `users.badges_visible`, per topic, beside answers and on the profile; `badges:backfill`) | PR `feat/r13-badges-rings-host-points`; levels are proposals in `config/achievements.php` `badges` |
+| Advisory ring detection (`reputation:detect-rings`, `/moderation/rings`, score discount, never a ban) | same PR; thresholds are proposals in `config/reputation.php` `rings`. Cycles of 3 or 4 and tight mutual clusters of 3 to 8, last 180 days, moderators excluded |
+| Dot Points for hosting (`seminars:award-hosts`, event `infodot.seminar.hosted`, off until `SEMINARS_POINTS_ENABLED=true`) | same PR; needs Dot.Dopemine PR #48 deployed first. Counts only attendees and ratings from outside every company the host owns or belongs to; one event per seminar, 24 h after it ended; reversed if the seminar is cancelled |
+| Seminar video, Billing screens for buying seats | not built; see `R13_SEMINAR_VIDEO_PLAN.md` and ADR-0026 D1 to D4 |

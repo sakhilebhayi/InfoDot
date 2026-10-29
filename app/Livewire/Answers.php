@@ -6,6 +6,7 @@ use App\Models\Answer;
 use App\Models\ContentReport;
 use App\Models\Questions;
 use App\Services\Knowledge\AnswerService;
+use App\Services\Knowledge\TopicBadges;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -90,6 +91,9 @@ class Answers extends Component
         return view('livewire.answers', [
             'reported' => $reported,
             'answers' => $answers,
+            // Specialist badges for the topics this question is filed under: two queries however many answers there are.
+            // Display only: the order above never reads them.
+            'badges' => app(TopicBadges::class)->forQuestion($this->question, $answers->pluck('user_id')->all()),
             'service' => $service,
             'user' => $user,
             'canAnswer' => $service->canSee($this->question, $user) && ! $this->question->isHidden(),

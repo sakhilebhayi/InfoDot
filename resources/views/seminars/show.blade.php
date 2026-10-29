@@ -95,6 +95,7 @@
     @if ($isHost)
         <section aria-labelledby="people-h" style="margin-top: 24px;">
             <h2 class="ix-label" id="people-h">People ({{ $people->count() }})</h2>
+            @if ($hostPoints = app(\App\Services\Seminars\SeminarHostPoints::class)->sentence($seminar))<p class="ix-hint" id="host-points">{{ $hostPoints }}</p>@endif
             @if ($seminar->status === 'published')
                 <p class="ix-hint">Your meeting link is private to you and the people who registered. You can open it yourself here: <a href="{{ route('seminars.join', $seminar) }}" rel="noopener">{{ $seminar->isRoom() ? 'enter the InfoDot room' : 'open my meeting room' }}</a>.</p>
             @endif

@@ -32,6 +32,23 @@ return [
      */
     'expertise' => ['min_work' => 2, 'max_areas' => 5],
 
+    /*
+     | Specialist badges (R-13, owner decision: public, opt-out). A badge belongs to ONE topic and is earned from exactly the work
+     | that lists that topic as an area of expertise: answers somebody else accepted and solutions a moderator other than you
+     | verified, public, not hidden, never help you gave yourself. Levels are ordered by `min_work` (the number of qualifying work
+     | items filed under the topic); the highest level met is the badge. There is no overall tier and no badge across topics.
+     | A badge is taken back with the work and comes back with it. It grants no permission and changes nobody's trust or ranking.
+     | Every number is a STARTING PROPOSAL; edit it, raise `version` and run `badges:backfill`. Shown unless the person hid their badges.
+     */
+    'badges' => [
+        'version' => 1,
+        'levels' => [
+            'contributor' => ['name' => 'Contributor', 'min_work' => 2],
+            'specialist' => ['name' => 'Specialist', 'min_work' => 5],
+            'authority' => ['name' => 'Authority', 'min_work' => 12],
+        ],
+    ],
+
     'metrics' => [
         'questions' => ['label' => 'questions asked'],
         'answers' => ['label' => 'answers given'],

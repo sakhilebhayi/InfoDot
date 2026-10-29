@@ -6,4 +6,7 @@
     <a href="{{ route('moderation.library') }}" @if ($current === 'library') aria-current="page" @endif>Recommended</a>
     <a href="{{ route('moderation.topics') }}" @if ($current === 'topics') aria-current="page" @endif>Topics</a>
     <a href="{{ route('moderation.friction') }}" @if ($current === 'friction') aria-current="page" @endif>Where people struggle</a>
+    @if (config('reputation.enabled'))
+        <a href="{{ route('moderation.rings') }}" @if (($current ?? null) === 'rings') aria-current="page" @endif>Account rings</a>
+    @endif
 </nav>

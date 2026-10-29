@@ -101,6 +101,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/user/profile/{id}', 'App\Http\Controllers\PagesController@show')->name('profile.show');
     // Whether other people may see the signed-in person's achievements and public contributions. Always their own row.
     Route::post('/user/profile/achievements-visibility', [AchievementsController::class, 'updateVisibility'])->middleware('throttle:20,1')->name('profile.achievements-visibility');
+    // Whether the person's specialist badges are shown (public unless they hide them). Always their own row.
+    Route::post('/user/profile/badges-visibility', [AchievementsController::class, 'updateBadges'])->middleware('throttle:20,1')->name('profile.badges-visibility');
 
     // Knowledge reputation: private progress (404 unless REPUTATION_ENABLED). Appeals are answered by moderators.
     Route::get('/progress', [ReputationController::class, 'show'])->middleware('throttle:60,1')->name('reputation');
@@ -109,6 +111,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/progress/appeal', [ReputationController::class, 'appeal'])->middleware('throttle:10,1')->name('reputation.appeal');
     Route::get('/moderation/reputation', [ReputationController::class, 'appeals'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation');
     Route::post('/moderation/reputation/{appeal}', [ReputationController::class, 'resolve'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation.resolve');
+    // Advisory ring flags (accounts accepting each other's answers). Moderators only; the people in a flag are not told.
+    Route::get('/moderation/rings', [\App\Http\Controllers\ReputationRingsController::class, 'index'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.rings');
+    Route::post('/moderation/rings/{flag}', [\App\Http\Controllers\ReputationRingsController::class, 'review'])->whereNumber('flag')->middleware(['moderator', 'throttle:30,1'])->name('moderation.rings.review');
     // Free seminars: any verified person may host one; the host's own join link is shown only to registered people in the window.
     Route::get('/seminars', [SeminarsController::class, 'index'])->name('seminars');
     Route::get('/seminars/payouts', [\App\Http\Controllers\SeminarPayoutsController::class, 'index'])->middleware('throttle:30,1')->name('seminars.payouts');

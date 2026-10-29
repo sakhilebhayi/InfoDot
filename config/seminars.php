@@ -47,6 +47,23 @@ return [
     ],
 
     /*
+    | Dot Points for hosting (R-13, owner decision 2026-10-29). OFF until SEMINARS_POINTS_ENABLED. A host earns points once, when a
+    | seminar they ran has finished, the `wait_hours` for late ratings have passed, and it had enough attendees and ratings. Only
+    | people OUTSIDE every company the host owns or belongs to are counted, and the ratings counted are theirs alone, so a host's
+    | own colleagues cannot make a seminar qualify. Attending earns nothing; free and paid seminars both count; cancelled ones never
+    | do (and an award is reversed if the seminar is cancelled afterwards). Dopemine checks the same thresholds itself and refuses
+    | anything below them. `consider_days` only bounds how far back the scheduled check looks.
+    */
+    'points' => [
+        'enabled' => (bool) env('SEMINARS_POINTS_ENABLED', false),
+        'min_attendees' => 3,
+        'min_ratings' => 3,
+        'min_average' => 4.0,
+        'wait_hours' => 24,
+        'consider_days' => 30,
+    ],
+
+    /*
     | Seminar video: InfoDot's own room on a LiveKit server YOU run (open source; see docs/programme/R13_LIVEKIT_SERVER.md). OFF until
     | SEMINARS_VIDEO_ENABLED and the three LIVEKIT_ values are set. Never claim live video to people until a real test on two networks passes.
     | InfoDot hands each registered person a short-lived join token, accepts LiveKit's signed webhook to record who really joined, and lets
