@@ -97,6 +97,21 @@ class InAppNoticesTest extends TestCase
         $this->assertSame([], $this->kinds($asker));
     }
 
+    public function test_seminar_service_notices_are_recorded_even_when_notices_are_switched_off_but_reminders_are_not(): void
+    {
+        $u = $this->person('Quiet');
+        $u->forceFill(['notices_in_app' => false])->save();
+        $service = app(InAppNotices::class);
+
+        foreach (UserNotice::SERVICE_KINDS as $i => $kind) {
+            $this->assertTrue($service->record($kind, $u, 'seminar', 1, 'svc:'.$i), $kind.' must reach the person');
+        }
+
+        $this->assertFalse($service->record(UserNotice::SEMINAR_REMINDER, $u, 'seminar', 1, 'reminder'), 'a reminder obeys the switch');
+        $this->assertFalse($service->record(UserNotice::ANSWER_RECEIVED, $u, 'question', 1, 'answer'), 'so does an ordinary notice');
+        $this->actingAs($u)->get('/notifications')->assertOk()->assertSee('always shown');
+    }
+
     public function test_the_page_lists_the_notice_in_words_and_the_link_marks_it_read(): void
     {
         $asker = $this->person('Asker');

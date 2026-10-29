@@ -226,6 +226,37 @@ class RingDetectionTest extends TestCase
         $this->assertSame(1, $this->detect()['created']);
     }
 
+    public function test_a_person_who_switched_their_score_off_is_never_a_member(): void
+    {
+        [$a, $b, $c] = $this->people(3);
+        $c->forceFill(['reputation_opt_out' => true])->save();
+        $this->edge($a, $b);
+        $this->edge($b, $c);
+        $this->edge($c, $a);
+
+        $this->assertSame(0, $this->detect()['created']);
+    }
+
+    public function test_opting_out_deletes_flags_that_name_the_person_and_the_download_lists_them(): void
+    {
+        [$a, $b, $c] = $this->people(3);
+        $this->edge($a, $b);
+        $this->edge($b, $c);
+        $this->edge($c, $a);
+        $this->detect();
+        $engine = app(ReputationEngine::class);
+
+        $export = $engine->export($a);
+        $this->assertCount(1, $export['ring_flags']);
+        $this->assertSame(['cycle', 3, 'open'], [$export['ring_flags'][0]['kind'], $export['ring_flags'][0]['members_in_group'], $export['ring_flags'][0]['status']]);
+        $this->assertStringNotContainsString($b->name, json_encode($export));
+        $this->assertSame([], $engine->export($this->person('Stranger'))['ring_flags']);
+
+        $engine->forget($a);
+
+        $this->assertSame(0, ReputationRingFlag::count(), 'a flag that names the person goes');
+    }
+
     public function test_moderators_are_never_members(): void
     {
         $a = $this->person('A');
