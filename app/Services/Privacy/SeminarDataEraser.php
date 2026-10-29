@@ -62,6 +62,7 @@ class SeminarDataEraser
             DB::table('seminar_link_reports')->where('seminar_id', $seminar->id)->delete();
             DB::table('seminar_reports')->where('seminar_id', $seminar->id)->delete();
             DB::table('seminar_room_bans')->where('seminar_id', $seminar->id)->delete();
+            DB::table('seminar_removal_appeals')->where('seminar_id', $seminar->id)->delete();
             $seminar->delete();
         }
 
@@ -74,6 +75,7 @@ class SeminarDataEraser
             DB::table($table)->where($column, $id)->delete();
         }
 
+        DB::table('seminar_removal_appeals')->where('host_id', $id)->delete();
         $this->dropPeers(DB::table('p2p_peers')->where('user_id', $id)->pluck('peer_id')->all(), $id);
 
         // Seller details and the agreement are kept only where money moved or is still owed.

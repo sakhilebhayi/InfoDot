@@ -10,7 +10,7 @@ class SeminarReport extends Model
 {
     public const REASONS = ['misleading' => 'Misleading or not what it says', 'harmful' => 'Harmful or unsafe', 'spam' => 'Spam or a scam', 'other' => 'Something else'];
 
-    protected $fillable = ['seminar_id', 'reporter_id', 'reason', 'detail', 'status', 'resolved_by', 'resolution_note', 'resolved_at'];
+    protected $fillable = ['seminar_id', 'reporter_id', 'about_name', 'reason', 'detail', 'status', 'resolved_by', 'resolution_note', 'resolved_at'];
 
     protected function casts(): array
     {

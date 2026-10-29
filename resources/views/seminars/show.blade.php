@@ -34,7 +34,45 @@
     </p>
 
     @if ($seminar->removed_at && $isHost)
-        <p class="ix-error" role="status">A moderator removed this seminar{{ $seminar->removed_reason ? ': '.$seminar->removed_reason : '.' }} Anyone who paid has been refunded in full.</p>
+        <p class="ix-error" role="status">A moderator removed this seminar{{ $seminar->removed_reason ? ': '.$seminar->removed_reason : '.' }}
+            {{ match ($seminar->removed_refunds) { 'complainants' => 'It had already started, so only people who reported it are refunded.', 'none' => 'It had already started, so tickets were not refunded.', default => 'Anyone who paid has been refunded in full.' } }}</p>
+        @error('appeal')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+        @if (! $appeal)
+            @if ($seminar->removed_at->gte(now()->subDays((int) config('seminars.removal_appeal_days', 30))))
+                <form method="POST" action="{{ route('seminars.appeal', $seminar) }}" class="ix-form" style="max-width: 520px; margin-bottom: 16px;">@csrf
+                    <label class="ix-label" for="appeal-msg">Think this was a mistake? Appeal once. A different moderator reads it.</label>
+                    <textarea class="ix-input" id="appeal-msg" name="message" rows="4" minlength="10" maxlength="1000" required></textarea>
+                    <p class="ix-hint">You have {{ (int) config('seminars.removal_appeal_days', 30) }} days from the removal. If the seminar has not started and the moderator agrees, it is put back on. Refunds already made stay made.</p>
+                    <button class="ix-btn" type="submit">Send my appeal</button>
+                </form>
+            @else
+                <p class="ix-hint">The time to appeal this removal has passed.</p>
+            @endif
+        @elseif ($appeal->status === 'open')
+            <p class="ix-hint">Your appeal was sent. A different moderator will read it and the answer will appear here.</p>
+        @else
+            <p class="ix-hint">Appeal {{ $appeal->status === 'reinstated' ? 'upheld' : 'denied' }}: {{ $appeal->resolution_note }}</p>
+        @endif
+    @elseif ($isHost && $appeal && $appeal->status === 'reinstated')
+        <p class="ix-hint">A moderator put this seminar back on after your appeal: {{ $appeal->resolution_note }}</p>
+    @endif
+
+    @if ($canReportPerson)
+        <details class="ix-hint" id="report-person" style="margin-bottom: 12px;">
+            <summary>Report someone in this seminar</summary>
+            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
+                <label class="ix-label" for="rp-name">Their name as it shows in the room or chat</label>
+                <input class="ix-input" id="rp-name" name="about_name" type="text" maxlength="60" required>
+                <label class="ix-label" for="rp-reason">What happened</label>
+                <select class="ix-input" id="rp-reason" name="reason" required>
+                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                </select>
+                <label class="ix-label" for="rp-detail">Tell the moderators more (optional)</label>
+                <textarea class="ix-input" id="rp-detail" name="detail" rows="3" maxlength="1000"></textarea>
+                <p class="ix-hint">A moderator reads it. The person is not told who reported them. As host you can also remove someone from the room yourself.</p>
+                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
+            </form>
+        </details>
     @endif
 
     @if (! $isHost && $seminar->status === 'published')
@@ -200,10 +238,8 @@
     @endif
 
     @if (auth()->user()->is_moderator && ! $isHost && $seminar->status !== 'cancelled')
-        <form method="POST" action="{{ route('moderation.seminars.remove', $seminar) }}" class="ix-form" style="margin-top: 24px; max-width: 480px;" onsubmit="return confirm('Remove this seminar? Everyone who registered is told and anyone who paid is refunded.');">@csrf
-            <label class="ix-label" for="mod-why">Moderator: remove this seminar (the host sees the reason)</label>
-            <input class="ix-input" id="mod-why" name="reason" type="text" minlength="10" maxlength="500" required>
-            <button class="ix-btn ix-btn--danger" type="submit">Remove the seminar</button>
-        </form>
+        <div style="margin-top: 24px;"><span class="ix-label">Moderator: remove this seminar</span>
+            @include('seminars._remove-form', ['seminar' => $seminar, 'idPrefix' => 'show'])
+        </div>
     @endif
 </x-app-layout>
