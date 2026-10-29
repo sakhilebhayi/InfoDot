@@ -301,7 +301,7 @@ class SeminarP2pTest extends TestCase
         $this->actingAs($s->host)->post('/seminars/'.$s->id.'/p2p/remove/'.$v1->id)->assertRedirect();
 
         $this->actingAs($v1)->postJson('/seminars/'.$s->id.'/p2p/poll')->assertOk()->assertJson(['removed' => true]);
-        $this->join($s, $v1)->assertStatus(422);
+        $this->join($s, $v1)->assertForbidden();
         $this->assertSame('registered', SeminarRegistration::where('user_id', $v1->id)->value('status'), 'still registered');
     }
 
@@ -378,6 +378,33 @@ class SeminarP2pTest extends TestCase
         $this->actingAs($u)->get('/seminars/'.$s->id.'/join')->assertStatus(405);
         $this->actingAs($u)->get('/seminars/'.$s->id.'/p2p/poll')->assertStatus(405);
         $this->assertNull(SeminarRegistration::where('user_id', $u->id)->value('attended_at'), 'a link someone else sends cannot mark you as attending');
+    }
+
+    public function test_removing_someone_who_has_not_entered_yet_still_keeps_them_out(): void
+    {
+        $s = $this->treeRoom();
+        $this->join($s, $s->host);
+        $v1 = $this->viewer($s);
+
+        $this->actingAs($s->host)->post('/seminars/'.$s->id.'/p2p/remove/'.$v1->id)->assertRedirect();
+
+        $this->join($s, $v1)->assertForbidden();
+        $this->actingAs($v1)->get('/seminars/'.$s->id.'/small-room')->assertRedirect(route('seminars.show', $s))->assertSessionHas('seminar_notice', 'The host removed you from this room.');
+    }
+
+    public function test_nobody_connects_before_being_told_their_address_is_visible(): void
+    {
+        $s = $this->treeRoom();
+        $guest = $this->viewer($s, 'Guest');
+
+        $viewer = $this->actingAs($guest)->get('/seminars/'.$s->id.'/small-room')->assertOk()->getContent();
+        $this->assertStringContainsString('can see <b>your internet address (IP address)</b>', $viewer);
+        $this->assertStringContainsString('data-consent-ok', $viewer);
+        $this->assertStringContainsString('pass the video on', $viewer);
+        $this->assertStringContainsString('stun.l.google.com', $viewer, 'it names the lookup server in use');
+
+        $host = $this->actingAs($s->host)->get('/seminars/'.$s->id.'/small-room')->assertOk()->getContent();
+        $this->assertStringContainsString('The people watching can see <b>your internet address', $host);
     }
 }
 

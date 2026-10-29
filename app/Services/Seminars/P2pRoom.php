@@ -39,6 +39,11 @@ class P2pRoom
         return $servers;
     }
 
+    public function isRemoved(Seminar $seminar, User $user): bool
+    {
+        return P2pPeer::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', 'removed')->exists();
+    }
+
     /** Why this person cannot be in the room now, or null. */
     public function refusal(Seminar $seminar, User $user): ?string
     {
@@ -53,6 +58,7 @@ class P2pRoom
         $registered = \App\Models\SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', \App\Models\SeminarRegistration::REGISTERED)->exists();
 
         return match (true) {
+            P2pPeer::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', 'removed')->exists() => 'The host removed you from this room.',
             ! $registered => 'The room is for people who registered.',
             $seminar->hasEnded() => 'This seminar has finished.',
             ! $seminar->joinIsOpen() => 'The room opens '.config('seminars.join_opens_minutes_before', 15).' minutes before the start.',
@@ -186,7 +192,12 @@ class P2pRoom
     /** The host removes someone: they are disconnected at their next poll and cannot come back into this room. */
     public function remove(Seminar $seminar, User $person): void
     {
-        P2pPeer::where('seminar_id', $seminar->id)->where('user_id', $person->id)->where('role', 'viewer')->update(['status' => 'removed']);
+        // Also bars someone who has not entered yet: with no place in the room there is no row to change, so one is made.
+        $peer = P2pPeer::firstOrNew(['seminar_id' => $seminar->id, 'user_id' => $person->id], ['peer_id' => (string) Str::uuid(), 'role' => 'viewer']);
+
+        if ($peer->role === 'viewer') {
+            $peer->forceFill(['status' => 'removed', 'parent_peer_id' => null, 'last_seen' => now()])->save();
+        }
     }
 
     /** @return array<string, mixed> */

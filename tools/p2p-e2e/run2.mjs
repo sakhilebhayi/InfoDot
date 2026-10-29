@@ -27,8 +27,8 @@ try {
   step('the published seminar page states the room size', /Small room: up to \d+ people/.test(page2), (page2.match(/Small room: up to \d+ people[^\n]*/)||[''])[0])
   // ---- removal by the host
   const v1 = await open('v1@example.test')
-  await host.goto(`${BASE}/seminars/${SEM}/small-room`,{waitUntil:'domcontentloaded'}); await sleep(2500)
-  await v1.goto(`${BASE}/seminars/${SEM}/small-room`,{waitUntil:'domcontentloaded'}); await sleep(9000)
+  await host.goto(`${BASE}/seminars/${SEM}/small-room`,{waitUntil:'domcontentloaded'}); await host.evaluate(()=>document.querySelector('[data-consent-ok]')?.click()); await sleep(2500)
+  await v1.goto(`${BASE}/seminars/${SEM}/small-room`,{waitUntil:'domcontentloaded'}); await v1.evaluate(()=>document.querySelector('[data-consent-ok]')?.click()); await sleep(9000)
   step('a viewer is watching before removal', /watching/i.test(await v1.evaluate(()=>document.querySelector('[data-status]').textContent)))
   await host.goto(`${BASE}/seminars/${SEM}`,{waitUntil:'domcontentloaded'}); await sleep(800)
   const removed = await host.evaluate(()=>{ const f=[...document.querySelectorAll('form')].find(f=>/p2p\/remove/.test(f.action)); if(!f) return false; window.confirm=()=>true; f.submit(); return true })

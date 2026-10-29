@@ -14,7 +14,24 @@
          data-join-url="{{ route('seminars.p2p.join', $seminar) }}" data-poll-url="{{ route('seminars.p2p.poll', $seminar) }}" data-signal-url="{{ route('seminars.p2p.signal', $seminar) }}"
          data-ready-url="{{ route('seminars.p2p.ready', $seminar) }}" data-report-url="{{ route('seminars.p2p.report', $seminar) }}" data-leave-url="{{ route('seminars.p2p.leave', $seminar) }}" data-chat-url="{{ route('seminars.p2p.chat', $seminar) }}">
         <noscript><p class="ix-error">The room needs JavaScript. Turn it on in your browser and reload.</p></noscript>
-        <p class="ix-hint" role="status" aria-live="polite" data-status>Connecting…</p>
+        <section class="ix-notices__pref" data-consent aria-labelledby="p2p-consent-h">
+            <h2 class="ix-label" id="p2p-consent-h">Before you {{ $isHost ? 'start' : 'join' }}</h2>
+            <p>This is a small room with no video server. Your computer connects <b>directly</b> to other people's computers.</p>
+            <ul>
+                @if ($isHost)
+                    <li>The people watching can see <b>your internet address (IP address)</b>, and you can see theirs.</li>
+                    <li>Your computer sends the video to each of them (or to the few who pass it on), so keep this page open and your connection steady.</li>
+                @else
+                    <li>The person who feeds you the video can see <b>your internet address (IP address)</b>, and you can see theirs.</li>
+                    <li>If your computer is able, you may pass the video on to up to {{ config('seminars.p2p.relay_slots', 3) }} other people, who can then see your address. This uses your own bandwidth while the page is open.</li>
+                @endif
+                <li>To find each other, browsers ask a public lookup server for their own address; no video goes through it. We use {{ implode(', ', array_map(fn ($u) => preg_replace('/^stuns?:/', '', $u), config('seminars.p2p.stun_urls') ?: ['a lookup server'])) }}.</li>
+                <li>Nothing is recorded by InfoDot. Chat messages are kept for this seminar.</li>
+            </ul>
+            <button class="ix-btn ix-btn--primary" type="button" data-consent-ok>{{ $isHost ? 'I understand, start the room' : 'I understand, join the room' }}</button>
+            <a class="ix-btn ix-btn--ghost" href="{{ route('seminars.show', $seminar) }}">Not now</a>
+        </section>
+        <p class="ix-hint" role="status" aria-live="polite" data-status>Waiting for you to continue.</p>
         <p class="ix-hint" role="status" aria-live="polite" data-note></p>
         <div class="ix-room__grid">
             <div class="ix-room__stage"><video data-video autoplay playsinline @if ($isHost) muted @endif aria-label="Video"></video></div>

@@ -38,7 +38,7 @@ const snap = (page) => page.evaluate(async () => {
 
 try {
     const host = await open('hana@example.test')
-    await host.page.goto(`${BASE}/seminars/${SEM}/small-room`, { waitUntil: 'domcontentloaded' })
+    await host.page.goto(`${BASE}/seminars/${SEM}/small-room`, { waitUntil: 'domcontentloaded' }); await host.page.evaluate(() => document.querySelector('[data-consent-ok]')?.click())
     await sleep(3000)
     const h = await snap(host.page)
     step('host is live with a camera', /You are live/.test(h.status || ''), h.status)
@@ -46,7 +46,7 @@ try {
     const viewers = []
     for (const [i, email] of ['v1@example.test', 'v2@example.test', 'v3@example.test'].entries()) {
         const v = await open(email)
-        await v.page.goto(`${BASE}/seminars/${SEM}/small-room`, { waitUntil: 'domcontentloaded' })
+        await v.page.goto(`${BASE}/seminars/${SEM}/small-room`, { waitUntil: 'domcontentloaded' }); await v.page.evaluate(() => document.querySelector('[data-consent-ok]')?.click())
         viewers.push(v)
         await sleep(i === 0 ? 9000 : 3000)   // let each one connect and become a feeder before the next arrives
     }

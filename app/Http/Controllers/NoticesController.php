@@ -49,6 +49,6 @@ class NoticesController extends Controller
 
         return redirect()->route('notices')->with('notices_notice', $on
             ? 'Notifications are on. You will be told when someone answers your question or your work is accepted, verified or added to the library.'
-            : 'Notifications are off. Nothing new will be recorded; what you already have stays until you read it.');
+            : 'Notifications about your work are off. Notices about a seminar you booked, paid for or host are still shown, because missing one can cost you money or a place. What you already have stays until you read it.');
     }
 }

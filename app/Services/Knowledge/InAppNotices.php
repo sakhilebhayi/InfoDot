@@ -21,9 +21,10 @@ use Illuminate\Support\Str;
  */
 class InAppNotices
 {
-    public function record(string $kind, User $recipient, string $subjectType, int $subjectId, string $ref, ?User $actor = null): bool
+    /** A recipient who no longer exists (their account was deleted) is simply not told. */
+    public function record(string $kind, ?User $recipient, string $subjectType, int $subjectId, string $ref, ?User $actor = null): bool
     {
-        if (! in_array($kind, UserNotice::KINDS, true) || ! $recipient->wantsInAppNotices()) {
+        if ($recipient === null || ! in_array($kind, UserNotice::KINDS, true) || (! $recipient->wantsInAppNotices() && ! in_array($kind, UserNotice::SERVICE_KINDS, true))) {
             return false;
         }
 
@@ -120,7 +121,7 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => 'Accepted',
             UserNotice::SOLUTION_VERIFIED => 'Verified',
             UserNotice::KNOWLEDGE_REUSED => 'Library',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF => 'Seminar',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED => 'Seminar',
             default => 'Update',
         };
     }
@@ -145,6 +146,7 @@ class InAppNotices
             UserNotice::SEMINAR_DEBT_CLEARED => "What you owed InfoDot after a lost chargeback on your seminar $title has been paid off. Nothing more is taken.",
             UserNotice::SEMINAR_DEBT_REOPENED => "A refund on a ticket meant part of what was taken for a lost chargeback (seminar $title) was given back, so some of it is owed again.",
             UserNotice::SEMINAR_DEBT_WRITTEN_OFF => "InfoDot wrote off what was still owed after a lost chargeback on your seminar $title. Nothing more is taken for it.",
+            UserNotice::SEMINAR_REMOVED => "A moderator removed your seminar $title. Anyone who paid is being refunded in full. If you think this was a mistake, contact us.",
             UserNotice::SEMINAR_LINK_BROKEN => "Someone could not open the meeting link for your seminar $title. Please check it and fix it before the start.",
             default => 'Something happened to your work.',
         };
@@ -158,7 +160,7 @@ class InAppNotices
             UserNotice::SOLUTION_VERIFIED => 'A solution of yours was verified; it is no longer available.',
             UserNotice::KNOWLEDGE_REUSED => 'Some of your work was added to the knowledge library; it is no longer available.',
             UserNotice::COMMENT_RECEIVED => 'Someone commented on something of yours that is no longer available.',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF => 'A seminar notice that is no longer available.',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED => 'A seminar notice that is no longer available.',
             default => 'Something happened to your work that is no longer available.',
         };
     }

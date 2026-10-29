@@ -187,6 +187,15 @@ class SeminarsController extends Controller
         return redirect()->route('seminars.show', $seminar);
     }
 
+    /** A signed-in person reports a seminar to the moderators. */
+    public function report(Request $request, Seminar $seminar): RedirectResponse
+    {
+        $data = $request->validate(['reason' => ['required', 'in:'.implode(',', array_keys(\App\Models\SeminarReport::REASONS))], 'detail' => ['nullable', 'string', 'max:1000']]);
+        $this->seminars->report($seminar, $request->user(), $data['reason'], $data['detail'] ?? null);
+
+        return back()->with('seminar_notice', 'Thank you. A moderator will look at it. The host is not told who reported it.');
+    }
+
     /** "The link does not work": tells the host. */
     public function reportLink(Request $request, Seminar $seminar): RedirectResponse
     {
