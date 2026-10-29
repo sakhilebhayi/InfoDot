@@ -150,4 +150,30 @@ class BillingEntitlementsTest extends TestCase
 
         $this->assertSame(4, $team->teamInvitations()->count(), 'five paid seats allow the owner plus four invitations');
     }
+
+    public function test_a_company_billing_has_not_met_yet_is_free_not_a_fault_and_is_not_asked_about_again_at_once(): void
+    {
+        $team = $this->company();
+        Http::fake(['billing.test/*' => Http::response(['error' => 'not_found'], 404)]);
+        \Illuminate\Support\Facades\Log::spy();
+
+        $this->assertFalse(app(BillingEntitlements::class)->sync($team));
+        $this->assertFalse(app(BillingEntitlements::class)->sync($team));
+
+        Http::assertSentCount(1);
+        \Illuminate\Support\Facades\Log::shouldNotHaveReceived('warning');
+        $this->assertSame(3, app(SeatLedger::class)->summary($team)['capacity']);
+    }
+
+    public function test_the_seats_panel_links_the_owner_to_billing_through_the_signed_in_handoff(): void
+    {
+        config(['licensing.billing_connected' => true]);
+        $owner = User::factory()->create(['email_verified_at' => now()]);
+        $team = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
+        $member = User::factory()->create(['email_verified_at' => now()]);
+        $team->users()->attach($member, ['role' => 'admin']);
+
+        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Add or change seats in Dot.Billing')->assertSee('redirect=%2Fseats', false);
+        $this->actingAs($member)->get('/teams/'.$team->id)->assertOk()->assertDontSee('Add or change seats in Dot.Billing');
+    }
 }

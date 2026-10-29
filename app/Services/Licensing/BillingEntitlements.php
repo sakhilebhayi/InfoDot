@@ -75,6 +75,15 @@ class BillingEntitlements
             return null;
         }
 
+        // Billing has no record of this company yet: it has never been opened in Billing, so it is on the free seats. Not a fault, so it is
+        // not a warning and, unlike a failure, it is remembered for the usual window instead of asking again on every page.
+        if ($response->status() === 404) {
+            Log::info('Billing has no record of this company yet; it keeps the free seats.');
+            Cache::put('licence:billing:'.$uuid, true, (int) config('licensing.billing.cache_seconds', 300));
+
+            return null;
+        }
+
         if (! $response->ok()) {
             Log::warning('Billing entitlements refused or failed.', ['status' => $response->status()]);
 
