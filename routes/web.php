@@ -7,6 +7,7 @@ use App\Http\Controllers\ExpertiseSharingController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
 use App\Http\Controllers\NoticesController;
+use App\Http\Controllers\ReputationController;
 use App\Http\Controllers\SeminarsController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
@@ -101,6 +102,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Whether other people may see the signed-in person's achievements and public contributions. Always their own row.
     Route::post('/user/profile/achievements-visibility', [AchievementsController::class, 'updateVisibility'])->middleware('throttle:20,1')->name('profile.achievements-visibility');
 
+    // Knowledge reputation: private progress (404 unless REPUTATION_ENABLED). Appeals are answered by moderators.
+    Route::get('/progress', [ReputationController::class, 'show'])->middleware('throttle:60,1')->name('reputation');
+    Route::post('/progress/appeal', [ReputationController::class, 'appeal'])->middleware('throttle:10,1')->name('reputation.appeal');
+    Route::get('/moderation/reputation', [ReputationController::class, 'appeals'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation');
+    Route::post('/moderation/reputation/{appeal}', [ReputationController::class, 'resolve'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation.resolve');
     // Free seminars: any verified person may host one; the host's own join link is shown only to registered people in the window.
     Route::get('/seminars', [SeminarsController::class, 'index'])->name('seminars');
     Route::get('/seminars/new', [SeminarsController::class, 'create'])->name('seminars.create');

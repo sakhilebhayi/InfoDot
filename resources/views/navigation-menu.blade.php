@@ -87,6 +87,11 @@
                         <span class="material-symbols-rounded" aria-hidden="true">person</span>{{ __('Profile') }}
                     </a>
                     @php($unreadNotices = $bellUnread)
+                    @if (config('reputation.enabled'))
+                    <a class="ix-pop__item" href="{{ route('reputation') }}">
+                        <span class="material-symbols-rounded" aria-hidden="true">trending_up</span>{{ __('Your progress') }}
+                    </a>
+                    @endif
                     <a class="ix-pop__item" href="{{ route('notices') }}">
                         <span class="material-symbols-rounded" aria-hidden="true">notifications</span>{{ __('Notifications') }}@if ($unreadNotices > 0) <span class="ix-pop__count" aria-label="{{ $unreadNotices }} unread">{{ $unreadNotices > 99 ? '99+' : $unreadNotices }}</span>@endif
                     </a>

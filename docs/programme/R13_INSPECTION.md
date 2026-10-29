@@ -95,3 +95,16 @@ Video cannot run on the current shared cPanel host: live media needs long-runnin
 - **B. One-way broadcast only:** the host streams to our server and the audience watches an HLS stream with text chat and Q and A. Cheaper and scales better, with 10 to 30 seconds of delay and no audience video.
 
 Until one of these exists, seminars are listed, registered for, reminded and attended through a link the host supplies, and the page says so. No live video is claimed.
+
+## 9. Status after the 2026-10-29 build session
+
+| Piece | State |
+|---|---|
+| Seat licensing (3 free seats incl. owner, race-safe, audit, Seats panel) | merged (#139) |
+| Roles owner/admin/manager/member (wire-compatible) | merged (#141) |
+| InfoDot reads purchased seats from Dot.Billing's signed entitlements | merged (#142), off until configured |
+| Free seminars (host, register, waitlist, join window, attendance, reminders, ratings) | PR #143 |
+| Reputation engine, private progress page, appeals (off by default) | PR #144 (stacked on #143) |
+| Dot.Billing extra-seat pricing, pro-rata invoice, settlement-gated entitlement | PR Dot.Billing#30 (set a price in the database to enable; no price, nothing is sold) |
+| Brain ADR-0026 (reputation and tiers, proposed) | PR Dot.Brain#41 |
+| Seminar video, paid seminars, specialist badges, ring detection, per-person reputation opt-out, Billing screens for buying seats | not built; see `R13_SEMINAR_VIDEO_PLAN.md` and ADR-0026 D1 to D4 |

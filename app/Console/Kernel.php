@@ -30,6 +30,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('participation:flush-outbox')->everyMinute()->withoutOverlapping()->onOneServer();
 
         // In-app notifications: read ones go after 90 days, any after a year.
+        $schedule->command('reputation:recalculate')->dailyAt('03:40')->withoutOverlapping()->onOneServer();
         $schedule->command('seminars:remind')->everyTenMinutes()->withoutOverlapping()->onOneServer();
         $schedule->command('notices:prune')->dailyAt('03:20')->withoutOverlapping()->onOneServer();
 
