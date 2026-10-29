@@ -77,4 +77,32 @@ return [
         'token_minutes_after_end' => 15,                // a token stays valid until the seminar ends plus this
         'max_participants' => (int) env('SEMINARS_VIDEO_MAX_PARTICIPANTS', 100),
     ],
+
+    /*
+    | Small peer-to-peer rooms: video between browsers with NO media server. The host's own internet connection is the limit, so the host runs a
+    | short upload test when setting a seminar up and is told exactly how many people it can hold. Viewers beyond the host's direct connections
+    | are fed by other viewers (a relay tree), which stretches the number but can only be estimated, so the figure shown is deliberately cautious.
+    | Browsers find each other through STUN servers (they only learn their own public address; no video passes through them). The default is a
+    | public one; set your own (coturn) to depend on nobody. OFF until SEMINARS_P2P_ENABLED.
+    */
+    'p2p' => [
+        'enabled' => (bool) env('SEMINARS_P2P_ENABLED', false),
+        'stun_urls' => array_values(array_filter(array_map('trim', explode(',', (string) env('P2P_STUN_URLS', 'stun:stun.l.google.com:19302'))))),
+        'turn' => ['url' => env('P2P_TURN_URL'), 'username' => env('P2P_TURN_USERNAME'), 'credential' => env('P2P_TURN_CREDENTIAL')],
+        'max_viewers' => (int) env('SEMINARS_P2P_MAX_VIEWERS', 200),
+        'max_depth' => 4,                 // host, then viewers relaying to viewers, at most this many hops below the host
+        'host_uplink_share' => 0.7,       // the share of the measured upload the room may use
+        'safety_factor' => 0.6,           // the number promised is this share of what the model says is possible
+        'relay_slots' => (int) env('SEMINARS_P2P_RELAY_SLOTS', 3),   // how many others a relaying viewer feeds
+        'peer_timeout_seconds' => 30,
+        'speedtest_max_bytes' => 3_000_000,
+        // Per quality: bitrate in kbps (audio included), how many viewers the HOST can feed directly (its processor encodes once per viewer),
+        // and the share of viewers able to pass the stream on.
+        'qualities' => [
+            'audio' => ['label' => 'Audio only', 'kbps' => 40, 'host_direct_max' => 30, 'relay_ratio' => 0.9],
+            'low' => ['label' => 'Video, standard (360p)', 'kbps' => 490, 'host_direct_max' => 6, 'relay_ratio' => 0.5],
+            'medium' => ['label' => 'Video, sharp (720p)', 'kbps' => 1240, 'host_direct_max' => 4, 'relay_ratio' => 0.3],
+        ],
+    ],
 ];
+

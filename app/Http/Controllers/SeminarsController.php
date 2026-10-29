@@ -116,6 +116,10 @@ class SeminarsController extends Controller
             return redirect()->route('seminars.room', $seminar);
         }
 
+        if ($seminar->isP2p()) {
+            return redirect()->route('seminars.p2p', $seminar);
+        }
+
         $url = $this->seminars->joinUrl($seminar, $request->user());
 
         return $url !== null

@@ -130,7 +130,7 @@ class SeminarVideoTest extends TestCase
         $this->register($s, $guest);
         $this->travelTo($s->starts_at->copy()->subMinutes(5));
 
-        $this->actingAs($guest)->get('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.room', $s));
+        $this->actingAs($guest)->post('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.room', $s));
         $this->actingAs($guest)->get('/seminars/'.$s->id.'/room')->assertOk()->assertSee('seminar-room', false)->assertSee('Live from the host');
         $this->actingAs($this->person('Stranger'))->get('/seminars/'.$s->id.'/room')->assertRedirect(route('seminars.show', $s));
         $this->actingAs($s->host)->get('/seminars/'.$s->id.'/room')->assertOk()->assertSee('You are the host');

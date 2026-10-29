@@ -60,6 +60,7 @@
                             <span>{{ $s->duration_minutes }} min</span>
                             <span>Hosted by {{ $hosts[$s->host_id]->name ?? 'a member' }}</span>
                             <span>{{ $s->priceLabel() }}</span>
+                            @if ($s->isP2p())<span>Small room · up to {{ $s->capacity }} people</span>@endif
                         </div>
                     </li>
                 @endforeach

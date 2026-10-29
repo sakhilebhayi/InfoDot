@@ -155,7 +155,7 @@ class PaidSeminarsTest extends TestCase
             return str_ends_with($r->url(), '/api/seminar-tickets') && $b['amount_cents'] === 20000 && $b['payout_account_id'] === 77 && $b['buyer_email'] === $buyer->email && $b['currency'] === 'ZAR';
         });
         $this->travelTo($s->starts_at->copy()->subMinutes(5));
-        $this->actingAs($buyer)->get('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.show', $s));
+        $this->actingAs($buyer)->post('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.show', $s));
     }
 
     public function test_only_a_verified_signed_callback_makes_a_ticket_and_a_repeat_changes_nothing(): void
@@ -171,7 +171,7 @@ class PaidSeminarsTest extends TestCase
         $this->billingCallback('ticket.paid', $reg->ticket_ref)->assertOk()->assertJson(['status' => 'duplicate']);
 
         $this->travelTo($s->starts_at->copy()->subMinutes(5));
-        $this->actingAs($reg->user)->get('/seminars/'.$s->id.'/join')->assertRedirect('https://meet.example.test/room');
+        $this->actingAs($reg->user)->post('/seminars/'.$s->id.'/join')->assertRedirect('https://meet.example.test/room');
     }
 
     public function test_a_callback_for_a_different_amount_or_an_unknown_ticket_is_not_applied(): void
