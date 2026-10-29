@@ -36,6 +36,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('seminars:invoice-commission')->monthlyOn(1, '04:15')->withoutOverlapping()->onOneServer();
         $schedule->command('seminars:sweep-payments')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
         $schedule->command('seminars:remind')->everyTenMinutes()->withoutOverlapping()->onOneServer();
+        $schedule->command('seminars:award-hosts')->everyThirtyMinutes()->withoutOverlapping()->onOneServer();
         $schedule->command('notices:prune')->dailyAt('03:20')->withoutOverlapping()->onOneServer();
 
         // Interaction signal counts (R-12) are kept for the retention period only.
