@@ -28,6 +28,6 @@ class SeminarTicketEventsController extends Controller
             return response()->json(['error' => 'bad_request'], 400);
         }
 
-        return response()->json(['status' => $seminars->applyTicketEvent($body['event'], $body['ticket_ref'], $body['amount_cents'], $body['currency'])]);
+        return response()->json(['status' => $seminars->applyTicketEvent($body['event'], $body['ticket_ref'], $body['amount_cents'], $body['currency'], array_intersect_key($body, array_flip(['refund_amount_cents', 'refunded_total_cents', 'refund_key', 'outcome'])))]);
     }
 }

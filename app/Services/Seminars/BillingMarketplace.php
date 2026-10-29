@@ -58,9 +58,11 @@ class BillingMarketplace
         return ['reference' => (string) ($json['reference'] ?? ''), 'authorization_url' => $url, 'status' => (string) ($json['status'] ?? 'pending')];
     }
 
-    public function refund(string $ticketRef): void
+    /** No amount = the whole remaining ticket. A partial refund needs an amount and a key that makes a repeat the same refund. */
+    public function refund(string $ticketRef, ?int $amountCents = null, ?string $refundKey = null): void
     {
-        $this->send('POST', '/api/seminar-tickets/'.rawurlencode($ticketRef).'/refund', []);
+        $body = $amountCents === null ? [] : ['amount_cents' => $amountCents, 'refund_key' => (string) $refundKey];
+        $this->send('POST', '/api/seminar-tickets/'.rawurlencode($ticketRef).'/refund', $body);
     }
 
     public function cancel(string $ticketRef): void

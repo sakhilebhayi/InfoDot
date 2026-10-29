@@ -41,4 +41,30 @@
             <a class="ix-btn ix-btn--ghost" href="{{ route('seminars') }}">Back to seminars</a>
         </div>
     </form>
+
+    <section aria-labelledby="seller-h" style="margin-top: 28px;">
+        <h2 class="ix-label" id="seller-h">Who is selling the ticket</h2>
+        <p class="ix-hint">You are the seller; InfoDot collects the payment and keeps {{ $percent }}% as its commission. This is what the attendee's receipt says. Add a VAT number only if you are registered for VAT.</p>
+        <form class="ix-form" method="POST" action="{{ route('seminars.payouts.seller') }}">
+            @csrf
+            <div class="ix-field">
+                <label class="ix-label" for="trading_name">Name to show as the seller</label>
+                <input class="ix-input" id="trading_name" name="trading_name" type="text" maxlength="100" value="{{ old('trading_name', $seller?->trading_name ?? auth()->user()->name) }}" required>
+                @error('trading_name')<p class="ix-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="ix-field">
+                <label class="ix-label" for="vat_number">VAT number (optional)</label>
+                <input class="ix-input" id="vat_number" name="vat_number" type="text" inputmode="numeric" maxlength="10" value="{{ old('vat_number', $seller?->vat_number) }}">
+                @error('vat_number')<p class="ix-error">{{ $message }}</p>@enderror
+            </div>
+            <div class="ix-field">
+                <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
+                    <input type="checkbox" name="authorises_receipts" value="1" style="margin-top:3px" @checked(old('authorises_receipts', $seller?->authorises_receipts))>
+                    <span class="ix-hint" style="margin:0">I authorise InfoDot to issue receipts to my attendees in my name.</span>
+                </label>
+            </div>
+            <button class="ix-btn" type="submit">Save seller details</button>
+            <a class="ix-btn ix-btn--ghost" href="{{ route('seminars.invoices') }}">My commission invoices</a>
+        </form>
+    </section>
 </x-app-layout>

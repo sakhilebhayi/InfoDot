@@ -9,5 +9,5 @@ class SeminarTicketEvent extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['event', 'ticket_ref', 'outcome', 'created_at'];
+    protected $fillable = ['event', 'ticket_ref', 'ref_key', 'outcome', 'created_at'];
 }

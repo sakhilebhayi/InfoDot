@@ -40,7 +40,16 @@ Needs step 2's secret A, the Paystack account live in Dot.Billing, and the Dot.B
        SEMINARS_PAID_ENABLED=true
        SEMINARS_BILLING_CALLBACK_SECRET=<secret B, the same value>
 
-3. Try it with one small real ticket you buy yourself from a seminar you host from a second account, then refund it (cancel the seminar), and check the Paystack dashboard shows the split and the refund before telling anyone.
+3. Tax and invoices (InfoDot is VAT-registered): InfoDot `.env`
+
+       SEMINARS_ISSUER_NAME="<InfoDot's registered legal name>"
+       SEMINARS_ISSUER_ADDRESS="<registered address>"
+       SEMINARS_ISSUER_VAT_NUMBER=<10 digits>
+       SEMINARS_ISSUE_TAX_INVOICES=false      # keep false until an adviser has approved the receipt wording
+
+   Commission invoices are issued on the 1st of each month at 04:15 for the month before, and only while those three are set. `SEMINARS_COMMISSION_INCLUDES_VAT=true` (default) takes the VAT out of the 10% instead of adding it. Refund window: `SEMINARS_REFUND_HOURS_BEFORE=24`.
+
+4. Try it with one small real ticket you buy yourself from a seminar you host from a second account, then refund it (cancel the seminar), and check the Paystack dashboard shows the split and the refund before telling anyone.
 
 ## What is not decided and is not built
 

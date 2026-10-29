@@ -45,7 +45,13 @@
                     <p class="ix-hint">The join button appears {{ config('seminars.join_opens_minutes_before', 15) }} minutes before the start. You will get a reminder here a day and an hour before.</p>
                 @endif
                 @if (! $seminar->hasEnded())
-                    <form method="POST" action="{{ route('seminars.unregister', $seminar) }}">@csrf<button class="ix-btn" type="submit">Cancel my registration</button></form>
+                    @php($refundOpen = app(\App\Services\Seminars\SeminarService::class)->refundWindowOpen($seminar))
+                    <form method="POST" action="{{ route('seminars.unregister', $seminar) }}">@csrf
+                        <button class="ix-btn" type="submit">{{ ! $seminar->isPaid() ? 'Cancel my registration' : ($refundOpen ? 'Cancel and get a full refund' : 'Cancel (no refund: starts in under '.config('seminars.paid.refund_hours_before', 24).' hours)') }}</button>
+                    </form>
+                @endif
+                @if ($seminar->isPaid() && $reg->paid_at)
+                    <p class="ix-hint"><a href="{{ route('seminars.receipt', $seminar) }}" style="text-decoration: underline;">View your receipt</a>@if ($reg->refunded_cents > 0) · refunded {{ \App\Models\Seminar::money($reg->refunded_cents) }}@endif</p>
                 @endif
             @elseif ($reg && $reg->status === 'waitlist')
                 <p><span class="ix-chip">Waiting list</span> You will be registered automatically if a place opens.</p>
@@ -57,7 +63,7 @@
                 <form method="POST" action="{{ route('seminars.register', $seminar) }}">@csrf
                     @if ($seminar->isPaid())
                         <button class="ix-btn ix-btn--primary" type="submit" @disabled($seminar->capacity && $registeredCount >= $seminar->capacity)>{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Sold out' : 'Buy a ticket ('.$seminar->priceLabel().')' }}</button>
-                        <p class="ix-hint">You pay on Paystack. Tickets are refunded in full if the host cancels the seminar; if you cancel yourself the ticket is not refunded.</p>
+                        <p class="ix-hint">You pay on Paystack. If you cancel at least {{ config('seminars.paid.refund_hours_before', 24) }} hours before the start you get a full refund; later than that there is no refund. If the host cancels the seminar you are always refunded in full.</p>
                     @else
                         <button class="ix-btn ix-btn--primary" type="submit">{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Join the waiting list' : 'Register for free' }}</button>
                     @endif
@@ -99,7 +105,7 @@
                 <p class="ix-hint">Nobody has registered yet.</p>
             @else
                 <table class="ix-table">
-                    <thead><tr><th scope="col">Person</th><th scope="col">Status</th><th scope="col">Attended</th></tr></thead>
+                    <thead><tr><th scope="col">Person</th><th scope="col">Status</th><th scope="col">Attended</th>@if ($seminar->isPaid())<th scope="col">Ticket</th>@endif</tr></thead>
                     <tbody>
                         @foreach ($people as $p)
                             <tr>
@@ -113,6 +119,19 @@
                                         </form>
                                     @endif
                                 </td>
+                                @if ($seminar->isPaid())
+                                    <td>
+                                        {{ match ($p->payment_status) { 'paid' => 'Paid', 'partially_refunded' => 'Part refunded', 'refunded' => 'Refunded', 'chargeback' => 'Charged back', default => 'Not paid' } }}
+                                        @if ($p->dispute_status === 'open')<span class="ix-chip">Disputed</span>@endif
+                                        @if (in_array($p->payment_status, ['paid', 'partially_refunded'], true) && $p->dispute_status !== 'open' && $p->refundableCents() > 0)
+                                            <form method="POST" action="{{ route('seminars.refund', [$seminar, $p->user_id]) }}" style="display: flex; gap: 6px; margin-top: 6px;" onsubmit="return confirm('Refund this amount to the attendee? This cannot be undone.');">@csrf
+                                                <label class="ix-sr" for="rf-{{ $p->id }}">Refund amount in rand</label>
+                                                <input class="ix-input" id="rf-{{ $p->id }}" name="amount" type="text" inputmode="decimal" placeholder="{{ number_format($p->refundableCents() / 100, 2, '.', '') }}" style="width: 110px;">
+                                                <button class="ix-btn ix-btn--sm" type="submit">Refund</button>
+                                            </form>
+                                        @endif
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>

@@ -113,6 +113,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/seminars', [SeminarsController::class, 'index'])->name('seminars');
     Route::get('/seminars/payouts', [\App\Http\Controllers\SeminarPayoutsController::class, 'index'])->middleware('throttle:30,1')->name('seminars.payouts');
     Route::post('/seminars/payouts', [\App\Http\Controllers\SeminarPayoutsController::class, 'store'])->middleware('throttle:5,1')->name('seminars.payouts.store');
+    Route::post('/seminars/payouts/seller', [\App\Http\Controllers\SeminarPayoutsController::class, 'seller'])->middleware('throttle:10,1')->name('seminars.payouts.seller');
+    Route::get('/seminars/invoices', [\App\Http\Controllers\SeminarInvoicesController::class, 'index'])->middleware('throttle:30,1')->name('seminars.invoices');
+    Route::get('/seminars/invoices/{invoice}', [\App\Http\Controllers\SeminarInvoicesController::class, 'show'])->whereNumber('invoice')->middleware('throttle:30,1')->name('seminars.invoice');
+    Route::get('/moderation/seminar-payments', [\App\Http\Controllers\SeminarPaymentsModerationController::class, 'index'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.seminar-payments');
     Route::get('/seminars/new', [SeminarsController::class, 'create'])->name('seminars.create');
     Route::post('/seminars', [SeminarsController::class, 'store'])->middleware('throttle:10,1')->name('seminars.store');
     Route::get('/seminars/{seminar}', [SeminarsController::class, 'show'])->whereNumber('seminar')->name('seminars.show');
@@ -123,6 +127,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/seminars/{seminar}/unregister', [SeminarsController::class, 'unregister'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.unregister');
     Route::get('/seminars/{seminar}/join', [SeminarsController::class, 'join'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.join');
     Route::post('/seminars/{seminar}/attendance/{person}', [SeminarsController::class, 'attendance'])->whereNumber(['seminar', 'person'])->middleware('throttle:60,1')->name('seminars.attendance');
+    Route::post('/seminars/{seminar}/refund/{person}', [SeminarsController::class, 'refund'])->whereNumber(['seminar', 'person'])->middleware('throttle:20,1')->name('seminars.refund');
+    Route::get('/seminars/{seminar}/receipt', [SeminarsController::class, 'receipt'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.receipt');
     Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.feedback');
 
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).

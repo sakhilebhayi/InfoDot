@@ -34,6 +34,7 @@ class SeminarPayoutsController extends Controller
 
         return view('seminars.payouts', [
             'account' => SeminarPayoutAccount::where('user_id', $request->user()->id)->first(), 'banks' => $banks,
+            'seller' => \App\Models\SeminarSellerProfile::where('user_id', $request->user()->id)->first(),
             'percent' => (int) config('seminars.paid.platform_percent', 10),
         ]);
     }
@@ -58,5 +59,22 @@ class SeminarPayoutsController extends Controller
         ]);
 
         return redirect()->route('seminars.payouts')->with('seminar_notice', 'Your payout account is saved (ending '.$result['last4'].').');
+    }
+
+    /** Who the seller is on receipts, and whether InfoDot may issue them for the host. */
+    public function seller(Request $request): RedirectResponse
+    {
+        $this->switchedOn();
+        $data = $request->validate([
+            'trading_name' => ['required', 'string', 'max:100'],
+            'vat_number' => ['nullable', 'regex:/^4\d{9}$/'],
+            'authorises_receipts' => ['nullable', 'boolean'],
+        ], ['vat_number.regex' => 'A South African VAT number is 10 digits and starts with 4. Leave it empty if you are not registered for VAT.']);
+
+        \App\Models\SeminarSellerProfile::updateOrCreate(['user_id' => $request->user()->id], [
+            'trading_name' => $data['trading_name'], 'vat_number' => $data['vat_number'] ?: null, 'authorises_receipts' => $request->boolean('authorises_receipts'),
+        ]);
+
+        return redirect()->route('seminars.payouts')->with('seminar_notice', 'Your seller details are saved.');
     }
 }
