@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
  */
 class SeminarTicketEventsController extends Controller
 {
-    public function __invoke(Request $request, SeminarService $seminars): JsonResponse
+    public function __invoke(Request $request, SeminarService $seminars, \App\Services\Seminars\HostDebtLedger $debts): JsonResponse
     {
         $secret = (string) config('seminars.paid.callback_secret');
 
@@ -26,6 +26,10 @@ class SeminarTicketEventsController extends Controller
 
         if (! is_array($body) || ! is_string($body['event'] ?? null) || ! is_string($body['ticket_ref'] ?? null) || ! is_int($body['amount_cents'] ?? null) || ! is_string($body['currency'] ?? null)) {
             return response()->json(['error' => 'bad_request'], 400);
+        }
+
+        if (str_starts_with($body['event'], 'host_debt.')) {
+            return response()->json(['status' => $debts->apply($body)]);
         }
 
         return response()->json(['status' => $seminars->applyTicketEvent($body['event'], $body['ticket_ref'], $body['amount_cents'], $body['currency'], array_intersect_key($body, array_flip(['refund_amount_cents', 'refunded_total_cents', 'refund_key', 'outcome'])))]);

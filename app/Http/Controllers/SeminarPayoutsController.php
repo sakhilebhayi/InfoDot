@@ -35,6 +35,11 @@ class SeminarPayoutsController extends Controller
         return view('seminars.payouts', [
             'account' => SeminarPayoutAccount::where('user_id', $request->user()->id)->first(), 'banks' => $banks,
             'seller' => \App\Models\SeminarSellerProfile::where('user_id', $request->user()->id)->first(),
+            'agreementApproved' => (bool) config('seminars.paid.agreement_approved'),
+            'agreementVersion' => (string) config('seminars.paid.agreement_version', 'v1'),
+            'agreementText' => config('seminars.paid.agreement_approved') ? \Illuminate\Support\Str::markdown((string) @file_get_contents(resource_path('markdown/host-agreement.md')), ['html_input' => 'strip', 'allow_unsafe_links' => false]) : null,
+            'accepted' => \App\Models\SeminarHostAgreement::where('user_id', $request->user()->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->first(),
+            'debts' => \App\Models\SeminarHostDebt::where('user_id', $request->user()->id)->orderByDesc('id')->get(),
             'percent' => (int) config('seminars.paid.platform_percent', 10),
         ]);
     }
@@ -58,6 +63,17 @@ class SeminarPayoutsController extends Controller
             'billing_account_id' => $result['id'], 'bank_code' => $result['bank_code'], 'account_last4' => $result['last4'], 'status' => $result['status'] === 'active' ? 'active' : 'disabled',
         ]);
 
+        // A host who already accepted the current agreement does not have to accept it again for a new payout account: tell Billing.
+        $accepted = \App\Models\SeminarHostAgreement::where('user_id', $request->user()->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists();
+
+        if ($accepted) {
+            try {
+                $this->billing->acceptAgreement($result['id'], (string) config('seminars.paid.agreement_version', 'v1'), 'u'.$request->user()->id);
+            } catch (MarketplaceUnavailable) {
+                // The next time they open this page they can accept again.
+            }
+        }
+
         return redirect()->route('seminars.payouts')->with('seminar_notice', 'Your payout account is saved (ending '.$result['last4'].').');
     }
 
@@ -76,5 +92,30 @@ class SeminarPayoutsController extends Controller
         ]);
 
         return redirect()->route('seminars.payouts')->with('seminar_notice', 'Your seller details are saved.');
+    }
+
+    /** The host accepts the current version of the agreement. Recorded here and sent to Billing. */
+    public function agreement(Request $request): RedirectResponse
+    {
+        $this->switchedOn();
+        abort_unless(config('seminars.paid.agreement_approved'), 404);
+        $request->validate(['accept' => ['accepted']], ['accept.accepted' => 'Tick the box to accept the agreement.']);
+        $account = SeminarPayoutAccount::where('user_id', $request->user()->id)->where('status', 'active')->first();
+
+        if ($account === null) {
+            return back()->withErrors(['accept' => 'Set up where your earnings are paid first.']);
+        }
+
+        $version = (string) config('seminars.paid.agreement_version', 'v1');
+
+        try {
+            $this->billing->acceptAgreement((int) $account->billing_account_id, $version, 'u'.$request->user()->id);
+        } catch (MarketplaceUnavailable $e) {
+            return back()->withErrors(['accept' => $e->getMessage()]);
+        }
+
+        \App\Models\SeminarHostAgreement::firstOrCreate(['user_id' => $request->user()->id, 'version' => $version], ['accepted_at' => now()]);
+
+        return redirect()->route('seminars.payouts')->with('seminar_notice', 'Thank you. You can now charge for seminars.');
     }
 }

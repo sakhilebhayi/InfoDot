@@ -120,7 +120,7 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => 'Accepted',
             UserNotice::SOLUTION_VERIFIED => 'Verified',
             UserNotice::KNOWLEDGE_REUSED => 'Library',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN => 'Seminar',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF => 'Seminar',
             default => 'Update',
         };
     }
@@ -141,6 +141,10 @@ class InAppNotices
             UserNotice::SEMINAR_SPOT_OPEN => "A place opened and you are now registered for the seminar $title.",
             UserNotice::SEMINAR_REFUNDED => "Your ticket for the seminar $title was refunded. It can take a few days to show on your statement.",
             UserNotice::SEMINAR_DISPUTE => "A ticket for your seminar $title was disputed with the card issuer. We will tell you the outcome.",
+            UserNotice::SEMINAR_DEBT_OPENED => "A chargeback on a ticket for your seminar $title was lost, so you now owe InfoDot an amount. It is taken only from your share of future tickets, never more than half of your share of any ticket. See what you owe on the page where you set up payouts.",
+            UserNotice::SEMINAR_DEBT_CLEARED => "What you owed InfoDot after a lost chargeback on your seminar $title has been paid off. Nothing more is taken.",
+            UserNotice::SEMINAR_DEBT_REOPENED => "A refund on a ticket meant part of what was taken for a lost chargeback (seminar $title) was given back, so some of it is owed again.",
+            UserNotice::SEMINAR_DEBT_WRITTEN_OFF => "InfoDot wrote off what was still owed after a lost chargeback on your seminar $title. Nothing more is taken for it.",
             UserNotice::SEMINAR_LINK_BROKEN => "Someone could not open the meeting link for your seminar $title. Please check it and fix it before the start.",
             default => 'Something happened to your work.',
         };
@@ -154,7 +158,7 @@ class InAppNotices
             UserNotice::SOLUTION_VERIFIED => 'A solution of yours was verified; it is no longer available.',
             UserNotice::KNOWLEDGE_REUSED => 'Some of your work was added to the knowledge library; it is no longer available.',
             UserNotice::COMMENT_RECEIVED => 'Someone commented on something of yours that is no longer available.',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN => 'A seminar notice that is no longer available.',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF => 'A seminar notice that is no longer available.',
             default => 'Something happened to your work that is no longer available.',
         };
     }

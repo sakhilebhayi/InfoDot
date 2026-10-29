@@ -30,7 +30,7 @@ class SeminarRefundsAndTaxTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => 'cb', 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret',
+        config(['seminars.paid.agreement_approved' => true, 'seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => 'cb', 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret',
             'seminars.paid.issuer' => ['name' => 'InfoDot (Pty) Ltd', 'address' => '1 Test Street, Cape Town', 'vat_number' => '4123456789']]);
         Http::fake([
             'billing.test/api/seminar-tickets' => Http::response(['reference' => 'ref_1', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201),
@@ -47,6 +47,7 @@ class SeminarRefundsAndTaxTest extends TestCase
     {
         $h = $this->person('Host');
         SeminarPayoutAccount::create(['user_id' => $h->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+        \App\Models\SeminarHostAgreement::create(['user_id' => $h->id, 'version' => 'v1', 'accepted_at' => now()]);
 
         return $h;
     }

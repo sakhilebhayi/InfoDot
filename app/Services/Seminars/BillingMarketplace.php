@@ -59,6 +59,13 @@ class BillingMarketplace
     }
 
     /** No amount = the whole remaining ticket. A partial refund needs an amount and a key that makes a repeat the same refund. */
+    /** Tells Billing the host accepted this version of the agreement. Billing refuses tickets for a host who has not. */
+    public function acceptAgreement(int $payoutAccountId, string $version, string $acceptedByRef): void
+    {
+        $this->send('POST', '/api/payout-accounts/'.$payoutAccountId.'/agreement', ['version' => $version, 'accepted_by_ref' => $acceptedByRef]);
+    }
+
+    /** No amount = the whole remaining ticket. A partial refund needs an amount and a key that makes a repeat the same refund. */
     public function refund(string $ticketRef, ?int $amountCents = null, ?string $refundKey = null): void
     {
         $body = $amountCents === null ? [] : ['amount_cents' => $amountCents, 'refund_key' => (string) $refundKey];

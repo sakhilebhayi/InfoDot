@@ -118,6 +118,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/seminars', [SeminarsController::class, 'index'])->name('seminars');
     Route::get('/seminars/payouts', [\App\Http\Controllers\SeminarPayoutsController::class, 'index'])->middleware('throttle:30,1')->name('seminars.payouts');
     Route::post('/seminars/payouts', [\App\Http\Controllers\SeminarPayoutsController::class, 'store'])->middleware('throttle:5,1')->name('seminars.payouts.store');
+    Route::post('/seminars/payouts/agreement', [\App\Http\Controllers\SeminarPayoutsController::class, 'agreement'])->middleware('throttle:10,1,seminar-agreement')->name('seminars.payouts.agreement');
     Route::post('/seminars/payouts/seller', [\App\Http\Controllers\SeminarPayoutsController::class, 'seller'])->middleware('throttle:10,1')->name('seminars.payouts.seller');
     Route::get('/seminars/invoices', [\App\Http\Controllers\SeminarInvoicesController::class, 'index'])->middleware('throttle:30,1')->name('seminars.invoices');
     Route::get('/seminars/invoices/{invoice}', [\App\Http\Controllers\SeminarInvoicesController::class, 'show'])->whereNumber('invoice')->middleware('throttle:30,1')->name('seminars.invoice');
