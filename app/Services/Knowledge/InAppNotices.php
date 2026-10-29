@@ -98,6 +98,16 @@ class InAppNotices
             return $s === null || $s->isHidden() ? $gone : ['text' => $this->words($notice->kind, (string) $s->solution_title), 'url' => route('solutions.view', ['id' => $s->id])];
         }
 
+        if ($notice->subject_type === 'seminar') {
+            $sem = \App\Models\Seminar::find($notice->subject_id);
+
+            if ($sem === null || $sem->status === \App\Models\Seminar::DRAFT) {
+                return $gone;
+            }
+
+            return ['text' => $this->words($notice->kind, (string) $sem->title).($notice->kind === UserNotice::SEMINAR_REMINDER ? ' Starts '.$sem->starts_at->timezone(config('app.timezone'))->format('j M, H:i').'.' : ''), 'url' => route('seminars.show', ['seminar' => $sem->id])];
+        }
+
         return $gone;
     }
 
@@ -110,6 +120,7 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => 'Accepted',
             UserNotice::SOLUTION_VERIFIED => 'Verified',
             UserNotice::KNOWLEDGE_REUSED => 'Library',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN => 'Seminar',
             default => 'Update',
         };
     }
@@ -124,6 +135,10 @@ class InAppNotices
             UserNotice::SOLUTION_VERIFIED => "Your solution $title was verified by a moderator.",
             UserNotice::KNOWLEDGE_REUSED => "Your work on $title was added to the knowledge library.",
             UserNotice::COMMENT_RECEIVED => "Someone commented on $title. They may be asking for more detail.",
+            UserNotice::SEMINAR_REMINDER => "Reminder: you registered for the seminar $title.",
+            UserNotice::SEMINAR_CANCELLED => "The seminar $title was cancelled by its host.",
+            UserNotice::SEMINAR_CHANGED => "The host changed the time of the seminar $title.",
+            UserNotice::SEMINAR_SPOT_OPEN => "A place opened and you are now registered for the seminar $title.",
             default => 'Something happened to your work.',
         };
     }
@@ -136,6 +151,7 @@ class InAppNotices
             UserNotice::SOLUTION_VERIFIED => 'A solution of yours was verified; it is no longer available.',
             UserNotice::KNOWLEDGE_REUSED => 'Some of your work was added to the knowledge library; it is no longer available.',
             UserNotice::COMMENT_RECEIVED => 'Someone commented on something of yours that is no longer available.',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN => 'A seminar you registered for is no longer available.',
             default => 'Something happened to your work that is no longer available.',
         };
     }

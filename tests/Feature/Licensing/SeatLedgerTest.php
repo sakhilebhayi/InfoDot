@@ -128,6 +128,14 @@ class SeatLedgerTest extends TestCase
         $this->invite($owner, $team, 'new@example.test');
     }
 
+    public function test_a_company_with_no_purchases_reports_zero_paid_seats_as_a_number(): void
+    {
+        [, $team] = $this->company();
+
+        $s = app(SeatLedger::class)->summary($team);
+        $this->assertSame([0, 'free'], [$s['purchased'], $s['status']]);
+    }
+
     public function test_purchased_seats_raise_capacity_without_a_price_being_invented(): void
     {
         [$owner, $team] = $this->company();
