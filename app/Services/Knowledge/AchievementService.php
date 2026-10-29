@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
  */
 class AchievementService
 {
-    public function __construct(private readonly AchievementEvaluator $evaluator) {}
+    public function __construct(private readonly AchievementEvaluator $evaluator, private readonly ?TopicBadges $badges = null) {}
 
     /**
      * What qualifies right now. Public work only, never hidden, never help given to yourself; see config/achievements.php.
@@ -80,6 +80,9 @@ class AchievementService
             }
         }
 
+        // Specialist badges follow the same work (taken back and restored with it); they have their own table and do not change the counts above.
+        ($this->badges ?? app(TopicBadges::class))->sync($user, $this->workByTopic($user));
+
         return $changes;
     }
 
@@ -124,7 +127,38 @@ class AchievementService
     {
         $min = max(1, (int) config('achievements.expertise.min_work', 2));
         $max = max(1, (int) config('achievements.expertise.max_areas', 5));
+        $counts = $this->topicCounts($user);
 
+        if ($counts === []) {
+            return [];
+        }
+
+        $topics = DB::table('topics')->whereIn('id', array_keys($counts))->get(['id', 'slug', 'name'])->keyBy('id');
+
+        return collect($counts)
+            ->map(fn (array $c, $topicId) => [
+                'slug' => (string) $topics[$topicId]->slug, 'name' => (string) $topics[$topicId]->name,
+                'accepted' => (int) ($c[0] ?? 0), 'verified' => (int) ($c[1] ?? 0), 'work' => (int) (($c[0] ?? 0) + ($c[1] ?? 0)),
+            ])
+            ->filter(fn (array $t) => $t['work'] >= $min)
+            ->sort(fn (array $a, array $b) => [$b['work'], $a['name']] <=> [$a['work'], $b['name']])
+            ->take($max)->values()->all();
+    }
+
+    /**
+     * Qualifying work per topic, uncapped and unfiltered: the one count both the areas of expertise and the specialist badges
+     * are read from, so they can never disagree about what counts.
+     *
+     * @return array<int, int> topic id => accepted answers + verified solutions filed under it
+     */
+    public function workByTopic(User $user): array
+    {
+        return array_map(fn (array $c) => (int) (($c[0] ?? 0) + ($c[1] ?? 0)), $this->topicCounts($user));
+    }
+
+    /** @return array<int, array{0?: int, 1?: int}> topic id => [accepted, verified] */
+    private function topicCounts(User $user): array
+    {
         $publicQuestions = Questions::withoutGlobalScopes()->where('visibility', Questions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->select('id');
 
         $acceptedIds = Answer::withoutGlobalScope('moderation-visibility')
@@ -150,20 +184,7 @@ class AchievementService
             }
         }
 
-        if ($counts === []) {
-            return [];
-        }
-
-        $topics = DB::table('topics')->whereIn('id', array_keys($counts))->get(['id', 'slug', 'name'])->keyBy('id');
-
-        return collect($counts)
-            ->map(fn (array $c, $topicId) => [
-                'slug' => (string) $topics[$topicId]->slug, 'name' => (string) $topics[$topicId]->name,
-                'accepted' => (int) ($c[0] ?? 0), 'verified' => (int) ($c[1] ?? 0), 'work' => (int) (($c[0] ?? 0) + ($c[1] ?? 0)),
-            ])
-            ->filter(fn (array $t) => $t['work'] >= $min)
-            ->sort(fn (array $a, array $b) => [$b['work'], $a['name']] <=> [$a['work'], $b['name']])
-            ->take($max)->values()->all();
+        return $counts;
     }
 
     /**

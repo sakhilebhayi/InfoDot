@@ -189,6 +189,8 @@ class PagesController extends Controller
             'stats' => ContributionStats::for($get_profile, $isOwner),
             // Milestones are not points: their own data, their own section. Others only see them when the owner shares them.
             'achievements' => app(AchievementService::class)->profileFor($get_profile, $isOwner),
+            // Specialist badges: public unless the person hid them (the owner always sees their own).
+            'badges' => app(\App\Services\Knowledge\TopicBadges::class)->forProfile($get_profile, $isOwner),
             // Points are the owner's own business: nobody else's profile view asks the ledger for them.
             'points' => $isOwner ? app(PointsClient::class)->summary((string) $get_profile->uuid) : null,
             'pointsConfigured' => $isOwner && app(PointsClient::class)->enabled(),

@@ -101,6 +101,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/user/profile/{id}', 'App\Http\Controllers\PagesController@show')->name('profile.show');
     // Whether other people may see the signed-in person's achievements and public contributions. Always their own row.
     Route::post('/user/profile/achievements-visibility', [AchievementsController::class, 'updateVisibility'])->middleware('throttle:20,1')->name('profile.achievements-visibility');
+    // Whether the person's specialist badges are shown (public unless they hide them). Always their own row.
+    Route::post('/user/profile/badges-visibility', [AchievementsController::class, 'updateBadges'])->middleware('throttle:20,1')->name('profile.badges-visibility');
 
     // Knowledge reputation: private progress (404 unless REPUTATION_ENABLED). Appeals are answered by moderators.
     Route::get('/progress', [ReputationController::class, 'show'])->middleware('throttle:60,1')->name('reputation');
