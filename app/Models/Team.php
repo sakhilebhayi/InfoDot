@@ -44,6 +44,11 @@ class Team extends JetstreamTeam
         'deleted' => TeamDeleted::class,
     ];
 
+    public function licence()
+    {
+        return $this->hasOne(TeamLicence::class);
+    }
+
     public static function booted()
     {
         static::creating(function ($team) {

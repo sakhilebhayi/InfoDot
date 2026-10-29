@@ -23,6 +23,7 @@ final probe step after the code was in place (see S-2f).
 | R-10 InfoDot landing page | **not started; stays LAST** | After everything else |
 | R-11 Dot.Brain Brand Feeling Engine | **partly done**: foundation merged (2026-10-23); scoring engine in an open PR; analysers and the Claude Skill not started | Owner review and ratification of the draft profiles; merge or amend Dot.Brain #32 |
 | R-12 User Interaction Intelligence and UX improvement engine | **first increment built 2026-10-28**: Dot.Brain event contract merged (#40, ADR-0025 proposed); InfoDot friction signals (aggregate counts, rules, moderator page; `R12_UX_SIGNALS.md`), **off until the owner sets `UX_SIGNALS=true`** | Owner: switch on, privacy-policy wording, ADR-0025 decisions D1 to D3; then client-side signals, Dot.Analytics ingest, Memory loop record, other platforms |
+| R-13 InfoDot entrepreneur tiers, knowledge reputation, seminars and account licensing | **phase 1 built 2026-10-29**: seat licensing foundation (3 free seats incl. owner, invitations hold seats, race-safe, audit, Seats panel; `R13_INSPECTION.md`); tiers, reputation, seminars and paid seats **not started** | Owner: payment provider and where it lives, seat price and currency, billing periods, proration and grace policy, tier thresholds, video provider, role vocabulary |
 
 ## R-1 Scheduler staleness after the 13 deploys (reliability, high)
 
@@ -373,3 +374,7 @@ So the target is met for three of the eleven apps that have a watchdog and misse
 counts in the R-1 evidence paragraph (for example Sheet, 24 of 74 runs) but not low enough. The reason each failed run failed has not been
 read, so this update does not say whether the cause is the host, a deploy window or GitHub. Still outstanding: the cPanel Resource
 Usage reading for a failing minute (the 2026-10-19 reading was one idle snapshot) and the burst sample after the runner.
+
+## R-13 InfoDot entrepreneur tiers, knowledge reputation, seminars and account licensing (new requirement, 2026-10-29; phase 1 built)
+
+Brief stored verbatim in `requirements/infodot-tiers-seminars-licensing.md`. What exists, what does not and the phased plan are in `R13_INSPECTION.md`.

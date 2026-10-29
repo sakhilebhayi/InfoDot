@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\RecordSeatReleased;
 use App\Listeners\SendMembershipChange;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -23,7 +24,7 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         // Platforms that copy a company's membership are told at once (see MembershipWebhook).
-        TeamMemberRemoved::class => [[SendMembershipChange::class, 'handleRemoved']],
+        TeamMemberRemoved::class => [[SendMembershipChange::class, 'handleRemoved'], RecordSeatReleased::class],
         TeamMemberUpdated::class => [[SendMembershipChange::class, 'handleUpdated']],
         TeamDeleted::class => [[SendMembershipChange::class, 'handleDeleted']],
     ];

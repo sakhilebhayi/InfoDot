@@ -89,4 +89,19 @@ class TeamPolicy
     {
         return $user->ownsTeam($team);
     }
+
+    /**
+     * Who sees a company's seats, licence and billing: the owner and administrators. An ordinary member does not, and nothing about a person's
+     * InfoDot tier or reputation changes this: organisation permissions and reputation are separate systems.
+     */
+    public function viewLicence(User $user, Team $team)
+    {
+        return $user->ownsTeam($team) || $user->hasTeamRole($team, 'admin');
+    }
+
+    /** Who may change seats and subscription settings: the owner only. */
+    public function changeLicence(User $user, Team $team)
+    {
+        return $user->ownsTeam($team);
+    }
 }

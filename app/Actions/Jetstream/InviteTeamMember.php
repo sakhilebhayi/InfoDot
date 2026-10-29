@@ -2,6 +2,7 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Services\Licensing\SeatLedger;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -29,10 +30,11 @@ class InviteTeamMember implements InvitesTeamMembers
 
         InvitingTeamMember::dispatch($team, $email, $role);
 
-        $invitation = $team->teamInvitations()->create([
+        // The seat check and the invitation happen together under a lock on the company, so concurrent invitations cannot exceed capacity.
+        $invitation = app(SeatLedger::class)->guard($team, fn () => $team->teamInvitations()->create([
             'email' => $email,
             'role' => $role,
-        ]);
+        ]), null, $user, 'invited', $email);
 
         Mail::to($email)->send(new TeamInvitation($invitation));
     }
