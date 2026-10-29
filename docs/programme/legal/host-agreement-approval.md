@@ -28,16 +28,16 @@ If the adviser's signed text differs from `host-agreement.md` in any word, repla
 1. Confirm nobody has accepted anything, so `v1` can stay `v1` (read-only):
 
 ```bash
-cd /home/infodotc/infodot.co.za/infodot && php artisan tinker --execute="echo DB::table('seminar_host_agreements')->count();"
+cd /home/infodotc/public_html/main && php artisan tinker --execute="echo DB::table('seminar_host_agreements')->count();"
 ```
 
-   (The folder is the one the earlier go-live steps used for InfoDot; if `ls` shows no `.env` there, use the folder that has it.)
+   (`/home/infodotc/public_html/main` is the InfoDot folder on the host: the one that holds `.env` and `tools/`.)
    If the count is not 0, tell Claude: either the old acceptances need a new version label (`--agreement-version v2`, set the same value in Billing) or they accepted a wording that is now different.
 2. Deploy InfoDot first, so the host has the approved text and #158's migration. Dot.Billing needs no deploy for this (its copy is documentation only).
 3. Run the agreement stage, preview first (nothing changes without `--apply`):
 
 ```bash
-tools/r13-enable.sh --infodot /home/infodotc/infodot.co.za/infodot --stage agreement --confirm-agreement-reviewed
+tools/r13-enable.sh --infodot /home/infodotc/public_html/main --stage agreement --confirm-agreement-reviewed
 ```
 
    then, if the preview is what you expect, the same command with `--apply`. The script flips `SEMINARS_HOST_AGREEMENT_APPROVED` to true and names only the variable it set. Re-run the deploy or `php artisan config:cache` so the value is read.
