@@ -1,5 +1,13 @@
 # R-13 go-live: what to set, in what order (2026-10-29)
 
+**Quick way:** after the next InfoDot deploy, `tools/r13-enable.sh` is in the InfoDot folder on the host. Run it there yourself (an AI session cannot reach the host's `.env` files, and secrets should not pass through chat). It sets the keys below, creates the two shared secrets without ever printing them, backs up each `.env`, and does nothing until you add `--apply`:
+
+    cd <the InfoDot folder on the host>
+    tools/r13-enable.sh --infodot . --billing <the Dot.Billing folder> --stage reputation --stage billing-link                 # preview
+    tools/r13-enable.sh --infodot . --billing <the Dot.Billing folder> --stage reputation --stage billing-link --apply --cache   # do it
+
+Add `--stage paid-seminars` (and `--issuer-name`, `--issuer-address`, `--issuer-vat`) only after the Paystack test-mode run and your adviser's sign-off. Dot.Billing's queue worker is installed by its deploy (it logged "queued work present, queue worker line needed"); nothing to set up. The sections below are the same steps by hand.
+
 Nothing below is a secret value; generate each secret yourself (`php -r 'echo bin2hex(random_bytes(32));'`) and never paste one into chat, a pull request or an issue. These lines go in the production `.env` of each app on the host; the deploy never overwrites `.env`.
 
 ## 1. Reputation (InfoDot only, no dependencies)
