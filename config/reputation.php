@@ -15,7 +15,7 @@
 | Score = for each of six dimensions, the sum of its rule points capped at the dimension cap, times the dimension weight.
 | Work counts only when it counts for achievements (public, published, not hidden, never help you gave yourself).
 | Manipulation controls: caps, nothing for private work, help from the same person decays (accepted answers from one asker count
-| 1, 1/2, 1/4, then nothing), nothing for yourself, a gap costs nothing (no streaks), and a moderator hiding your work costs trust.
+| 1, 1/2, 1/4, then nothing, and half again when that asker's own answers were accepted by you), nothing for yourself, a gap costs nothing (no streaks), and a moderator hiding your work costs trust.
 */
 
 return [
@@ -46,7 +46,7 @@ return [
         'seminar_attended' => ['dimension' => 'learning', 'each' => 5, 'max_count' => 4],
         'answer_given' => ['dimension' => 'contribution', 'each' => 3, 'max_count' => 20],
         'solution_written' => ['dimension' => 'contribution', 'each' => 5, 'max_count' => 10],
-        'answer_accepted' => ['dimension' => 'impact', 'each' => 10, 'decay' => [1.0, 0.5, 0.25]], // per asker, in order of acceptance
+        'answer_accepted' => ['dimension' => 'impact', 'each' => 10, 'decay' => [1.0, 0.5, 0.25], 'reciprocal_factor' => 0.5], // decay per asker, in order of acceptance; reciprocal: that asker also accepted this person's answers
         'solution_verified' => ['dimension' => 'impact', 'each' => 15, 'max_count' => 10],
         'library_adoption' => ['dimension' => 'impact', 'each' => 20, 'max_count' => 5],
         'active_week' => ['dimension' => 'consistency', 'each' => 2, 'window_weeks' => 12],

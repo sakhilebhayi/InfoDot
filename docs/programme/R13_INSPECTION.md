@@ -107,4 +107,5 @@ Until one of these exists, seminars are listed, registered for, reminded and att
 | Reputation engine, private progress page, appeals (off by default) | PR #144 (stacked on #143) |
 | Dot.Billing extra-seat pricing, pro-rata invoice, settlement-gated entitlement | PR Dot.Billing#30 (set a price in the database to enable; no price, nothing is sold) |
 | Brain ADR-0026 (reputation and tiers, proposed) | PR Dot.Brain#41 |
-| Seminar video, paid seminars, specialist badges, ring detection, per-person reputation opt-out, Billing screens for buying seats | not built; see `R13_SEMINAR_VIDEO_PLAN.md` and ADR-0026 D1 to D4 |
+| Per-person reputation opt-out (deletes what is stored), own-data download, reciprocal-acceptance discount | built after the session above (PR on `feat/r13-reputation-optout`) |
+| Seminar video, paid seminars, specialist badges, full ring detection, Billing screens for buying seats | not built; see `R13_SEMINAR_VIDEO_PLAN.md` and ADR-0026 D1 to D4 |

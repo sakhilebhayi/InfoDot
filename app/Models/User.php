@@ -38,6 +38,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'points_expiry_emails' => 'boolean',
         'achievements_public' => 'boolean',
         'notices_in_app' => 'boolean',
+        'reputation_opt_out' => 'boolean',
         'topic_suggestions' => 'boolean',
         'share_expertise' => 'boolean',
     ];
@@ -116,6 +117,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function achievements()
     {
         return $this->hasMany(UserAchievement::class);
+    }
+
+    /** Whether the person switched the knowledge score off for themselves. Nothing is computed or kept for them while it is. */
+    public function optedOutOfReputation(): bool
+    {
+        return (bool) ($this->reputation_opt_out ?? false);
     }
 
     /** Whether the person wants in-app notices about their own work. On unless they switched it off. */

@@ -21,7 +21,7 @@ class RecalculateReputation extends Command
             return self::SUCCESS;
         }
 
-        $users = User::query()->when($this->option('user'), fn ($q, $id) => $q->whereKey($id));
+        $users = User::query()->where('reputation_opt_out', false)->when($this->option('user'), fn ($q, $id) => $q->whereKey($id));
         $n = 0;
         $users->chunkById(200, function ($chunk) use ($engine, &$n) {
             foreach ($chunk as $u) {
