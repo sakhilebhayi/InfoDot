@@ -114,6 +114,22 @@ class HostAgreementAndDebtsTest extends TestCase
         $this->actingAs($host)->post('/seminars/payouts/agreement', ['accept' => '1'])->assertNotFound();
     }
 
+    public function test_the_text_hosts_are_shown_carries_no_draft_markers_and_has_both_parts(): void
+    {
+        $text = (string) file_get_contents(resource_path('markdown/host-agreement.md'));
+
+        foreach (['[', ']', 'DRAFT', 'Adviser', 'adviser', 'UNREVIEWED', 'owner:', 'placeholder'] as $marker) {
+            $this->assertStringNotContainsString($marker, $text, "a draft marker ($marker) must not reach hosts");
+        }
+
+        $this->assertStringContainsString('Part A. Chargebacks on your tickets', $text);
+        $this->assertStringContainsString('Part B. If a moderator removes your seminar', $text);
+
+        config(['seminars.paid.agreement_approved' => true]);
+        Http::fake(['billing.test/*' => Http::response(['banks' => []])]);
+        $this->actingAs($this->host())->get('/seminars/payouts')->assertOk()->assertSee('If a moderator removes your seminar')->assertSee('support@infodot.co.za');
+    }
+
     public function test_once_approved_the_host_reads_and_accepts_it_and_billing_is_told(): void
     {
         config(['seminars.paid.agreement_approved' => true]);
