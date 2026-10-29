@@ -111,7 +111,7 @@
                                     </label>
                                 @endforeach
                             </div>
-                            <p class="ix-hint" x-show="plans[quality] && plans[quality].usable"><b>This seminar can have up to <span x-text="plans[quality].capacity"></span> people</b> (your computer feeds <span x-text="plans[quality].direct"></span> directly; the rest receive it through other viewers). That figure is a cautious estimate: phones and strict networks can lower it, and anyone beyond it joins the waiting list. Audio only holds the most people.</p>
+                            <p class="ix-hint" x-show="plans[quality]?.usable"><b>This seminar can have up to <span x-text="plans[quality]?.capacity"></span> people</b> (your computer feeds <span x-text="plans[quality]?.direct"></span> directly; the rest receive it through other viewers). That figure is a cautious estimate: phones and strict networks can lower it, and anyone beyond it joins the waiting list. Audio only holds the most people.</p>
                         </div>
                     </template>
                     @error('p2p_uplink_kbps')<p class="ix-error">{{ $message }}</p>@enderror

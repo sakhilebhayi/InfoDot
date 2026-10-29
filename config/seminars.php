@@ -93,7 +93,7 @@ return [
         'max_depth' => 4,                 // host, then viewers relaying to viewers, at most this many hops below the host
         'host_uplink_share' => 0.7,       // the share of the measured upload the room may use
         'safety_factor' => 0.6,           // the number promised is this share of what the model says is possible
-        'relay_slots' => 3,               // how many others a relaying viewer feeds
+        'relay_slots' => (int) env('SEMINARS_P2P_RELAY_SLOTS', 3),   // how many others a relaying viewer feeds
         'peer_timeout_seconds' => 30,
         'speedtest_max_bytes' => 3_000_000,
         // Per quality: bitrate in kbps (audio included), how many viewers the HOST can feed directly (its processor encodes once per viewer),

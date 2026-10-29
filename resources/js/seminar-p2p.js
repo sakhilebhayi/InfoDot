@@ -30,6 +30,7 @@ if (root) {
     let ready = false
     let pollTimer = null
     let upstreamBadSince = null
+    let helloAt = 0
     const qualityKbps = Number(cfg.kbps || 0)
     let maxBitrate = qualityKbps * 1000
 
@@ -77,9 +78,12 @@ if (root) {
         }
     }
     const serveChild = async (childId) => {
-        if (downstream.has(childId)) { try { downstream.get(childId).pc.close() } catch (e) { /* replaced */ } }
+        const existing = downstream.get(childId)
+        // A repeated hello while the first handshake is still under way must not restart it, or the two sides chase each other forever.
+        if (existing && existing.pc.connectionState !== 'failed' && existing.pc.connectionState !== 'closed' && Date.now() - existing.startedAt < 12000) return
+        if (existing) { try { existing.pc.close() } catch (e) { /* replaced */ } }
         const pc = newPc()
-        downstream.set(childId, { pc })
+        downstream.set(childId, { pc, startedAt: Date.now() })
         const tracks = outTracks()
         for (const kind of ['audio', 'video']) {
             const t = pc.addTransceiver(kind, { direction: 'sendonly' })
@@ -141,7 +145,7 @@ if (root) {
         if (id === parent) return
         parent = id
         closeUpstream()
-        if (parent) { say('Connecting…'); signal(parent, 'hello') } else say('Waiting for a free place in the room…')
+        if (parent) { say('Connecting…'); helloAt = Date.now(); signal(parent, 'hello') } else say('Waiting for a free place in the room…')
     }
 
     // ---- messages from the server ----
@@ -171,7 +175,7 @@ if (root) {
             for (const c of r.chat) { lastChat = Math.max(lastChat, c.id); addChat(c.name, c.body) }
             if (!isHost) {
                 if (r.parent !== parent) setParent(r.parent)
-                else if (parent && !ready && !upstream) signal(parent, 'hello')
+                else if (parent && !ready && !upstream && Date.now() - helloAt > 8000) { helloAt = Date.now(); signal(parent, 'hello') }
                 if (!r.host_here && !parent) say('Waiting for the host to start…')
                 if (upstreamBadSince && Date.now() - upstreamBadSince > 6000) { upstreamBadSince = null; await feederFailed() }
             }

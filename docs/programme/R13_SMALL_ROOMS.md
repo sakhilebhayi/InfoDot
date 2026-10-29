@@ -1,6 +1,6 @@
 # Small seminar rooms: video between browsers, no media server (2026-10-29)
 
-**Built, off by default (`SEMINARS_P2P_ENABLED`). Not yet proven with real people on real networks.** Read "What was and was not verified" before telling anyone it works.
+**Built, off by default (`SEMINARS_P2P_ENABLED`). Proven end to end on one computer; not yet proven across real networks.** Read "What was and was not verified" before telling anyone it works.
 
 ## What it is
 
@@ -39,17 +39,22 @@ Every number is configuration (`config/seminars.php`, `seminars.p2p`). They are 
 
 ## What was and was not verified
 
-Verified (automated tests, 21 of them, plus the whole suite): the capacity maths; the form's rules; who may enter and when; the tree (host feeds first, relays feed next, nobody is their own feeder, depth recorded); reassignment when a feeder leaves, goes silent, or is reported failing; the room-full limit; message delivery and its checks; removal; chat; attendance marking; the numbers shown on every page.
+**Automated tests (24, plus the whole suite):** the capacity maths; the form's rules; who may enter and when; the tree (host feeds first, relays feed next, nobody is their own feeder, depth recorded); reassignment when a feeder leaves, goes silent, or is reported failing; the room-full limit; message delivery and its checks; removal; chat; attendance marking; the numbers shown on every page; and that nothing that changes state can be done with a plain link.
 
-Verified in a real browser on one computer: the host and a viewer connect through InfoDot's signalling and exchange offers, answers and connection candidates, and the viewer's page reaches "You are watching" (that check found, and fixed, a rate-limit bug that returned 429 after a minute of polling).
+**Real browser, one computer (`tools/p2p-e2e/`):** a host and three viewers, each in its own Chrome profile with a fake camera and microphone, on a local InfoDot. Verified: real 1280 x 720 video reaching all three viewers through a chain **host -> V1 -> V2 -> V3** (V1 and V2 each relaying to one), video still flowing three hops away; chat from one viewer reaching everyone; V1 leaving and V2 being given a new feeder while V3 kept receiving video through V2; the host's form measuring an upload speed and showing the number of people for each quality; the published seminar page stating the room size; the host removing a viewer, who is told and disconnected; an audio-only room (audio flowing, no camera control offered). This run found and fixed a real bug: a viewer re-sending its "hello" made the host restart the connection each time, so media never connected.
 
-**Not verified: actual video and audio flowing between two browsers, relaying through a viewer, and any test with more than two peers.** The test computer could not complete the media connection between two tabs (a local network restriction), and cameras and microphones are blocked in that browser pane. Before real use:
+**Not verified:**
+- People on **different networks**, behind home routers, or on **mobile data**. Everything above ran on one computer's local network, where the browsers can reach each other directly. Many real connections will not do that without a relay (TURN). Expect some failures until `P2P_TURN_*` is set up.
+- **More than four** peers, or any load test. The relay tree is proven with a chain, not with a wide tree.
+- Real cameras and microphones, Safari, Firefox, and phones.
+- A real seminar with real people.
+
+Before real use:
 
 1. Two people on **different networks**, one on **mobile data**: both see and hear the host.
-2. A third person joins and is fed through the second (set `seminars.p2p.relay_slots` to 1 and the host to a connection that can feed one, to force relaying).
-3. The host drops their connection: viewers see the room go quiet and come back when it returns.
+2. A 10-person test over a week-night connection, with a mix of computers and phones.
+3. The host drops their connection and returns.
 4. A person who did not register cannot enter.
-5. A 10-person test over a week-night connection.
 
 ## Turning it on
 
