@@ -247,4 +247,21 @@ class SeminarVideoTest extends TestCase
         config(['seminars.video.enabled' => false]);
         $this->actingAs($host)->get('/seminars/new')->assertOk()->assertDontSee('InfoDot room (video');
     }
+
+    public function test_a_person_the_host_removed_from_the_infodot_room_cannot_get_a_new_token(): void
+    {
+        $s = $this->room();
+        $guest = $this->person('Guest');
+        $this->register($s, $guest);
+        $this->travelTo($s->starts_at->copy()->subMinutes(5));
+        Http::fake(['live.example.test/*' => Http::response([])]);
+        $this->actingAs($guest)->post('/seminars/'.$s->id.'/room/token')->assertOk();
+
+        $this->actingAs($s->host)->post('/seminars/'.$s->id.'/room/remove/'.$guest->id)->assertRedirect();
+
+        $this->actingAs($guest)->post('/seminars/'.$s->id.'/room/token')->assertForbidden()->assertJsonFragment(['error' => 'The host removed you from this room.']);
+        $this->actingAs($guest)->get('/seminars/'.$s->id.'/room')->assertRedirect(route('seminars.show', $s));
+        $this->assertSame('registered', SeminarRegistration::where('user_id', $guest->id)->value('status'), 'still registered; only barred from the room');
+    }
 }
+

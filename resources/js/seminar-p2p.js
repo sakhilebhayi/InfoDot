@@ -249,5 +249,8 @@ if (root) {
 
     if (cfg.allowFake === '1') window.__p2p = { upstream: () => upstream, downstream, state: () => ({ me, parent, ready, stopped }) }   // for local debugging only (APP_DEBUG)
 
-    start()
+    // Nothing connects until the person has read what connecting means (their address is visible to whoever feeds them) and said yes.
+    const consent = $('[data-consent]')
+    const go = () => { if (consent) consent.hidden = true; start() }
+    if (consent) { $('[data-consent-ok]')?.addEventListener('click', go, { once: true }) } else { start() }
 }

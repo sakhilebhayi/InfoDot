@@ -3,6 +3,7 @@
 namespace App\Actions\Jetstream;
 
 use App\Services\Participation\ParticipationClient;
+use App\Services\Privacy\SeminarDataEraser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Laravel\Jetstream\Contracts\DeletesTeams;
@@ -37,8 +38,11 @@ class DeleteUser implements DeletesUsers
     public function delete($user)
     {
         $this->eraseFromMemory($user);
+        // Upcoming seminars are cancelled and tickets refunded first: that talks to Billing, so it runs outside the transaction.
+        app(SeminarDataEraser::class)->settle($user);
 
         DB::transaction(function () use ($user) {
+            app(SeminarDataEraser::class)->erase($user);
             $this->deleteTeams($user);
             $user->deleteProfilePhoto();
             $user->tokens->each->delete();

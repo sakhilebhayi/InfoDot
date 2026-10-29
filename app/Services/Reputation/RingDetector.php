@@ -60,7 +60,8 @@ class RingDetector
     public function edges(): array
     {
         $since = Carbon::now()->subDays(max(1, (int) config('reputation.rings.window_days', 180)));
-        $moderators = User::where('is_moderator', true)->pluck('id')->flip();
+        // Moderators are never members of a ring, and neither is anyone who switched their score off: nothing is worked out about them.
+        $moderators = User::where('is_moderator', true)->orWhere('reputation_opt_out', true)->pluck('id')->flip();
         $public = Questions::withoutGlobalScopes()->where('visibility', Questions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->select('id');
         $edges = [];
 

@@ -61,7 +61,7 @@
             <input type="checkbox" id="notices-on" name="notices_in_app" value="1" aria-describedby="notices-on-hint notices-on-state" @checked($wants)>
             <span>Tell me here when something happens to my work</span>
         </label>
-        <p class="ix-hint" id="notices-on-hint">These are replies to your own work, never reminders to come back and never a streak. The one reminder you get is for a seminar you registered for. Read notices are removed after 90 days.</p>
+        <p class="ix-hint" id="notices-on-hint">These are replies to your own work, never reminders to come back and never a streak. The one reminder you get is for a seminar you registered for. Notices about a seminar you booked, paid for or host (cancelled, changed, refunded, disputed, removed, or money owed) are always shown, whatever you choose here. Read notices are removed after 90 days.</p>
         <p class="ix-hint" id="notices-on-state">Right now this is <strong>{{ $wants ? 'on' : 'off' }}</strong>.</p>
         <button type="submit" class="ix-btn">Save</button>
     </form>

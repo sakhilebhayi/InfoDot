@@ -49,11 +49,13 @@ class ModerationAction extends Model
 
     public const LIBRARY_WITHDRAWN = 'library_withdrawn';
 
+    public const SEMINAR_REMOVED = 'seminar_removed';
+
     public const ACTIONS = [
         self::DISMISSED, self::HIDDEN, self::RESTORED, self::ACCEPTANCE_REVOKED,
         self::APPEAL_UPHELD, self::APPEAL_DENIED, self::VERIFIED, self::UNVERIFIED, self::APPROVED,
         self::TOPIC_ADDED, self::TOPIC_RENAMED, self::TOPIC_ACTIVATED, self::TOPIC_DEACTIVATED, self::TOPICS_SET,
-        self::LIBRARY_ADOPTED, self::LIBRARY_DECLINED, self::LIBRARY_WITHDRAWN,
+        self::LIBRARY_ADOPTED, self::LIBRARY_DECLINED, self::LIBRARY_WITHDRAWN, self::SEMINAR_REMOVED,
     ];
 
     /** What each action is called on screen. */
@@ -75,6 +77,7 @@ class ModerationAction extends Model
         self::LIBRARY_ADOPTED => 'Adopted into the library',
         self::LIBRARY_DECLINED => 'Library recommendation declined',
         self::LIBRARY_WITHDRAWN => 'Withdrawn from the library',
+        self::SEMINAR_REMOVED => 'Seminar removed',
     ];
 
     protected $fillable = ['actor_id', 'actor_uuid', 'subject_type', 'subject_id', 'action', 'reason', 'report_id', 'appeal_id'];

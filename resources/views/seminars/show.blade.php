@@ -25,13 +25,33 @@
 
     @if ($seminar->description)<p style="white-space: pre-line; max-width: 70ch;">{{ $seminar->description }}</p>@endif
 
-    <p class="ix-hint">Hosted by <a href="{{ route('profile.show', ['id' => $host->id]) }}">{{ $host->name }}</a>.
+    <p class="ix-hint">Hosted by @if ($host->exists)<a href="{{ route('profile.show', ['id' => $host->id]) }}">{{ $host->name }}</a>@else{{ $host->name }}@endif.
         @if ($stats['hosted'] > 0)
             They have hosted {{ $stats['hosted'] }} {{ $stats['hosted'] === 1 ? 'seminar' : 'seminars' }} with {{ $stats['attendees'] }} {{ $stats['attendees'] === 1 ? 'person' : 'people' }} attending{{ $stats['average'] !== null ? ', rated '.$stats['average'].' out of 5 by '.$stats['ratings'].' people' : '' }}.
         @else
             This is their first seminar on InfoDot.
         @endif
     </p>
+
+    @if ($seminar->removed_at && $isHost)
+        <p class="ix-error" role="status">A moderator removed this seminar{{ $seminar->removed_reason ? ': '.$seminar->removed_reason : '.' }} Anyone who paid has been refunded in full.</p>
+    @endif
+
+    @if (! $isHost && $seminar->status === 'published')
+        <details class="ix-hint" style="margin-bottom: 12px;">
+            <summary>Report this seminar</summary>
+            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
+                <label class="ix-label" for="report-reason">What is wrong with it</label>
+                <select class="ix-input" id="report-reason" name="reason" required>
+                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                </select>
+                <label class="ix-label" for="report-detail">Tell the moderators more (optional)</label>
+                <textarea class="ix-input" id="report-detail" name="detail" rows="3" maxlength="1000"></textarea>
+                <p class="ix-hint">A moderator reads it. The host is not told who reported.</p>
+                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
+            </form>
+        </details>
+    @endif
 
     @if (! $isHost && $seminar->status === 'published')
         <section class="ix-notices__pref" aria-label="Your registration">
@@ -177,5 +197,13 @@
                 </form>
             @endif
         </section>
+    @endif
+
+    @if (auth()->user()->is_moderator && ! $isHost && $seminar->status !== 'cancelled')
+        <form method="POST" action="{{ route('moderation.seminars.remove', $seminar) }}" class="ix-form" style="margin-top: 24px; max-width: 480px;" onsubmit="return confirm('Remove this seminar? Everyone who registered is told and anyone who paid is refunded.');">@csrf
+            <label class="ix-label" for="mod-why">Moderator: remove this seminar (the host sees the reason)</label>
+            <input class="ix-input" id="mod-why" name="reason" type="text" minlength="10" maxlength="500" required>
+            <button class="ix-btn ix-btn--danger" type="submit">Remove the seminar</button>
+        </form>
     @endif
 </x-app-layout>

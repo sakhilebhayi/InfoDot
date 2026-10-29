@@ -151,6 +151,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/seminars/{seminar}/p2p/chat', [\App\Http\Controllers\SeminarP2pController::class, 'chat'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-chat')->name('seminars.p2p.chat');
     Route::post('/seminars/{seminar}/p2p/remove/{person}', [\App\Http\Controllers\SeminarP2pController::class, 'remove'])->whereNumber(['seminar', 'person'])->middleware('throttle:30,1,p2p-remove')->name('seminars.p2p.remove');
     Route::post('/seminars/{seminar}/report-link', [SeminarsController::class, 'reportLink'])->whereNumber('seminar')->middleware('throttle:10,1,seminar-report-link')->name('seminars.report-link');
+    Route::post('/seminars/{seminar}/report', [SeminarsController::class, 'report'])->whereNumber('seminar')->middleware('throttle:10,1,seminar-report')->name('seminars.report');
+    Route::get('/moderation/seminars', [\App\Http\Controllers\SeminarModerationController::class, 'index'])->middleware(['moderator', 'throttle:30,1,mod-seminars'])->name('moderation.seminars');
+    Route::post('/moderation/seminars/{seminar}/remove', [\App\Http\Controllers\SeminarModerationController::class, 'remove'])->whereNumber('seminar')->middleware(['moderator', 'throttle:20,1,mod-seminar-remove'])->name('moderation.seminars.remove');
+    Route::post('/moderation/seminar-reports/{report}/dismiss', [\App\Http\Controllers\SeminarModerationController::class, 'dismiss'])->whereNumber('report')->middleware(['moderator', 'throttle:30,1,mod-seminar-dismiss'])->name('moderation.seminars.dismiss');
     Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.feedback');
 
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).

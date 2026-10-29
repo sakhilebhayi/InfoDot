@@ -40,7 +40,10 @@ class SeminarP2pController extends Controller
 
     public function poll(Request $request, Seminar $seminar): JsonResponse
     {
-        $this->guard($request, $seminar);
+        // Someone the host removed still gets an answer, so their page can say so, instead of a bare refusal.
+        if (! $this->room->isRemoved($seminar, $request->user())) {
+            $this->guard($request, $seminar);
+        }
 
         return $this->json($this->room->poll($seminar, $request->user(), (int) $request->query('chat', 0)));
     }

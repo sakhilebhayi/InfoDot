@@ -15,11 +15,11 @@ class Seminar extends Model
 
     public const CANCELLED = 'cancelled';
 
-    protected $fillable = ['public_code', 'join_url_status', 'join_url_checked_at', 'p2p_quality', 'p2p_uplink_kbps', 'delivery', 'price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
+    protected $fillable = ['removed_at', 'removed_reason', 'public_code', 'join_url_status', 'join_url_checked_at', 'p2p_quality', 'p2p_uplink_kbps', 'delivery', 'price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
 
     protected function casts(): array
     {
-        return ['join_url_checked_at' => 'datetime', 'starts_at' => 'datetime', 'cancelled_at' => 'datetime', 'duration_minutes' => 'integer', 'capacity' => 'integer', 'price_cents' => 'integer'];
+        return ['join_url_checked_at' => 'datetime', 'removed_at' => 'datetime', 'starts_at' => 'datetime', 'cancelled_at' => 'datetime', 'duration_minutes' => 'integer', 'capacity' => 'integer', 'price_cents' => 'integer'];
     }
 
     protected static function booted(): void
@@ -37,7 +37,7 @@ class Seminar extends Model
 
     public function host(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'host_id');
+        return $this->belongsTo(User::class, 'host_id')->withDefault(['name' => 'A former member']);
     }
 
     public function topic(): BelongsTo

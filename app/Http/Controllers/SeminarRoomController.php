@@ -46,7 +46,9 @@ class SeminarRoomController extends Controller
         abort_unless($seminar->host_id === $request->user()->id && $this->livekit->configured() && $seminar->isRoom(), 403);
 
         try {
-            $this->livekit->remove($seminar, User::findOrFail($person));
+            $target = User::findOrFail($person);
+            \Illuminate\Support\Facades\DB::table('seminar_room_bans')->insertOrIgnore(['seminar_id' => $seminar->id, 'user_id' => $target->id, 'created_at' => now()]);   // they cannot get a new token
+            $this->livekit->remove($seminar, $target);
         } catch (MarketplaceUnavailable $e) {
             return back()->withErrors(['room' => $e->getMessage()]);
         }

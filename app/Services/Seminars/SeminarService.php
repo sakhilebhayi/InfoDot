@@ -3,7 +3,9 @@
 namespace App\Services\Seminars;
 
 use App\Models\Seminar;
+use App\Models\ModerationAction;
 use App\Models\SeminarFeedback;
+use App\Models\SeminarReport;
 use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarTicketEvent;
 use App\Models\SeminarRegistration;
@@ -218,7 +220,7 @@ class SeminarService
 
                 if ($next) {
                     $next->forceFill(['status' => SeminarRegistration::REGISTERED])->save();
-                    $this->notices->record(UserNotice::SEMINAR_SPOT_OPEN, User::findOrFail($next->user_id), 'seminar', $locked->id, 'seminar:'.$locked->id.':spot');
+                    $this->notices->record(UserNotice::SEMINAR_SPOT_OPEN, User::find($next->user_id), 'seminar', $locked->id, 'seminar:'.$locked->id.':spot');
                 }
             }
         });
@@ -300,6 +302,7 @@ class SeminarService
         $registered = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', SeminarRegistration::REGISTERED)->exists();
 
         return match (true) {
+            DB::table('seminar_room_bans')->where('seminar_id', $seminar->id)->where('user_id', $user->id)->exists() => 'The host removed you from this room.',
             ! $registered => 'The room is for people who registered.',
             $seminar->hasEnded() => 'This seminar has finished.',
             ! $seminar->joinIsOpen() => 'The room opens '.config('seminars.join_opens_minutes_before', 15).' minutes before the start.',
@@ -328,7 +331,41 @@ class SeminarService
         }
 
         DB::table('seminar_link_reports')->insertOrIgnore(['seminar_id' => $seminar->id, 'user_id' => $user->id, 'created_at' => now()]);
-        $this->notices->record(UserNotice::SEMINAR_LINK_BROKEN, User::findOrFail($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':link:'.(int) floor(now()->timestamp / 1800));
+        $this->notices->record(UserNotice::SEMINAR_LINK_BROKEN, User::find($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':link:'.(int) floor(now()->timestamp / 1800));
+    }
+
+    /** A signed-in person reports a seminar. One report each; the host cannot report their own. */
+    public function report(Seminar $seminar, User $reporter, string $reason, ?string $detail): SeminarReport
+    {
+        if ($seminar->host_id === $reporter->id || ! $seminar->isPublished() || ! array_key_exists($reason, SeminarReport::REASONS)) {
+            throw ValidationException::withMessages(['report' => 'This seminar cannot be reported by you.']);
+        }
+
+        return SeminarReport::firstOrCreate(['seminar_id' => $seminar->id, 'reporter_id' => $reporter->id], [
+            'reason' => $reason, 'detail' => $detail !== null && trim($detail) !== '' ? mb_substr(trim($detail), 0, 1000) : null,
+        ]);
+    }
+
+    /**
+     * A moderator takes a seminar down. It is cancelled (everyone who registered is told and everyone who paid is refunded in full), the host is told
+     * why, the reports about it are closed, and the decision goes in the moderation record.
+     */
+    public function removeByModerator(Seminar $seminar, User $moderator, string $reason): void
+    {
+        if ($seminar->removed_at !== null) {
+            return;
+        }
+
+        $seminar->forceFill(['removed_at' => now(), 'removed_reason' => mb_substr($reason, 0, 500)])->save();
+        $this->cancel($seminar->fresh());
+        $this->notices->record(UserNotice::SEMINAR_REMOVED, User::find($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':removed');
+        ModerationAction::record($seminar, $moderator, ModerationAction::SEMINAR_REMOVED, $reason);
+        SeminarReport::where('seminar_id', $seminar->id)->where('status', 'open')->update(['status' => 'actioned', 'resolved_by' => $moderator->id, 'resolution_note' => 'Seminar removed.', 'resolved_at' => now()]);
+    }
+
+    public function dismissReport(SeminarReport $report, User $moderator, string $note): void
+    {
+        $report->forceFill(['status' => 'dismissed', 'resolved_by' => $moderator->id, 'resolution_note' => mb_substr($note, 0, 500), 'resolved_at' => now()])->save();
     }
 
     public function linkReports(Seminar $seminar): int
@@ -545,7 +582,7 @@ class SeminarService
             'payment_status' => $full ? 'refunded' : 'partially_refunded', 'status' => $full ? SeminarRegistration::CANCELLED : null,
         ], fn ($v) => $v !== null))->save();
 
-        $this->notices->record(UserNotice::SEMINAR_REFUNDED, User::findOrFail($reg->user_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':refund:'.$refKey);
+        $this->notices->record(UserNotice::SEMINAR_REFUNDED, User::find($reg->user_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':refund:'.$refKey);
 
         return 'applied';
     }
@@ -553,7 +590,7 @@ class SeminarService
     private function applyDispute(SeminarRegistration $reg, Seminar $seminar): string
     {
         $reg->forceFill(['dispute_status' => 'open', 'disputed_at' => now()])->save();
-        $this->notices->record(UserNotice::SEMINAR_DISPUTE, User::findOrFail($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':dispute:'.$reg->id);
+        $this->notices->record(UserNotice::SEMINAR_DISPUTE, User::find($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':dispute:'.$reg->id);
 
         return 'applied';
     }
@@ -665,7 +702,7 @@ class SeminarService
             $window = $seminar->starts_at->lte(now()->addHour()) ? 'hour' : 'day';
 
             foreach (SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->get() as $reg) {
-                $sent += (int) $this->notices->record(UserNotice::SEMINAR_REMINDER, User::findOrFail($reg->user_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':'.$window);
+                $sent += (int) $this->notices->record(UserNotice::SEMINAR_REMINDER, User::find($reg->user_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':'.$window);
             }
         }
 
@@ -677,7 +714,7 @@ class SeminarService
         $host = User::find($seminar->host_id);
 
         foreach (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('status', [SeminarRegistration::REGISTERED, SeminarRegistration::WAITLIST])->pluck('user_id') as $uid) {
-            $this->notices->record($kind, User::findOrFail($uid), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':'.$suffix, $host);
+            $this->notices->record($kind, User::find($uid), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':'.$suffix, $host);
         }
     }
 

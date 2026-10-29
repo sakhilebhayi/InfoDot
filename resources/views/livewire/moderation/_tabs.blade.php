@@ -5,6 +5,7 @@
     <a href="{{ route('moderation', ['tab' => 'approvals']) }}" @if ($current === 'approvals') aria-current="page" @endif>Awaiting approval @isset($counts)<span class="ix-mod__n">{{ $counts['approvals'] }} waiting</span>@endisset</a>
     <a href="{{ route('moderation.library') }}" @if ($current === 'library') aria-current="page" @endif>Recommended</a>
     <a href="{{ route('moderation.topics') }}" @if ($current === 'topics') aria-current="page" @endif>Topics</a>
+    <a href="{{ route('moderation.seminars') }}" @if (($current ?? null) === 'seminars') aria-current="page" @endif>Seminars</a>
     <a href="{{ route('moderation.friction') }}" @if ($current === 'friction') aria-current="page" @endif>Where people struggle</a>
     @if (config('reputation.enabled'))
         <a href="{{ route('moderation.rings') }}" @if (($current ?? null) === 'rings') aria-current="page" @endif>Account rings</a>
