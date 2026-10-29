@@ -88,6 +88,9 @@ class SeatLedger
     {
         $refusal = null;
 
+        // Fresh purchased-seat numbers come first, outside the transaction (it makes an HTTP request; failure changes nothing).
+        app(BillingEntitlements::class)->sync($team);
+
         try {
             return DB::transaction(function () use ($team, $change, $exceptEmail, $actor, $type, $subject, &$refusal) {
                 $locked = Team::whereKey($team->getKey())->lockForUpdate()->firstOrFail();

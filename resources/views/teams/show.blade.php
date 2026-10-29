@@ -25,7 +25,7 @@
             <section id="name" class="ix-settings__sec">@livewire('teams.update-team-name-form', ['team' => $team])</section>
             <section id="members" class="ix-settings__sec">@livewire('teams.team-member-manager', ['team' => $team])</section>
             @if (Gate::check('viewLicence', $team) && ! $team->personal_team)
-                <section id="seats" class="ix-settings__sec">@include('teams._seats', ['team' => $team, 'seats' => app(\App\Services\Licensing\SeatLedger::class)->summary($team), 'history' => app(\App\Services\Licensing\SeatLedger::class)->history($team)])</section>
+                <section id="seats" class="ix-settings__sec">@php(app(\App\Services\Licensing\BillingEntitlements::class)->sync($team))@include('teams._seats', ['team' => $team, 'seats' => app(\App\Services\Licensing\SeatLedger::class)->summary($team), 'history' => app(\App\Services\Licensing\SeatLedger::class)->history($team)])</section>
             @endif
             @if ($canDelete)
                 <section id="delete" class="ix-settings__sec">@livewire('teams.delete-team-form', ['team' => $team])</section>

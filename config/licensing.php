@@ -27,6 +27,17 @@ return [
         'periods' => ['month', 'year'],
     ],
 
+    // Dot.Billing is the only place seats are bought and paid for (Paystack lives there). InfoDot only READS what a company is entitled to,
+    // over Billing's signed server-to-server API, and never from a checkout redirect. Without a URL and a secret nothing is read and the
+    // included seats apply.
+    'billing' => [
+        'url' => env('LICENCE_BILLING_URL'),
+        'platform' => env('LICENCE_BILLING_PLATFORM', 'infodot'),
+        'secret' => env('BILLING_ENTITLEMENT_SECRET'),
+        'timeout_seconds' => 3,
+        'cache_seconds' => 300,
+    ],
+
     // Whether a real payment backend is connected for seat purchases. Off until Dot.Billing (or the chosen provider) can charge and confirm.
     'billing_connected' => (bool) env('LICENCE_BILLING_CONNECTED', false),
 
