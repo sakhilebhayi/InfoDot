@@ -122,6 +122,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/seminars/invoices', [\App\Http\Controllers\SeminarInvoicesController::class, 'index'])->middleware('throttle:30,1')->name('seminars.invoices');
     Route::get('/seminars/invoices/{invoice}', [\App\Http\Controllers\SeminarInvoicesController::class, 'show'])->whereNumber('invoice')->middleware('throttle:30,1')->name('seminars.invoice');
     Route::get('/moderation/seminar-payments', [\App\Http\Controllers\SeminarPaymentsModerationController::class, 'index'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.seminar-payments');
+    Route::get('/seminars/link-check', [SeminarsController::class, 'linkCheck'])->middleware('throttle:20,1,seminar-link-check')->name('seminars.link-check');
     Route::get('/seminars/new', [SeminarsController::class, 'create'])->name('seminars.create');
     Route::post('/seminars', [SeminarsController::class, 'store'])->middleware('throttle:10,1')->name('seminars.store');
     Route::get('/seminars/{seminar}', [SeminarsController::class, 'show'])->whereNumber('seminar')->name('seminars.show');
@@ -148,6 +149,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/seminars/{seminar}/p2p/leave', [\App\Http\Controllers\SeminarP2pController::class, 'leave'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-leave')->name('seminars.p2p.leave');
     Route::post('/seminars/{seminar}/p2p/chat', [\App\Http\Controllers\SeminarP2pController::class, 'chat'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-chat')->name('seminars.p2p.chat');
     Route::post('/seminars/{seminar}/p2p/remove/{person}', [\App\Http\Controllers\SeminarP2pController::class, 'remove'])->whereNumber(['seminar', 'person'])->middleware('throttle:30,1,p2p-remove')->name('seminars.p2p.remove');
+    Route::post('/seminars/{seminar}/report-link', [SeminarsController::class, 'reportLink'])->whereNumber('seminar')->middleware('throttle:10,1,seminar-report-link')->name('seminars.report-link');
     Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.feedback');
 
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).
@@ -224,3 +226,6 @@ Route::get('/up', function () {
 
     return response('OK', 200, ['Content-Type' => 'text/plain']);
 })->name('up');
+
+// A short link to a seminar that always opens (it goes to the seminar page, signing in first when needed).
+Route::get('/j/{code}', [SeminarsController::class, 'short'])->where('code', '[A-Za-z0-9]{6,12}')->middleware('throttle:60,1,seminar-short')->name('seminars.short');

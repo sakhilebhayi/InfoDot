@@ -57,6 +57,7 @@ class SeminarsController extends Controller
             'reg' => $reg && $reg->status !== SeminarRegistration::CANCELLED ? $reg : null,
             'registeredCount' => SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->count(),
             'stats' => $this->seminars->hostStats($seminar->host),
+            'linkReports' => $isHost ? $this->seminars->linkReports($seminar) : 0,
             'revenue' => $isHost && $seminar->isPaid() ? $this->seminars->hostRevenue($seminar) : null,
             'people' => $isHost ? SeminarRegistration::with('user')->where('seminar_id', $seminar->id)->whereIn('status', [SeminarRegistration::REGISTERED, SeminarRegistration::WAITLIST])->orderBy('id')->get() : collect(),
             'myFeedback' => SeminarFeedback::where('seminar_id', $seminar->id)->where('user_id', $user->id)->first(),
@@ -166,6 +167,32 @@ class SeminarsController extends Controller
             'seminar' => $seminar, 'reg' => $reg, 'buyer' => $request->user(), 'seller' => $profile?->trading_name ?: $seminar->host->name, 'vatNumber' => $taxInvoice ? $profile->vat_number : null,
             'taxInvoice' => $taxInvoice, 'vatIncluded' => $taxInvoice ? (int) floor(((int) $reg->amount_cents) * $rate / (100 + $rate) + 0.5) : null, 'rate' => $rate,
         ]);
+    }
+
+    /** The "test this link" button on the form. */
+    public function linkCheck(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $url = (string) $request->query('url', '');
+        abort_if(strlen($url) > 500, 422);
+
+        return response()->json(app(\App\Services\Seminars\MeetingLinkCheck::class)->check($url), 200, ['Cache-Control' => 'no-store, private']);
+    }
+
+    /** The short InfoDot link. It always opens: it goes to the seminar's page (signing in first when needed). */
+    public function short(string $code): RedirectResponse
+    {
+        $seminar = Seminar::where('public_code', strtolower($code))->firstOrFail();
+        abort_if($seminar->status === Seminar::DRAFT, 404);
+
+        return redirect()->route('seminars.show', $seminar);
+    }
+
+    /** "The link does not work": tells the host. */
+    public function reportLink(Request $request, Seminar $seminar): RedirectResponse
+    {
+        $this->seminars->reportLink($seminar, $request->user());
+
+        return back()->with('seminar_notice', 'Thank you. We told the host the link did not open.');
     }
 
     /** Whether this host can sell tickets: paid seminars on, and a payout account saved. */
