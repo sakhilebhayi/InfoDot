@@ -106,7 +106,7 @@ Each row is a fact the drafts rely on; if the code changes, the sentence must ch
 | C-17 | **Chat**: small room chat is stored with name and shown to later joiners (up to 50 per poll from id 0); InfoDot-room chat is not stored. | P R3, R4; T S5 | `P2pRoom::poll`, `chat`; `seminar-room.js`. |
 | C-18 | **Short link** `/j/<8 letters or digits>` goes to the seminar page behind sign-in and does not reveal the meeting link. | P R5 | `SeminarsController::short`; `Seminar::booted` (`public_code`); `routes/web.php`. |
 | C-19 | **Link checker** is a request from InfoDot's server, public addresses only, up to 3 redirects, user agent `InfoDot-LinkCheck/1.0`, answer cached 10 minutes. | P R5 | `MeetingLinkCheck`. |
-| C-20 | **Seminars, profiles and questions are for signed-in verified members only.** | P R1, R8, Part C | `routes/web.php` (the `auth:sanctum` + `verified` group runs from line 47 to line 193; `/j/{code}` is outside it but leads to a signed-in page). |
+| C-20 | **Seminars, profiles and questions are for signed-in verified members only.** | P R1, R8, Part C | `routes/web.php` (the `auth:sanctum` + `verified` group runs from line 46 to line 195; `/j/{code}` is outside it but leads to a signed-in page). |
 | C-21 | **Card details never reach InfoDot**; the buyer is sent to a Paystack page (the link is rejected unless the host is paystack.com or .co). | P R2 | `BillingMarketplace::createTicket`. |
 
 ---
