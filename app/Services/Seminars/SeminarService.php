@@ -4,11 +4,15 @@ namespace App\Services\Seminars;
 
 use App\Models\Seminar;
 use App\Models\SeminarFeedback;
+use App\Models\SeminarPayoutAccount;
+use App\Models\SeminarTicketEvent;
 use App\Models\SeminarRegistration;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\InAppNotices;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -21,7 +25,7 @@ use Illuminate\Validation\ValidationException;
  */
 class SeminarService
 {
-    public function __construct(private readonly InAppNotices $notices) {}
+    public function __construct(private readonly InAppNotices $notices, private readonly BillingMarketplace $billing) {}
 
     /** @return array<string, mixed> validation rules for the host's form */
     public static function rules(): array
@@ -35,6 +39,7 @@ class SeminarService
             'duration_minutes' => ['required', 'integer', 'min:'.config('seminars.min_duration_minutes', 15), 'max:'.config('seminars.max_duration_minutes', 480)],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:'.config('seminars.max_capacity', 5000)],
             'join_url' => ['required', 'url:https', 'max:500'],
+            'price' => ['nullable', 'regex:/^\d{1,7}(\.\d{1,2})?$/'],
         ];
     }
 
@@ -57,8 +62,12 @@ class SeminarService
                 $this->assertRoomToPublish($host);
             }
 
+            $priceCents = $this->priceFrom($host, $data['price'] ?? null);
+            $this->assertPriceChangeAllowed($seminar, $priceCents);
+
             $before = $seminar?->starts_at;
             $attrs = [
+                'price_cents' => $priceCents, 'currency' => $priceCents ? config('seminars.paid.currency', 'ZAR') : null,
                 'title' => $data['title'], 'summary' => $data['summary'], 'description' => $data['description'] ?? null,
                 'topic_id' => $data['topic_id'] ?? null, 'starts_at' => $starts, 'duration_minutes' => (int) $data['duration_minutes'],
                 'capacity' => isset($data['capacity']) ? (int) $data['capacity'] : null, 'join_url' => $data['join_url'],
@@ -87,6 +96,21 @@ class SeminarService
         if ($wasPublished) {
             $this->tell(UserNotice::SEMINAR_CANCELLED, $seminar, 'cancelled');
         }
+
+        // Everyone who paid is refunded in full; anyone part-way through paying is released.
+        foreach (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'pending'])->get() as $reg) {
+            if ($reg->payment_status === 'paid') {
+                $reg->forceFill(['refund_requested_at' => $reg->refund_requested_at ?? now()])->save();
+                $this->requestRefund($reg);
+            } else {
+                $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null, 'checkout_url' => null])->save();
+
+                try {
+                    $this->billing->cancel((string) $reg->ticket_ref);
+                } catch (MarketplaceUnavailable) {
+                }
+            }
+        }
     }
 
     /** @return string registered|waitlist */
@@ -94,6 +118,10 @@ class SeminarService
     {
         if ($seminar->host_id === $user->id) {
             throw ValidationException::withMessages(['seminar' => 'You are hosting this seminar.']);
+        }
+
+        if ($seminar->isPaid()) {
+            throw ValidationException::withMessages(['seminar' => 'This seminar sells tickets.']);
         }
 
         return DB::transaction(function () use ($seminar, $user) {
@@ -131,7 +159,7 @@ class SeminarService
             $held = $reg->status === SeminarRegistration::REGISTERED;
             $reg->forceFill(['status' => SeminarRegistration::CANCELLED])->save();
 
-            if ($held && $locked->isPublished() && ! $locked->hasEnded()) {
+            if ($held && ! $locked->isPaid() && $locked->isPublished() && ! $locked->hasEnded()) {
                 $next = SeminarRegistration::where('seminar_id', $locked->id)->where('status', SeminarRegistration::WAITLIST)->orderBy('id')->first();
 
                 if ($next) {
@@ -192,6 +220,222 @@ class SeminarService
             'ratings' => $ratings->count(),
             'average' => $ratings->count() >= (int) config('seminars.min_ratings_shown', 3) ? round($ratings->avg(), 1) : null,
         ];
+    }
+
+
+    /** Parses the host's price. Null (free) unless paid seminars are on, the host has a payout account and the amount is within bounds. */
+    private function priceFrom(User $host, mixed $price): ?int
+    {
+        if ($price === null || trim((string) $price) === '' || (float) $price == 0.0) {
+            return null;
+        }
+
+        if (! config('seminars.paid.enabled')) {
+            throw ValidationException::withMessages(['price' => 'Paid seminars are not available yet.']);
+        }
+
+        if (! SeminarPayoutAccount::where('user_id', $host->id)->where('status', 'active')->exists()) {
+            throw ValidationException::withMessages(['price' => 'Set up where your earnings are paid before you charge for a seminar.']);
+        }
+
+        $cents = (int) round(((float) $price) * 100);
+        [$min, $max] = [(int) config('seminars.paid.min_price_cents', 500), (int) config('seminars.paid.max_price_cents', 5000000)];
+
+        if ($cents < $min || $cents > $max) {
+            throw ValidationException::withMessages(['price' => 'The price must be between '.Seminar::money($min).' and '.Seminar::money($max).'.']);
+        }
+
+        return $cents;
+    }
+
+    /** Once anyone has paid or is paying, the price cannot change under them. */
+    private function assertPriceChangeAllowed(?Seminar $seminar, ?int $newCents): void
+    {
+        if ($seminar === null || $seminar->price_cents === $newCents) {
+            return;
+        }
+
+        if (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['pending', 'paid'])->exists()) {
+            throw ValidationException::withMessages(['price' => 'People have already bought or started buying tickets, so the price cannot change.']);
+        }
+    }
+
+    /**
+     * Holds a place and starts the payment for a paid seminar. Returns the Paystack page to send the attendee to. The place is held for
+     * a short time; it becomes a registration only when Billing reports the payment verified, never because the browser came back.
+     */
+    public function startCheckout(Seminar $seminar, User $user): string
+    {
+        if ($seminar->host_id === $user->id) {
+            throw ValidationException::withMessages(['seminar' => 'You are hosting this seminar.']);
+        }
+
+        $account = SeminarPayoutAccount::where('user_id', $seminar->host_id)->where('status', 'active')->first();
+
+        [$reg, $reuse] = DB::transaction(function () use ($seminar, $user) {
+            $locked = Seminar::whereKey($seminar->id)->lockForUpdate()->firstOrFail();
+
+            if (! $locked->isPublished() || $locked->hasEnded() || ! $locked->isPaid()) {
+                throw ValidationException::withMessages(['seminar' => 'This seminar is not open for tickets.']);
+            }
+
+            $existing = SeminarRegistration::where('seminar_id', $locked->id)->where('user_id', $user->id)->first();
+
+            if ($existing && $existing->status === SeminarRegistration::REGISTERED) {
+                throw ValidationException::withMessages(['seminar' => 'You already have a ticket.']);
+            }
+
+            if ($existing && $existing->status === SeminarRegistration::PENDING_PAYMENT && $existing->hold_expires_at?->isFuture() && $existing->checkout_url) {
+                return [$existing, true];
+            }
+
+            $taken = SeminarRegistration::where('seminar_id', $locked->id)->where(fn ($q) => $q->where('status', SeminarRegistration::REGISTERED)
+                ->orWhere(fn ($q) => $q->where('status', SeminarRegistration::PENDING_PAYMENT)->where('hold_expires_at', '>', now())))
+                ->where('user_id', '!=', $user->id)->count();
+
+            if ($locked->capacity !== null && $taken >= $locked->capacity) {
+                throw ValidationException::withMessages(['seminar' => 'This seminar is full.']);
+            }
+
+            $reg = SeminarRegistration::updateOrCreate(['seminar_id' => $locked->id, 'user_id' => $user->id], [
+                'status' => SeminarRegistration::PENDING_PAYMENT, 'payment_status' => 'pending', 'attended_at' => null,
+                'ticket_ref' => 'sem'.$locked->id.'-u'.$user->id.'-'.Str::lower(Str::random(10)),
+                'amount_cents' => $locked->price_cents, 'currency' => $locked->currency, 'checkout_url' => null,
+                'hold_expires_at' => now()->addMinutes((int) config('seminars.paid.hold_minutes', 30)),
+                'paid_at' => null, 'refund_requested_at' => null, 'refunded_at' => null,
+            ]);
+
+            return [$reg, false];
+        });
+
+        if ($reuse) {
+            return $reg->checkout_url;
+        }
+
+        try {
+            $ticket = $this->billing->createTicket($reg->ticket_ref, (int) $account?->billing_account_id, $user->email, (int) $reg->amount_cents, (string) $reg->currency, $seminar->title, url(config('seminars.paid.return_path', '/seminars').'/'.$seminar->id));
+        } catch (MarketplaceUnavailable $e) {
+            $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null])->save();
+
+            throw ValidationException::withMessages(['seminar' => $e->getMessage()]);
+        }
+
+        $reg->forceFill(['checkout_url' => $ticket['authorization_url']])->save();
+
+        return $ticket['authorization_url'];
+    }
+
+    /**
+     * Applies one signed callback from Billing. Each (event, ticket) is applied once. The amount and currency must equal what was asked
+     * for; anything else is recorded and left for a person to look at. @return string applied|duplicate|unknown|mismatch|ignored
+     */
+    public function applyTicketEvent(string $event, string $ticketRef, int $amountCents, string $currency): string
+    {
+        if (! in_array($event, ['ticket.paid', 'ticket.refunded'], true)) {
+            return 'ignored';
+        }
+
+        return DB::transaction(function () use ($event, $ticketRef, $amountCents, $currency) {
+            if (SeminarTicketEvent::where('event', $event)->where('ticket_ref', $ticketRef)->exists()) {
+                return 'duplicate';
+            }
+
+            $reg = SeminarRegistration::where('ticket_ref', $ticketRef)->lockForUpdate()->first();
+            $outcome = 'unknown';
+
+            if ($reg) {
+                $seminar = Seminar::whereKey($reg->seminar_id)->lockForUpdate()->first();
+
+                if ($amountCents !== (int) $reg->amount_cents || strtoupper($currency) !== strtoupper((string) $reg->currency)) {
+                    Log::warning('Seminar ticket callback did not match what was asked for.', ['ticket_ref' => $ticketRef, 'event' => $event]);
+                    $outcome = 'mismatch';
+                } elseif ($event === 'ticket.paid') {
+                    $outcome = $this->markPaid($reg, $seminar);
+                } else {
+                    $reg->forceFill(['payment_status' => 'refunded', 'refunded_at' => now(), 'status' => SeminarRegistration::CANCELLED, 'hold_expires_at' => null])->save();
+                    $outcome = 'applied';
+                }
+            }
+
+            SeminarTicketEvent::create(['event' => $event, 'ticket_ref' => $ticketRef, 'outcome' => $outcome]);
+
+            return $outcome;
+        });
+    }
+
+    private function markPaid(SeminarRegistration $reg, Seminar $seminar): string
+    {
+        if ($reg->payment_status === 'paid' || $reg->payment_status === 'refunded') {
+            return 'applied';
+        }
+
+        $reg->forceFill(['payment_status' => 'paid', 'paid_at' => now()])->save();
+
+        $taken = SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->where('id', '!=', $reg->id)->count();
+        $roomLeft = $seminar->capacity === null || $taken < $seminar->capacity;
+
+        if ($seminar->isPublished() && ! $seminar->hasEnded() && $roomLeft) {
+            $reg->forceFill(['status' => SeminarRegistration::REGISTERED, 'hold_expires_at' => null])->save();
+
+            return 'applied';
+        }
+
+        // Paid after the seminar was cancelled or ended, or after the place went to someone else: the money goes back.
+        $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'refund_requested_at' => now()])->save();
+        DB::afterCommit(fn () => $this->requestRefund($reg));
+
+        return 'applied';
+    }
+
+    private function requestRefund(SeminarRegistration $reg): void
+    {
+        try {
+            $this->billing->refund((string) $reg->ticket_ref);
+        } catch (MarketplaceUnavailable) {
+            // Left marked as requested; seminars:retry-refunds asks again.
+        }
+    }
+
+    /** Places held for payment that ran out of time are given back, and Billing is told not to take a late payment. */
+    public function expireHolds(): int
+    {
+        $n = 0;
+
+        foreach (SeminarRegistration::where('status', SeminarRegistration::PENDING_PAYMENT)->where('hold_expires_at', '<', now())->get() as $reg) {
+            $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null, 'checkout_url' => null])->save();
+            $n++;
+
+            try {
+                $this->billing->cancel((string) $reg->ticket_ref);
+            } catch (MarketplaceUnavailable) {
+                // A late payment would be refunded by markPaid().
+            }
+        }
+
+        return $n;
+    }
+
+    /** Asks again for refunds that were requested but not yet confirmed. Billing treats a repeat as the same request. */
+    public function retryRefunds(): int
+    {
+        $n = 0;
+
+        foreach (SeminarRegistration::where('payment_status', 'paid')->whereNotNull('refund_requested_at')->where('refund_requested_at', '<', now()->subMinutes(10))->get() as $reg) {
+            $this->requestRefund($reg);
+            $n++;
+        }
+
+        return $n;
+    }
+
+    /** @return array{tickets: int, gross_cents: int, platform_cents: int, host_cents: int} what the host has taken, before Paystack's fee */
+    public function hostRevenue(Seminar $seminar): array
+    {
+        $paid = SeminarRegistration::where('seminar_id', $seminar->id)->where('payment_status', 'paid')->whereNull('refund_requested_at')->pluck('amount_cents');
+        $pct = (int) config('seminars.paid.platform_percent', 10);
+        $platform = (int) $paid->sum(fn ($c) => (int) floor($c * $pct / 100 + 0.5));
+
+        return ['tickets' => $paid->count(), 'gross_cents' => (int) $paid->sum(), 'platform_cents' => $platform, 'host_cents' => (int) $paid->sum() - $platform];
     }
 
     /** Day-before and hour-before reminders to people who registered. Safe to run often: one notice per person, seminar and kind of reminder. */

@@ -136,7 +136,7 @@ class InAppNotices
             UserNotice::KNOWLEDGE_REUSED => "Your work on $title was added to the knowledge library.",
             UserNotice::COMMENT_RECEIVED => "Someone commented on $title. They may be asking for more detail.",
             UserNotice::SEMINAR_REMINDER => "Reminder: you registered for the seminar $title.",
-            UserNotice::SEMINAR_CANCELLED => "The seminar $title was cancelled by its host.",
+            UserNotice::SEMINAR_CANCELLED => "The seminar $title was cancelled by its host. If you paid for a ticket, it is being refunded in full.",
             UserNotice::SEMINAR_CHANGED => "The host changed the time of the seminar $title.",
             UserNotice::SEMINAR_SPOT_OPEN => "A place opened and you are now registered for the seminar $title.",
             default => 'Something happened to your work.',

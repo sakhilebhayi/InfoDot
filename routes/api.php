@@ -34,3 +34,8 @@ Route::delete('/ecosystem/resources/{objectUuid}', [ResourceRegistryController::
 Route::get('/knowledge/candidates', KnowledgeCandidatesController::class)
     ->middleware(['throttle:knowledge-candidates', 'knowledge.signed'])
     ->name('api.knowledge.candidates');
+
+// Dot.Billing reports a paid or refunded seminar ticket. Signed with the callback secret; see SeminarTicketEventsController.
+Route::post('/billing/ticket-events', \App\Http\Controllers\Api\SeminarTicketEventsController::class)
+    ->middleware('throttle:ecosystem-redeem')
+    ->name('api.billing.ticket-events');

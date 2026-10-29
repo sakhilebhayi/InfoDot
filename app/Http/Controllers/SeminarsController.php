@@ -33,7 +33,7 @@ class SeminarsController extends Controller
 
     public function create(): View
     {
-        return view('seminars.form', ['seminar' => null, 'topics' => Topic::active()->ordered()->get()]);
+        return view('seminars.form', ['seminar' => null, 'topics' => Topic::active()->ordered()->get()] + $this->payoutState(auth()->user()));
     }
 
     public function store(Request $request): RedirectResponse
@@ -57,6 +57,7 @@ class SeminarsController extends Controller
             'reg' => $reg && $reg->status !== SeminarRegistration::CANCELLED ? $reg : null,
             'registeredCount' => SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->count(),
             'stats' => $this->seminars->hostStats($seminar->host),
+            'revenue' => $isHost && $seminar->isPaid() ? $this->seminars->hostRevenue($seminar) : null,
             'people' => $isHost ? SeminarRegistration::with('user')->where('seminar_id', $seminar->id)->whereIn('status', [SeminarRegistration::REGISTERED, SeminarRegistration::WAITLIST])->orderBy('id')->get() : collect(),
             'myFeedback' => SeminarFeedback::where('seminar_id', $seminar->id)->where('user_id', $user->id)->first(),
             'feedback' => $isHost ? SeminarFeedback::where('seminar_id', $seminar->id)->latest()->get() : collect(),
@@ -67,7 +68,7 @@ class SeminarsController extends Controller
     {
         $this->hostOnly($request, $seminar);
 
-        return view('seminars.form', ['seminar' => $seminar, 'topics' => Topic::active()->ordered()->get()]);
+        return view('seminars.form', ['seminar' => $seminar, 'topics' => Topic::active()->ordered()->get()] + $this->payoutState($request->user()));
     }
 
     public function update(Request $request, Seminar $seminar): RedirectResponse
@@ -90,6 +91,12 @@ class SeminarsController extends Controller
     public function register(Request $request, Seminar $seminar): RedirectResponse
     {
         abort_unless($seminar->isPublished(), 404);
+
+        if ($seminar->isPaid()) {
+            // Never a registration yet: that happens only when Billing reports the payment verified.
+            return redirect()->away($this->seminars->startCheckout($seminar, $request->user()));
+        }
+
         $status = $this->seminars->register($seminar, $request->user());
 
         return back()->with('seminar_notice', $status === SeminarRegistration::WAITLIST ? 'The seminar is full. You are on the waiting list and will be moved up if a place opens.' : 'You are registered.');
@@ -126,6 +133,16 @@ class SeminarsController extends Controller
         $this->seminars->rate($seminar, $request->user(), (int) $data['rating'], $data['comment'] ?? null);
 
         return back()->with('seminar_notice', 'Thank you. The host sees your comment; only the rating counts toward the host’s average.');
+    }
+
+    /** Whether this host can sell tickets: paid seminars on, and a payout account saved. */
+    private function payoutState($user): array
+    {
+        return [
+            'paidOn' => (bool) config('seminars.paid.enabled'),
+            'hasPayout' => \App\Models\SeminarPayoutAccount::where('user_id', $user->id)->where('status', 'active')->exists(),
+            'percent' => (int) config('seminars.paid.platform_percent', 10),
+        ];
     }
 
     private function hostOnly(Request $request, Seminar $seminar): void

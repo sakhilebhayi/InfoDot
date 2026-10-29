@@ -7,7 +7,7 @@
             <p class="ix-lede">{{ $seminar->summary }}</p>
             <div class="ix-meta">
                 <span><b>{{ $seminar->starts_at->timezone($tz)->format('D j M Y, H:i') }}</b> to {{ $seminar->endsAt()->timezone($tz)->format('H:i') }}</span>
-                <span>Free</span>
+                <span>{{ $seminar->priceLabel() }}</span>
                 @if ($seminar->topic)<span>{{ $seminar->topic->name }}</span>@endif
                 <span>{{ $registeredCount }} registered{{ $seminar->capacity ? ' of '.$seminar->capacity.' places' : '' }}</span>
                 @if ($seminar->status !== 'published')<span class="ix-chip">{{ $seminar->status === 'draft' ? 'Draft: only you can see this' : 'Cancelled' }}</span>@endif
@@ -50,9 +50,17 @@
             @elseif ($reg && $reg->status === 'waitlist')
                 <p><span class="ix-chip">Waiting list</span> You will be registered automatically if a place opens.</p>
                 <form method="POST" action="{{ route('seminars.unregister', $seminar) }}">@csrf<button class="ix-btn" type="submit">Leave the waiting list</button></form>
+            @elseif ($reg && $reg->status === 'pending_payment')
+                <p><span class="ix-chip">Waiting for payment</span> Your place is held until {{ $reg->hold_expires_at?->timezone($tz)->format('H:i') }}. It becomes a ticket only when the payment is confirmed.</p>
+                <form method="POST" action="{{ route('seminars.register', $seminar) }}">@csrf<button class="ix-btn ix-btn--primary" type="submit">Continue to payment</button></form>
             @elseif (! $seminar->hasEnded())
                 <form method="POST" action="{{ route('seminars.register', $seminar) }}">@csrf
-                    <button class="ix-btn ix-btn--primary" type="submit">{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Join the waiting list' : 'Register for free' }}</button>
+                    @if ($seminar->isPaid())
+                        <button class="ix-btn ix-btn--primary" type="submit" @disabled($seminar->capacity && $registeredCount >= $seminar->capacity)>{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Sold out' : 'Buy a ticket ('.$seminar->priceLabel().')' }}</button>
+                        <p class="ix-hint">You pay on Paystack. Tickets are refunded in full if the host cancels the seminar; if you cancel yourself the ticket is not refunded.</p>
+                    @else
+                        <button class="ix-btn ix-btn--primary" type="submit">{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Join the waiting list' : 'Register for free' }}</button>
+                    @endif
                 </form>
             @endif
 
@@ -83,6 +91,9 @@
             <h2 class="ix-label" id="people-h">People ({{ $people->count() }})</h2>
             @if ($seminar->status === 'published')
                 <p class="ix-hint">Your meeting link is private to you and the people who registered. You can open it yourself here: <a href="{{ route('seminars.join', $seminar) }}" rel="noopener">open my meeting room</a>.</p>
+            @endif
+            @if ($revenue)
+                <p class="ix-hint">Tickets sold: <b>{{ $revenue['tickets'] }}</b>. Paid by attendees {{ \App\Models\Seminar::money($revenue['gross_cents']) }}; InfoDot keeps {{ \App\Models\Seminar::money($revenue['platform_cents']) }}; yours {{ \App\Models\Seminar::money($revenue['host_cents']) }} before Paystack's processing fee. Paystack pays you out on its own schedule.</p>
             @endif
             @if ($people->isEmpty())
                 <p class="ix-hint">Nobody has registered yet.</p>

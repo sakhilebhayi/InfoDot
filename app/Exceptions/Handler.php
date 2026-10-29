@@ -22,6 +22,7 @@ class Handler extends ExceptionHandler
      * @var array<int, string>
      */
     protected $dontFlash = [
+        'account_number', // a host's bank account number is never flashed back into a form or logged
         'current_password',
         'password',
         'password_confirmation',

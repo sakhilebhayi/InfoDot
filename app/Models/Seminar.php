@@ -15,11 +15,11 @@ class Seminar extends Model
 
     public const CANCELLED = 'cancelled';
 
-    protected $fillable = ['host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
+    protected $fillable = ['price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
 
     protected function casts(): array
     {
-        return ['starts_at' => 'datetime', 'cancelled_at' => 'datetime', 'duration_minutes' => 'integer', 'capacity' => 'integer'];
+        return ['starts_at' => 'datetime', 'cancelled_at' => 'datetime', 'duration_minutes' => 'integer', 'capacity' => 'integer', 'price_cents' => 'integer'];
     }
 
     public function host(): BelongsTo
@@ -40,6 +40,22 @@ class Seminar extends Model
     public function feedback(): HasMany
     {
         return $this->hasMany(SeminarFeedback::class);
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->price_cents !== null && $this->price_cents > 0;
+    }
+
+    /** "Free" or "R200.00". */
+    public function priceLabel(): string
+    {
+        return $this->isPaid() ? self::money($this->price_cents, $this->currency ?? 'ZAR') : 'Free';
+    }
+
+    public static function money(int $cents, string $currency = 'ZAR'): string
+    {
+        return ($currency === 'ZAR' ? 'R' : $currency.' ').number_format($cents / 100, 2, '.', ' ');
     }
 
     public function endsAt()

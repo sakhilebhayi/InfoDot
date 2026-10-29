@@ -111,6 +111,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/moderation/reputation/{appeal}', [ReputationController::class, 'resolve'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation.resolve');
     // Free seminars: any verified person may host one; the host's own join link is shown only to registered people in the window.
     Route::get('/seminars', [SeminarsController::class, 'index'])->name('seminars');
+    Route::get('/seminars/payouts', [\App\Http\Controllers\SeminarPayoutsController::class, 'index'])->middleware('throttle:30,1')->name('seminars.payouts');
+    Route::post('/seminars/payouts', [\App\Http\Controllers\SeminarPayoutsController::class, 'store'])->middleware('throttle:5,1')->name('seminars.payouts.store');
     Route::get('/seminars/new', [SeminarsController::class, 'create'])->name('seminars.create');
     Route::post('/seminars', [SeminarsController::class, 'store'])->middleware('throttle:10,1')->name('seminars.store');
     Route::get('/seminars/{seminar}', [SeminarsController::class, 'show'])->whereNumber('seminar')->name('seminars.show');

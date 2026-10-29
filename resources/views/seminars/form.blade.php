@@ -55,6 +55,19 @@
             </div>
         </div>
 
+        @if ($paidOn)
+            <div class="ix-field">
+                <label class="ix-label" for="price">Ticket price in rand (leave empty for a free seminar)</label>
+                @if ($hasPayout || $seminar?->isPaid())
+                    <input class="ix-input" id="price" name="price" type="text" inputmode="decimal" placeholder="200.00" value="{{ old('price', $seminar?->price_cents ? number_format($seminar->price_cents / 100, 2, '.', '') : '') }}">
+                    <p class="ix-hint">You set the price. InfoDot keeps {{ $percent }}% of each ticket and Paystack's processing fee comes out of your share, so on a R200.00 ticket you receive R{{ number_format(200 * (100 - $percent) / 100, 2) }} before Paystack's fee. Tickets are refunded in full if you cancel. Once someone buys a ticket the price cannot change.</p>
+                @else
+                    <p class="ix-hint">To charge for a seminar, first <a href="{{ route('seminars.payouts') }}" style="text-decoration: underline;">set up where your earnings are paid</a>.</p>
+                @endif
+                @error('price')<p class="ix-error">{{ $message }}</p>@enderror
+            </div>
+        @endif
+
         <div class="ix-field">
             <label class="ix-label" for="join_url">Your meeting link (https)</label>
             <input class="ix-input" id="join_url" name="join_url" type="url" maxlength="500" value="{{ old('join_url', $seminar?->join_url) }}" placeholder="https://" required>
