@@ -150,14 +150,18 @@ class SeatLedgerTest extends TestCase
         $this->assertFalse($s['can_buy']);
     }
 
-    public function test_a_price_is_only_offered_when_it_is_configured_and_billing_is_connected(): void
+    public function test_buying_is_offered_only_when_billing_is_connected_and_no_price_is_invented(): void
     {
         [, $team] = $this->company();
-        config(['licensing.price.amount_minor_units' => 5000, 'licensing.price.currency' => 'ZAR']);
-        $this->assertFalse(app(SeatLedger::class)->summary($team)['can_buy'], 'billing is not connected');
+
+        $s = app(SeatLedger::class)->summary($team);
+        $this->assertFalse($s['can_buy'], 'billing is not connected');
+        $this->assertNull($s['price']);
 
         config(['licensing.billing_connected' => true]);
-        $this->assertTrue(app(SeatLedger::class)->summary($team)['can_buy']);
+        $s = app(SeatLedger::class)->summary($team);
+        $this->assertTrue($s['can_buy']);
+        $this->assertNull($s['price'], 'InfoDot never states a price: Billing owns it');
     }
 
     public function test_the_check_and_the_change_run_in_one_transaction_that_locks_the_company(): void

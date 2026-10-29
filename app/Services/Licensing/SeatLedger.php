@@ -61,7 +61,7 @@ class SeatLedger
             'status' => $licence->billing_status,
             'grace_until' => $licence->grace_until,
             'price' => $price,
-            'can_buy' => $price !== null && (bool) config('licensing.billing_connected', false),
+            'can_buy' => (bool) config('licensing.billing_connected', false),
         ];
     }
 

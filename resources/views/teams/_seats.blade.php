@@ -22,10 +22,17 @@
                 <p class="ix-hint">{{ __('This company has :n more people than seats. Nobody is removed; you just cannot add anyone until there is room.', ['n' => $seats['over_by']]) }}</p>
             @endif
 
+            @if ($seats['can_buy'] && Gate::check('changeLicence', $team))
+                <p style="margin-top: 16px;">
+                    <a class="ix-btn ix-btn--primary" href="{{ \App\Support\EcosystemHandoff::launchUrl(auth()->user(), 'billing', '/seats') }}">{{ __('Add or change seats in Dot.Billing') }}</a>
+                </p>
+                <p class="ix-hint">{{ __('Seats beyond the free :n are bought in Dot.Billing. Extra seats count only after the payment is confirmed.', ['n' => $seats['included']]) }}</p>
+            @endif
+
             @if ($seats['available'] === 0)
                 <p class="ix-hint">
                     @if ($seats['can_buy'])
-                        {{ __('Add a seat to invite another person (:price per seat).', ['price' => $money]) }}
+                        {{ $money ? __('Add a seat to invite another person (:price per seat).', ['price' => $money]) : __('Add a seat in Dot.Billing to invite another person.') }}
                     @else
                         {{ __('Seats beyond the free :n are paid, and paid seats are not available yet. Nothing has been charged. You can cancel an unanswered invitation to free its seat.', ['n' => $seats['included']]) }}
                     @endif
