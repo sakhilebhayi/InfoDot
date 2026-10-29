@@ -1,0 +1,180 @@
+> **DRAFT. WRITTEN BY AN AI SESSION. NOT LEGAL ADVICE. NOT REVIEWED. NOT LIVE.**
+>
+> Written by an AI coding session (Claude) on 2026-10-29 from the source code of this repository (`origin/main` at commit `5c916c5`), the R-13 programme documents and the Dot.Billing repository's `origin/main`. No lawyer, Information Officer or owner has read it. It is a working list for the owner and their adviser. Nothing in it is a legal conclusion, and nothing in it changes the live pages (`resources/markdown/policy.md`, `terms.md` and every view are untouched).
+
+# Legal review checklist for the R-13 privacy and terms drafts
+
+Companion files: [privacy-policy-additions.md](privacy-policy-additions.md) (cited as **P**, with sections R1 to R11 and Parts A to D) and [terms-additions.md](terms-additions.md) (cited as **T**, sections S1 to S8).
+
+**How "verified against code" is used.** Each row names the file and what was read. "Verified" means read in this repository's source on `origin/main`; it does **not** mean the feature was run, and does not describe production configuration (the programme documents say every feature here is off in production and none has been run against real people or real money, apart from the one-computer peer-to-peer test in `R13_SMALL_ROOMS.md`). "Not verified" means exactly that, and is listed in section F.
+
+**Order of work suggested to the owner:** (1) section E first, because several drafted sentences are only true if the code changes; (2) section A, the choices; (3) section B, the adviser's questions; (4) review the drafts; (5) publish each part only when its feature is switched on (section G).
+
+---
+
+## A. Every `[OWNER/ADVISER]` decision in the drafts
+
+| ID | Decision | Where | Verified against code | Notes |
+|---|---|---|---|---|
+| A-01 | Which legal entity is the responsible party. The live policy and terms say **BluePin Inc**; the programme otherwise treats BluPin Incorporated as a holding company and `POPIA_READINESS.md` flags the spelling as roadmap item 16. | P intro; T intro | `resources/markdown/policy.md` s1 and `terms.md` intro name "BluePin Inc". | Drafts reuse the live name and mark it. |
+| A-02 | Name the Information Officer, confirm the mailbox `privacy@infodot.co.za` is monitored, register with the Information Regulator. | P intro, Part D | Mailbox appears in `policy.md` s1, s8, s11. No person is named in code. Registration cannot be seen in code. | See B-07. |
+| A-03a | Lawful basis, **seminars** (registration, attendance, ratings, host statistics). | P R1 | `SeminarService`, `SeminarsController`: the data is needed to run the seminar. | Candidates in the draft: contract s11(1)(b); legitimate interest s11(1)(f). |
+| A-03b | Lawful basis, **paid seminars** (tickets, payout, receipts, invoices, refunds, disputes, debts). | P R2 | `BillingMarketplace`, `SeminarPayoutsController`, `CommissionInvoices`. | Contract; legal obligation s11(1)(c); legitimate interest for disputes. |
+| A-03c | Lawful basis, **small rooms** including address exposure to peers. | P R3 | `P2pRoom`, `seminar-p2p.js`. | The adviser may require more than registration (see B-08). |
+| A-03d | Lawful basis, **InfoDot room**. | P R4 | `LiveKit::joinToken`. | As A-03c. |
+| A-03e | Lawful basis, **link seminars and the link checker**. | P R5 | `MeetingLinkCheck`, `SeminarService::reportLink`. | |
+| A-03f | Lawful basis, **seat licensing and audit trail**. | P R6 | `SeatLedger::record`, `team_licence_events`. | |
+| A-03g | Lawful basis, **knowledge score** (on for everyone once enabled, objection by switch). | P R7 | `RecalculateReputation` selects every user with `reputation_opt_out` false. | Consent does not fit an on-by-default score. |
+| A-03h | Lawful basis, **specialist badges** (shown by default). | P R8 | `users.badges_visible` default true (migration `2026_10_29_110001`). | |
+| A-03i | Lawful basis, **Dot Points for hosting**. | P R9 | `SeminarHostPoints::award`. | |
+| A-03j | Lawful basis, **notifications**. | P R10 | `InAppNotices::record`. | |
+| A-04 | A **retention schedule** for every new data class (section C-02 lists what has none). | P every box; Part C | See C-02. | |
+| A-05 | Response time for data-subject requests (the readiness doc says 30 days is the usual target) and who answers the mailbox. | P Part D | No code. | `POPIA_READINESS.md` condition 8. |
+| A-06 | Operator agreements (POPIA s21) with: Dot.Billing (if a separate company), Paystack, Dot.Dopemine (if separate), the LiveKit server host, any TURN host, the STUN operator if not Google's own terms suffice. | P Part B | Calls in `BillingMarketplace`, `SeminarHostPoints`, `LiveKit`, `P2pRoom::iceServers`. | `POPIA_READINESS.md` condition 7: "operator agreements not seen". |
+| A-07 | STUN choice: keep **Google's public server** as the default, or run your own (`P2P_STUN_URLS`), and whether to run a TURN relay (`P2P_TURN_*`). | P R3, Part B | `config/seminars.php` `p2p.stun_urls` default `stun:stun.l.google.com:19302`; `P2pRoom::iceServers`. | `R13_SMALL_ROOMS.md` says to state which one in the policy. |
+| A-08 | Where the LiveKit server runs (provider, region, who operates it); recording stays off. | P R4, Part B | `config/seminars.php` `video`; `R13_LIVEKIT_SERVER.md`. | South African region avoids a transfer for the media (doc). |
+| A-09 | **Ring detection vs the opt-out**: either keep the code as it is and disclose it (the drafts do), or change the code so opted-out accounts are excluded and flags are deleted. | P R7; T S6 | `RingDetector::edges()` has no `reputation_opt_out` filter; `ReputationEngine::forget` deletes only appeals and snapshots. | See D-03, E-07. |
+| A-10 | Is **default-visible badges** acceptable, and what notice do existing members get. | P R8 | `badges_visible` default true; `TopicBadges::forQuestion`. | The owner's design is "public, opt-out" (`config/achievements.php`). |
+| A-11 | Should the **score** be on for everyone with an opt-out (as built), or opt-in. | P R7 | `config/reputation.php`; `RecalculateReputation`. | |
+| A-12 | Should a host be able to **opt out of hosting points** (today only the global switch). | P R9 | `config/seminars.php` `points.enabled`; no per-host setting. | |
+| A-13 | Should **service notices** (cancellation, change, refund, dispute) ignore the notifications switch. | P R10 | `InAppNotices::record` returns false when switched off, for every kind. | See E-04. |
+| A-14 | **Host agreement**: final wording and version; whether the Terms summarise it or only refer to it; the six open questions at the end of the Billing draft. | T S4 item 7 | Billing `docs/host-agreement-draft.md` (v1); nothing in this repository (E-01). | |
+| A-15 | Confirm the **refund rule** as the public policy (full refund 24 or more hours before; none inside; full if the host cancels), including what happens when the host changes the start time. | T S4 | `SeminarService::unregister`, `refundWindowOpen`, `cancel`; `config/seminars.php` `refund_hours_before` 24. | Owner decision 2026-10-29 (`R13_PAID_SEMINAR_POLICY.md`). |
+| A-16 | Confirm **commission** 10%, VAT-inclusive, host bears Paystack's fee; and whether **tax invoices** for attendees stay off. | T S3 | `config/seminars.php` `paid`; `CommissionInvoices`; `payouts.blade.php`. | |
+| A-17 | InfoDot's **legal name, registered address and VAT number** (issuer details) and the company registration number for the Terms. | T S3, S8 | `config/seminars.php` `paid.issuer` blank until set; nothing is issued while blank. | Placeholders only. |
+| A-18 | **Appeal reply time** and who answers. | T S6 | No deadline in `ReputationController`. | |
+| A-19 | Whether people in a **ring flag** should be told (today they are not), and whether they get an appeal against the flag. | T S6 | `ReputationRingsController` (not told); `ReputationRingFlag` docblock. | See B-06. |
+| A-20 | **Attendance integrity**: the host can mark anyone as attending; attendance feeds the attendee's Learning points, the host's Trust points and Dot Points. | P R1; T S1 | `SeminarService::setAttended`, `ReputationEngine::evidence` (`seminar_attended`). | |
+| A-21 | **Minors**: whether an age rule is needed for seminars and payments. | P Part C | No age check anywhere in `SeminarService`/`SeminarsController`. | |
+| A-22 | **Seat purchasing terms**: price, period, proration, refund or credit, grace, EFT. | T S7 | `config/licensing.php` (price empty; `grace_days` 14 "nothing sets it"); `R13_BILLING_CONTRACT.md`. | |
+| A-23 | **Limitation-of-liability** text for seminars, payments, the score and badges. | T S8 | none | |
+| A-24 | A **PAIA manual** (s51 of the Promotion of Access to Information Act) is missing. | P Part C | `POPIA_READINESS.md` condition 6. | |
+| A-25 | A **complaints and dispute procedure** and any alternative dispute resolution body. | T S8 | none | |
+| A-26 | Whether small rooms need an **explicit click-through** before a person enters (address exposure; relaying). | T S5 item 5 | `resources/views/seminars/p2p-room.blade.php` has none (E-06). | |
+
+---
+
+## B. Claims in the drafts that need the adviser
+
+| ID | Question | Where | Verified against code | What the code assumes |
+|---|---|---|---|---|
+| B-01 | **ECTA s44** (seven-day cooling-off) and **s42(2)** exclusions: does either apply to a ticket for a seminar on a fixed date, and is the 24-hour policy at least as generous as the law requires? Also what a statutory-rights statement must say. | T S4 item 5 | `unregister`, `refundWindowOpen`; show page text lines 54 to 56, 72. | The owner chose 24 hours. `R13_PAID_SEMINAR_POLICY.md` records that the s42(2) leisure/fixed-date exclusion was **not verified**. |
+| B-02 | **Consumer Protection Act**: unfair terms and exclusions, plain-language duty, and whether the cancellation rule, the 10% disclosure and the limitation text are valid. | T S3, S4, S8 | n/a | |
+| B-03 | **Host as supplier**: are hosts who charge "suppliers" with their own duties (refunds, information, ECTA s43)? Does clause 9 (S1) and S4 item 4 hold? | T S1 item 9, S4 item 4 | `SeminarService` treats the host as the seller; `receipt.blade.php` names the seller. | |
+| B-04 | **Merchant of record**: the owner decided "the host is the seller, InfoDot the marketplace". Is that sound when InfoDot's Paystack account receives the money and settles the host's share? What does it make InfoDot for POPIA (responsible party or operator for buyer and host payment data)? | T S3 item 1; P R2 | Billing `seminar-payments.md`: flat `transaction_charge` settled to InfoDot's main account, host share to subaccount. `R13_PAID_SEMINAR_POLICY.md` "Owner decisions". | |
+| B-05 | **VAT on the commission**: is treating the 10% as VAT-inclusive correct; are monthly numbered invoices and credit notes in the right form; may InfoDot issue receipts or tax invoices on a host's behalf; VAT for hosts below the threshold and attendees abroad; the SARS draft ruling on electronic services through intermediaries; and how the host-debt "larger fee" is treated. | T S3, S4 | `CommissionInvoices` (VAT extracted: fee x 15 / 115), `receipt.blade.php`, `SeminarsController::receipt`. | `R13_PAID_SEMINAR_POLICY.md`: the R1 million threshold and the invoicing answer were **not verified**. |
+| B-06 | **Automated decisions (POPIA s71) and notification**: the score is rule-based, private and without legal effect; ring discounts apply to members who are not told. Does s71 or the notification duty (s18) bite, and is the appeal enough? | P R7; T S6 | `ReputationEngine::ringMates`, `RingDetector`, `ReputationRingsController::review` ("nobody is told"). | |
+| B-07 | **Information Officer**: appointment and registration with the Regulator (POPIA s55 and the Regulator's registration), and whether the mailbox is enough. | P intro | `policy.md`; `POPIA_READINESS.md` condition 1. | |
+| B-08 | **Address exposure in small rooms**: viewers see their feeder's IP, the host sees theirs. Is notice + registration enough, and what must the room page say? | P R3; T S5 | `seminar-p2p.js` (direct `RTCPeerConnection`), `R13_SMALL_ROOMS.md` "Privacy and who sees what". Contents of connection messages (addresses) is standard WebRTC behaviour, **not observed** in this repository. | |
+| B-09 | **Cross-border transfers (POPIA s72)** for: Paystack, Dot.Billing's host, Google STUN (default), a TURN relay if any, the LiveKit server wherever it is, the host's meeting service (chosen by the host), and InfoDot's own host. Which ground applies (adequate protection, agreement, consent)? | P Part B | Calls named in section C-04. No hosting locations are in the repository. | `POPIA_READINESS.md` open decision 2. |
+| B-10 | **Recording**: consent and notice rules when a host records; whether S1 item 7 and S5 item 2 are enough; whether the interception statute matters. | T S1, S5 | No recording code (searched `app/`, `resources/js/`). | |
+| B-11 | **PAIA manual** (s51 PAIA). | P Part C | none | |
+| B-12 | **Operator agreements (s21)** and security-measures duty (s19) for each recipient. | P Part B | none | |
+| B-13 | **Chargeback recovery**: enforceability of recovering from future sales by a larger fee, the 50% cap, notice, dispute process, lapse, effect of version change, and the six questions at the end of the Billing draft. | T S4 item 7 | Billing `docs/host-agreement-draft.md`. | |
+| B-14 | **Minors** (POPIA s34, ECTA, contracts with minors) for paying attendees and hosts. | P Part C | no age check | |
+| B-15 | **Compromise notification (s22)** process, and the unresolved access-log question for infodot.co.za. | P (not drafted) | `POPIA_READINESS.md` section 3. | Drafts say nothing about incidents. |
+| B-16 | **Statutory record-keeping periods** for invoices, receipts and payment records, which set the minimum retention for ticket, refund, dispute and invoice rows. | P R2 | `CommissionInvoices` rows are never deleted. | |
+| B-17 | **Special personal information in free text**: ratings notes, chat and appeal messages can contain anything. Any s26 handling? | P R1, R3, R7 | `SeminarFeedback.comment` (1000), `p2p_chat.body` (300), `ReputationAppeal.message` (1000). | |
+| B-18 | **Limitation of liability** effect on consumers; wording for hosts and attendees. | T S8 | none | |
+| B-19 | **Supplier information on the page** (full name, registration number, address) for paid tickets. | T S8 item 8 | none in code | |
+| B-20 | Whether the **host marking attendance** (which affects the attendee's own record and the host's rewards) raises an information-quality (s16) issue. | P R1 | `setAttended`. | |
+
+---
+
+## C. What the code does that the policy must not contradict
+
+Each row is a fact the drafts rely on; if the code changes, the sentence must change.
+
+| ID | Fact | Drafts that depend on it | Verified against code |
+|---|---|---|---|
+| C-01 | **InfoDot records no seminar video, audio or chat of the InfoDot room.** The small-room chat is stored. No recording code exists. | P R3, R4; T S1, S5 | Searched `app/` and `resources/js/` for recording APIs; only comments saying "Nothing is recorded" (`seminar-p2p.js` line 3, `seminar-room.js` line 2, `form.blade.php`). `seminar-room.js::publishData` for chat, no fetch to InfoDot. `P2pRoom::chat` inserts into `p2p_chat`. |
+| C-02 | **Retention, complete picture.** Deleted by code: notifications (read after 90 days, any after 365; `notices:prune` daily 03:20); delivered connection messages (`p2p_signals`, on delivery); participation outbox rows 30 days after sent; UX friction counts 180 days; link-check answers (cache, 600 seconds); Billing entitlement answers (cache, 300 seconds); the person's score snapshots and appeals on opt-out; badge rows when the work stops qualifying or the user is deleted; link reports when the host changes the link. **Nothing else is deleted on any schedule**: `seminars`, `seminar_registrations`, `seminar_feedback`, `seminar_ticket_events`, `seminar_refund_lines`, `seminar_seller_profiles`, `seminar_payout_accounts`, `seminar_commission_invoices`, `p2p_peers`, `p2p_chat`, undelivered `p2p_signals`, `team_licences`, `team_licence_events`, `reputation_snapshots` (for people who do not opt out), `reputation_appeals`, `reputation_ring_flags`, sent `reward_outbox` rows. | P every "How long we keep it" | `app/Console/Kernel.php` (schedule); `InAppNotices::prune`; `P2pRoom::poll` (deletes delivered signals); `ParticipationOutbox::prune`; `UxSignals::prune`; `MeetingLinkCheck::check`; `BillingEntitlements::sync`; `ReputationEngine::forget`; `TopicBadges::sync`; `SeminarService::save`. Searched `app/` for `delete(`, `prune`, `Prunable`, `truncate` and found no other deletion of these tables. |
+| C-03 | **Account number is never stored by InfoDot.** It is validated, relayed to Billing and not saved, flashed or logged; only Billing's id, bank code and last four digits are kept. Billing's own code says it does not store it either. | P R2 | `SeminarPayoutsController::store` (`->except('account_number')`); `BillingMarketplace::send` (logs only path and status, never the body); Billing `seminar-payments.md` "The account number is never stored, returned or logged." Web-server access logs for the POST were not examined. |
+| C-04 | **What leaves InfoDot, by recipient.** Billing: `host_ref` (`u<id>`), business name, bank code, account number, buyer email, amount, currency, description (140), return URL, company uuid. Dopemine: event id, type, time, host uuid, `seminar:<id>`, `visibility`, `attendee_count`, `rating_count`, `average_rating`. LiveKit: name (60), `u<id>`, role, expiry (via the token the browser presents). STUN: the browser's address (browser to STUN directly). Link target: the link, from InfoDot's server. Connected platforms: name, email, company, role (existing flows). | P Part B | `BillingMarketplace::createPayoutAccount`, `createTicket`; `BillingEntitlements::fetch`; `SeminarHostPoints::envelope`; `LiveKit::joinToken`; `P2pRoom::iceServers`; `MeetingLinkCheck::reach`; `EcosystemRedeemController` lines 68 to 77. |
+| C-05 | **Numbers are configuration**, not constants: seminar limits, price bounds, 10% commission (`SEMINARS_PLATFORM_PERCENT`; the amount actually taken is `BILLING_MARKETPLACE_PLATFORM_PERCENT` in Billing), 24-hour refund window, 30-minute hold, 3-rating minimum, points thresholds (3, 3, 4.0, 24 h), seat count (3), badge levels (2, 5, 12), ring thresholds, retention periods above. The drafts quote today's defaults. | T all; P R1, R9 | `config/seminars.php`, `config/licensing.php`, `config/reputation.php`, `config/achievements.php`. The commission config comment says the displayed percent and the taken percent live in two places. |
+| C-06 | **The score is private**; no leaderboard, no public tier; moderators see a person's breakdown only on an appeal; nobody else. | P R7; T S6 | `reputation/show.blade.php` (only view that prints `tier_name`), `appeals.blade.php`; `grep tier_name` found only `app/Services/Reputation/ReputationEngine.php` and those two views. |
+| C-07 | **Opting out of the score** deletes snapshots and appeals and stops recalculation; it does **not** delete ring flags and does not stop ring detection from using the person's accepted answers. The download excludes ring flags. | P R7, Part D; T S6 item 7 | `ReputationEngine::snapshot/forget/export`; `RingDetector::edges`; `RecalculateReputation` selects `reputation_opt_out = false`. |
+| C-08 | **Badges are shown by default** to signed-in members; hiding hides but does not delete; the person always sees their own; a private question never shows badges. | P R8 | `TopicBadges::forQuestion`, `forProfile`; `AchievementsController::updateBadges`; `users.badges_visible` default true. |
+| C-09 | **Notifications switch off silences everything**, including seminar reminders, change, cancellation, refund, dispute and broken-link notices. | P R10; T S4 | `InAppNotices::record` returns false when the recipient does not want notices; all seminar paths call `record`. |
+| C-10 | **The host sees names** of registered and waiting people, attendance and ticket status; **not emails**. Ratings and notes are shown to the host without names. Other members see counts only. | P R1 | `resources/views/seminars/show.blade.php` lines 113 to 170 (`$p->user->name`, status, attended; feedback list prints rating and comment); `SeminarsController::show`. |
+| C-11 | **Attendance** is set by opening the host's link, connecting to a room, or by the host. | P R1; T S1 | `SeminarService::joinUrl`, `markJoinedFromRoom`, `setAttended`, `P2pRoom::join`. |
+| C-12 | **Seats**: nobody is removed when a company is full, over capacity or past due. | T S7 | `SeatLedger` class docblock and `guard`; `BillingEntitlements` class docblock. |
+| C-13 | **Refunds**: attendee cancellation 24 hours or more before start refunds what remains; inside the window no money moves; host cancellation refunds all paid and releases those part-way through paying; a late payment is refunded; a host can refund part (not while a dispute is open); a lost dispute removes the ticket and reverses the commission. | T S4 | `SeminarService` (`unregister`, `refundWindowOpen`, `cancel`, `markPaid`, `hostRefund`, `applyDisputeResolution`). |
+| C-14 | **Fee split**: host bears Paystack's fee; InfoDot's 10% is a flat amount; the commission invoice treats the 10% as VAT-inclusive. | T S3 | Billing `seminar-payments.md` ("bearer = subaccount", flat `transaction_charge`); `CommissionInvoices::issueFor`; `payouts.blade.php`. |
+| C-15 | **Dot Points for hosting**: only counts and the average rating leave; attendees from the host's own companies are excluded; one event per seminar; reversal if cancelled. | P R9 | `SeminarHostPoints` (whole file); `config/seminars.php` `points`. |
+| C-16 | **Ring detection** runs daily over 180 days of accepted answers, excludes moderators, flags circles of 3 to 4 and clusters of 3 to 8, discount factor 0.25, moderators see names, nobody is told, a dismissed flag has no effect. | P R7; T S6 | `RingDetector` (`edges`, `cycles`, `clusters`), `config/reputation.php` `rings`, `ReputationRingsController`. |
+| C-17 | **Chat**: small room chat is stored with name and shown to later joiners (up to 50 per poll from id 0); InfoDot-room chat is not stored. | P R3, R4; T S5 | `P2pRoom::poll`, `chat`; `seminar-room.js`. |
+| C-18 | **Short link** `/j/<8 letters or digits>` goes to the seminar page behind sign-in and does not reveal the meeting link. | P R5 | `SeminarsController::short`; `Seminar::booted` (`public_code`); `routes/web.php`. |
+| C-19 | **Link checker** is a request from InfoDot's server, public addresses only, up to 3 redirects, user agent `InfoDot-LinkCheck/1.0`, answer cached 10 minutes. | P R5 | `MeetingLinkCheck`. |
+| C-20 | **Seminars, profiles and questions are for signed-in verified members only.** | P R1, R8, Part C | `routes/web.php` (the `auth:sanctum` + `verified` group runs from line 46 to line 195; `/j/{code}` is outside it but leads to a signed-in page). |
+| C-21 | **Card details never reach InfoDot**; the buyer is sent to a Paystack page (the link is rejected unless the host is paystack.com or .co). | P R2 | `BillingMarketplace::createTicket`. |
+
+---
+
+## D. Where the code contradicts the live policy or terms, or the live text does not cover it
+
+| ID | Finding | Live text | What the code does | Evidence |
+|---|---|---|---|---|
+| D-01 | **None of the R-13 processing is in the live policy.** | `policy.md` s2 and s3 list only account, team, posted content, associates, files, technical. | Seminars, tickets, payout accounts, room records, chat, seat audit, score, badges, notifications, host points. | The whole of P Part A. |
+| D-02 | **Retention** covers account and posted content only. | `policy.md` s6. | Many new tables have no deletion. See C-02. | Section C-02. |
+| D-03 | **Opt-out wording vs ring flags** (if a "switch off deletes what is stored" or "nothing is worked out" claim is ever repeated on the policy). | The in-app text: "Switching off deletes what is stored and nothing is worked out for you" (`reputation/show.blade.php`) and "Nothing is being worked out or stored about it" (`off.blade.php`). | Ring flags with the person's id stay; detection still uses their accepted answers. | `RingDetector::edges`, `ReputationEngine::forget`. The in-app page wording is also at odds with the code; that is a product fix, not part of this draft. |
+| D-04 | **Sharing membership and role** with connected platforms is not described. | `policy.md` s4 describes the sign-on token only. | Name, email, company and role go to platforms on sign-in redemption; membership changes (email, role) go by signed webhook. | `EcosystemRedeemController` lines 68 to 77; `MembershipWebhook`. (Not new to R-13, but R-13 changes the role vocabulary sent: `TeamRoles::payload`.) |
+| D-05 | **Account deletion does not delete R-13 records.** | `policy.md` s6: "If you delete your account, we remove your personal account information". | `DeleteUser` detaches teams, deletes owned teams, tokens and the user row. `user_topic_badges` and `user_notices` cascade through foreign keys. Seminar, registration, rating, ticket, payout, seller, invoice, room, chat, seat-audit, snapshot, appeal and ring-flag tables hold user ids **without foreign keys** and are left. The `p2p_chat.name` column holds a copy of the person's name as text. | `app/Actions/Jetstream/DeleteUser.php`; migrations `100003`, `100004`, `100006`, `100007`, `100009` (`foreignId`/`unsignedBigInteger` without `constrained`/`foreign`); `User` has no `SoftDeletes` (searched). |
+| D-06 | **"Public" content** is described as visible "to visitors browsing". | `policy.md` s2, `terms.md` s3. | All question, solution, profile and seminar routes sit behind sign-in and email verification. | `routes/web.php`. [Check whether other public exposures exist outside this repository.] |
+| D-07 | **Technical information: IP address** is listed as collected "for security". | `policy.md` s2. | In small rooms participants' addresses are exposed to other participants and to a STUN server. | P R3. |
+| D-08 | **Terms do not cover** hosting, paid tickets, refunds, rooms, chat, recording, score, badges, seats, host debts. | `terms.md` s1 to s11. | All of T. | |
+| D-09 | **Moderation and removal powers over seminars** are assumed by the live terms (s3, s5, s8) but not provided in code. | `terms.md` s3: "We may remove content, or suspend or terminate accounts". | No moderator tool to cancel or remove a seminar or a host's room; no report button for seminars. | Search for "seminar" in `app/Livewire`: none; `ContentReport` types. |
+| D-10 | **Outside R-13**: the live policy does not mention Dot Points, points expiry and digest emails, opt-in sharing with Dot.Memory, the verified library, achievements sharing or the UX counts. | | `DeliverPointsExpiryWarnings`/`DeliverPointsDigests` send email; `config/participation.php`; `config/ux.php`. | Listed for the adviser, not drafted. |
+
+---
+
+## E. Gaps in the code that make a drafted sentence untrue or risky (for engineering, after the owner decides)
+
+| ID | Gap | Impact on the drafts | Evidence |
+|---|---|---|---|
+| E-01 | **The host-agreement flow is not in InfoDot.** No screen shows the agreement, nothing calls Billing's `POST /api/payout-accounts/{id}/agreement`, and InfoDot ignores Billing's `host_debt.*` callbacks. Billing refuses to create a ticket for a host who has not accepted the current version (`422 agreement_required`), so **no paid ticket can sell** until InfoDot adds it, and a host is never shown a debt or the larger fee. | T S4 item 7 ("will be told", "can tell us") and "InfoDot keeps 10%" on host pages. | `grep agreement` over `app/ resources/ routes/ config/` finds no flow; `BillingMarketplace` has no agreement method; `SeminarService::applyTicketEvent` ignores any event but four; Billing `seminar-payments.md` "Chargeback recovery". |
+| E-02 | **Account deletion leaves R-13 data** and may break pages that show a deleted host or attendee (`$host->name` in `show.blade.php`). A paid seminar or open dispute with a deleted host has no defined outcome. | P Part D; D-05 | See D-05. |
+| E-03 | **No way to report a seminar, a host or a room participant**, and no moderator removal of a seminar. | T S1 item 8, S5 item 7 | See D-09. |
+| E-04 | **The notifications switch silences service notices** (cancellation, change, refund, dispute, broken link). | P R10; T S4 | See C-09. |
+| E-05 | **Small-room tables are never cleaned**: undelivered connection messages (which can contain addresses), peer rows, chat and its name copies stay indefinitely. | P R3 | `P2pRoom::poll` deletes only delivered signals; no prune command exists. |
+| E-06 | **The small-room page does not say addresses are visible**, and there is no click-through before entering. | P R3 (box); T S5 item 5 | `p2p-room.blade.php`; `R13_SMALL_ROOMS.md` says "the room page does not yet carry that sentence". |
+| E-07 | **Ring flags** are not deleted on opt-out or account deletion, are not in the download, and detection includes opted-out people. | P R7; T S6 | See C-07. |
+| E-08 | **`reward_outbox` sent rows are never pruned** (they hold the host's uuid and the three numbers). | P R9 | `RewardOutbox::flush`; compare `ParticipationOutbox::prune`. |
+| E-09 | **Removing a person from a room does not bar re-entry** in the InfoDot room, and bars a small-room entrant only if they had already entered. | T S5 item 4 | `LiveKit::remove`; `P2pRoom::remove`. |
+| E-10 | **No self-service export** of seminar, ticket or chat data; no cross-system subject-request runbook. | P Part D | `routes/web.php` has only `reputation.export`. `POPIA_READINESS.md` condition 8. |
+| E-11 | **Badges became visible by default** for all existing members when the migration ran, without prior notice. | P R8 | `2026_10_29_110001_create_user_topic_badges_table.php` (`badges_visible` default true). |
+| E-12 | **No appeal deadline** and no appeal against a ring flag. | T S6 item 6 | `ReputationController`. |
+| E-13 | **The record of who reported a broken link** is stored (seminar and reporter ids) although the host sees only a count. | P R5 | `seminar_link_reports` (migration `100010`); `SeminarService::reportLink`, `linkReports`. |
+
+---
+
+## F. Things this draft could not verify (do not rely on them)
+
+| ID | Not verified | Source of the caveat |
+|---|---|---|
+| F-01 | How Paystack apportions a **refund** between the host's subaccount and InfoDot, and whether Paystack's own fee is returned. | `R13_PAID_SEMINAR_POLICY.md`; Billing `seminar-payments.md` |
+| F-02 | That Paystack's dispute outcomes map as the code assumes, and how disputes behave for split payments; who bears a lost dispute and any dispute fee. | same |
+| F-03 | **Production configuration** of any feature; whether each is on. All are off by default and the go-live document is unexecuted. | `R13_GO_LIVE.md` |
+| F-04 | That the **LiveKit** configuration works and that the server logs nothing it should not; the server has not been run. | `R13_LIVEKIT_SERVER.md` |
+| F-05 | **Small rooms across real networks**, on mobile data, at scale; contents of connection messages. | `R13_SMALL_ROOMS.md` |
+| F-06 | **Dot.Billing's retention**, encryption beyond what its docs say, and what it does with the buyer's email. This draft read only Billing's `docs/` and a search of its code for `buyer_email`. | Billing `origin/main` |
+| F-07 | **Dot.Dopemine's** handling and display of the hosting event. | not in this repository |
+| F-08 | **Paystack's own emails** to buyers and its location, entity and retention. | none in repository |
+| F-09 | **Web-server access logs** (these record IP addresses of visitors and, for the room endpoints, of participants' requests); not examined, and not a new R-13 feature. | `ACCESS_LOG_REVIEW.md` |
+| F-10 | That **statutes** named in the drafts apply or are the right ones. The drafts name POPIA sections, ECTA s42 to s44, the Consumer Protection Act, the VAT Act and PAIA only so the adviser knows what the AI thought of. None was checked against the text of the Act. | n/a |
+
+---
+
+## G. Publication gates (what must be true before each part goes live)
+
+| Part | Feature switch (default off) | Gate |
+|---|---|---|
+| P R1, R5, R10; T S1, S2 | Seminars pages deployed | A-03a, A-03e, A-03j, A-04 for these tables, A-05 |
+| P R2; T S3, S4 | `SEMINARS_PAID_ENABLED`, Billing `BILLING_MARKETPLACE_ENABLED` | B-01, B-04, B-05, B-13, A-14, A-16, A-17, E-01 built, Paystack test-mode run (`R13_GO_LIVE.md` step 3 point 4) |
+| P R3; T S5 | `SEMINARS_P2P_ENABLED` | A-07, B-08, E-06, real-network tests (`R13_SMALL_ROOMS.md`) |
+| P R4; T S5 | `SEMINARS_VIDEO_ENABLED` + `LIVEKIT_*` | A-08, B-09, acceptance test steps 1 to 7 (`R13_LIVEKIT_SERVER.md`), step 7 requires the policy to name the host |
+| P R6; T S7 | licensing deployed; `LICENCE_BILLING_CONNECTED` for Billing reads | A-03f; for paid seats A-22 |
+| P R7, R8; T S6 | `REPUTATION_ENABLED`; badges | A-09, A-10, A-11, B-06, E-07 decision |
+| P R9 | `SEMINARS_POINTS_ENABLED` | A-03i, A-12, E-08 |
+| P Part B | when any recipient is active | A-06, B-09, B-12 |
+| All | any | The live policy and terms are updated as one act by the owner; "Last updated" changed; users told of material changes as the live policy s10 and terms s9 promise. |
