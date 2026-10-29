@@ -148,7 +148,9 @@ class SeminarService
 
     public function unregister(Seminar $seminar, User $user): void
     {
-        DB::transaction(function () use ($seminar, $user) {
+        $refund = null;
+
+        DB::transaction(function () use ($seminar, $user, &$refund) {
             $locked = Seminar::whereKey($seminar->id)->lockForUpdate()->firstOrFail();
             $reg = SeminarRegistration::where('seminar_id', $locked->id)->where('user_id', $user->id)->first();
 
@@ -159,6 +161,13 @@ class SeminarService
             $held = $reg->status === SeminarRegistration::REGISTERED;
             $reg->forceFill(['status' => SeminarRegistration::CANCELLED])->save();
 
+            // A paid ticket cancelled early enough is refunded in full; inside the window the place is freed and no money moves.
+            if ($held && in_array($reg->payment_status, ['paid', 'partially_refunded'], true) && $reg->dispute_status === null
+                && $reg->refundableCents() > 0 && $this->refundWindowOpen($locked)) {
+                $reg->forceFill(['refund_requested_at' => now(), 'refund_pending_cents' => $reg->refundableCents()])->save();
+                $refund = $reg;
+            }
+
             if ($held && ! $locked->isPaid() && $locked->isPublished() && ! $locked->hasEnded()) {
                 $next = SeminarRegistration::where('seminar_id', $locked->id)->where('status', SeminarRegistration::WAITLIST)->orderBy('id')->first();
 
@@ -168,6 +177,48 @@ class SeminarService
                 }
             }
         });
+
+        if ($refund) {
+            $this->requestRefund($refund);
+        }
+    }
+
+    /** Whether cancelling now still earns a refund: at least the configured number of hours before the start. */
+    public function refundWindowOpen(Seminar $seminar): bool
+    {
+        return $seminar->starts_at->gte(now()->addHours((int) config('seminars.paid.refund_hours_before', 24)));
+    }
+
+    /**
+     * The host refunds part of one ticket. Sent to Billing with a key so a retry is the same refund; the ticket changes only when
+     * Billing confirms. Not possible while the ticket is disputed or once it is fully refunded.
+     */
+    public function hostRefund(Seminar $seminar, SeminarRegistration $reg, int $cents): void
+    {
+        $key = null;
+
+        DB::transaction(function () use ($seminar, $reg, $cents, &$key) {
+            $locked = SeminarRegistration::whereKey($reg->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->seminar_id !== $seminar->id || ! in_array($locked->payment_status, ['paid', 'partially_refunded'], true) || $locked->dispute_status === 'open') {
+                throw ValidationException::withMessages(['refund' => 'This ticket cannot be refunded now.']);
+            }
+
+            if ($cents < 1 || $cents > $locked->refundableCents()) {
+                throw ValidationException::withMessages(['refund' => 'Enter an amount between R0.01 and '.Seminar::money($locked->refundableCents()).'.']);
+            }
+
+            $locked->forceFill(['refund_seq' => $locked->refund_seq + 1, 'refund_pending_cents' => $cents])->save();
+            $key = 'rf-'.$locked->id.'-'.$locked->refund_seq;
+        });
+
+        try {
+            $this->billing->refund((string) $reg->ticket_ref, $cents, $key);
+        } catch (MarketplaceUnavailable $e) {
+            SeminarRegistration::whereKey($reg->id)->update(['refund_pending_cents' => null]);
+
+            throw ValidationException::withMessages(['refund' => $e->getMessage()]);
+        }
     }
 
     /** The link to open, or null when this person may not join now. Opening it is what records attendance. */
@@ -329,14 +380,20 @@ class SeminarService
      * Applies one signed callback from Billing. Each (event, ticket) is applied once. The amount and currency must equal what was asked
      * for; anything else is recorded and left for a person to look at. @return string applied|duplicate|unknown|mismatch|ignored
      */
-    public function applyTicketEvent(string $event, string $ticketRef, int $amountCents, string $currency): string
+    public function applyTicketEvent(string $event, string $ticketRef, int $amountCents, string $currency, array $extra = []): string
     {
-        if (! in_array($event, ['ticket.paid', 'ticket.refunded'], true)) {
+        if (! in_array($event, ['ticket.paid', 'ticket.refunded', 'ticket.disputed', 'ticket.dispute_resolved'], true)) {
             return 'ignored';
         }
 
-        return DB::transaction(function () use ($event, $ticketRef, $amountCents, $currency) {
-            if (SeminarTicketEvent::where('event', $event)->where('ticket_ref', $ticketRef)->exists()) {
+        $refKey = match ($event) {
+            'ticket.refunded' => mb_substr((string) ($extra['refund_key'] ?? 'full-'.(int) ($extra['refunded_total_cents'] ?? $amountCents)), 0, 64),
+            'ticket.dispute_resolved' => mb_substr((string) ($extra['outcome'] ?? ''), 0, 64),
+            default => '',
+        };
+
+        return DB::transaction(function () use ($event, $ticketRef, $amountCents, $currency, $extra, $refKey) {
+            if (SeminarTicketEvent::where('event', $event)->where('ticket_ref', $ticketRef)->where('ref_key', $refKey)->exists()) {
                 return 'duplicate';
             }
 
@@ -349,18 +406,73 @@ class SeminarService
                 if ($amountCents !== (int) $reg->amount_cents || strtoupper($currency) !== strtoupper((string) $reg->currency)) {
                     Log::warning('Seminar ticket callback did not match what was asked for.', ['ticket_ref' => $ticketRef, 'event' => $event]);
                     $outcome = 'mismatch';
-                } elseif ($event === 'ticket.paid') {
-                    $outcome = $this->markPaid($reg, $seminar);
                 } else {
-                    $reg->forceFill(['payment_status' => 'refunded', 'refunded_at' => now(), 'status' => SeminarRegistration::CANCELLED, 'hold_expires_at' => null])->save();
-                    $outcome = 'applied';
+                    $outcome = match ($event) {
+                        'ticket.paid' => $this->markPaid($reg, $seminar),
+                        'ticket.refunded' => $this->applyRefund($reg, $seminar, $extra, $refKey),
+                        'ticket.disputed' => $this->applyDispute($reg, $seminar),
+                        default => $this->applyDisputeResolution($reg, $seminar, (string) ($extra['outcome'] ?? 'other')),
+                    };
                 }
             }
 
-            SeminarTicketEvent::create(['event' => $event, 'ticket_ref' => $ticketRef, 'outcome' => $outcome]);
+            SeminarTicketEvent::create(['event' => $event, 'ticket_ref' => $ticketRef, 'ref_key' => $refKey, 'outcome' => $outcome]);
 
             return $outcome;
         });
+    }
+
+    /** Billing confirmed money went back. A repeat key is a repeat; a total that does not add up is refused. */
+    private function applyRefund(SeminarRegistration $reg, Seminar $seminar, array $extra, string $refKey): string
+    {
+        $total = (int) ($extra['refunded_total_cents'] ?? $reg->amount_cents);
+        $now = $total - (int) $reg->refunded_cents; // the amount this confirmation adds
+        $given = (int) ($extra['refund_amount_cents'] ?? $now);
+
+        if ($given < 1 || $total > (int) $reg->amount_cents || $total <= (int) $reg->refunded_cents) {
+            Log::warning('Seminar refund callback did not add up.', ['ticket_ref' => $reg->ticket_ref]);
+
+            return 'mismatch';
+        }
+
+        DB::table('seminar_refund_lines')->insert(['registration_id' => $reg->id, 'seminar_id' => $seminar->id, 'host_id' => $seminar->host_id, 'amount_cents' => $now, 'reason' => 'refund', 'created_at' => now()]);
+        $full = $total >= (int) $reg->amount_cents;
+        $reg->forceFill(array_filter([
+            'refunded_cents' => $total, 'refunded_at' => now(), 'refund_pending_cents' => null, 'hold_expires_at' => null,
+            'payment_status' => $full ? 'refunded' : 'partially_refunded', 'status' => $full ? SeminarRegistration::CANCELLED : null,
+        ], fn ($v) => $v !== null))->save();
+
+        $this->notices->record(UserNotice::SEMINAR_REFUNDED, User::findOrFail($reg->user_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':refund:'.$refKey);
+
+        return 'applied';
+    }
+
+    private function applyDispute(SeminarRegistration $reg, Seminar $seminar): string
+    {
+        $reg->forceFill(['dispute_status' => 'open', 'disputed_at' => now()])->save();
+        $this->notices->record(UserNotice::SEMINAR_DISPUTE, User::findOrFail($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':dispute:'.$reg->id);
+
+        return 'applied';
+    }
+
+    /** A lost dispute takes the ticket back (the place goes) and reverses the commission on what is left; a won one changes nothing else. */
+    private function applyDisputeResolution(SeminarRegistration $reg, Seminar $seminar, string $outcome): string
+    {
+        $outcome = in_array($outcome, ['won', 'lost'], true) ? $outcome : 'other';
+        $reg->dispute_status = $outcome;
+
+        if ($outcome === 'lost') {
+            if ($reg->refundableCents() > 0) {
+                DB::table('seminar_refund_lines')->insert(['registration_id' => $reg->id, 'seminar_id' => $seminar->id, 'host_id' => $seminar->host_id, 'amount_cents' => $reg->refundableCents(), 'reason' => 'chargeback', 'created_at' => now()]);
+            }
+
+            $reg->payment_status = 'chargeback';
+            $reg->status = SeminarRegistration::CANCELLED;
+        }
+
+        $reg->save();
+
+        return 'applied';
     }
 
     private function markPaid(SeminarRegistration $reg, Seminar $seminar): string
@@ -390,9 +502,11 @@ class SeminarService
     private function requestRefund(SeminarRegistration $reg): void
     {
         try {
-            $this->billing->refund((string) $reg->ticket_ref);
+            $reg->refunded_cents > 0
+                ? $this->billing->refund((string) $reg->ticket_ref, $reg->refundableCents(), 'rest-'.$reg->id)
+                : $this->billing->refund((string) $reg->ticket_ref);
         } catch (MarketplaceUnavailable) {
-            // Left marked as requested; seminars:retry-refunds asks again.
+            // Left marked as requested; seminars:sweep-payments asks again.
         }
     }
 
@@ -431,11 +545,12 @@ class SeminarService
     /** @return array{tickets: int, gross_cents: int, platform_cents: int, host_cents: int} what the host has taken, before Paystack's fee */
     public function hostRevenue(Seminar $seminar): array
     {
-        $paid = SeminarRegistration::where('seminar_id', $seminar->id)->where('payment_status', 'paid')->whereNull('refund_requested_at')->pluck('amount_cents');
+        $kept = SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'partially_refunded'])->whereNull('refund_requested_at')
+            ->get(['amount_cents', 'refunded_cents'])->map(fn ($r) => (int) $r->amount_cents - (int) $r->refunded_cents);
         $pct = (int) config('seminars.paid.platform_percent', 10);
-        $platform = (int) $paid->sum(fn ($c) => (int) floor($c * $pct / 100 + 0.5));
+        $platform = (int) $kept->sum(fn ($c) => (int) floor($c * $pct / 100 + 0.5));
 
-        return ['tickets' => $paid->count(), 'gross_cents' => (int) $paid->sum(), 'platform_cents' => $platform, 'host_cents' => (int) $paid->sum() - $platform];
+        return ['tickets' => $kept->count(), 'gross_cents' => (int) $kept->sum(), 'platform_cents' => $platform, 'host_cents' => (int) $kept->sum() - $platform];
     }
 
     /** Day-before and hour-before reminders to people who registered. Safe to run often: one notice per person, seminar and kind of reminder. */

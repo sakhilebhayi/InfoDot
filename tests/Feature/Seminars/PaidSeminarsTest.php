@@ -273,7 +273,7 @@ class PaidSeminarsTest extends TestCase
     {
         $s = $this->paidSeminar($this->host());
 
-        $this->actingAs($this->person())->get('/seminars/'.$s->id)->assertOk()->assertSee('Buy a ticket (R200.00)')->assertSee('refunded in full if the host cancels');
+        $this->actingAs($this->person())->get('/seminars/'.$s->id)->assertOk()->assertSee('Buy a ticket (R200.00)')->assertSee('full refund')->assertSee('If the host cancels the seminar you are always refunded in full');
         $this->actingAs($this->person())->get('/seminars')->assertSee('R200.00');
     }
 

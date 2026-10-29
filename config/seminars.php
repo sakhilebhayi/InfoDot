@@ -30,5 +30,19 @@ return [
         'hold_minutes' => 30,                                   // a place is held this long while the attendee pays
         'callback_secret' => env('SEMINARS_BILLING_CALLBACK_SECRET'),
         'return_path' => '/seminars',                          // where Paystack sends the attendee back to (UI only)
+
+        // Refunds when an attendee cancels: full refund up to this many hours before the start, none after. A host cancelling always refunds in full.
+        'refund_hours_before' => (int) env('SEMINARS_REFUND_HOURS_BEFORE', 24),
+
+        // Tax. The host is the seller; InfoDot invoices the host for its commission. NOT legal advice: confirm with an adviser before relying on it.
+        'vat_rate_percent' => (int) env('SEMINARS_VAT_RATE', 15),
+        'commission_includes_vat' => (bool) env('SEMINARS_COMMISSION_INCLUDES_VAT', true),  // the 10% is VAT-inclusive, so the host never pays more than 10%
+        'issue_tax_invoices' => (bool) env('SEMINARS_ISSUE_TAX_INVOICES', false),            // receipts carry tax-invoice fields only when this is on
+        'invoice_prefix' => env('SEMINARS_INVOICE_PREFIX', 'INF'),
+        'issuer' => [                                            // InfoDot's own details on commission invoices; nothing is issued while blank
+            'name' => env('SEMINARS_ISSUER_NAME'),
+            'address' => env('SEMINARS_ISSUER_ADDRESS'),
+            'vat_number' => env('SEMINARS_ISSUER_VAT_NUMBER'),
+        ],
     ],
 ];

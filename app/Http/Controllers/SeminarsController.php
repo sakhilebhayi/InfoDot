@@ -135,6 +135,31 @@ class SeminarsController extends Controller
         return back()->with('seminar_notice', 'Thank you. The host sees your comment; only the rating counts toward the host’s average.');
     }
 
+    /** The host refunds part (or all the rest) of one ticket. Confirmed by Billing before the ticket changes. */
+    public function refund(Request $request, Seminar $seminar, int $person): RedirectResponse
+    {
+        $this->hostOnly($request, $seminar);
+        $data = $request->validate(['amount' => ['required', 'regex:/^\d{1,7}(\.\d{1,2})?$/']]);
+        $reg = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $person)->firstOrFail();
+        $this->seminars->hostRefund($seminar, $reg, (int) round(((float) $data['amount']) * 100));
+
+        return back()->with('seminar_notice', 'The refund was sent to our payment partner. The ticket updates when it is confirmed.');
+    }
+
+    /** The buyer's receipt: who the seller is, what was paid and refunded. Only the person who bought the ticket. */
+    public function receipt(Request $request, Seminar $seminar): View
+    {
+        $reg = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $request->user()->id)->whereNotNull('paid_at')->firstOrFail();
+        $profile = \App\Models\SeminarSellerProfile::where('user_id', $seminar->host_id)->first();
+        $taxInvoice = config('seminars.paid.issue_tax_invoices') && $profile?->vat_number && $profile->authorises_receipts;
+        $rate = (int) config('seminars.paid.vat_rate_percent', 15);
+
+        return view('seminars.receipt', [
+            'seminar' => $seminar, 'reg' => $reg, 'buyer' => $request->user(), 'seller' => $profile?->trading_name ?: $seminar->host->name, 'vatNumber' => $taxInvoice ? $profile->vat_number : null,
+            'taxInvoice' => $taxInvoice, 'vatIncluded' => $taxInvoice ? (int) floor(((int) $reg->amount_cents) * $rate / (100 + $rate) + 0.5) : null, 'rate' => $rate,
+        ]);
+    }
+
     /** Whether this host can sell tickets: paid seminars on, and a payout account saved. */
     private function payoutState($user): array
     {

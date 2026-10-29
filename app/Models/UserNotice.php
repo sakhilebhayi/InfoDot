@@ -26,9 +26,13 @@ class UserNotice extends Model
 
     public const SEMINAR_SPOT_OPEN = 'seminar_spot_open';
 
+    public const SEMINAR_REFUNDED = 'seminar_refunded';
+
+    public const SEMINAR_DISPUTE = 'seminar_dispute';
+
     public const KINDS = [
         self::ANSWER_RECEIVED, self::ANSWER_ACCEPTED, self::SOLUTION_VERIFIED, self::KNOWLEDGE_REUSED, self::COMMENT_RECEIVED,
-        self::SEMINAR_REMINDER, self::SEMINAR_CANCELLED, self::SEMINAR_CHANGED, self::SEMINAR_SPOT_OPEN,
+        self::SEMINAR_REMINDER, self::SEMINAR_CANCELLED, self::SEMINAR_CHANGED, self::SEMINAR_SPOT_OPEN, self::SEMINAR_REFUNDED, self::SEMINAR_DISPUTE,
     ];
 
     public $timestamps = false;
