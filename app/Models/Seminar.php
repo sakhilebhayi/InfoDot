@@ -15,7 +15,7 @@ class Seminar extends Model
 
     public const CANCELLED = 'cancelled';
 
-    protected $fillable = ['price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
+    protected $fillable = ['delivery', 'price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
 
     protected function casts(): array
     {
@@ -40,6 +40,11 @@ class Seminar extends Model
     public function feedback(): HasMany
     {
         return $this->hasMany(SeminarFeedback::class);
+    }
+
+    public function isRoom(): bool
+    {
+        return $this->delivery === 'room';
     }
 
     public function isPaid(): bool

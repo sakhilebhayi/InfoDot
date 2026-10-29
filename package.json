@@ -21,6 +21,7 @@
         "vite": "^6.0"
     },
     "dependencies": {
-        "gsap": "3.12.7"
+        "gsap": "3.12.7",
+        "livekit-client": "^2.23.0"
     }
 }

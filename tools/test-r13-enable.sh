@@ -45,4 +45,12 @@ check "issuer details are written when all three are given" "grep -q '^SEMINARS_
 fresh
 check "partial issuer details are refused" "! $S --infodot $T/i --billing $T/b --stage billing-link --stage paid-seminars --issuer-name X --apply >/dev/null 2>&1"
 
+fresh
+LK="AKtestkey123"; LS="LKsecret-for-the-test-0123456789abcdef"
+OUTV="$(LIVEKIT_API_KEY=$LK LIVEKIT_API_SECRET=$LS "$S" --infodot "$T/i" --stage video --livekit-url wss://live.example.org --apply 2>&1)"
+check "video stage writes the four keys" "[ \"\$(val $T/i LIVEKIT_URL)\" = wss://live.example.org ] && [ \"\$(val $T/i LIVEKIT_API_KEY)\" = $LK ] && [ \"\$(val $T/i LIVEKIT_API_SECRET)\" = $LS ] && [ \"\$(val $T/i SEMINARS_VIDEO_ENABLED)\" = true ]"
+check "video stage never prints the key pair" "! printf '%s' \"\$OUTV\" | grep -qF -e $LK -e $LS"
+check "video stage refuses a missing key pair" "! env -u LIVEKIT_API_KEY -u LIVEKIT_API_SECRET $S --infodot $T/i --stage video --livekit-url wss://live.example.org >/dev/null 2>&1"
+check "video stage refuses a non-wss URL" "! LIVEKIT_API_KEY=$LK LIVEKIT_API_SECRET=$LS $S --infodot $T/i --stage video --livekit-url https://live.example.org >/dev/null 2>&1"
+
 echo; echo "$N checks, $FAILS failed"; [ "$FAILS" = 0 ]

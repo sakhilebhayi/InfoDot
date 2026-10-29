@@ -38,7 +38,8 @@ class SeminarService
             'starts_at' => ['required', 'date'],
             'duration_minutes' => ['required', 'integer', 'min:'.config('seminars.min_duration_minutes', 15), 'max:'.config('seminars.max_duration_minutes', 480)],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:'.config('seminars.max_capacity', 5000)],
-            'join_url' => ['required', 'url:https', 'max:500'],
+            'delivery' => ['nullable', 'in:link,room'],
+            'join_url' => ['nullable', 'url:https', 'max:500'],
             'price' => ['nullable', 'regex:/^\d{1,7}(\.\d{1,2})?$/'],
         ];
     }
@@ -62,6 +63,14 @@ class SeminarService
                 $this->assertRoomToPublish($host);
             }
 
+            $delivery = ($data['delivery'] ?? 'link') === 'room' ? 'room' : 'link';
+            if ($delivery === 'room' && ! config('seminars.video.enabled')) {
+                throw ValidationException::withMessages(['delivery' => 'InfoDot rooms are not available yet. Use your own meeting link.']);
+            }
+            if ($delivery === 'link' && blank($data['join_url'] ?? null)) {
+                throw ValidationException::withMessages(['join_url' => 'Add your meeting link, or choose an InfoDot room.']);
+            }
+
             $priceCents = $this->priceFrom($host, $data['price'] ?? null);
             $this->assertPriceChangeAllowed($seminar, $priceCents);
 
@@ -70,7 +79,7 @@ class SeminarService
                 'price_cents' => $priceCents, 'currency' => $priceCents ? config('seminars.paid.currency', 'ZAR') : null,
                 'title' => $data['title'], 'summary' => $data['summary'], 'description' => $data['description'] ?? null,
                 'topic_id' => $data['topic_id'] ?? null, 'starts_at' => $starts, 'duration_minutes' => (int) $data['duration_minutes'],
-                'capacity' => isset($data['capacity']) ? (int) $data['capacity'] : null, 'join_url' => $data['join_url'],
+                'capacity' => isset($data['capacity']) ? (int) $data['capacity'] : null, 'join_url' => $delivery === 'link' ? $data['join_url'] : null, 'delivery' => $delivery,
                 'status' => $willBePublished ? Seminar::PUBLISHED : Seminar::DRAFT,
             ];
 
@@ -239,6 +248,38 @@ class SeminarService
         }
 
         return $seminar->join_url;
+    }
+
+    /** Why this person cannot enter the InfoDot room right now, or null when they can. */
+    public function roomRefusal(Seminar $seminar, User $user): ?string
+    {
+        if (! config('seminars.video.enabled') || ! $seminar->isRoom() || ! $seminar->isPublished()) {
+            return 'This seminar has no InfoDot room.';
+        }
+
+        if ($seminar->host_id === $user->id) {
+            return $seminar->hasEnded() ? 'This seminar has finished.' : null;
+        }
+
+        $registered = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', SeminarRegistration::REGISTERED)->exists();
+
+        return match (true) {
+            ! $registered => 'The room is for people who registered.',
+            $seminar->hasEnded() => 'This seminar has finished.',
+            ! $seminar->joinIsOpen() => 'The room opens '.config('seminars.join_opens_minutes_before', 15).' minutes before the start.',
+            default => null,
+        };
+    }
+
+    /** LiveKit says this person really connected. Recorded once; the host and strangers are ignored. */
+    public function markJoinedFromRoom(Seminar $seminar, int $userId): bool
+    {
+        if ($userId === $seminar->host_id) {
+            return false;
+        }
+
+        return SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $userId)->where('status', SeminarRegistration::REGISTERED)->whereNull('attended_at')
+            ->update(['attended_at' => now()]) > 0;
     }
 
     public function setAttended(Seminar $seminar, User $person, bool $attended): void
