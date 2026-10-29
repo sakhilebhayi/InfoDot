@@ -39,8 +39,9 @@ class SeminarService
             'duration_minutes' => ['required', 'integer', 'min:'.config('seminars.min_duration_minutes', 15), 'max:'.config('seminars.max_duration_minutes', 480)],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:'.config('seminars.max_capacity', 5000)],
             'delivery' => ['nullable', 'in:link,room,p2p'],
-            'p2p_quality' => ['nullable', 'in:audio,low,medium'],
-            'p2p_uplink_kbps' => ['nullable', 'integer', 'min:50', 'max:1000000'],
+            // Only looked at for a small room: a link or room seminar can carry empty or zero values for these without being refused.
+            'p2p_quality' => ['exclude_unless:delivery,p2p', 'nullable', 'in:audio,low,medium'],
+            'p2p_uplink_kbps' => ['exclude_unless:delivery,p2p', 'nullable', 'integer', 'min:50', 'max:1000000'],
             'join_url' => ['nullable', 'url:https', 'max:500'],
             'price' => ['nullable', 'regex:/^\d{1,7}(\.\d{1,2})?$/'],
         ];
@@ -86,8 +87,22 @@ class SeminarService
                 throw ValidationException::withMessages(['join_url' => 'Add your meeting link, or choose an InfoDot room.']);
             }
 
+            // A typed link is checked before it is accepted: a made-up or mistyped one is the commonest reason nobody can join.
+            $linkCheck = null;
+            if ($delivery === 'link' && ($seminar === null || $seminar->join_url !== ($data['join_url'] ?? null) || $seminar->join_url_status === null)) {
+                $linkCheck = app(MeetingLinkCheck::class)->check((string) $data['join_url']);
+
+                if ($linkCheck['status'] === 'bad') {
+                    throw ValidationException::withMessages(['join_url' => $linkCheck['message']]);
+                }
+            }
+
             $priceCents = $this->priceFrom($host, $data['price'] ?? null);
             $this->assertPriceChangeAllowed($seminar, $priceCents);
+
+            if ($seminar !== null && $seminar->join_url !== ($delivery === 'link' ? $data['join_url'] : null)) {
+                DB::table('seminar_link_reports')->where('seminar_id', $seminar->id)->delete();   // the host fixed the link: start counting again
+            }
 
             $before = $seminar?->starts_at;
             $attrs = [
@@ -96,6 +111,7 @@ class SeminarService
                 'topic_id' => $data['topic_id'] ?? null, 'starts_at' => $starts, 'duration_minutes' => (int) $data['duration_minutes'],
                 'capacity' => $p2pPlan ? min($p2pPlan['capacity'], (int) ($data['capacity'] ?? $p2pPlan['capacity'])) : (isset($data['capacity']) ? (int) $data['capacity'] : null),
                 'join_url' => $delivery === 'link' ? $data['join_url'] : null, 'delivery' => $delivery,
+                ...($linkCheck ? ['join_url_status' => $linkCheck['status'], 'join_url_checked_at' => now()] : ($delivery === 'link' ? [] : ['join_url_status' => null, 'join_url_checked_at' => null])),
                 'p2p_quality' => $p2pPlan ? $data['p2p_quality'] : null, 'p2p_uplink_kbps' => $p2pPlan ? (int) $data['p2p_uplink_kbps'] : null,
                 'status' => $willBePublished ? Seminar::PUBLISHED : Seminar::DRAFT,
             ];
@@ -300,6 +316,24 @@ class SeminarService
 
         return SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $userId)->where('status', SeminarRegistration::REGISTERED)->whereNull('attended_at')
             ->update(['attended_at' => now()]) > 0;
+    }
+
+    /** A person who registered says the host's meeting link did not open. The host is told (once for a while); it clears when the link changes. */
+    public function reportLink(Seminar $seminar, User $user): void
+    {
+        $registered = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', SeminarRegistration::REGISTERED)->exists();
+
+        if (! $registered || ! $seminar->isPublished() || $seminar->isRoom() || $seminar->isP2p() || ! $seminar->joinIsOpen()) {
+            throw ValidationException::withMessages(['link' => 'You can report a link once the seminar has opened and you are registered.']);
+        }
+
+        DB::table('seminar_link_reports')->insertOrIgnore(['seminar_id' => $seminar->id, 'user_id' => $user->id, 'created_at' => now()]);
+        $this->notices->record(UserNotice::SEMINAR_LINK_BROKEN, User::findOrFail($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':link:'.(int) floor(now()->timestamp / 1800));
+    }
+
+    public function linkReports(Seminar $seminar): int
+    {
+        return (int) DB::table('seminar_link_reports')->where('seminar_id', $seminar->id)->count();
     }
 
     public function setAttended(Seminar $seminar, User $person, bool $attended): void

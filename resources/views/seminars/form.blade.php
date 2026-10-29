@@ -71,7 +71,7 @@
         @php($videoOn = config('seminars.video.enabled'))
         @php($p2pOn = config('seminars.p2p.enabled'))
         @php($qualities = config('seminars.p2p.qualities'))
-        <div class="ix-field" x-data='seminarDelivery(@json(old("delivery", $seminar?->delivery ?? "link")), @json((int) old("p2p_uplink_kbps", $seminar?->p2p_uplink_kbps ?? 0)), @json(old("p2p_quality", $seminar?->p2p_quality ?? "low")), @json(route("seminars.p2p.speedtest")), @json(route("seminars.p2p.plan")))'>
+        <div class="ix-field" x-data='seminarDelivery(@json(old("delivery", $seminar?->delivery ?? "link")), @json((int) old("p2p_uplink_kbps", $seminar?->p2p_uplink_kbps ?? 0)), @json(old("p2p_quality", $seminar?->p2p_quality ?? "low")), @json(route("seminars.p2p.speedtest")), @json(route("seminars.p2p.plan")), @json(route("seminars.link-check")))'>
             @if ($videoOn || $p2pOn)
                 <span class="ix-label" id="delivery-h">How will you run it?</span>
                 <div role="radiogroup" aria-labelledby="delivery-h" style="display: grid; gap: 6px; margin-bottom: 8px;">
@@ -85,7 +85,9 @@
             <div x-show="delivery === 'link'" @if ($videoOn || $p2pOn) x-cloak @endif>
                 <label class="ix-label" for="join_url">Your meeting link (https)</label>
                 <input class="ix-input" id="join_url" name="join_url" type="url" maxlength="500" value="{{ old('join_url', $seminar?->join_url) }}" placeholder="https://">
-                <p class="ix-hint">Only people who registered are given this link, and only shortly before the start.</p>
+                <p class="ix-hint">Only people who registered are given this link, and only shortly before the start. We check it before you publish; a made-up or mistyped link is refused.</p>
+                <button type="button" class="ix-btn ix-btn--sm" @click="checkLink()" :disabled="linkChecking">Test this link</button>
+                <p class="ix-hint" x-show="linkMsg" role="status" :style="linkStatus === 'bad' ? 'color: var(--ix-danger, #b3261e)' : ''" x-text="linkMsg"></p>
                 @error('join_url')<p class="ix-error">{{ $message }}</p>@enderror
             </div>
 
@@ -96,7 +98,7 @@
             @if ($p2pOn)
                 <div x-show="delivery === 'p2p'" x-cloak style="border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); padding: 14px;">
                     <p class="ix-hint" style="margin-top: 0;">A small room sends your video straight from your computer to the people watching, so how many can join depends on <b>your</b> upload speed and computer. Test your connection and we will tell you the number before you publish. Nothing is recorded.</p>
-                    <input type="hidden" name="p2p_uplink_kbps" :value="kbps">
+                    <input type="hidden" name="p2p_uplink_kbps" :value="kbps" :disabled="delivery !== 'p2p' || !kbps">
                     <button type="button" class="ix-btn" @click="test()" :disabled="testing"><span x-text="testing ? 'Testing…' : (kbps ? 'Test again' : 'Test my connection')"></span></button>
                     <p class="ix-hint" x-show="message" x-text="message" role="status"></p>
                     <template x-if="kbps">
@@ -127,9 +129,20 @@
         </div>
     </form>
     <script>
-            function seminarDelivery(delivery, kbps, quality, speedUrl, planUrl) {
+            function seminarDelivery(delivery, kbps, quality, speedUrl, planUrl, linkUrl) {
                 return {
-                    delivery, kbps, quality, plans: {}, testing: false, message: '',
+                    delivery, kbps, quality, plans: {}, testing: false, message: '', linkMsg: '', linkStatus: '', linkChecking: false,
+                    async checkLink() {
+                        const url = document.getElementById('join_url').value.trim();
+                        if (!url) { this.linkStatus = 'bad'; this.linkMsg = 'Type or paste your meeting link first.'; return; }
+                        this.linkChecking = true; this.linkMsg = 'Checking…'; this.linkStatus = '';
+                        try {
+                            const r = await fetch(linkUrl + '?url=' + encodeURIComponent(url), { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
+                            const j = await r.json();
+                            this.linkStatus = j.status; this.linkMsg = j.message;
+                        } catch (e) { this.linkStatus = 'warn'; this.linkMsg = 'The check could not run. Open the link yourself to be sure it works.'; }
+                        finally { this.linkChecking = false; }
+                    },
                     async init() { if (this.kbps) await this.loadPlans(); },
                     async loadPlans() {
                         const r = await fetch(planUrl + '?kbps=' + this.kbps, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });

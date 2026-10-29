@@ -40,6 +40,11 @@
                 @if ($seminar->joinIsOpen())
                     <form method="POST" action="{{ route('seminars.join', $seminar) }}">@csrf<button class="ix-btn ix-btn--primary" type="submit">{{ $seminar->isRoom() || $seminar->isP2p() ? 'Enter the room' : 'Join the seminar' }}</button></form>
                     <p class="ix-hint">{{ $seminar->isRoom() ? 'This opens the InfoDot room in your browser. You are noted as attending when you connect.' : ($seminar->isP2p() ? 'This opens a small room in your browser. Keep the page open: your computer may pass the video on to a few other people.' : 'This opens the host’s own meeting room. Opening it also notes that you attended.') }}</p>
+                    @if (! $seminar->isRoom() && ! $seminar->isP2p())
+                        <form method="POST" action="{{ route('seminars.report-link', $seminar) }}" style="margin-top: 8px;">@csrf
+                            <button class="ix-btn ix-btn--sm ix-btn--ghost" type="submit">The link did not open</button>
+                        </form>
+                    @endif
                 @elseif ($seminar->hasEnded())
                     <p class="ix-hint">This seminar has finished.</p>
                 @else
@@ -95,6 +100,16 @@
 
     @if ($isHost)
         <section aria-labelledby="people-h" style="margin-top: 24px;">
+            @if ($linkReports > 0)
+                <p class="ix-error" role="alert">{{ $linkReports }} {{ $linkReports === 1 ? 'person says' : 'people say' }} your meeting link did not open. <a href="{{ route('seminars.edit', $seminar) }}" style="text-decoration: underline;">Check it and fix it</a> before the start.</p>
+            @endif
+            @if ($seminar->status === 'published')
+                <div class="ix-field">
+                    <label class="ix-label" for="share-link">Share this seminar</label>
+                    <input class="ix-input" id="share-link" type="text" readonly value="{{ $seminar->shareUrl() }}" onfocus="this.select()">
+                    <p class="ix-hint">This InfoDot link always opens the seminar page (people sign in first if they need to). Share it instead of the meeting link, which stays private to the people who registered.</p>
+                </div>
+            @endif
             <h2 class="ix-label" id="people-h">People ({{ $people->count() }})</h2>
             @if ($hostPoints = app(\App\Services\Seminars\SeminarHostPoints::class)->sentence($seminar))<p class="ix-hint" id="host-points">{{ $hostPoints }}</p>@endif
             @if ($seminar->status === 'published')

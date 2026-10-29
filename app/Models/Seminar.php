@@ -15,11 +15,24 @@ class Seminar extends Model
 
     public const CANCELLED = 'cancelled';
 
-    protected $fillable = ['p2p_quality', 'p2p_uplink_kbps', 'delivery', 'price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
+    protected $fillable = ['public_code', 'join_url_status', 'join_url_checked_at', 'p2p_quality', 'p2p_uplink_kbps', 'delivery', 'price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
 
     protected function casts(): array
     {
-        return ['starts_at' => 'datetime', 'cancelled_at' => 'datetime', 'duration_minutes' => 'integer', 'capacity' => 'integer', 'price_cents' => 'integer'];
+        return ['join_url_checked_at' => 'datetime', 'starts_at' => 'datetime', 'cancelled_at' => 'datetime', 'duration_minutes' => 'integer', 'capacity' => 'integer', 'price_cents' => 'integer'];
+    }
+
+    protected static function booted(): void
+    {
+        // Every seminar gets a short InfoDot link that always opens, so a host never has to hand out a typed address.
+        static::creating(function (self $seminar) {
+            $seminar->public_code ??= \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(8));
+        });
+    }
+
+    public function shareUrl(): string
+    {
+        return url('/j/'.$this->public_code);
     }
 
     public function host(): BelongsTo

@@ -120,7 +120,7 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => 'Accepted',
             UserNotice::SOLUTION_VERIFIED => 'Verified',
             UserNotice::KNOWLEDGE_REUSED => 'Library',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE => 'Seminar',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN => 'Seminar',
             default => 'Update',
         };
     }
@@ -141,6 +141,7 @@ class InAppNotices
             UserNotice::SEMINAR_SPOT_OPEN => "A place opened and you are now registered for the seminar $title.",
             UserNotice::SEMINAR_REFUNDED => "Your ticket for the seminar $title was refunded. It can take a few days to show on your statement.",
             UserNotice::SEMINAR_DISPUTE => "A ticket for your seminar $title was disputed with the card issuer. We will tell you the outcome.",
+            UserNotice::SEMINAR_LINK_BROKEN => "Someone could not open the meeting link for your seminar $title. Please check it and fix it before the start.",
             default => 'Something happened to your work.',
         };
     }
@@ -153,7 +154,7 @@ class InAppNotices
             UserNotice::SOLUTION_VERIFIED => 'A solution of yours was verified; it is no longer available.',
             UserNotice::KNOWLEDGE_REUSED => 'Some of your work was added to the knowledge library; it is no longer available.',
             UserNotice::COMMENT_RECEIVED => 'Someone commented on something of yours that is no longer available.',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE => 'A seminar notice that is no longer available.',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN => 'A seminar notice that is no longer available.',
             default => 'Something happened to your work that is no longer available.',
         };
     }

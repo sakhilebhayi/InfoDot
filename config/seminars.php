@@ -104,5 +104,17 @@ return [
             'medium' => ['label' => 'Video, sharp (720p)', 'kbps' => 1240, 'host_direct_max' => 4, 'relay_ratio' => 0.3],
         ],
     ],
+
+    /*
+    | Checking the meeting link a host types. A mistyped or made-up link is the commonest reason a seminar cannot be joined, so before it is
+    | accepted InfoDot checks that it is a well-formed https link, that it matches the pattern of the well-known services (Google Meet, Zoom,
+    | Teams, Whereby, Jitsi) when it claims to be one, that the address exists, and that the page answers. Clearly broken links are refused; links
+    | that cannot be confirmed (the service blocks automated checks) are allowed with a warning. The check never contacts a private address.
+    */
+    'link_check' => [
+        'enabled' => (bool) env('SEMINARS_LINK_CHECK', true),
+        'timeout_seconds' => 4,
+        'max_redirects' => 3,
+    ],
 ];
 
