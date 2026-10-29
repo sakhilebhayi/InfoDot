@@ -112,3 +112,6 @@ Until one of these exists, seminars are listed, registered for, reminded and att
 | Advisory ring detection (`reputation:detect-rings`, `/moderation/rings`, score discount, never a ban) | same PR; thresholds are proposals in `config/reputation.php` `rings`. Cycles of 3 or 4 and tight mutual clusters of 3 to 8, last 180 days, moderators excluded |
 | Dot Points for hosting (`seminars:award-hosts`, event `infodot.seminar.hosted`, off until `SEMINARS_POINTS_ENABLED=true`) | same PR; needs Dot.Dopemine PR #48 deployed first. Counts only attendees and ratings from outside every company the host owns or belongs to; one event per seminar, 24 h after it ended; reversed if the seminar is cancelled |
 | Seminar video, Billing screens for buying seats | not built; see `R13_SEMINAR_VIDEO_PLAN.md` and ADR-0026 D1 to D4 |
+
+Small peer-to-peer seminar rooms (no media server; capacity told to the host from a connection test): built, off by default, not yet tested with real people on real networks. See `R13_SMALL_ROOMS.md`.
+

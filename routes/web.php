@@ -137,6 +137,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/seminars/{seminar}/room', [\App\Http\Controllers\SeminarRoomController::class, 'show'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.room');
     Route::post('/seminars/{seminar}/room/token', [\App\Http\Controllers\SeminarRoomController::class, 'token'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.room.token');
     Route::post('/seminars/{seminar}/room/remove/{person}', [\App\Http\Controllers\SeminarRoomController::class, 'remove'])->whereNumber(['seminar', 'person'])->middleware('throttle:30,1')->name('seminars.room.remove');
+    Route::post('/seminars/p2p/speedtest', [\App\Http\Controllers\SeminarP2pController::class, 'speedtest'])->middleware('throttle:12,1,p2p-speedtest')->name('seminars.p2p.speedtest');
+    Route::get('/seminars/p2p/plan', [\App\Http\Controllers\SeminarP2pController::class, 'plan'])->middleware('throttle:30,1,p2p-plan')->name('seminars.p2p.plan');
+    Route::get('/seminars/{seminar}/small-room', [\App\Http\Controllers\SeminarP2pController::class, 'show'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-show')->name('seminars.p2p');
+    Route::post('/seminars/{seminar}/p2p/join', [\App\Http\Controllers\SeminarP2pController::class, 'join'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-join')->name('seminars.p2p.join');
+    Route::get('/seminars/{seminar}/p2p/poll', [\App\Http\Controllers\SeminarP2pController::class, 'poll'])->whereNumber('seminar')->middleware('throttle:150,1,p2p-poll')->name('seminars.p2p.poll');
+    Route::post('/seminars/{seminar}/p2p/signal', [\App\Http\Controllers\SeminarP2pController::class, 'signal'])->whereNumber('seminar')->middleware('throttle:240,1,p2p-signal')->name('seminars.p2p.signal');
+    Route::post('/seminars/{seminar}/p2p/ready', [\App\Http\Controllers\SeminarP2pController::class, 'ready'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-ready')->name('seminars.p2p.ready');
+    Route::post('/seminars/{seminar}/p2p/report', [\App\Http\Controllers\SeminarP2pController::class, 'report'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-report')->name('seminars.p2p.report');
+    Route::post('/seminars/{seminar}/p2p/leave', [\App\Http\Controllers\SeminarP2pController::class, 'leave'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-leave')->name('seminars.p2p.leave');
+    Route::post('/seminars/{seminar}/p2p/chat', [\App\Http\Controllers\SeminarP2pController::class, 'chat'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-chat')->name('seminars.p2p.chat');
+    Route::post('/seminars/{seminar}/p2p/remove/{person}', [\App\Http\Controllers\SeminarP2pController::class, 'remove'])->whereNumber(['seminar', 'person'])->middleware('throttle:30,1,p2p-remove')->name('seminars.p2p.remove');
     Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.feedback');
 
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).

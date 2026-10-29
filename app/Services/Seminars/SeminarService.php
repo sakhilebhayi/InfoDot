@@ -38,7 +38,9 @@ class SeminarService
             'starts_at' => ['required', 'date'],
             'duration_minutes' => ['required', 'integer', 'min:'.config('seminars.min_duration_minutes', 15), 'max:'.config('seminars.max_duration_minutes', 480)],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:'.config('seminars.max_capacity', 5000)],
-            'delivery' => ['nullable', 'in:link,room'],
+            'delivery' => ['nullable', 'in:link,room,p2p'],
+            'p2p_quality' => ['nullable', 'in:audio,low,medium'],
+            'p2p_uplink_kbps' => ['nullable', 'integer', 'min:50', 'max:1000000'],
             'join_url' => ['nullable', 'url:https', 'max:500'],
             'price' => ['nullable', 'regex:/^\d{1,7}(\.\d{1,2})?$/'],
         ];
@@ -63,7 +65,20 @@ class SeminarService
                 $this->assertRoomToPublish($host);
             }
 
-            $delivery = ($data['delivery'] ?? 'link') === 'room' ? 'room' : 'link';
+            $delivery = in_array($data['delivery'] ?? 'link', ['room', 'p2p'], true) ? $data['delivery'] : 'link';
+            $p2pPlan = null;
+            if ($delivery === 'p2p') {
+                if (! config('seminars.p2p.enabled')) {
+                    throw ValidationException::withMessages(['delivery' => 'Small rooms are not available yet. Use your own meeting link.']);
+                }
+                if (blank($data['p2p_quality'] ?? null) || blank($data['p2p_uplink_kbps'] ?? null)) {
+                    throw ValidationException::withMessages(['p2p_uplink_kbps' => 'Test your connection first, so we can tell you how many people the room can hold.']);
+                }
+                $p2pPlan = P2pCapacity::plan((int) $data['p2p_uplink_kbps'], (string) $data['p2p_quality']);
+                if (! $p2pPlan['usable']) {
+                    throw ValidationException::withMessages(['p2p_quality' => 'Your connection is too slow for '.$p2pPlan['label'].'. Choose a lighter quality, such as audio only.']);
+                }
+            }
             if ($delivery === 'room' && ! config('seminars.video.enabled')) {
                 throw ValidationException::withMessages(['delivery' => 'InfoDot rooms are not available yet. Use your own meeting link.']);
             }
@@ -79,7 +94,9 @@ class SeminarService
                 'price_cents' => $priceCents, 'currency' => $priceCents ? config('seminars.paid.currency', 'ZAR') : null,
                 'title' => $data['title'], 'summary' => $data['summary'], 'description' => $data['description'] ?? null,
                 'topic_id' => $data['topic_id'] ?? null, 'starts_at' => $starts, 'duration_minutes' => (int) $data['duration_minutes'],
-                'capacity' => isset($data['capacity']) ? (int) $data['capacity'] : null, 'join_url' => $delivery === 'link' ? $data['join_url'] : null, 'delivery' => $delivery,
+                'capacity' => $p2pPlan ? min($p2pPlan['capacity'], (int) ($data['capacity'] ?? $p2pPlan['capacity'])) : (isset($data['capacity']) ? (int) $data['capacity'] : null),
+                'join_url' => $delivery === 'link' ? $data['join_url'] : null, 'delivery' => $delivery,
+                'p2p_quality' => $p2pPlan ? $data['p2p_quality'] : null, 'p2p_uplink_kbps' => $p2pPlan ? (int) $data['p2p_uplink_kbps'] : null,
                 'status' => $willBePublished ? Seminar::PUBLISHED : Seminar::DRAFT,
             ];
 

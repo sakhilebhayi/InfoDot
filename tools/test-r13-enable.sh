@@ -53,4 +53,11 @@ check "video stage never prints the key pair" "! printf '%s' \"\$OUTV\" | grep -
 check "video stage refuses a missing key pair" "! env -u LIVEKIT_API_KEY -u LIVEKIT_API_SECRET $S --infodot $T/i --stage video --livekit-url wss://live.example.org >/dev/null 2>&1"
 check "video stage refuses a non-wss URL" "! LIVEKIT_API_KEY=$LK LIVEKIT_API_SECRET=$LS $S --infodot $T/i --stage video --livekit-url https://live.example.org >/dev/null 2>&1"
 
+fresh
+"$S" --infodot "$T/i" --stage p2p --apply >/dev/null 2>&1
+check "p2p stage turns the rooms on and leaves the STUN default alone" "[ \"\$(val $T/i SEMINARS_P2P_ENABLED)\" = true ] && ! grep -q P2P_STUN_URLS $T/i/.env"
+"$S" --infodot "$T/i" --stage p2p --stun-urls "stun:stun.example.org:3478,stun:b.example.org:3478" --apply >/dev/null 2>&1
+check "p2p stage can set your own STUN servers" "[ \"\$(val $T/i P2P_STUN_URLS)\" = stun:stun.example.org:3478,stun:b.example.org:3478 ]"
+check "p2p stage refuses a bad STUN list" "! $S --infodot $T/i --stage p2p --stun-urls 'http://x' --apply >/dev/null 2>&1"
+
 echo; echo "$N checks, $FAILS failed"; [ "$FAILS" = 0 ]
