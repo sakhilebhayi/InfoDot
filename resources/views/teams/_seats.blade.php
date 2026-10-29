@@ -4,37 +4,42 @@
         : null;
     $labels = ['invited' => 'Invitation sent', 'joined' => 'Joined', 'left' => 'Left or removed', 'blocked' => 'Invitation blocked: no seat free', 'capacity_changed' => 'Seats changed'];
 @endphp
-<div class="ix-card" data-seats>
-    <h2 class="ix-h2">{{ __('Seats') }}</h2>
-    <p class="ix-lede">{{ __('A seat is one licensed person in :team. The first :n are free.', ['team' => $team->name, 'n' => $seats['included']]) }}</p>
+<x-jet-action-section>
+    <x-slot name="title">{{ __('Seats') }}</x-slot>
+    <x-slot name="description">{{ __('A seat is one licensed person in :team. The first :n are free.', ['team' => $team->name, 'n' => $seats['included']]) }}</x-slot>
+    <x-slot name="content">
+        <div data-seats>
+            <table class="ix-table">
+                <tbody>
+                    <tr><th scope="row">{{ __('Seats in use') }}</th><td>{{ $seats['people'] }} {{ __('of') }} {{ $seats['capacity'] }}</td></tr>
+                    <tr><th scope="row">{{ __('Held by unanswered invitations') }}</th><td>{{ $seats['reserved'] }}</td></tr>
+                    <tr><th scope="row">{{ __('Free seats left') }}</th><td>{{ $seats['available'] }}</td></tr>
+                    <tr><th scope="row">{{ __('Paid seats') }}</th><td>{{ $seats['purchased'] }}</td></tr>
+                </tbody>
+            </table>
 
-    <dl class="ix-kv">
-        <div><dt>{{ __('Seats in use') }}</dt><dd>{{ $seats['people'] }} {{ __('of') }} {{ $seats['capacity'] }}</dd></div>
-        <div><dt>{{ __('Held by unanswered invitations') }}</dt><dd>{{ $seats['reserved'] }}</dd></div>
-        <div><dt>{{ __('Free seats left') }}</dt><dd>{{ $seats['available'] }}</dd></div>
-        <div><dt>{{ __('Paid seats') }}</dt><dd>{{ $seats['purchased'] }}</dd></div>
-    </dl>
-
-    @if ($seats['over_by'] > 0)
-        <p class="ix-hint">{{ __('This company has :n more people than seats. Nobody is removed; you just cannot add anyone until there is room.', ['n' => $seats['over_by']]) }}</p>
-    @endif
-
-    @if ($seats['available'] === 0)
-        <p class="ix-hint">
-            @if ($seats['can_buy'])
-                {{ __('Add a seat to invite another person (:price per seat).', ['price' => $money]) }}
-            @else
-                {{ __('Seats beyond the free :n are paid, and paid seats are not available yet. Nothing has been charged. You can cancel an unanswered invitation to free its seat.', ['n' => $seats['included']]) }}
+            @if ($seats['over_by'] > 0)
+                <p class="ix-hint">{{ __('This company has :n more people than seats. Nobody is removed; you just cannot add anyone until there is room.', ['n' => $seats['over_by']]) }}</p>
             @endif
-        </p>
-    @endif
 
-    @if ($history->isNotEmpty())
-        <h3 class="ix-h3">{{ __('Recent changes') }}</h3>
-        <ul class="ix-list">
-            @foreach ($history as $event)
-                <li>{{ $labels[$event->type] ?? $event->type }}@if($event->subject) — {{ $event->subject }}@endif <span class="ix-ref">{{ $event->created_at->diffForHumans() }}</span></li>
-            @endforeach
-        </ul>
-    @endif
-</div>
+            @if ($seats['available'] === 0)
+                <p class="ix-hint">
+                    @if ($seats['can_buy'])
+                        {{ __('Add a seat to invite another person (:price per seat).', ['price' => $money]) }}
+                    @else
+                        {{ __('Seats beyond the free :n are paid, and paid seats are not available yet. Nothing has been charged. You can cancel an unanswered invitation to free its seat.', ['n' => $seats['included']]) }}
+                    @endif
+                </p>
+            @endif
+
+            @if ($history->isNotEmpty())
+                <h3 class="ix-label" style="margin-top: 20px;">{{ __('Recent changes') }}</h3>
+                <ul class="ix-list">
+                    @foreach ($history as $event)
+                        <li style="padding: 10px 14px;">{{ $labels[$event->type] ?? $event->type }}@if($event->subject) — {{ $event->subject }}@endif <span class="ix-ref">{{ $event->created_at->diffForHumans() }}</span></li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </x-slot>
+</x-jet-action-section>

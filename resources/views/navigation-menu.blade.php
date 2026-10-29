@@ -49,6 +49,7 @@
             <a href="{{ route('dashboard') }}" class="ix-tab" data-area="home" @if(request()->routeIs('dashboard')) aria-current="page" @endif>Home</a>
             <a href="{{ route('questions') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*')) aria-current="page" @endif>Knowledge</a>
             <a href="{{ route('library') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('library')) aria-current="page" @endif>Library</a>
+            <a href="{{ route('seminars') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('seminars*')) aria-current="page" @endif>Seminars</a>
             <livewire:platform-link platform="files" label="Files" icon="folder" variant="tab" />
             <livewire:platform-link platform="docs" label="Documents" icon="description" variant="tab" />
             <a href="{{ route('ecosystem.widget') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('ecosystem.widget', 'subservices.*')) aria-current="page" @endif>Platforms</a>

@@ -18,7 +18,18 @@ class UserNotice extends Model
 
     public const COMMENT_RECEIVED = 'comment_received';
 
-    public const KINDS = [self::ANSWER_RECEIVED, self::ANSWER_ACCEPTED, self::SOLUTION_VERIFIED, self::KNOWLEDGE_REUSED, self::COMMENT_RECEIVED];
+    public const SEMINAR_REMINDER = 'seminar_reminder';
+
+    public const SEMINAR_CANCELLED = 'seminar_cancelled';
+
+    public const SEMINAR_CHANGED = 'seminar_changed';
+
+    public const SEMINAR_SPOT_OPEN = 'seminar_spot_open';
+
+    public const KINDS = [
+        self::ANSWER_RECEIVED, self::ANSWER_ACCEPTED, self::SOLUTION_VERIFIED, self::KNOWLEDGE_REUSED, self::COMMENT_RECEIVED,
+        self::SEMINAR_REMINDER, self::SEMINAR_CANCELLED, self::SEMINAR_CHANGED, self::SEMINAR_SPOT_OPEN,
+    ];
 
     public $timestamps = false;
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
 use App\Http\Controllers\NoticesController;
 use App\Http\Controllers\ReputationController;
+use App\Http\Controllers\SeminarsController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
@@ -106,6 +107,19 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/progress/appeal', [ReputationController::class, 'appeal'])->middleware('throttle:10,1')->name('reputation.appeal');
     Route::get('/moderation/reputation', [ReputationController::class, 'appeals'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation');
     Route::post('/moderation/reputation/{appeal}', [ReputationController::class, 'resolve'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation.resolve');
+    // Free seminars: any verified person may host one; the host's own join link is shown only to registered people in the window.
+    Route::get('/seminars', [SeminarsController::class, 'index'])->name('seminars');
+    Route::get('/seminars/new', [SeminarsController::class, 'create'])->name('seminars.create');
+    Route::post('/seminars', [SeminarsController::class, 'store'])->middleware('throttle:10,1')->name('seminars.store');
+    Route::get('/seminars/{seminar}', [SeminarsController::class, 'show'])->whereNumber('seminar')->name('seminars.show');
+    Route::get('/seminars/{seminar}/edit', [SeminarsController::class, 'edit'])->whereNumber('seminar')->name('seminars.edit');
+    Route::put('/seminars/{seminar}', [SeminarsController::class, 'update'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.update');
+    Route::post('/seminars/{seminar}/cancel', [SeminarsController::class, 'cancel'])->whereNumber('seminar')->middleware('throttle:10,1')->name('seminars.cancel');
+    Route::post('/seminars/{seminar}/register', [SeminarsController::class, 'register'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.register');
+    Route::post('/seminars/{seminar}/unregister', [SeminarsController::class, 'unregister'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.unregister');
+    Route::get('/seminars/{seminar}/join', [SeminarsController::class, 'join'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.join');
+    Route::post('/seminars/{seminar}/attendance/{person}', [SeminarsController::class, 'attendance'])->whereNumber(['seminar', 'person'])->middleware('throttle:60,1')->name('seminars.attendance');
+    Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.feedback');
 
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).
     Route::get('/notifications', [NoticesController::class, 'index'])->middleware('throttle:60,1')->name('notices');
