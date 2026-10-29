@@ -86,16 +86,16 @@ class SeminarsTest extends TestCase
         $this->actingAs($guest)->get('/seminars/'.$s->id)->assertOk()->assertDontSee('meet.example.test');
 
         // too early
-        $this->actingAs($guest)->get('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.show', $s));
+        $this->actingAs($guest)->post('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.show', $s));
         $this->assertNull(SeminarRegistration::first()->attended_at);
 
         $this->travelTo($s->starts_at->copy()->subMinutes(5));
-        $this->actingAs($stranger)->get('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.show', $s));
-        $this->actingAs($guest)->get('/seminars/'.$s->id.'/join')->assertRedirect('https://meet.example.test/room-1');
+        $this->actingAs($stranger)->post('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.show', $s));
+        $this->actingAs($guest)->post('/seminars/'.$s->id.'/join')->assertRedirect('https://meet.example.test/room-1');
         $this->assertNotNull(SeminarRegistration::first()->attended_at, 'opening the link records attendance');
 
         $this->travelTo($s->endsAt()->addMinute());
-        $this->actingAs($guest)->get('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.show', $s));
+        $this->actingAs($guest)->post('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.show', $s));
     }
 
     public function test_the_last_place_goes_to_one_person_the_next_waits_and_is_moved_up(): void

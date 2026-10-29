@@ -138,10 +138,10 @@ class SeminarP2pTest extends TestCase
         $this->join($s, $guest)->assertOk();
         $this->join($s, $stranger)->assertForbidden();
         $this->join($s, $s->host)->assertOk()->assertJson(['role' => 'host']);
-        $this->actingAs($stranger)->getJson('/seminars/'.$s->id.'/p2p/poll')->assertForbidden();
+        $this->actingAs($stranger)->postJson('/seminars/'.$s->id.'/p2p/poll')->assertForbidden();
 
         $this->travelTo($s->endsAt()->addMinute());
-        $this->actingAs($guest)->getJson('/seminars/'.$s->id.'/p2p/poll')->assertForbidden();
+        $this->actingAs($guest)->postJson('/seminars/'.$s->id.'/p2p/poll')->assertForbidden();
     }
 
     public function test_it_is_a_404_when_switched_off_and_a_403_for_other_kinds_of_seminar(): void
@@ -167,12 +167,12 @@ class SeminarP2pTest extends TestCase
         $this->assertNull($this->join($s, $v2, true)->json()['parent'], 'V1 is not feeding anyone yet: only a viewer whose video is flowing can feed others');
 
         $this->ready($s, $v1);
-        $this->assertSame($r1['peer_id'], $this->actingAs($v2)->getJson('/seminars/'.$s->id.'/p2p/poll')->json('parent'), 'V2 is given V1 at its next poll');
+        $this->assertSame($r1['peer_id'], $this->actingAs($v2)->postJson('/seminars/'.$s->id.'/p2p/poll')->json('parent'), 'V2 is given V1 at its next poll');
         $this->assertSame($r1['peer_id'], $this->join($s, $v3)->json('parent'));
         $this->assertNull($this->join($s, $v4)->json('parent'), 'V1 feeds two; nobody else can feed V4 yet');
 
         $this->ready($s, $v2);   // V2 asked to relay, so once its video flows V4 is given to it
-        $this->assertSame(P2pPeer::where('user_id', $v2->id)->value('peer_id'), $this->actingAs($v4)->getJson('/seminars/'.$s->id.'/p2p/poll')->json('parent'));
+        $this->assertSame(P2pPeer::where('user_id', $v2->id)->value('peer_id'), $this->actingAs($v4)->postJson('/seminars/'.$s->id.'/p2p/poll')->json('parent'));
         $this->assertSame(3, P2pPeer::where('user_id', $v4->id)->value('depth'), 'host (0) feeds V1 (1) feeds V2 (2) feeds V4 (3)');
     }
 
@@ -202,7 +202,7 @@ class SeminarP2pTest extends TestCase
         $this->assertSame(P2pPeer::where('user_id', $v1->id)->value('peer_id'), $r2['parent']);
 
         $this->actingAs($v1)->postJson('/seminars/'.$s->id.'/p2p/leave')->assertOk();
-        $poll = $this->actingAs($v2)->getJson('/seminars/'.$s->id.'/p2p/poll')->assertOk()->json();
+        $poll = $this->actingAs($v2)->postJson('/seminars/'.$s->id.'/p2p/poll')->assertOk()->json();
 
         $this->assertSame($host['peer_id'], $poll['parent'], 'V1 left, the host has a free place again');
         $this->assertTrue($poll['reassigned']);
@@ -219,7 +219,7 @@ class SeminarP2pTest extends TestCase
         $this->join($s, $v2);
 
         DB::table('p2p_peers')->where('user_id', $v1->id)->update(['last_seen' => now()->subMinute()]);
-        $poll = $this->actingAs($v2)->getJson('/seminars/'.$s->id.'/p2p/poll')->json();
+        $poll = $this->actingAs($v2)->postJson('/seminars/'.$s->id.'/p2p/poll')->json();
 
         $this->assertSame('gone', P2pPeer::where('user_id', $v1->id)->value('status'));
         $this->assertSame($host['peer_id'], $poll['parent']);
@@ -267,11 +267,11 @@ class SeminarP2pTest extends TestCase
         $this->actingAs($v1)->postJson('/seminars/'.$s->id.'/p2p/signal', ['to' => $host['peer_id'], 'type' => 'hello'])->assertOk();
         $this->actingAs($v1)->postJson('/seminars/'.$s->id.'/p2p/signal', ['to' => $host['peer_id'], 'type' => 'ice', 'payload' => '{"candidate":"x"}'])->assertOk();
 
-        $hostPoll = $this->actingAs($s->host)->getJson('/seminars/'.$s->id.'/p2p/poll')->json();
+        $hostPoll = $this->actingAs($s->host)->postJson('/seminars/'.$s->id.'/p2p/poll')->json();
         $this->assertSame(['hello', 'ice'], array_column($hostPoll['signals'], 'type'));
         $this->assertSame($r1['peer_id'], $hostPoll['signals'][0]['from']);
-        $this->assertSame([], $this->actingAs($s->host)->getJson('/seminars/'.$s->id.'/p2p/poll')->json('signals'), 'delivered once');
-        $this->assertSame([], $this->actingAs($v1)->getJson('/seminars/'.$s->id.'/p2p/poll')->json('signals'), 'not delivered to anyone else');
+        $this->assertSame([], $this->actingAs($s->host)->postJson('/seminars/'.$s->id.'/p2p/poll')->json('signals'), 'delivered once');
+        $this->assertSame([], $this->actingAs($v1)->postJson('/seminars/'.$s->id.'/p2p/poll')->json('signals'), 'not delivered to anyone else');
     }
 
     public function test_connection_messages_are_checked(): void
@@ -300,7 +300,7 @@ class SeminarP2pTest extends TestCase
         $this->actingAs($v1)->post('/seminars/'.$s->id.'/p2p/remove/'.$v1->id)->assertForbidden();
         $this->actingAs($s->host)->post('/seminars/'.$s->id.'/p2p/remove/'.$v1->id)->assertRedirect();
 
-        $this->actingAs($v1)->getJson('/seminars/'.$s->id.'/p2p/poll')->assertOk()->assertJson(['removed' => true]);
+        $this->actingAs($v1)->postJson('/seminars/'.$s->id.'/p2p/poll')->assertOk()->assertJson(['removed' => true]);
         $this->join($s, $v1)->assertStatus(422);
         $this->assertSame('registered', SeminarRegistration::where('user_id', $v1->id)->value('status'), 'still registered');
     }
@@ -316,9 +316,9 @@ class SeminarP2pTest extends TestCase
         $this->actingAs($v1)->postJson('/seminars/'.$s->id.'/p2p/chat', ['text' => str_repeat('a', 301)])->assertStatus(422);
         $this->actingAs($this->person('Stranger'))->postJson('/seminars/'.$s->id.'/p2p/chat', ['text' => 'hi'])->assertForbidden();
 
-        $chat = $this->actingAs($s->host)->getJson('/seminars/'.$s->id.'/p2p/poll?chat=0')->json('chat');
+        $chat = $this->actingAs($s->host)->postJson('/seminars/'.$s->id.'/p2p/poll?chat=0')->json('chat');
         $this->assertSame([['Thandi', 'Hello from Thandi']], array_map(fn ($c) => [$c['name'], $c['body']], $chat));
-        $this->assertSame([], $this->actingAs($s->host)->getJson('/seminars/'.$s->id.'/p2p/poll?chat='.$chat[0]['id'])->json('chat'));
+        $this->assertSame([], $this->actingAs($s->host)->postJson('/seminars/'.$s->id.'/p2p/poll?chat='.$chat[0]['id'])->json('chat'));
     }
 
     public function test_connecting_counts_as_attending_and_the_host_is_not_counted(): void
@@ -352,7 +352,7 @@ class SeminarP2pTest extends TestCase
         $s = $this->treeRoom();
         $guest = $this->viewer($s, 'Guest');
 
-        $this->actingAs($guest)->get('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.p2p', $s));
+        $this->actingAs($guest)->post('/seminars/'.$s->id.'/join')->assertRedirect(route('seminars.p2p', $s));
         $this->actingAs($guest)->get('/seminars/'.$s->id.'/small-room')->assertOk()->assertSee('p2p-room', false)->assertSee('Live from the host');
         $this->actingAs($s->host)->get('/seminars/'.$s->id.'/small-room')->assertOk()->assertSee('This room can hold up to');
         $this->actingAs($this->person())->get('/seminars/'.$s->id.'/small-room')->assertRedirect(route('seminars.show', $s));
@@ -369,4 +369,15 @@ class SeminarP2pTest extends TestCase
         config(['seminars.p2p.turn' => ['url' => 'turn:turn.example.test:3478', 'username' => 'u', 'credential' => 'c']]);
         $this->assertCount(2, $this->actingAs($s->host)->postJson('/seminars/'.$s->id.'/p2p/join')->json('ice'));
     }
+
+    public function test_nothing_that_changes_state_can_be_done_with_a_plain_link(): void
+    {
+        $s = $this->treeRoom();
+        $u = $this->viewer($s);
+
+        $this->actingAs($u)->get('/seminars/'.$s->id.'/join')->assertStatus(405);
+        $this->actingAs($u)->get('/seminars/'.$s->id.'/p2p/poll')->assertStatus(405);
+        $this->assertNull(SeminarRegistration::where('user_id', $u->id)->value('attended_at'), 'a link someone else sends cannot mark you as attending');
+    }
 }
+

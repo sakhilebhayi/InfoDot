@@ -38,7 +38,7 @@
             @if ($reg && $reg->status === 'registered')
                 <p><span class="ix-chip ix-chip--done">You are registered</span></p>
                 @if ($seminar->joinIsOpen())
-                    <a class="ix-btn ix-btn--primary" href="{{ route('seminars.join', $seminar) }}" rel="noopener">{{ $seminar->isRoom() || $seminar->isP2p() ? 'Enter the room' : 'Join the seminar' }}</a>
+                    <form method="POST" action="{{ route('seminars.join', $seminar) }}">@csrf<button class="ix-btn ix-btn--primary" type="submit">{{ $seminar->isRoom() || $seminar->isP2p() ? 'Enter the room' : 'Join the seminar' }}</button></form>
                     <p class="ix-hint">{{ $seminar->isRoom() ? 'This opens the InfoDot room in your browser. You are noted as attending when you connect.' : ($seminar->isP2p() ? 'This opens a small room in your browser. Keep the page open: your computer may pass the video on to a few other people.' : 'This opens the host’s own meeting room. Opening it also notes that you attended.') }}</p>
                 @elseif ($seminar->hasEnded())
                     <p class="ix-hint">This seminar has finished.</p>
@@ -98,7 +98,8 @@
             <h2 class="ix-label" id="people-h">People ({{ $people->count() }})</h2>
             @if ($hostPoints = app(\App\Services\Seminars\SeminarHostPoints::class)->sentence($seminar))<p class="ix-hint" id="host-points">{{ $hostPoints }}</p>@endif
             @if ($seminar->status === 'published')
-                <p class="ix-hint">Your meeting link is private to you and the people who registered. You can open it yourself here: <a href="{{ route('seminars.join', $seminar) }}" rel="noopener">{{ $seminar->isRoom() || $seminar->isP2p() ? 'enter the room' : 'open my meeting room' }}</a>.</p>
+                <p class="ix-hint">Your meeting link is private to you and the people who registered.</p>
+                <form method="POST" action="{{ route('seminars.join', $seminar) }}">@csrf<button class="ix-btn" type="submit">{{ $seminar->isRoom() || $seminar->isP2p() ? 'Enter the room' : 'Open my meeting room' }}</button></form>
             @endif
             @if ($revenue)
                 <p class="ix-hint">Tickets sold: <b>{{ $revenue['tickets'] }}</b>. Paid by attendees {{ \App\Models\Seminar::money($revenue['gross_cents']) }}; InfoDot keeps {{ \App\Models\Seminar::money($revenue['platform_cents']) }}; yours {{ \App\Models\Seminar::money($revenue['host_cents']) }} before Paystack's processing fee. Paystack pays you out on its own schedule.</p>

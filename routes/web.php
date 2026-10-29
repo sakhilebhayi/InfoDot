@@ -130,7 +130,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/seminars/{seminar}/cancel', [SeminarsController::class, 'cancel'])->whereNumber('seminar')->middleware('throttle:10,1')->name('seminars.cancel');
     Route::post('/seminars/{seminar}/register', [SeminarsController::class, 'register'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.register');
     Route::post('/seminars/{seminar}/unregister', [SeminarsController::class, 'unregister'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.unregister');
-    Route::get('/seminars/{seminar}/join', [SeminarsController::class, 'join'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.join');
+    Route::post('/seminars/{seminar}/join', [SeminarsController::class, 'join'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.join');
     Route::post('/seminars/{seminar}/attendance/{person}', [SeminarsController::class, 'attendance'])->whereNumber(['seminar', 'person'])->middleware('throttle:60,1')->name('seminars.attendance');
     Route::post('/seminars/{seminar}/refund/{person}', [SeminarsController::class, 'refund'])->whereNumber(['seminar', 'person'])->middleware('throttle:20,1')->name('seminars.refund');
     Route::get('/seminars/{seminar}/receipt', [SeminarsController::class, 'receipt'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.receipt');
@@ -141,7 +141,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/seminars/p2p/plan', [\App\Http\Controllers\SeminarP2pController::class, 'plan'])->middleware('throttle:30,1,p2p-plan')->name('seminars.p2p.plan');
     Route::get('/seminars/{seminar}/small-room', [\App\Http\Controllers\SeminarP2pController::class, 'show'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-show')->name('seminars.p2p');
     Route::post('/seminars/{seminar}/p2p/join', [\App\Http\Controllers\SeminarP2pController::class, 'join'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-join')->name('seminars.p2p.join');
-    Route::get('/seminars/{seminar}/p2p/poll', [\App\Http\Controllers\SeminarP2pController::class, 'poll'])->whereNumber('seminar')->middleware('throttle:150,1,p2p-poll')->name('seminars.p2p.poll');
+    Route::post('/seminars/{seminar}/p2p/poll', [\App\Http\Controllers\SeminarP2pController::class, 'poll'])->whereNumber('seminar')->middleware('throttle:150,1,p2p-poll')->name('seminars.p2p.poll');
     Route::post('/seminars/{seminar}/p2p/signal', [\App\Http\Controllers\SeminarP2pController::class, 'signal'])->whereNumber('seminar')->middleware('throttle:240,1,p2p-signal')->name('seminars.p2p.signal');
     Route::post('/seminars/{seminar}/p2p/ready', [\App\Http\Controllers\SeminarP2pController::class, 'ready'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-ready')->name('seminars.p2p.ready');
     Route::post('/seminars/{seminar}/p2p/report', [\App\Http\Controllers\SeminarP2pController::class, 'report'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-report')->name('seminars.p2p.report');

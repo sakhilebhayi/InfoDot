@@ -165,7 +165,7 @@ if (root) {
     const poll = async () => {
         if (stopped) return
         try {
-            const r = await api('GET', cfg.pollUrl + '?chat=' + lastChat)
+            const r = await api('POST', cfg.pollUrl + '?chat=' + lastChat)
             if (r.removed) { stopped = true; say('The host removed you from this room.'); closeUpstream(); return }
             if (countEl) countEl.textContent = String(r.viewers + 1)
             for (const c of r.chat) { lastChat = Math.max(lastChat, c.id); addChat(c.name, c.body) }

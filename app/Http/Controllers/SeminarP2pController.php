@@ -69,6 +69,7 @@ class SeminarP2pController extends Controller
         return $this->json($this->room->report($seminar, $request->user()));
     }
 
+    /** Deliberately lenient: it only ever ends the caller's own place, so even someone who is no longer allowed in can always leave. */
     public function leave(Request $request, Seminar $seminar): JsonResponse
     {
         abort_unless(config('seminars.p2p.enabled'), 404);
