@@ -118,8 +118,11 @@ class ReputationTest extends TestCase
     {
         $helper = $this->person('Helper');
         $this->engine()->snapshot($helper);
+        $colleague = $this->person('Colleague');
+        $helper->currentTeam->users()->attach($colleague->id, ['role' => 'member']);
 
-        $this->actingAs($this->person('Other'))->get('/profile/'.$helper->id)->assertOk()->assertDontSee('InfoDot Spark')->assertDontSee('points');
+        $this->actingAs($colleague)->get('/user/profile/'.$helper->id)->assertOk()->assertDontSee('InfoDot Spark')->assertDontSee('InfoDot Venture');
+        $this->actingAs($this->person('Stranger'))->get('/user/profile/'.$helper->id)->assertNotFound();
     }
 
     public function test_an_appeal_is_answered_by_a_moderator_with_a_recalculation_and_a_note(): void

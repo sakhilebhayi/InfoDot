@@ -12,13 +12,17 @@ use Illuminate\Http\Request;
 /** Your own progress, and nobody else's. Off until REPUTATION_ENABLED. Every action is scoped to the signed-in person; none takes a user id. */
 class ReputationController extends Controller
 {
-    public function __construct(private readonly ReputationEngine $engine)
+    public function __construct(private readonly ReputationEngine $engine) {}
+
+    /** Checked on every action (not in the constructor): a route's controller instance is reused. */
+    private function switchedOn(): void
     {
         abort_unless(config('reputation.enabled'), 404);
     }
 
     public function show(Request $request): View
     {
+        $this->switchedOn();
         $user = $request->user();
         $snapshot = $this->engine->snapshot($user);
 
@@ -31,6 +35,7 @@ class ReputationController extends Controller
 
     public function appeal(Request $request): RedirectResponse
     {
+        $this->switchedOn();
         $data = $request->validate(['message' => ['required', 'string', 'min:10', 'max:1000']]);
         $user = $request->user();
 
@@ -45,11 +50,13 @@ class ReputationController extends Controller
 
     public function appeals(): View
     {
+        $this->switchedOn();
         return view('reputation.appeals', ['appeals' => ReputationAppeal::with('user')->where('status', 'open')->oldest('id')->get(), 'engine' => $this->engine]);
     }
 
     public function resolve(Request $request, ReputationAppeal $appeal): RedirectResponse
     {
+        $this->switchedOn();
         $data = $request->validate(['note' => ['required', 'string', 'min:5', 'max:1000']]);
         abort_unless($appeal->status === 'open', 404);
 

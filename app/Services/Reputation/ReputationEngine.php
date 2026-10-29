@@ -139,8 +139,9 @@ class ReputationEngine
     private function activeWeeks(User $user, int $window): int
     {
         $since = now()->subWeeks($window);
+        $publicQuestionIds = Questions::withoutGlobalScopes()->where('visibility', Questions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->select('id');
         $dates = Questions::withoutGlobalScopes()->where('user_id', $user->id)->where('visibility', Questions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->where('created_at', '>=', $since)->pluck('created_at')
-            ->merge(Answer::withoutGlobalScope('moderation-visibility')->where('user_id', $user->id)->whereNull('hidden_at')->where('is_self_answer', false)->where('created_at', '>=', $since)->pluck('created_at'))
+            ->merge(Answer::withoutGlobalScope('moderation-visibility')->where('user_id', $user->id)->where('status', Answer::PUBLISHED)->whereNull('hidden_at')->where('is_self_answer', false)->whereIn('question_id', $publicQuestionIds)->where('created_at', '>=', $since)->pluck('created_at'))
             ->merge(Solutions::withoutGlobalScopes()->where('user_id', $user->id)->where('visibility', Solutions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->where('created_at', '>=', $since)->pluck('created_at'));
 
         return $dates->map(fn ($d) => \Illuminate\Support\Carbon::parse($d)->format('o-W'))->unique()->count();
