@@ -1,0 +1,161 @@
+> **DRAFT. WRITTEN BY AN AI SESSION. NOT LEGAL ADVICE. NOT REVIEWED. NOT LIVE.**
+>
+> Written by an AI coding session (Claude) on 2026-10-29 from the source code of this repository (`origin/main` at commit `5c916c5`), the R-13 programme documents and the host agreement draft in the Dot.Billing repository. No lawyer or owner has read it. It must not be copied into `resources/markdown/terms.md` (or any view), published, or shown to users until the owner's adviser has reviewed, corrected and approved it. `[OWNER/ADVISER]` marks a decision or legal question this draft does not answer. `[PLACEHOLDER]` marks a fact the code does not contain and this draft refuses to invent.
+>
+> Companion files: [privacy-policy-additions.md](privacy-policy-additions.md) and [legal-review-checklist.md](legal-review-checklist.md). Item numbers such as **B-03** point to rows in the checklist.
+
+# Terms and Conditions: additions for the R-13 features (draft)
+
+## How to read this file
+
+- The text is written to sit alongside the live Terms (`resources/markdown/terms.md`), in its voice: "we" is **BluePin Inc**, the operator the live Terms name. Whether that is the right legal entity is an owner question [OWNER/ADVISER].
+- Numbers in the text (R5.00, 24 hours, 10%, 30 minutes and so on) are the defaults in the code. Several are environment settings the owner can change (`config/seminars.php`). Before publishing, the owner must confirm each against the live settings, or the terms and the product will disagree (checklist C-05).
+- A box headed **For the owner and adviser (not for publication)** follows each part with the code each statement was checked against and the legal questions.
+- Publish each part only when its feature is on. The host agreement is a separate document, owned by Dot.Billing, still a draft; this file summarises and refers to it, and does not restate it as final.
+
+Proposed placement: new sections after the live section 4 ("Teams"), numbered by the adviser. They are headed **S1** to **S8** here.
+
+---
+
+## S1. Seminars: hosting
+
+*Applies from the day Seminars is live.*
+
+1. **Who can host.** Any member with a verified email address can host a seminar. We do not check who you are, what you know or whether you are qualified. Hosting does not make you our employee, agent or partner.
+2. **You are responsible for your seminar.** As host you are responsible for what you teach, say and show; for making sure it is lawful and does not infringe anyone's rights; for the accuracy of what you advertise; and for the meeting service you use. We do not review, endorse or guarantee any seminar, host or content.
+3. **Your meeting link.** If you deliver your seminar on your own meeting service, you must give a working link that you are entitled to use. We check that a link is well formed and answers, but we cannot confirm that a meeting will start. You must keep the link private to the people you invite; we show it to registered people from 15 minutes before the start, and anyone who gets it can pass it on. Your meeting service's own terms apply between you, it and the people who join.
+4. **Limits.** At any time you can have up to 5 upcoming published seminars. A seminar must start at least 60 minutes after you publish it and last between 15 minutes and 8 hours. You set the number of places, up to 5,000. [OWNER/ADVISER: confirm these are the intended public limits.]
+5. **Changes and cancellation.** If you change the start time of a published seminar or cancel it, we tell the people who registered. A cancelled seminar cannot be edited. If you cancel a paid seminar, everyone who paid is refunded in full (S4).
+6. **Attendance and ratings.** Opening your link through InfoDot, or connecting to a room, notes a person as attending, and you can mark or unmark any registered person. You must mark attendance honestly: it feeds the attendee's own record and the ratings that count for your hosting statistics and any Dot Points. Only people noted as attending can rate. You see the ratings and notes, not who wrote them, and you must not try to find out or retaliate.
+7. **Recording.** InfoDot does not record seminars. If you record a seminar yourself, or your meeting service does, you must tell attendees **before** you start, say how the recording will be used and kept, and comply with the law that applies to recordings and to the personal information in them. You are responsible for that recording.
+8. **Removal.** We may remove a seminar, cancel it, or suspend a host who breaches these Terms, under the live Terms (sections 3, 5 and 8).
+9. **Your obligations to attendees.** You are responsible to attendees for anything the law gives them against you as the person who sold or ran the seminar, beyond what these Terms say InfoDot will refund.
+
+> **For the owner and adviser (not for publication) , S1**
+>
+> - **Checked in code:** `config/seminars.php` (`max_upcoming_per_host` 5, `min_lead_minutes` 60, `join_opens_minutes_before` 15, `min_duration_minutes` 15, `max_duration_minutes` 480, `max_capacity` 5000); `app/Services/Seminars/SeminarService.php` (`rules`, `save`, `assertLead`, `assertRoomToPublish`, `cancel`, `setAttended`, `rate`); `resources/views/seminars/show.blade.php` (the host sees ratings and notes without names); `routes/web.php` (hosting needs `auth:sanctum` and `verified` only).
+> - **Gap to know about (E-03):** the code has **no way to report a seminar or a host's conduct**, and no moderator tool to cancel or remove a seminar. The only moderation of seminars is the payments page and the host's "link did not open" counter. Clause 8 relies on account-level powers in the live Terms. If the owner wants to rely on removal, a mechanism is needed.
+> - **Legal questions:** whether hosts who sell are "suppliers" with their own Consumer Protection Act and ECTA duties to attendees (B-03); whether clause 9 is enough; consent rules for recording (B-10).
+
+## S2. Seminars: attending
+
+*Applies from the day Seminars is live.*
+
+1. **Registering.** You can register for a published seminar. If it is full, you join the waiting list in order of registration and are moved up if a place opens (for free seminars; a paid seminar has no waiting list, it simply shows as full). The host can see the names of the people who registered.
+2. **Joining.** The meeting link or room opens 15 minutes before the start and only for people who registered. Opening it notes that you attended.
+3. **Ratings.** You can rate a seminar once, after it finishes, if you were noted as attending. The host sees your rating and note but not your name; only the rating counts toward their average, and an average is shown only after at least 3 ratings.
+4. **Behave.** The rules for rooms and chat (S5) apply to everything you do in a seminar.
+5. **Accuracy.** Seminars are given by members, not by us. Read the live Terms section 7: we do not guarantee that a seminar is accurate, complete or suitable for you, especially for legal, financial or safety decisions.
+
+> **For the owner and adviser (not for publication) , S2**
+>
+> - **Checked in code:** `SeminarService::register` (waiting list when `capacity` reached, `unregister` promotes the next waiting person for non-paid seminars), `startCheckout` ("This seminar is full" for paid), `joinUrl`, `rate` (attended, ended, once, host cannot rate), `SeminarFeedback` (rating 1 to 5, comment up to 1000); `Seminar::joinIsOpen`; `config/seminars.php` `min_ratings_shown` 3.
+
+## S3. Paid seminars: price, commission and who is the seller
+
+*Applies only when paid seminars are switched on and the adviser has signed off the wording. Not before the Paystack test-mode run in `R13_GO_LIVE.md`.*
+
+1. **The host is the seller.** When a host charges for a seminar, the contract to attend is between the host (the seller) and the attendee. InfoDot is the marketplace: we provide the platform, collect the payment on the host's behalf through Paystack, and charge the host a commission. [OWNER/ADVISER: see B-04 on merchant of record.]
+2. **Price.** The host sets the ticket price in South African rand. It must be between R5.00 and R50,000.00 [defaults; confirm]. The price cannot be changed once anyone has bought or started to buy a ticket. The price you see is the price you pay; the host bears Paystack's processing fee.
+3. **Commission.** InfoDot keeps **10%** of each ticket price. The 10% includes VAT: InfoDot is VAT-registered, and the VAT on its commission is taken out of the 10% and not added to it, so a host is never charged more than 10% of the ticket price for the commission (apart from any recovery of a lost chargeback under S4, item 7) [OWNER/ADVISER: B-05]. The host receives the rest, **less Paystack's processing fee**, which is taken from the host's share. Paystack decides when it pays the host out.
+4. **Host set-up.** To sell tickets, a host gives a payout account (name on the account, bank, account number), which InfoDot passes straight to our payment system and keeps only the last four digits of, and optionally a trading name and VAT number for receipts, and authorises InfoDot to issue receipts in the host's name. The host must also accept the host agreement (S4, item 7).
+5. **Receipts and invoices.** Attendees can open a receipt that names the seller. If tax invoices are switched on, the host has a VAT number and has authorised it, the receipt is a tax invoice with the details the law requires; otherwise it is a receipt and not a tax invoice. Each month InfoDot sends each host a numbered invoice for the commission it kept that month (a credit note if refunds were larger than sales). [OWNER/ADVISER: whether the receipts, the seller's tax status and the commission invoice wording are correct; B-05.]
+6. **Places.** A place is held for you for 30 minutes while you pay. You have a ticket only when the payment is confirmed by our payment system; coming back to InfoDot from the Paystack page does not make you a ticket-holder.
+7. **Currency.** All prices are in rand.
+
+> **For the owner and adviser (not for publication) , S3**
+>
+> - **Checked in code:** `config/seminars.php` `paid` (`currency` ZAR, `platform_percent` 10, `min_price_cents` 500, `max_price_cents` 5,000,000, `hold_minutes` 30, `commission_includes_vat` true, `issue_tax_invoices` false, `vat_rate_percent` 15, issuer details blank until configured); `SeminarService::priceFrom`, `assertPriceChangeAllowed`, `startCheckout`, `markPaid`; `CommissionInvoices` (monthly; VAT extracted from the fee; credit note when negative; nothing issued unless the issuer name, address and VAT number are configured); `resources/views/seminars/payouts.blade.php`, `receipt.blade.php`; `routes/web.php` (invoices pages); `app/Console/Kernel.php` (monthly on the 1st at 04:15).
+> - "The price you see is the price you pay" assumes Paystack adds no fee for the buyer; Billing initialises the transaction with `bearer` = subaccount (the host), per `seminar-payments.md`. It was not tested against Paystack.
+> - **Checked against Dot.Billing docs (`seminar-payments.md`, origin/main):** the host bears Paystack's fee (`bearer` = subaccount); InfoDot's share is a flat amount settled to InfoDot's own Paystack account.
+> - **Open (R13_PAID_SEMINAR_POLICY.md, "Not decided or not built"):** VAT treatment for hosts below the registration threshold and for attendees outside South Africa; payout timing is Paystack's; host identity checks beyond Paystack's own.
+
+## S4. Paid seminars: refunds, disputes and what a host owes
+
+*Applies only when paid seminars are switched on and the adviser has signed off the wording.*
+
+1. **If you cancel at least 24 hours before the seminar starts,** you are refunded in full (the amount you paid less anything already refunded to you). The refund goes back through Paystack and can take a few days to show on your statement.
+2. **If you cancel inside 24 hours of the start, or after it started,** your place is released and **no refund is paid** under these Terms. The page tells you this before you pay and on the cancel button.
+3. **If the host cancels the seminar,** everyone who paid is **always refunded in full**, whatever the timing. If your payment arrives after the seminar was cancelled, has ended, or filled up, it is refunded.
+4. **Refunds beyond this policy are the host's choice and responsibility.** A host can refund part or all of a ticket. Any other right an attendee has against a host under the law is a matter between them [OWNER/ADVISER: B-03].
+5. **Cooling-off.** [OWNER/ADVISER: the owner chose the 24-hour policy; whether the Electronic Communications and Transactions Act 25 of 2002 s44 (seven-day cooling-off for electronic transactions) or the exclusions in s42(2) apply to a ticket for a seminar on a fixed date, and whether a statement about attendees' statutory rights must be added here, is for the adviser. See B-01.]
+6. **Disputes with your bank (chargebacks).** If you ask your bank to reverse a payment, Paystack tells our payment system, which tells InfoDot. While a dispute is open the ticket is marked disputed, the host is told, and nobody can refund it. A person at InfoDot answers the dispute with Paystack. If the dispute is **lost,** the ticket is removed, you lose the place, and InfoDot's commission on it is reversed. [PLACEHOLDER: a way to contest, and what happens to an attendee who disputes in good faith.] [OWNER/ADVISER]
+7. **Host agreement and the host's debt (summary only; the host agreement is separate and is still a draft).** Before a host can sell tickets, the host must accept the host agreement. Under the current draft of that agreement, if a chargeback on a host's ticket is lost, the amount InfoDot lost (the ticket price, less InfoDot's 10% commission, less anything already refunded) becomes a debt the host owes InfoDot; until it is paid, InfoDot takes an extra amount from each new ticket the host sells, as a larger fee on that ticket, up to half of the host's share of that ticket; a moderator can write the debt off; the host will be told when a debt is created and as it is paid; and the host can tell us if they think a debt is wrong. **This paragraph is a summary of a draft and is not the agreement.** The final wording, version and acceptance record are in the host agreement (Dot.Billing `docs/host-agreement-draft.md`, version v1, which has its own open questions for the adviser). [OWNER/ADVISER: whether the Terms should summarise it at all or only refer to it.]
+8. **Fraud and abuse.** We may refuse or reverse a sale, cancel a ticket or suspend a host if we reasonably suspect fraud, a stolen card or abuse.
+
+> **For the owner and adviser (not for publication) , S4**
+>
+> - **Checked in code:** `SeminarService::unregister` and `refundWindowOpen` (hours before start, `refund_hours_before` default 24; inside the window the registration is cancelled and "no money moves"), `cancel` (host cancellation refunds all paid, releases those part-way through paying), `markPaid` (late, filled or ended seminar: cancelled and refunded), `hostRefund` (partial; refused while a dispute is open; at most what remains), `applyDispute`, `applyDisputeResolution` (lost: `payment_status` = chargeback, status cancelled, a `seminar_refund_lines` row with reason `chargeback` that reverses the commission); `resources/views/seminars/show.blade.php` lines 54 to 56 and 72 (the refund rule shown before payment and on the button); `InAppNotices` words for refunds and disputes.
+> - **Edge cases the adviser should see:** (1) if the host *changes the start time*, the refund test uses the new time; no right to a refund because of a change exists in code; (2) after a host's partial refund, "full refund" means the remaining amount; (3) a person who cancels inside 24 hours is out of pocket and has no place; (4) a person who has switched in-app notifications off does not receive the cancellation, change, refund or dispute notice (E-04).
+> - **Not verified:** how Paystack splits a refund between host and InfoDot; the mapping of Paystack's dispute outcomes (`declined` to won, `merchant-accepted` to lost) against a real dispute; who bears Paystack's own fee on a refund (all in `R13_PAID_SEMINAR_POLICY.md`, `seminar-payments.md`).
+> - **Not in InfoDot's code yet (E-01):** the host-agreement screen and the call that records acceptance (`POST /api/payout-accounts/{id}/agreement`), the handling of `host_debt.*` callbacks (InfoDot's `SeminarService::applyTicketEvent` ignores any event other than `ticket.paid`, `.refunded`, `.disputed`, `.dispute_resolved`), and any page that shows a host their debt or the extra fee. Dot.Billing refuses to create a ticket for a host who has not accepted the current agreement, so paid seminars cannot sell until InfoDot gains that screen. Item 7's statements that the host "will be told" and "can tell us" depend on what is built.
+> - **Disclosure tension:** InfoDot's host pages say "InfoDot keeps 10% of every ticket" (`payouts.blade.php`, `seminars/show.blade.php`). The host-debt recovery takes more than 10% of a ticket while a debt exists. That must be disclosed to a host *before* they accept (the host agreement does this, once it is shown).
+
+## S5. Rooms and chat: acceptable use
+
+*Applies from the day any room (small room, InfoDot room) is live. The rules about chat apply to the chat in every seminar room.*
+
+1. **Conduct.** In a seminar room and its chat you must not post anything unlawful, defamatory, harassing, discriminatory, sexually explicit or that infringes someone's rights; share malicious code; impersonate anyone; spam or advertise without the host's permission; or try to disrupt the room or other people's connection. The live Terms (sections 3 and 5) apply too.
+2. **Recording.** InfoDot does not record rooms. You must not record, screenshot or broadcast a seminar, the other people in it or the chat without the host's permission, and a host who records must follow S1, item 7. We cannot technically prevent recording by a person's own device.
+3. **Chat.** Chat messages show your name to everyone in the room. In a small room, chat is stored on InfoDot with your name, and people who join later can see earlier messages. In the InfoDot room, chat is not stored by InfoDot. Messages up to 300 characters (small room) or 500 characters (InfoDot room).
+4. **Removal.** The host can remove you from a room. You stay registered. Removal does not itself entitle you to a refund. [OWNER/ADVISER: whether a removed paying attendee has any claim against the host or InfoDot.]
+5. **Small rooms and your device.** In a small room, video is passed between participants' browsers. If your computer is able to, it may be asked to pass the video on to a few other people, using your bandwidth and processor while the room is open; the people you feed, and the person who feeds you, can see your internet address. You agree to that when you enter a small room. Close the room page to stop. [OWNER/ADVISER: whether this should require a click-through acceptance on entry; the room page does not carry this today, E-06.]
+6. **Capacity.** The number of people a small room can hold is an estimate based on the host's connection. We do not guarantee that a room will perform well for everyone, or at all. [OWNER/ADVISER]
+7. **Safety.** If you see unlawful or harmful conduct, tell the host. [PLACEHOLDER: a route to report to InfoDot; none exists today, E-03.]
+
+> **For the owner and adviser (not for publication) , S5**
+>
+> - **Checked in code:** `P2pRoom::chat` (300 characters, stored with `name`), `remove` (`status` = removed, cannot re-join: `join` throws "The host removed you"), `join` / `place` (relay tree), `refusal`; `resources/js/seminar-p2p.js` (relay test, "Nothing is recorded"); `resources/js/seminar-room.js` (500 characters, not stored); `LiveKit::remove`; `resources/views/seminars/form.blade.php` ("Nothing is recorded" shown to hosts); `resources/views/seminars/show.blade.php` line 42 (attendee told "your computer may pass the video on to a few other people"). There is no recording code anywhere in the repository.
+> - **Removal is narrower than item 4 reads:** `P2pRoom::remove` updates only an existing peer row, so a registered person who has not yet entered is not barred; `LiveKit::remove` only disconnects, and the person can fetch a new pass and re-enter while the seminar lasts. Describe removal as "removed from the room" until that is changed.
+> - **Not enforceable by code:** items 1 and 2 are rules; the code has no content filter, no reporting and no way to stop a device recording.
+> - **Legal questions:** consent for recording (POPIA and the Regulation of Interception of Communications and Provision of Communication-related Information Act 70 of 2002 are named only so the adviser can say whether they matter; this draft takes no view) (B-10); whether item 5 is a sufficient basis for address exposure (B-08).
+
+## S6. Knowledge score and specialist badges
+
+*The score applies when `REPUTATION_ENABLED` is on. Badges apply when badges are live.*
+
+1. **What they are.** Your knowledge score and level (Spark, Venture, Growth, Luminary) are a private progress measure worked out by fixed rules from your public activity on InfoDot. Specialist badges (Contributor, Specialist, Authority) show that, in a topic, other people accepted your answers or a moderator verified your solutions.
+2. **No guarantee.** A score, level or badge is **not** a guarantee, certificate, qualification or professional credential. It is not proof that anyone's answers are correct, and you must not present it as one. It does not mean we, or any other member, endorse the person. Rely on an answer only after your own checks.
+3. **No permissions.** A score, level or badge never gives anyone a role, permission or control in a company or on any Dot platform, and never changes the order in which answers are shown. [OWNER/ADVISER: confirm this promise, which the code upholds today.]
+4. **The rules can change.** The rules and numbers are versioned and can change as we learn what is fair; results can go up or down. A badge is taken back if the work behind it is hidden or un-accepted, and returns if the work does.
+5. **Fair play.** Do not try to inflate your score or anyone's: no rings of accounts accepting one another, no accepting answers to help a friend, no creating accounts for the purpose. We check for patterns of accepted answers between accounts. A flagged pattern lowers the weight of acceptances inside the group until a moderator reviews it; it is not by itself a penalty and nobody is told of a flag. We may hide work or take other action under the live Terms for abuse. [OWNER/ADVISER: whether "nobody is told" is acceptable, B-06.]
+6. **Appeals.** If you think a number is wrong, use the "Think a number is wrong?" box on your "Your progress" page (a message of up to 1,000 characters). A moderator checks how it was worked out, recalculates from the facts as they are now, and replies on that page. [PLACEHOLDER: the time in which we will reply; none is defined in code.] The score has no legal effect and is not a decision about your rights; appeals are about whether the arithmetic is right. [ADVISER]
+7. **Your controls.** You can switch your score off, download its data, and hide your badges (see the Privacy Policy). Switching off does not stop the ring check described there.
+8. **Limitation.** We are not liable for any decision someone makes, or loses, because of a score, level or badge, or because they were not shown one.
+
+> **For the owner and adviser (not for publication) , S6**
+>
+> - **Checked in code:** `config/reputation.php` (header comment: "A tier never grants organisation permissions"; tiers and six dimensions; `rings` with `discount_factor` 0.25); `app/Support/TeamRoles.php` ("A person's InfoDot reputation or tier never appears here"); `ReputationEngine`, `ReputationController::appeal` and `resolve`; `TopicBadges` ("Nothing here changes a permission, a trust decision or the order of any content"); `config/achievements.php` `badges`.
+> - **Not defined in code:** a deadline for answering an appeal; any way to appeal a *ring flag* itself (a flagged person is not told, so they cannot).
+> - **Open design point (D-03):** opting out of the score does not stop ring detection from using that person's accepted answers; the Terms should say what the code does until the owner decides otherwise.
+
+## S7. Company seats
+
+*Applies as soon as seat limits are live. Paid seats apply only when they can be bought.*
+
+1. **Included seats.** A company has 3 free seats. The owner holds one, every member holds one, and an invitation that has not been answered holds one until it is accepted, declined or cancelled.
+2. **When a company is full.** New invitations are refused with an explanation. **Nobody is removed** and nobody's account or content is affected, whether a company is full, over its seats, or a payment fails. [OWNER/ADVISER: confirm this promise.]
+3. **Extra seats.** Extra seats are not for sale yet. When they are, they are bought through Dot.Billing with Paystack, at a price shown to the owner or administrator before they pay, [PLACEHOLDER: price, billing period, proration, refunds and what happens after a failed payment; the owner has not decided]. A paid seat becomes usable only once the payment is confirmed by Dot.Billing's verified notice, not by returning from the payment page. After a failed payment a company keeps its seats for a grace period [PLACEHOLDER: grace policy; the code default is 14 days but nothing enforces it today].
+4. **Roles.** The company roles are owner, admin, manager and member. The owner controls billing and deletion. Admins manage people, roles and seats. Managers invite people as members and run team spaces without billing. Members use InfoDot. [OWNER/ADVISER: confirm the descriptions match the intended meanings, which are from `R13_INSPECTION.md` section 6.]
+5. **Records.** We keep an audit trail of seat changes, including the email addresses of people invited and of invitations that were refused (Privacy Policy).
+
+> **For the owner and adviser (not for publication) , S7**
+>
+> - **Checked in code:** `config/licensing.php` (3 included, `pending_invitations_reserve_a_seat` true, price empty, `grace_days` 14 but "nothing sets it"); `SeatLedger::guard` and `message` (refusal says "nothing has been charged and nobody has been removed"); `BillingEntitlements` (a failure leaves the licence unchanged; past due keeps the seats); `TeamRoles`; `R13_BILLING_CONTRACT.md` ("Until those exist the Seats panel says paid seats are not available yet, and no price is shown").
+> - **Not decided (R13_BILLING_CONTRACT.md):** per-seat price and currency; monthly or annual; proration; refund or credit on removing seats; grace policy; whether EFT is acceptable.
+
+## S8. Limits of liability and general terms for these features
+
+1. **[PLACEHOLDER: limitation of liability for seminars.]** [OWNER/ADVISER: extend the live Terms section 7 ("as is"; not liable for indirect loss) to seminars, rooms and paid tickets, within the Consumer Protection Act 68 of 2008 and any other limit on excluding liability. Include: no liability for a seminar's content, a host's conduct or advice, a meeting service's availability, a room's performance, or a host's failure to turn up.]
+2. **[PLACEHOLDER: limitation for payments.]** [OWNER/ADVISER: liability for payment-provider failures, delayed refunds, refunds that take days to show, and chargebacks. Cap, if any.]
+3. **[PLACEHOLDER: limitation for the knowledge score and badges.]** See S6, item 8.
+4. **Availability.** The live Terms section 6 (no guarantee of uninterrupted access) applies. Rooms depend on the host's connection and on third parties and may fail. [OWNER/ADVISER]
+5. **Complaints and disputes between members.** A dispute between a host and an attendee is between them, but contact us and we will try to help. [PLACEHOLDER: dispute and complaints procedure, and any alternative dispute resolution body.]
+6. **Governing law.** As the live Terms section 10 (Republic of South Africa).
+7. **Contact.** Questions go to `support@infodot.co.za` as in the live Terms. Questions about personal information go to the Information Officer as in the Privacy Policy.
+8. **Supplier information.** [OWNER/ADVISER: whether ECTA s43 requires the full name, registration number, physical address, and contact details of the supplier to be shown for paid tickets and for hosts as sellers.] [PLACEHOLDER: BluePin Inc's registration number, physical address, VAT number.]
+
+> **For the owner and adviser (not for publication) , S8**
+>
+> - **Nothing here is verifiable in code.** The live Terms section 7 is the model. The enforceability of any exclusion, particularly for consumers, is entirely the adviser's.
+> - **Checked in code:** nothing; the section is a list of questions and placeholders, as asked.
