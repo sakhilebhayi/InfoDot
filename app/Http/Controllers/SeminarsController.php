@@ -112,6 +112,10 @@ class SeminarsController extends Controller
     /** Hands a registered person on to the host's own meeting link, only inside the window; this is also what records attendance. */
     public function join(Request $request, Seminar $seminar): RedirectResponse
     {
+        if ($seminar->isRoom()) {
+            return redirect()->route('seminars.room', $seminar);
+        }
+
         $url = $this->seminars->joinUrl($seminar, $request->user());
 
         return $url !== null

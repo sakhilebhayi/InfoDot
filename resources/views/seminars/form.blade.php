@@ -3,7 +3,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">{{ $editing ? 'Edit your seminar' : 'Host a seminar' }}</h1>
-            <p class="ix-lede">Seminars are free. InfoDot does not run video: you bring your own meeting room (any video call or webinar link) and only people who registered get the link, from {{ config('seminars.join_opens_minutes_before', 15) }} minutes before the start.</p>
+            <p class="ix-lede">Seminars are free. @if (config('seminars.video.enabled')) You can run it in an InfoDot room or bring your own meeting link; @else InfoDot does not run video here yet: you bring your own meeting room (any video call or webinar link); @endif only people who registered get in, from {{ config('seminars.join_opens_minutes_before', 15) }} minutes before the start.</p>
         </div>
     </div>
 
@@ -68,11 +68,24 @@
             </div>
         @endif
 
-        <div class="ix-field">
-            <label class="ix-label" for="join_url">Your meeting link (https)</label>
-            <input class="ix-input" id="join_url" name="join_url" type="url" maxlength="500" value="{{ old('join_url', $seminar?->join_url) }}" placeholder="https://" required>
-            <p class="ix-hint">Only people who registered are given this link, and only shortly before the start.</p>
-            @error('join_url')<p class="ix-error">{{ $message }}</p>@enderror
+        <div class="ix-field" x-data="{ delivery: '{{ old('delivery', $seminar?->delivery ?? 'link') }}' }">
+            @if (config('seminars.video.enabled'))
+                <span class="ix-label" id="delivery-h">How will you run it?</span>
+                <div role="radiogroup" aria-labelledby="delivery-h" style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px;">
+                    <label><input type="radio" name="delivery" value="room" x-model="delivery"> InfoDot room (video in the browser, nothing to set up)</label>
+                    <label><input type="radio" name="delivery" value="link" x-model="delivery"> My own meeting link</label>
+                </div>
+                @error('delivery')<p class="ix-error">{{ $message }}</p>@enderror
+            @endif
+            <div x-show="delivery === 'link'" @if (config('seminars.video.enabled')) x-cloak @endif>
+                <label class="ix-label" for="join_url">Your meeting link (https)</label>
+                <input class="ix-input" id="join_url" name="join_url" type="url" maxlength="500" value="{{ old('join_url', $seminar?->join_url) }}" placeholder="https://">
+                <p class="ix-hint">Only people who registered are given this link, and only shortly before the start.</p>
+                @error('join_url')<p class="ix-error">{{ $message }}</p>@enderror
+            </div>
+            @if (config('seminars.video.enabled'))
+                <p class="ix-hint" x-show="delivery === 'room'" x-cloak>People who registered enter the room from this page from {{ config('seminars.join_opens_minutes_before', 15) }} minutes before the start. You share your camera, microphone and screen; they watch and can chat. Nothing is recorded.</p>
+            @endif
         </div>
 
         <div class="ix-actions">

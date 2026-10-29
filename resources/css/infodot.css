@@ -7054,3 +7054,17 @@ body {
         padding: 12px 4px;
     }
 }
+
+/* Seminar room */
+.ix-room__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 900px) { .ix-room__grid { grid-template-columns: minmax(0, 1fr) 320px; } }
+.ix-room__stage { min-height: 320px; background: var(--ix-panel); border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.ix-room__stage video { width: 100%; max-height: 70vh; object-fit: contain; background: #000; }
+.ix-room__side { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ix-room__chat { list-style: none; margin: 0; padding: 8px 10px; height: 260px; overflow-y: auto; background: var(--ix-panel); border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); font-size: 14px; }
+.ix-room__chat li { padding: 3px 0; overflow-wrap: anywhere; }
+.ix-room__form { display: flex; gap: 8px; }
+.ix-room__form .ix-input { flex: 1; min-width: 0; }
+.ix-room__controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.ix-room__controls [aria-pressed='true'] { background: var(--ix-signal-wash); }
+
