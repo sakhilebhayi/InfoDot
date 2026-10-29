@@ -6,6 +6,7 @@ use App\Models\Answer;
 use App\Models\LibraryEntry;
 use App\Models\Questions;
 use App\Models\ReputationAppeal;
+use App\Models\ReputationRingFlag;
 use App\Models\ReputationSnapshot;
 use App\Models\SeminarRegistration;
 use App\Models\Solutions;
@@ -117,7 +118,7 @@ class ReputationEngine
         $accepted = Answer::withoutGlobalScope('moderation-visibility')
             ->where('user_id', $user->id)->where('status', Answer::PUBLISHED)->whereNull('hidden_at')->where('is_self_answer', false)
             ->whereNotNull('accepted_at')->whereNotNull('accepted_by')->where('accepted_by', '!=', $user->id)
-            ->whereIn('question_id', $publicQuestionIds)->orderBy('accepted_at')->get(['id', 'question_id']);
+            ->whereIn('question_id', $publicQuestionIds)->orderBy('accepted_at')->get(['id', 'question_id', 'accepted_by']);
         $askers = Questions::withoutGlobalScopes()->whereIn('id', $accepted->pluck('question_id'))->pluck('user_id', 'id');
         $decay = config('reputation.points.answer_accepted.decay', [1.0]);
         // People whose answers this person accepted. If one of them also accepted this person's answers, the two are vouching for
@@ -125,12 +126,17 @@ class ReputationEngine
         $reciprocal = Answer::withoutGlobalScope('moderation-visibility')->where('accepted_by', $user->id)->whereNotNull('accepted_at')
             ->where('user_id', '!=', $user->id)->pluck('user_id')->unique()->flip();
         $factor = (float) config('reputation.points.answer_accepted.reciprocal_factor', 0.5);
+        // Accounts a moderator has not cleared as a ring with this person (open or confirmed flags; dismissed ones have no effect). An acceptance
+        // from one of them counts ring `discount_factor` times as much. It is never stacked with the reciprocal factor: the lower one applies.
+        $ringMates = $this->ringMates($user);
+        $ringFactor = (float) config('reputation.rings.discount_factor', 0.25);
         $seen = [];
         $acceptedWeighted = 0.0;
         foreach ($accepted as $a) {
             $asker = $askers[$a->question_id] ?? null;
             $n = $seen[$asker] = ($seen[$asker] ?? -1) + 1;
-            $acceptedWeighted += ($decay[$n] ?? 0.0) * ($reciprocal->has($asker) ? $factor : 1.0);
+            $link = min($reciprocal->has($asker) ? $factor : 1.0, isset($ringMates[(int) $a->accepted_by]) ? $ringFactor : 1.0);
+            $acceptedWeighted += ($decay[$n] ?? 0.0) * $link;
         }
 
         $topics = DB::table('question_topic')->whereIn('question_id', (clone $publicQuestionIds)->where('user_id', $user->id))->distinct()->count('topic_id');
@@ -162,6 +168,31 @@ class ReputationEngine
             'seminar_host_rated_well' => ($host['average'] !== null && $host['average'] >= (float) config('reputation.points.seminar_host_rated_well.min_average', 4.0)) ? 1 : 0,
             'moderator_hid_work' => $hidden,
         ];
+    }
+
+    /**
+     * The other members of every open or confirmed ring this person is in, as a set of user ids. Empty when ring checks are off.
+     *
+     * @return array<int, true>
+     */
+    private function ringMates(User $user): array
+    {
+        if (! config('reputation.rings.enabled', true)) {
+            return [];
+        }
+
+        $mates = [];
+        foreach (ReputationRingFlag::effective()->get(['member_ids']) as $flag) {
+            $members = array_map('intval', $flag->member_ids);
+
+            if (in_array((int) $user->id, $members, true)) {
+                foreach ($members as $m) {
+                    $m === (int) $user->id || $mates[$m] = true;
+                }
+            }
+        }
+
+        return $mates;
     }
 
     private function activeWeeks(User $user, int $window): int

@@ -23,6 +23,27 @@ return [
 
     'version' => 1,
 
+    /*
+     | Ring detection (advisory). Over the last `window_days`, acceptances are a directed graph (the person who accepted an answer ->
+     | its author; solutions a non-moderator verified count the same way). Moderators are never members: what they accept or verify
+     | is their job, not vouching. A flag is raised for
+     |   - a cycle of 3 or 4 accounts (A accepted B, B accepted C, C accepted A), every link seen at least `min_edges_per_link` times;
+     |   - a tight cluster: accounts joined by MUTUAL acceptance, 3 to 8 of them, where each member got at least `min_internal_ratio`
+     |     of the acceptances they received from inside the group, the group has at least `min_density` of all possible directed
+     |     links and at least `min_internal_edges` acceptances between its members.
+     | A pair that accepts each other is not a ring: the reciprocal control in `points.answer_accepted` already halves it.
+     | A flag is only a question for a moderator. It bans nobody and nobody in it is told. While it is open or confirmed, an
+     | acceptance between two of its members counts `discount_factor` times as much (never stacked with the reciprocal factor: the
+     | lower of the two applies). A dismissed flag has no effect. Edit a number, raise `version`; nothing in the code changes.
+     */
+    'rings' => [
+        'enabled' => (bool) env('REPUTATION_RINGS_ENABLED', true),
+        'window_days' => 180,
+        'min_edges_per_link' => 1,
+        'cluster' => ['min_members' => 3, 'max_members' => 8, 'min_internal_ratio' => 0.8, 'min_density' => 0.5, 'min_internal_edges' => 6],
+        'discount_factor' => 0.25,
+    ],
+
     'tiers' => [
         // key => [name, score needed]. Names and thresholds are configuration.
         'spark' => ['name' => 'InfoDot Spark', 'from' => 0],
