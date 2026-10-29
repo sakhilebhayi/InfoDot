@@ -30,7 +30,7 @@ class SeatLedgerTest extends TestCase
 
     private function invite(User $owner, Team $team, string $email): void
     {
-        app(InviteTeamMember::class)->invite($owner, $team, $email, 'editor');
+        app(InviteTeamMember::class)->invite($owner, $team, $email, 'member');
     }
 
     protected function setUp(): void
@@ -80,7 +80,7 @@ class SeatLedgerTest extends TestCase
         $this->invite($owner, $team, 'b@example.test');
         $a = User::factory()->create(['email' => 'a@example.test']);
 
-        app(AddTeamMember::class)->add($owner, $team, 'a@example.test', 'editor');
+        app(AddTeamMember::class)->add($owner, $team, 'a@example.test', 'member');
         $team->teamInvitations()->where('email', 'a@example.test')->delete();
 
         $s = app(SeatLedger::class)->summary($team->fresh());
@@ -116,7 +116,7 @@ class SeatLedgerTest extends TestCase
         [$owner, $team] = $this->company();
         $members = User::factory()->count(4)->create();
         foreach ($members as $m) {
-            $team->users()->attach($m, ['role' => 'editor']);
+            $team->users()->attach($m, ['role' => 'member']);
         }
 
         $s = app(SeatLedger::class)->summary($team);
@@ -167,7 +167,7 @@ class SeatLedgerTest extends TestCase
     {
         [$owner, $team] = $this->company();
         $member = User::factory()->create();
-        $team->users()->attach($member, ['role' => 'editor']);
+        $team->users()->attach($member, ['role' => 'member']);
         $admin = User::factory()->create();
         $team->users()->attach($admin, ['role' => 'admin']);
 
@@ -185,7 +185,7 @@ class SeatLedgerTest extends TestCase
     {
         [$owner, $team] = $this->company();
         $m = User::factory()->create();
-        $team->users()->attach($m, ['role' => 'editor']);
+        $team->users()->attach($m, ['role' => 'member']);
 
         $this->actingAs($owner);
         app(\App\Actions\Jetstream\RemoveTeamMember::class)->remove($owner, $team, $m);

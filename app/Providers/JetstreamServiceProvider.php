@@ -56,12 +56,26 @@ class JetstreamServiceProvider extends ServiceProvider
             'read',
             'update',
             'delete',
-        ])->description('Administrator users can perform any action.');
+        ])->description('Administrators run the company\'s people, roles and seats. Only the owner changes billing or deletes the company.');
 
-        Jetstream::role('editor', 'Editor', [
+        Jetstream::role('manager', 'Manager', [
             'read',
             'create',
             'update',
-        ])->description('Editor users have the ability to read, create, and update.');
+            'delete',
+        ])->description('Managers invite people as members and run the company\'s work. They cannot change roles, seats or billing.');
+
+        Jetstream::role('member', 'Member', [
+            'read',
+            'create',
+            'update',
+        ])->description('Members use InfoDot with the company: ask, answer, read and create.');
+
+        // The old name for a member. Kept registered so nothing that still holds it breaks; hidden from the pickers (see App\Support\TeamRoles).
+        Jetstream::role('editor', 'Member', [
+            'read',
+            'create',
+            'update',
+        ])->description('Same as Member.');
     }
 }

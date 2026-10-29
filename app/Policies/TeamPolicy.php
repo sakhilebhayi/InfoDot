@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Team;
+use App\Support\TeamRoles;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
@@ -57,7 +58,7 @@ class TeamPolicy
      */
     public function addTeamMember(User $user, Team $team)
     {
-        return $user->ownsTeam($team);
+        return TeamRoles::assignableBy($user, $team) !== [];
     }
 
     /**
@@ -67,7 +68,7 @@ class TeamPolicy
      */
     public function updateTeamMember(User $user, Team $team)
     {
-        return $user->ownsTeam($team);
+        return TeamRoles::manages($user, $team);
     }
 
     /**
@@ -77,7 +78,7 @@ class TeamPolicy
      */
     public function removeTeamMember(User $user, Team $team)
     {
-        return $user->ownsTeam($team);
+        return TeamRoles::manages($user, $team);
     }
 
     /**
@@ -96,7 +97,7 @@ class TeamPolicy
      */
     public function viewLicence(User $user, Team $team)
     {
-        return $user->ownsTeam($team) || $user->hasTeamRole($team, 'admin');
+        return TeamRoles::manages($user, $team);
     }
 
     /** Who may change seats and subscription settings: the owner only. */

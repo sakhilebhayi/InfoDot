@@ -27,12 +27,12 @@ class RemoveTeamMemberTest extends TestCase
         $this->assertCount(0, $user->currentTeam->fresh()->users);
     }
 
-    public function test_only_team_owner_can_remove_team_members()
+    public function test_only_owner_and_admins_can_remove_team_members()
     {
         $user = User::factory()->withPersonalTeam()->create();
 
         $user->currentTeam->users()->attach(
-            $otherUser = User::factory()->create(), ['role' => 'admin']
+            $otherUser = User::factory()->create(), ['role' => 'member']
         );
 
         $this->actingAs($otherUser);
