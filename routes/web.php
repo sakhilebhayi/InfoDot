@@ -134,6 +134,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/seminars/{seminar}/attendance/{person}', [SeminarsController::class, 'attendance'])->whereNumber(['seminar', 'person'])->middleware('throttle:60,1')->name('seminars.attendance');
     Route::post('/seminars/{seminar}/refund/{person}', [SeminarsController::class, 'refund'])->whereNumber(['seminar', 'person'])->middleware('throttle:20,1')->name('seminars.refund');
     Route::get('/seminars/{seminar}/receipt', [SeminarsController::class, 'receipt'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.receipt');
+    Route::get('/seminars/{seminar}/room', [\App\Http\Controllers\SeminarRoomController::class, 'show'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.room');
+    Route::post('/seminars/{seminar}/room/token', [\App\Http\Controllers\SeminarRoomController::class, 'token'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.room.token');
+    Route::post('/seminars/{seminar}/room/remove/{person}', [\App\Http\Controllers\SeminarRoomController::class, 'remove'])->whereNumber(['seminar', 'person'])->middleware('throttle:30,1')->name('seminars.room.remove');
     Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.feedback');
 
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).

@@ -39,3 +39,8 @@ Route::get('/knowledge/candidates', KnowledgeCandidatesController::class)
 Route::post('/billing/ticket-events', \App\Http\Controllers\Api\SeminarTicketEventsController::class)
     ->middleware('throttle:ecosystem-redeem')
     ->name('api.billing.ticket-events');
+
+// LiveKit tells InfoDot who connected to a seminar room. Signed with the LiveKit API secret; see SeminarRoomWebhookController.
+Route::post('/seminars/livekit-webhook', \App\Http\Controllers\Api\SeminarRoomWebhookController::class)
+    ->middleware('throttle:ecosystem-redeem')
+    ->name('api.seminars.livekit-webhook');

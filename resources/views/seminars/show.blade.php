@@ -37,8 +37,8 @@
             @if ($reg && $reg->status === 'registered')
                 <p><span class="ix-chip ix-chip--done">You are registered</span></p>
                 @if ($seminar->joinIsOpen())
-                    <a class="ix-btn ix-btn--primary" href="{{ route('seminars.join', $seminar) }}" rel="noopener">Join the seminar</a>
-                    <p class="ix-hint">This opens the host’s own meeting room. Opening it also notes that you attended.</p>
+                    <a class="ix-btn ix-btn--primary" href="{{ route('seminars.join', $seminar) }}" rel="noopener">{{ $seminar->isRoom() ? 'Enter the room' : 'Join the seminar' }}</a>
+                    <p class="ix-hint">{{ $seminar->isRoom() ? 'This opens the InfoDot room in your browser. You are noted as attending when you connect.' : 'This opens the host’s own meeting room. Opening it also notes that you attended.' }}</p>
                 @elseif ($seminar->hasEnded())
                     <p class="ix-hint">This seminar has finished.</p>
                 @else
@@ -97,7 +97,7 @@
             <h2 class="ix-label" id="people-h">People ({{ $people->count() }})</h2>
             @if ($hostPoints = app(\App\Services\Seminars\SeminarHostPoints::class)->sentence($seminar))<p class="ix-hint" id="host-points">{{ $hostPoints }}</p>@endif
             @if ($seminar->status === 'published')
-                <p class="ix-hint">Your meeting link is private to you and the people who registered. You can open it yourself here: <a href="{{ route('seminars.join', $seminar) }}" rel="noopener">open my meeting room</a>.</p>
+                <p class="ix-hint">Your meeting link is private to you and the people who registered. You can open it yourself here: <a href="{{ route('seminars.join', $seminar) }}" rel="noopener">{{ $seminar->isRoom() ? 'enter the InfoDot room' : 'open my meeting room' }}</a>.</p>
             @endif
             @if ($revenue)
                 <p class="ix-hint">Tickets sold: <b>{{ $revenue['tickets'] }}</b>. Paid by attendees {{ \App\Models\Seminar::money($revenue['gross_cents']) }}; InfoDot keeps {{ \App\Models\Seminar::money($revenue['platform_cents']) }}; yours {{ \App\Models\Seminar::money($revenue['host_cents']) }} before Paystack's processing fee. Paystack pays you out on its own schedule.</p>
@@ -113,6 +113,9 @@
                                 <td>{{ $p->user->name }}</td>
                                 <td>{{ $p->status === 'waitlist' ? 'Waiting list' : 'Registered' }}</td>
                                 <td>
+                                    @if ($p->status === 'registered' && $seminar->isRoom() && config('seminars.video.enabled'))
+                                        <form method="POST" action="{{ route('seminars.room.remove', [$seminar, $p->user_id]) }}" style="display: inline;" onsubmit="return confirm('Remove this person from the room?');">@csrf<button class="ix-btn ix-btn--sm" type="submit">Remove from room</button></form>
+                                    @endif
                                     @if ($p->status === 'registered')
                                         <form method="POST" action="{{ route('seminars.attendance', [$seminar, $p->user_id]) }}">@csrf
                                             <input type="hidden" name="attended" value="{{ $p->attended_at ? 0 : 1 }}">

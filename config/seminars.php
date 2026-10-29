@@ -62,4 +62,19 @@ return [
         'wait_hours' => 24,
         'consider_days' => 30,
     ],
+
+    /*
+    | Seminar video: InfoDot's own room on a LiveKit server YOU run (open source; see docs/programme/R13_LIVEKIT_SERVER.md). OFF until
+    | SEMINARS_VIDEO_ENABLED and the three LIVEKIT_ values are set. Never claim live video to people until a real test on two networks passes.
+    | InfoDot hands each registered person a short-lived join token, accepts LiveKit's signed webhook to record who really joined, and lets
+    | the host remove a person. No recording is made.
+    */
+    'video' => [
+        'enabled' => (bool) env('SEMINARS_VIDEO_ENABLED', false),
+        'url' => env('LIVEKIT_URL'),                    // wss://live.example.org (the browser connects here)
+        'api_key' => env('LIVEKIT_API_KEY'),
+        'api_secret' => env('LIVEKIT_API_SECRET'),
+        'token_minutes_after_end' => 15,                // a token stays valid until the seminar ends plus this
+        'max_participants' => (int) env('SEMINARS_VIDEO_MAX_PARTICIPANTS', 100),
+    ],
 ];
