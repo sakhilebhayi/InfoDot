@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ReputationAppeal;
 use App\Models\ReputationSnapshot;
+use App\Models\User;
 use App\Services\Reputation\ReputationEngine;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,11 @@ class ReputationController extends Controller
     {
         $this->switchedOn();
         $user = $request->user();
+
+        if ($user->optedOutOfReputation()) {
+            return view('reputation.off');
+        }
+
         $snapshot = $this->engine->snapshot($user);
 
         return view('reputation.show', [
@@ -38,6 +44,7 @@ class ReputationController extends Controller
         $this->switchedOn();
         $data = $request->validate(['message' => ['required', 'string', 'min:10', 'max:1000']]);
         $user = $request->user();
+        abort_if($user->optedOutOfReputation(), 404);
 
         if (ReputationAppeal::where('user_id', $user->id)->where('status', 'open')->exists()) {
             return back()->with('reputation_notice', 'You already have an appeal waiting for a moderator.');
@@ -46,6 +53,32 @@ class ReputationController extends Controller
         ReputationAppeal::create(['user_id' => $user->id, 'snapshot_id' => $this->engine->snapshot($user)->id, 'message' => $data['message']]);
 
         return back()->with('reputation_notice', 'Your appeal was sent. A moderator will check how your score was worked out and reply here.');
+    }
+
+    /** Switch the score off or on for yourself. Off removes what is stored; nothing is computed while it is off. */
+    public function preference(Request $request): RedirectResponse
+    {
+        $this->switchedOn();
+        $data = $request->validate(['reputation' => ['required', 'in:0,1']]);
+        $off = $data['reputation'] === '0';
+        $user = $request->user();
+
+        User::whereKey($user->getKey())->update(['reputation_opt_out' => $off]);
+
+        if ($off) {
+            $this->engine->forget($user);
+        }
+
+        return redirect()->route('reputation')->with('reputation_notice', $off ? 'Your score is switched off and what was stored about it has been deleted.' : 'Your score is switched on.');
+    }
+
+    /** Everything stored about your own score, as a file you keep. */
+    public function export(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $this->switchedOn();
+        $payload = $this->engine->export($request->user());
+
+        return response()->streamDownload(fn () => print(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)), 'my-knowledge-score.json', ['Content-Type' => 'application/json']);
     }
 
     public function appeals(): View

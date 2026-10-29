@@ -104,6 +104,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     // Knowledge reputation: private progress (404 unless REPUTATION_ENABLED). Appeals are answered by moderators.
     Route::get('/progress', [ReputationController::class, 'show'])->middleware('throttle:60,1')->name('reputation');
+    Route::post('/progress/preference', [ReputationController::class, 'preference'])->middleware('throttle:10,1')->name('reputation.preference');
+    Route::get('/progress/export', [ReputationController::class, 'export'])->middleware('throttle:10,1')->name('reputation.export');
     Route::post('/progress/appeal', [ReputationController::class, 'appeal'])->middleware('throttle:10,1')->name('reputation.appeal');
     Route::get('/moderation/reputation', [ReputationController::class, 'appeals'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation');
     Route::post('/moderation/reputation/{appeal}', [ReputationController::class, 'resolve'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation.resolve');

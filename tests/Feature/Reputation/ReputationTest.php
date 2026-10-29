@@ -169,4 +169,59 @@ class ReputationTest extends TestCase
         $this->artisan('reputation:recalculate')->assertSuccessful();
         $this->assertSame(1, ReputationSnapshot::count());
     }
+
+    public function test_two_people_accepting_each_other_count_for_less(): void
+    {
+        $a = $this->person('A');
+        $b = $this->person('B');
+        app(AnswerService::class)->accept($this->answer($this->question($a, 'public', 'Question from A about cash flow'), $b), $a);
+        app(AnswerService::class)->accept($this->answer($this->question($b, 'public', 'Question from B about stock control'), $a), $b);
+
+        $this->assertSame(0.5, $this->engine()->compute($b)['dimensions']['impact']['evidence']['answer_accepted'], 'B was accepted by A, but A was accepted by B too');
+        $this->assertSame(0.5, $this->engine()->compute($a)['dimensions']['impact']['evidence']['answer_accepted']);
+
+        $c = $this->person('C');
+        app(AnswerService::class)->accept($this->answer($this->question($c, 'public', 'Question from C about hiring'), $b), $c);
+        $this->assertSame(1.5, $this->engine()->compute($b)['dimensions']['impact']['evidence']['answer_accepted'], 'help from someone who never got help back counts in full');
+    }
+
+    public function test_opting_out_deletes_what_is_stored_and_stops_the_score(): void
+    {
+        $u = $this->person();
+        $this->actingAs($u)->get('/progress')->assertOk();
+        $this->actingAs($u)->post('/progress/appeal', ['message' => 'Something looks wrong here'])->assertRedirect();
+        $this->assertSame([1, 1], [ReputationSnapshot::count(), ReputationAppeal::count()]);
+
+        $this->actingAs($u)->post('/progress/preference', ['reputation' => '0'])->assertRedirect('/progress');
+        $this->assertSame([0, 0], [ReputationSnapshot::count(), ReputationAppeal::count()]);
+
+        $u->refresh(); // a real request loads the person fresh; the test keeps one instance
+        $this->actingAs($u)->get('/progress')->assertOk()->assertSee('switched off')->assertDontSee('How it is worked out');
+        $this->assertNull($this->engine()->snapshot($u));
+        $this->artisan('reputation:recalculate')->assertSuccessful();
+        $this->assertSame(0, ReputationSnapshot::count(), 'the nightly run skips people who opted out');
+        $this->actingAs($u)->post('/progress/appeal', ['message' => 'Appeal while switched off'])->assertNotFound();
+
+        $this->actingAs($u)->post('/progress/preference', ['reputation' => '1'])->assertRedirect();
+        $u->refresh();
+        $this->actingAs($u)->get('/progress')->assertOk()->assertSee('How it is worked out');
+        $this->actingAs($u)->post('/progress/preference', ['reputation' => 'maybe'])->assertSessionHasErrors('reputation');
+    }
+
+    public function test_a_person_can_download_only_their_own_score_data(): void
+    {
+        $u = $this->person('Me');
+        $other = $this->person('Other');
+        $this->actingAs($other)->get('/progress');
+        $this->actingAs($u)->get('/progress');
+        $this->actingAs($u)->post('/progress/appeal', ['message' => 'Please check my score']);
+
+        $response = $this->actingAs($u)->get('/progress/export')->assertOk();
+        $json = json_decode($response->streamedContent(), true);
+
+        $this->assertSame($u->email, $json['person']);
+        $this->assertCount(1, $json['snapshots']);
+        $this->assertSame('Please check my score', $json['appeals'][0]['message']);
+        $this->assertStringNotContainsString($other->email, json_encode($json));
+    }
 }

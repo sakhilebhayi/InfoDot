@@ -5,6 +5,7 @@ namespace App\Services\Reputation;
 use App\Models\Answer;
 use App\Models\LibraryEntry;
 use App\Models\Questions;
+use App\Models\ReputationAppeal;
 use App\Models\ReputationSnapshot;
 use App\Models\SeminarRegistration;
 use App\Models\Solutions;
@@ -61,9 +62,13 @@ class ReputationEngine
         return ['rules_version' => (int) config('reputation.version'), 'total' => $total, 'tier' => $tier, 'tier_name' => $name, 'next' => $next, 'dimensions' => $dims];
     }
 
-    /** Stores the result if it differs from the last snapshot. @return ReputationSnapshot the current snapshot */
-    public function snapshot(User $user): ReputationSnapshot
+    /** Stores the result if it differs from the last snapshot. Nothing is stored for a person who opted out. @return ?ReputationSnapshot the current snapshot */
+    public function snapshot(User $user): ?ReputationSnapshot
     {
+        if ($user->optedOutOfReputation()) {
+            return null;
+        }
+
         $r = $this->compute($user);
         $last = ReputationSnapshot::where('user_id', $user->id)->latest('id')->first();
         $dims = collect($r['dimensions'])->map(fn ($d) => ['points' => $d['points'], 'score' => $d['score'], 'evidence' => $d['evidence']])->all();
@@ -73,6 +78,24 @@ class ReputationEngine
         }
 
         return ReputationSnapshot::create(['user_id' => $user->id, 'rules_version' => $r['rules_version'], 'total' => $r['total'], 'tier' => $r['tier'], 'dimensions' => $dims, 'computed_at' => now()]);
+    }
+
+    /** Opting out removes everything stored about the person's score, including appeals; opting back in starts fresh. */
+    public function forget(User $user): void
+    {
+        ReputationAppeal::where('user_id', $user->id)->delete();
+        ReputationSnapshot::where('user_id', $user->id)->delete();
+    }
+
+    /** @return array<string, mixed> everything stored about one person's score, for them to keep (POPIA section 23) */
+    public function export(User $user): array
+    {
+        return [
+            'person' => $user->email,
+            'exported_at' => now()->toIso8601String(),
+            'snapshots' => ReputationSnapshot::where('user_id', $user->id)->orderBy('id')->get()->map(fn ($s) => ['computed_at' => $s->computed_at?->toIso8601String(), 'rules_version' => $s->rules_version, 'total' => $s->total, 'tier' => $s->tier, 'dimensions' => $s->dimensions])->all(),
+            'appeals' => ReputationAppeal::where('user_id', $user->id)->orderBy('id')->get()->map(fn ($a) => ['sent_at' => $a->created_at?->toIso8601String(), 'message' => $a->message, 'status' => $a->status, 'resolution_note' => $a->resolution_note])->all(),
+        ];
     }
 
     /** @return array{0: string, 1: string, 2: ?array{name: string, needed: int, remaining: int}} */
@@ -97,12 +120,17 @@ class ReputationEngine
             ->whereIn('question_id', $publicQuestionIds)->orderBy('accepted_at')->get(['id', 'question_id']);
         $askers = Questions::withoutGlobalScopes()->whereIn('id', $accepted->pluck('question_id'))->pluck('user_id', 'id');
         $decay = config('reputation.points.answer_accepted.decay', [1.0]);
+        // People whose answers this person accepted. If one of them also accepted this person's answers, the two are vouching for
+        // each other, which is exactly what a ring of accounts does, so that pair's acceptances count for less (config reciprocal_factor).
+        $reciprocal = Answer::withoutGlobalScope('moderation-visibility')->where('accepted_by', $user->id)->whereNotNull('accepted_at')
+            ->where('user_id', '!=', $user->id)->pluck('user_id')->unique()->flip();
+        $factor = (float) config('reputation.points.answer_accepted.reciprocal_factor', 0.5);
         $seen = [];
         $acceptedWeighted = 0.0;
         foreach ($accepted as $a) {
             $asker = $askers[$a->question_id] ?? null;
             $n = $seen[$asker] = ($seen[$asker] ?? -1) + 1;
-            $acceptedWeighted += $decay[$n] ?? 0.0;
+            $acceptedWeighted += ($decay[$n] ?? 0.0) * ($reciprocal->has($asker) ? $factor : 1.0);
         }
 
         $topics = DB::table('question_topic')->whereIn('question_id', (clone $publicQuestionIds)->where('user_id', $user->id))->distinct()->count('topic_id');

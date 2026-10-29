@@ -58,4 +58,15 @@
             </ul>
         @endif
     </section>
+
+    <section aria-labelledby="own-h" style="margin-top: 24px;">
+        <h2 class="ix-label" id="own-h">Your data</h2>
+        <p class="ix-hint">You can keep a copy of everything stored about your score, or switch it off. Switching off deletes what is stored and nothing is worked out for you until you switch it back on.</p>
+        <a class="ix-btn" href="{{ route('reputation.export') }}">Download my score data</a>
+        <form method="POST" action="{{ route('reputation.preference') }}" style="display: inline;">
+            @csrf
+            <input type="hidden" name="reputation" value="0">
+            <button class="ix-btn" type="submit">Switch my score off</button>
+        </form>
+    </section>
 </x-app-layout>
