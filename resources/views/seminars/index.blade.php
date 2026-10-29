@@ -5,7 +5,10 @@
             <h1 class="ix-h1">Seminars</h1>
             <p class="ix-lede">Free sessions run by people in the community. Anyone signed in can host one, and no level or ranking is needed. Each host brings their own meeting link, which you get when you register.</p>
         </div>
-        <a class="ix-btn ix-btn--primary" href="{{ route('seminars.create') }}">Host a seminar</a>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            @if (config('seminars.paid.enabled'))<a class="ix-btn" href="{{ route('seminars.payouts') }}">Get paid for seminars</a>@endif
+            <a class="ix-btn ix-btn--primary" href="{{ route('seminars.create') }}">Host a seminar</a>
+        </div>
     </div>
 
     @if ($flash)<p class="ix-pts__muted" role="status">{{ $flash }}</p>@endif
@@ -56,7 +59,7 @@
                             <span><b>{{ $s->starts_at->timezone(config('app.timezone'))->format('D j M Y, H:i') }}</b></span>
                             <span>{{ $s->duration_minutes }} min</span>
                             <span>Hosted by {{ $hosts[$s->host_id]->name ?? 'a member' }}</span>
-                            <span>Free</span>
+                            <span>{{ $s->priceLabel() }}</span>
                         </div>
                     </li>
                 @endforeach

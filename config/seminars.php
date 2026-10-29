@@ -13,4 +13,22 @@ return [
     'max_duration_minutes' => 480,
     'max_capacity' => 5000,
     'min_ratings_shown' => 3,           // a host's average is shown publicly only from this many ratings
+
+    /*
+    | Paid seminars. OFF until SEMINARS_PAID_ENABLED. The host sets the ticket price; InfoDot keeps `platform_percent` of it and the host
+    | carries Paystack's processing fee. All money moves through Dot.Billing's Paystack split payments (InfoDot never touches a card or a bank
+    | number beyond passing a host's account details once to Billing, which keeps only Paystack's subaccount code and the last four digits).
+    | A ticket counts only when Billing's verified callback says it was paid, never when the attendee's browser comes back.
+    | `platform_percent` here is for showing the host their share; the amount actually taken is set in Dot.Billing (BILLING_MARKETPLACE_PLATFORM_PERCENT).
+    */
+    'paid' => [
+        'enabled' => (bool) env('SEMINARS_PAID_ENABLED', false),
+        'currency' => 'ZAR',
+        'platform_percent' => (int) env('SEMINARS_PLATFORM_PERCENT', 10),
+        'min_price_cents' => (int) env('SEMINARS_MIN_PRICE_CENTS', 500),
+        'max_price_cents' => (int) env('SEMINARS_MAX_PRICE_CENTS', 5000000),
+        'hold_minutes' => 30,                                   // a place is held this long while the attendee pays
+        'callback_secret' => env('SEMINARS_BILLING_CALLBACK_SECRET'),
+        'return_path' => '/seminars',                          // where Paystack sends the attendee back to (UI only)
+    ],
 ];
