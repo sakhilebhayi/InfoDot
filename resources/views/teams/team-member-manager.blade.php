@@ -31,7 +31,7 @@
                         <x-jet-input-error for="role" />
 
                         <div class="relative z-0 overflow-hidden" style="border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius);">
-                            @foreach ($this->roles as $index => $role)
+                            @foreach (collect($this->roles)->filter(fn ($r) => in_array($r->key, \App\Support\TeamRoles::assignableBy(auth()->user(), $team), true))->values() as $index => $role)
                                 @php($selected = isset($addTeamMemberForm['role']) && $addTeamMemberForm['role'] === $role->key)
                                 <button type="button" class="relative flex w-full items-start justify-between gap-3 px-4 py-3 text-left focus:z-10"
                                                 aria-pressed="{{ $selected ? 'true' : 'false' }}"
@@ -133,13 +133,13 @@
 
                             <div class="flex shrink-0 items-center gap-2">
                                 <!-- Manage Team Member Role -->
-                                @if (Gate::check('addTeamMember', $team) && Laravel\Jetstream\Jetstream::hasRoles())
+                                @if (Gate::check('updateTeamMember', $team) && Laravel\Jetstream\Jetstream::hasRoles())
                                     <button class="ix-btn ix-btn--sm" wire:click="manageRole('{{ $user->id }}')">
-                                        {{ Laravel\Jetstream\Jetstream::findRole($user->membership->role)->name }}
+                                        {{ (Laravel\Jetstream\Jetstream::findRole(\App\Support\TeamRoles::normalise($user->membership->role))?->name ?? ucfirst($user->membership->role)) }}
                                     </button>
                                 @elseif (Laravel\Jetstream\Jetstream::hasRoles())
                                     <div class="text-sm" style="color: var(--ix-text-2);">
-                                        {{ Laravel\Jetstream\Jetstream::findRole($user->membership->role)->name }}
+                                        {{ (Laravel\Jetstream\Jetstream::findRole(\App\Support\TeamRoles::normalise($user->membership->role))?->name ?? ucfirst($user->membership->role)) }}
                                     </div>
                                 @endif
 
@@ -171,7 +171,7 @@
 
         <x-slot name="content">
             <div class="relative z-0 overflow-hidden" style="border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius);">
-                @foreach ($this->roles as $index => $role)
+                @foreach (collect($this->roles)->filter(fn ($r) => in_array($r->key, \App\Support\TeamRoles::assignableBy(auth()->user(), $team), true))->values() as $index => $role)
                     @php($selected = $currentRole == $role->key)
                     <button type="button" class="relative flex w-full items-start justify-between gap-3 px-4 py-3 text-left focus:z-10"
                                     aria-pressed="{{ $selected ? 'true' : 'false' }}"

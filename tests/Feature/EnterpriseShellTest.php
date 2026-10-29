@@ -137,7 +137,7 @@ class EnterpriseShellTest extends TestCase
             ->assertSee($owner->name)
             ->assertSee($editor->name)
             ->assertSee('Owner')
-            ->assertSee('Editor')
+            ->assertSee('Member')
             ->assertDontSee($stranger->name);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Support\MembershipWebhook;
+use App\Support\TeamRoles;
 use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamMemberRemoved;
 use Laravel\Jetstream\Events\TeamMemberUpdated;
@@ -43,7 +44,7 @@ class SendMembershipChange
         }
 
         if ($role !== null) {
-            $payload['role'] = $role;
+            $payload = array_merge($payload, TeamRoles::payload($role));
         }
 
         MembershipWebhook::dispatchAfterResponse($payload);

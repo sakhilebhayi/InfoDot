@@ -97,7 +97,7 @@ class MembershipWebhookTest extends TestCase
         app()->terminate();
 
         $this->assertSame(
-            ['event' => 'member.role_changed', 'team_uuid' => $team->uuid, 'email' => 'thabo@example.test', 'role' => 'admin'],
+            ['event' => 'member.role_changed', 'team_uuid' => $team->uuid, 'email' => 'thabo@example.test', 'role' => 'admin', 'infodot_role' => 'admin'],
             json_decode($this->sent('files.infodot.co.za')->body(), true)
         );
     }

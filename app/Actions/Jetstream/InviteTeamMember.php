@@ -3,6 +3,8 @@
 namespace App\Actions\Jetstream;
 
 use App\Services\Licensing\SeatLedger;
+use App\Support\TeamRoles;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -25,6 +27,14 @@ class InviteTeamMember implements InvitesTeamMembers
     public function invite($user, $team, string $email, ?string $role = null)
     {
         Gate::forUser($user)->authorize('addTeamMember', $team);
+
+        $role = TeamRoles::normalise($role);
+
+        if ($role !== null && ! in_array($role, TeamRoles::assignableBy($user, $team), true)) {
+            throw ValidationException::withMessages([
+                'role' => __('You can invite people as :roles only.', ['roles' => implode(', ', TeamRoles::assignableBy($user, $team))]),
+            ])->errorBag('addTeamMember');
+        }
 
         $this->validate($team, $email, $role);
 

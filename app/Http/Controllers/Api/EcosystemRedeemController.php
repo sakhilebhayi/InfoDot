@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\TeamRoles;
 use App\Support\EcosystemHandoff;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -73,7 +74,7 @@ class EcosystemRedeemController extends Controller
                 'uuid' => $team->uuid,
                 'name' => $team->name,
                 'personal' => (bool) $team->personal_team,
-                'role' => $user->ownsTeam($team) ? 'owner' : ($user->teamRole($team)?->key),
+                ...TeamRoles::payload($user->ownsTeam($team) ? 'owner' : ($user->teamRole($team)?->key)),
             ])->values(),
             'current_team_id' => $user->current_team_id,
             'current_team_uuid' => $user->currentTeam?->uuid,
