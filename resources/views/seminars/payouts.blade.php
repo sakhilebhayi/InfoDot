@@ -67,4 +67,46 @@
             <a class="ix-btn ix-btn--ghost" href="{{ route('seminars.invoices') }}">My commission invoices</a>
         </form>
     </section>
+
+    <section aria-labelledby="agreement-h" style="margin-top: 28px;">
+        <h2 class="ix-label" id="agreement-h">Host agreement</h2>
+        @if (! $agreementApproved)
+            <p class="ix-hint">Paid seminars open once InfoDot has finished and approved the host agreement. You can set up where you are paid now; we will tell you when you can start charging.</p>
+        @elseif ($accepted)
+            <p><span class="ix-chip ix-chip--done">Accepted</span> You accepted version {{ $agreementVersion }} on {{ $accepted->accepted_at->format('j M Y') }}.</p>
+            <details><summary>Read it again</summary><div class="ix-prose">{!! $agreementText !!}</div></details>
+        @else
+            <div class="ix-prose">{!! $agreementText !!}</div>
+            <form class="ix-form" method="POST" action="{{ route('seminars.payouts.agreement') }}">
+                @csrf
+                <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
+                    <input type="checkbox" name="accept" value="1" style="margin-top:3px">
+                    <span>I have read and accept this agreement (version {{ $agreementVersion }}).</span>
+                </label>
+                @error('accept')<p class="ix-error">{{ $message }}</p>@enderror
+                <button class="ix-btn ix-btn--primary" type="submit">Accept the agreement</button>
+            </form>
+        @endif
+    </section>
+
+    @if ($debts->isNotEmpty())
+        <section aria-labelledby="debts-h" style="margin-top: 28px;">
+            <h2 class="ix-label" id="debts-h">What you owe InfoDot</h2>
+            <p class="ix-hint">When a chargeback on one of your tickets is lost, the amount InfoDot lost is owed back. It is taken only from your share of future tickets, never more than half of your share of any ticket. You never have to pay it separately.</p>
+            <table class="ix-table">
+                <thead><tr><th scope="col">Opened</th><th scope="col">Owed</th><th scope="col">Taken so far</th><th scope="col">Still owed</th><th scope="col">State</th></tr></thead>
+                <tbody>
+                    @foreach ($debts as $d)
+                        <tr>
+                            <td>{{ $d->opened_at?->format('j M Y') ?? '—' }}</td>
+                            <td>{{ \App\Models\Seminar::money($d->amount_cents, $d->currency) }}</td>
+                            <td>{{ \App\Models\Seminar::money($d->recovered_cents, $d->currency) }}</td>
+                            <td>{{ \App\Models\Seminar::money($d->remaining_cents, $d->currency) }}</td>
+                            <td>{{ ['open' => 'Open', 'cleared' => 'Paid off', 'written_off' => 'Written off'][$d->status] ?? $d->status }}@if ($d->note)<br><span class="ix-hint">{{ $d->note }}</span>@endif</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </section>
+    @endif
 </x-app-layout>

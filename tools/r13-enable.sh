@@ -15,6 +15,12 @@
 #                    docs/programme/R13_LIVEKIT_SERVER.md; do this only after the server's acceptance test passes.
 #   p2p              Small peer-to-peer seminar rooms (no media server). Browsers find each other through STUN; the default is Google's public one
 #                    (it only learns each browser's public address). Pass --stun-urls "stun:your.server:3478" to use your own, comma separated.
+#   contact          Where the Contact page sends messages: --contact-address you@example.org (without it the page shows the published addresses).
+#   points           Dot Points for seminar hosts (SEMINARS_POINTS_ENABLED). Needs Dot.Dopemine deployed with the seminar rule (it is).
+#   agreement        The host agreement is APPROVED: only with --confirm-agreement-reviewed, after your adviser has edited and approved
+#                    resources/markdown/host-agreement.md. Optional --agreement-version v2 (must equal Billing's BILLING_MARKETPLACE_AGREEMENT_VERSION).
+#   badges-backfill  Fills in specialist badges for everyone now (runs `php artisan badges:backfill` in the InfoDot folder; counts only).
+#   company-sync     Tells Dot.Billing about every existing company once (runs `php artisan licence:sync-companies`). Needs billing-link.
 # Optional: --billing-url https://billing.infodot.co.za  --infodot-url https://infodot.co.za
 #           --issuer-name "..." --issuer-address "..." --issuer-vat 4123456789   (InfoDot's own details for commission invoices)
 #           --cache   run `php artisan config:cache` in each app afterwards.
@@ -22,7 +28,7 @@ set -euo pipefail
 
 INFODOT=""; BILLING=""; APPLY=0; CACHE=0; STAGES=()
 BILLING_URL="https://billing.infodot.co.za"; INFODOT_URL="https://infodot.co.za"
-ISSUER_NAME=""; ISSUER_ADDRESS=""; ISSUER_VAT=""; LIVEKIT_URL=""; STUN_URLS=""
+ISSUER_NAME=""; ISSUER_ADDRESS=""; ISSUER_VAT=""; LIVEKIT_URL=""; STUN_URLS=""; CONTACT_ADDRESS=""; AGREEMENT_VERSION=""; AGREEMENT_CONFIRMED=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -33,6 +39,9 @@ while [ $# -gt 0 ]; do
     --infodot-url) INFODOT_URL="$2"; shift 2 ;;
     --livekit-url) LIVEKIT_URL="$2"; shift 2 ;;
     --stun-urls) STUN_URLS="$2"; shift 2 ;;
+    --contact-address) CONTACT_ADDRESS="$2"; shift 2 ;;
+    --agreement-version) AGREEMENT_VERSION="$2"; shift 2 ;;
+    --confirm-agreement-reviewed) AGREEMENT_CONFIRMED=1; shift ;;
     --issuer-name) ISSUER_NAME="$2"; shift 2 ;;
     --issuer-address) ISSUER_ADDRESS="$2"; shift 2 ;;
     --issuer-vat) ISSUER_VAT="$2"; shift 2 ;;
@@ -45,7 +54,7 @@ done
 die() { echo "error: $*" >&2; exit 1; }
 [ "${#STAGES[@]}" -gt 0 ] || die "give at least one --stage (reputation, billing-link, paid-seminars)"
 has_stage() { local s; for s in "${STAGES[@]}"; do [ "$s" = "$1" ] && return 0; done; return 1; }
-for s in "${STAGES[@]}"; do case "$s" in reputation|billing-link|paid-seminars|video|p2p) ;; *) die "unknown stage: $s" ;; esac; done
+for s in "${STAGES[@]}"; do case "$s" in reputation|billing-link|paid-seminars|video|p2p|contact|points|agreement|badges-backfill|company-sync) ;; *) die "unknown stage: $s" ;; esac; done
 [ -n "$INFODOT" ] && [ -f "$INFODOT/.env" ] || die "--infodot must be a folder that holds .env"
 if has_stage billing-link || has_stage paid-seminars; then
   [ -n "$BILLING" ] && [ -f "$BILLING/.env" ] || die "--billing must be a folder that holds .env"
@@ -54,6 +63,16 @@ has_stage paid-seminars && ! has_stage billing-link && ! grep -q '^LICENCE_BILLI
 if has_stage video; then
   [[ "$LIVEKIT_URL" =~ ^wss://[A-Za-z0-9.-]+(:[0-9]+)?$ ]] || die "--livekit-url must look like wss://live.example.org"
   [ -n "${LIVEKIT_API_KEY:-}" ] && [ -n "${LIVEKIT_API_SECRET:-}" ] || die "set LIVEKIT_API_KEY and LIVEKIT_API_SECRET in your shell first (use read -rs, see docs/programme/R13_LIVEKIT_SERVER.md)"
+fi
+if has_stage contact; then
+  [[ "$CONTACT_ADDRESS" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]] || die "--contact-address must be an email address"
+fi
+if has_stage agreement; then
+  [ "$AGREEMENT_CONFIRMED" = 1 ] || die "the agreement stage needs --confirm-agreement-reviewed: only after your adviser has approved the wording in resources/markdown/host-agreement.md"
+  [ -z "$AGREEMENT_VERSION" ] || [[ "$AGREEMENT_VERSION" =~ ^[A-Za-z0-9._-]{1,24}$ ]] || die "--agreement-version must be letters, digits, dots, dashes (for example v2)"
+fi
+if has_stage company-sync; then
+  [ -n "$BILLING" ] || die "company-sync needs --billing (it reads Billing's .env to confirm the link is on)"
 fi
 case "$BILLING_URL$INFODOT_URL" in *https://*https://*) ;; *) die "both URLs must be https" ;; esac
 
@@ -126,6 +145,13 @@ if has_stage p2p; then
   fi
 fi
 
+if has_stage contact; then set_env "$INFODOT" CONTACT_TO_ADDRESS "$CONTACT_ADDRESS"; fi
+if has_stage points; then set_env "$INFODOT" SEMINARS_POINTS_ENABLED true; fi
+if has_stage agreement; then
+  set_env "$INFODOT" SEMINARS_HOST_AGREEMENT_APPROVED true
+  if [ -n "$AGREEMENT_VERSION" ]; then set_env "$INFODOT" SEMINARS_HOST_AGREEMENT_VERSION "$AGREEMENT_VERSION"; fi
+fi
+
 if has_stage video; then
   set_env "$INFODOT" LIVEKIT_URL "$LIVEKIT_URL"
   set_env "$INFODOT" LIVEKIT_API_KEY "$LIVEKIT_API_KEY"
@@ -141,4 +167,9 @@ if [ "$APPLY" = 1 ] && [ "$CACHE" = 1 ]; then
   for d in "$INFODOT" ${BILLING:+"$BILLING"}; do (cd "$d" && php artisan config:cache >/dev/null && echo "config cached: $(basename "$d")"); done
 elif [ "$APPLY" = 1 ]; then
   echo "Now run 'php artisan config:cache' in each app (or re-run the deploy) so the new values are read."
+fi
+
+if [ "$APPLY" = 1 ]; then
+  if has_stage badges-backfill; then (cd "$INFODOT" && php artisan badges:backfill) || echo "badges:backfill did not finish; run it again by hand."; fi
+  if has_stage company-sync; then (cd "$INFODOT" && php artisan config:cache >/dev/null && php artisan licence:sync-companies) || echo "licence:sync-companies did not finish; run it again by hand."; fi
 fi

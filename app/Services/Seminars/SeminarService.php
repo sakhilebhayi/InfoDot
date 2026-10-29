@@ -384,6 +384,14 @@ class SeminarService
             throw ValidationException::withMessages(['price' => 'Set up where your earnings are paid before you charge for a seminar.']);
         }
 
+        if (! config('seminars.paid.agreement_approved')) {
+            throw ValidationException::withMessages(['price' => 'Paid seminars open once the host agreement has been approved. We will tell you.']);
+        }
+
+        if (! \App\Models\SeminarHostAgreement::where('user_id', $host->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists()) {
+            throw ValidationException::withMessages(['price' => 'Read and accept the host agreement (on the page where you set up payouts) before you charge for a seminar.']);
+        }
+
         $cents = (int) round(((float) $price) * 100);
         [$min, $max] = [(int) config('seminars.paid.min_price_cents', 500), (int) config('seminars.paid.max_price_cents', 5000000)];
 

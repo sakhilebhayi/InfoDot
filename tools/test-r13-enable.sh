@@ -60,4 +60,14 @@ check "p2p stage turns the rooms on and leaves the STUN default alone" "[ \"\$(v
 check "p2p stage can set your own STUN servers" "[ \"\$(val $T/i P2P_STUN_URLS)\" = stun:stun.example.org:3478,stun:b.example.org:3478 ]"
 check "p2p stage refuses a bad STUN list" "! $S --infodot $T/i --stage p2p --stun-urls 'http://x' --apply >/dev/null 2>&1"
 
+fresh
+"$S" --infodot "$T/i" --stage contact --contact-address hello@example.org --stage points --apply >/dev/null 2>&1
+check "contact and points stages set their keys" "[ \"\$(val $T/i CONTACT_TO_ADDRESS)\" = hello@example.org ] && [ \"\$(val $T/i SEMINARS_POINTS_ENABLED)\" = true ]"
+check "contact refuses a bad address" "! $S --infodot $T/i --stage contact --contact-address nope --apply >/dev/null 2>&1"
+check "agreement stage refuses without the review confirmation" "! $S --infodot $T/i --stage agreement --apply >/dev/null 2>&1 && ! grep -q SEMINARS_HOST_AGREEMENT_APPROVED $T/i/.env"
+"$S" --infodot "$T/i" --stage agreement --confirm-agreement-reviewed --agreement-version v2 --apply >/dev/null 2>&1
+check "agreement stage sets approval and version once confirmed" "[ \"\$(val $T/i SEMINARS_HOST_AGREEMENT_APPROVED)\" = true ] && [ \"\$(val $T/i SEMINARS_HOST_AGREEMENT_VERSION)\" = v2 ]"
+check "agreement stage refuses a bad version" "! $S --infodot $T/i --stage agreement --confirm-agreement-reviewed --agreement-version 'v 2!' --apply >/dev/null 2>&1"
+check "company-sync needs the Billing folder" "! $S --infodot $T/i --stage company-sync --apply >/dev/null 2>&1"
+
 echo; echo "$N checks, $FAILS failed"; [ "$FAILS" = 0 ]

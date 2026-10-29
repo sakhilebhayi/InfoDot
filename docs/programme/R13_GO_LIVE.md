@@ -10,6 +10,19 @@ Add `--stage paid-seminars` (and `--issuer-name`, `--issuer-address`, `--issuer-
 
 Nothing below is a secret value; generate each secret yourself (`php -r 'echo bin2hex(random_bytes(32));'`) and never paste one into chat, a pull request or an issue. These lines go in the production `.env` of each app on the host; the deploy never overwrites `.env`.
 
+## 0. Loose ends, one command each
+
+    tools/r13-enable.sh --infodot . --stage contact --contact-address you@yourdomain.org --apply --cache     # where the Contact page sends messages
+    tools/r13-enable.sh --infodot . --stage points --apply --cache                                          # Dot Points for seminar hosts (Dopemine is deployed)
+    tools/r13-enable.sh --infodot . --stage badges-backfill --apply                                         # fill in specialist badges for everyone now
+    tools/r13-enable.sh --infodot . --billing <Billing folder> --stage company-sync --apply                 # tell Billing about existing companies (after Billing's company registry is deployed)
+
+**Host agreement (paid seminars).** Nothing takes money from a host, and the agreement text is not shown to anyone, until you approve it. Have your adviser edit `resources/markdown/host-agreement.md` (it currently carries a draft notice), deploy, then:
+
+    tools/r13-enable.sh --infodot . --stage agreement --confirm-agreement-reviewed --apply --cache
+
+Hosts then read and accept it on the page where they set up payouts; InfoDot records it and tells Billing, and Billing refuses tickets for a host who has not accepted the current version. A new version (`--agreement-version v2`, which must equal Billing's `BILLING_MARKETPLACE_AGREEMENT_VERSION`) makes every host accept again. Hosts see what they owe after a lost chargeback on the same page and in their notifications.
+
 ## 1. Reputation (InfoDot only, no dependencies)
 
 InfoDot `.env`:

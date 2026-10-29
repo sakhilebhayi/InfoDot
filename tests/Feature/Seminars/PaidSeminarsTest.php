@@ -28,7 +28,7 @@ class PaidSeminarsTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => self::CALLBACK_SECRET, 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret', 'licensing.billing.platform' => 'infodot']);
+        config(['seminars.paid.agreement_approved' => true, 'seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => self::CALLBACK_SECRET, 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret', 'licensing.billing.platform' => 'infodot']);
     }
 
     private function person(string $name = 'Person'): User
@@ -40,6 +40,7 @@ class PaidSeminarsTest extends TestCase
     {
         $h = $this->person('Host');
         SeminarPayoutAccount::create(['user_id' => $h->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+        \App\Models\SeminarHostAgreement::create(['user_id' => $h->id, 'version' => 'v1', 'accepted_at' => now()]);
 
         return $h;
     }

@@ -32,6 +32,12 @@ return [
         'return_path' => '/seminars',                          // where Paystack sends the attendee back to (UI only)
 
         // Refunds when an attendee cancels: full refund up to this many hours before the start, none after. A host cancelling always refunds in full.
+        // The host agreement for chargeback recovery. Nothing takes money from a host until the owner's adviser has approved the wording in
+        // resources/markdown/host-agreement.md and the owner sets APPROVED to true. The version must equal Dot.Billing's
+        // BILLING_MARKETPLACE_AGREEMENT_VERSION; changing the wording means a new version that every host must accept again.
+        'agreement_version' => env('SEMINARS_HOST_AGREEMENT_VERSION', 'v1'),
+        'agreement_approved' => (bool) env('SEMINARS_HOST_AGREEMENT_APPROVED', false),
+
         'refund_hours_before' => (int) env('SEMINARS_REFUND_HOURS_BEFORE', 24),
 
         // Tax. The host is the seller; InfoDot invoices the host for its commission. NOT legal advice: confirm with an adviser before relying on it.

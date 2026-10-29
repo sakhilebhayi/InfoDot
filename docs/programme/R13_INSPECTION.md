@@ -115,3 +115,5 @@ Until one of these exists, seminars are listed, registered for, reminded and att
 
 Small peer-to-peer seminar rooms (no media server; capacity told to the host from a connection test): built, off by default, not yet tested with real people on real networks. See `R13_SMALL_ROOMS.md`.
 
+Host agreement flow (shown and accepted in InfoDot, sent to Billing, gate on charging until approved), chargeback debt mirror and notices to hosts, company sync to Billing (`licence:sync-companies`, listener on create/rename/delete), and host-script stages for contact, points, agreement, badge backfill and company sync: built, see `R13_GO_LIVE.md`.
+

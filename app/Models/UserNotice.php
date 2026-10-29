@@ -32,9 +32,18 @@ class UserNotice extends Model
 
     public const SEMINAR_LINK_BROKEN = 'seminar_link_broken';
 
+    public const SEMINAR_DEBT_OPENED = 'seminar_debt_opened';
+
+    public const SEMINAR_DEBT_CLEARED = 'seminar_debt_cleared';
+
+    public const SEMINAR_DEBT_REOPENED = 'seminar_debt_reopened';
+
+    public const SEMINAR_DEBT_WRITTEN_OFF = 'seminar_debt_written_off';
+
     public const KINDS = [
         self::ANSWER_RECEIVED, self::ANSWER_ACCEPTED, self::SOLUTION_VERIFIED, self::KNOWLEDGE_REUSED, self::COMMENT_RECEIVED,
         self::SEMINAR_REMINDER, self::SEMINAR_CANCELLED, self::SEMINAR_CHANGED, self::SEMINAR_SPOT_OPEN, self::SEMINAR_REFUNDED, self::SEMINAR_DISPUTE, self::SEMINAR_LINK_BROKEN,
+        self::SEMINAR_DEBT_OPENED, self::SEMINAR_DEBT_CLEARED, self::SEMINAR_DEBT_REOPENED, self::SEMINAR_DEBT_WRITTEN_OFF,
     ];
 
     public $timestamps = false;
