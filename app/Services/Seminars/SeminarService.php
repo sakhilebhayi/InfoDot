@@ -5,6 +5,7 @@ namespace App\Services\Seminars;
 use App\Models\Seminar;
 use App\Models\ModerationAction;
 use App\Models\SeminarFeedback;
+use App\Models\SeminarRemovalAppeal;
 use App\Models\SeminarReport;
 use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarTicketEvent;
@@ -128,7 +129,12 @@ class SeminarService
         });
     }
 
-    public function cancel(Seminar $seminar): void
+    /**
+     * @param  string  $refunds  all | complainants | none: who is refunded among people who paid. Only a moderator's removal of a seminar that
+     *                           has already started uses anything but "all"; people part-way through paying are always released.
+     * @param  list<int>  $refundUserIds  with "complainants", the people whose tickets are refunded
+     */
+    public function cancel(Seminar $seminar, string $refunds = 'all', array $refundUserIds = []): void
     {
         if ($seminar->status === Seminar::CANCELLED) {
             return;
@@ -147,6 +153,10 @@ class SeminarService
         // Everyone who paid is refunded in full; anyone part-way through paying is released.
         foreach (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'pending'])->get() as $reg) {
             if ($reg->payment_status === 'paid') {
+                if ($refunds === 'none' || ($refunds === 'complainants' && ! in_array($reg->user_id, $refundUserIds, true))) {
+                    continue;
+                }
+
                 $reg->forceFill(['refund_requested_at' => $reg->refund_requested_at ?? now()])->save();
                 $this->requestRefund($reg);
             } else {
@@ -335,13 +345,24 @@ class SeminarService
     }
 
     /** A signed-in person reports a seminar. One report each; the host cannot report their own. */
-    public function report(Seminar $seminar, User $reporter, string $reason, ?string $detail): SeminarReport
+    public function report(Seminar $seminar, User $reporter, string $reason, ?string $detail, ?string $aboutName = null): SeminarReport
     {
-        if ($seminar->host_id === $reporter->id || ! $seminar->isPublished() || ! array_key_exists($reason, SeminarReport::REASONS)) {
-            throw ValidationException::withMessages(['report' => 'This seminar cannot be reported by you.']);
+        $aboutName = $aboutName !== null && trim($aboutName) !== '' ? mb_substr(trim($aboutName), 0, 60) : null;
+        $isHost = $seminar->host_id === $reporter->id;
+
+        if ($aboutName === null) {
+            // Reporting the seminar itself: published, and not by its own host.
+            $allowed = ! $isHost && $seminar->isPublished();
+        } else {
+            // Reporting a person in the room: the host, or someone registered for it, while the seminar is not a draft.
+            $allowed = $seminar->status !== Seminar::DRAFT && ($isHost || SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $reporter->id)->where('status', '!=', SeminarRegistration::CANCELLED)->exists());
         }
 
-        return SeminarReport::firstOrCreate(['seminar_id' => $seminar->id, 'reporter_id' => $reporter->id], [
+        if (! $allowed || ! array_key_exists($reason, SeminarReport::REASONS)) {
+            throw ValidationException::withMessages(['report' => $aboutName === null ? 'This seminar cannot be reported by you.' : 'You cannot report someone in this seminar.']);
+        }
+
+        return SeminarReport::firstOrCreate(['seminar_id' => $seminar->id, 'reporter_id' => $reporter->id, 'about_name' => $aboutName], [
             'reason' => $reason, 'detail' => $detail !== null && trim($detail) !== '' ? mb_substr(trim($detail), 0, 1000) : null,
         ]);
     }
@@ -350,17 +371,99 @@ class SeminarService
      * A moderator takes a seminar down. It is cancelled (everyone who registered is told and everyone who paid is refunded in full), the host is told
      * why, the reports about it are closed, and the decision goes in the moderation record.
      */
-    public function removeByModerator(Seminar $seminar, User $moderator, string $reason): void
+    public function removeByModerator(Seminar $seminar, User $moderator, string $reason, string $refunds = 'all'): void
     {
         if ($seminar->removed_at !== null) {
             return;
         }
 
-        $seminar->forceFill(['removed_at' => now(), 'removed_reason' => mb_substr($reason, 0, 500)])->save();
-        $this->cancel($seminar->fresh());
+        // Before the start everyone who paid is refunded. Once it has started the moderator chooses: everyone, only the people who reported it, or no one.
+        $refunds = $seminar->starts_at->isFuture() || ! in_array($refunds, ['all', 'complainants', 'none'], true) ? 'all' : $refunds;
+        $complainants = $refunds === 'complainants'
+            ? SeminarReport::where('seminar_id', $seminar->id)->whereNull('about_name')->pluck('reporter_id')->map(fn ($id) => (int) $id)->all()
+            : [];
+
+        $seminar->forceFill(['removed_at' => now(), 'removed_reason' => mb_substr($reason, 0, 500), 'removed_refunds' => $refunds])->save();
+        $this->cancel($seminar->fresh(), $refunds, $complainants);
         $this->notices->record(UserNotice::SEMINAR_REMOVED, User::find($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':removed');
-        ModerationAction::record($seminar, $moderator, ModerationAction::SEMINAR_REMOVED, $reason);
+        ModerationAction::record($seminar, $moderator, ModerationAction::SEMINAR_REMOVED, $reason.' [refunds: '.$refunds.']');
         SeminarReport::where('seminar_id', $seminar->id)->where('status', 'open')->update(['status' => 'actioned', 'resolved_by' => $moderator->id, 'resolution_note' => 'Seminar removed.', 'resolved_at' => now()]);
+    }
+
+    /** The host's one appeal against a removal, within the configured number of days. */
+    public function appealRemoval(Seminar $seminar, User $host, string $message): SeminarRemovalAppeal
+    {
+        $days = (int) config('seminars.removal_appeal_days', 30);
+
+        if ($seminar->host_id !== $host->id || $seminar->removed_at === null) {
+            throw ValidationException::withMessages(['appeal' => 'There is nothing to appeal.']);
+        }
+
+        if ($seminar->removed_at->lt(now()->subDays($days))) {
+            throw ValidationException::withMessages(['appeal' => "An appeal must be made within $days days of the removal."]);
+        }
+
+        if (SeminarRemovalAppeal::where('seminar_id', $seminar->id)->exists()) {
+            throw ValidationException::withMessages(['appeal' => 'You have already appealed this removal.']);
+        }
+
+        return SeminarRemovalAppeal::create(['seminar_id' => $seminar->id, 'host_id' => $host->id, 'message' => mb_substr(trim($message), 0, 1000)]);
+    }
+
+    /**
+     * A different moderator from the one who removed it decides (unless there is only one moderator). Reinstating works only before the start;
+     * refunds already made stay made, and people who were still registered are told it is back on.
+     */
+    public function decideRemovalAppeal(SeminarRemovalAppeal $appeal, User $moderator, bool $reinstate, string $note): void
+    {
+        $seminar = Seminar::findOrFail($appeal->seminar_id);
+        $appeal = $appeal->fresh();
+
+        if ($appeal->status !== SeminarRemovalAppeal::OPEN) {
+            throw ValidationException::withMessages(['appeal' => 'This appeal has already been decided.']);
+        }
+
+        $remover = ModerationAction::where('subject_type', $seminar->getMorphClass())->where('subject_id', $seminar->id)->where('action', ModerationAction::SEMINAR_REMOVED)->latest('id')->value('actor_id');
+
+        if ($remover !== null && (int) $remover === $moderator->id && User::where('is_moderator', true)->count() > 1) {
+            throw ValidationException::withMessages(['appeal' => 'A different moderator must decide an appeal against your own removal.']);
+        }
+
+        if ($reinstate && ! $seminar->starts_at->isFuture()) {
+            throw ValidationException::withMessages(['appeal' => 'The seminar has already started, so it cannot be put back on.']);
+        }
+
+        DB::transaction(function () use ($appeal, $seminar, $moderator, $reinstate, $note) {
+            $appeal->forceFill(['status' => $reinstate ? SeminarRemovalAppeal::REINSTATED : SeminarRemovalAppeal::DENIED, 'resolved_by' => $moderator->id, 'resolution_note' => mb_substr($note, 0, 500), 'resolved_at' => now()])->save();
+
+            if ($reinstate) {
+                $seminar->forceFill(['status' => Seminar::PUBLISHED, 'cancelled_at' => null, 'removed_at' => null, 'removed_reason' => null, 'removed_refunds' => null])->save();
+            }
+        });
+
+        if ($reinstate) {
+            $this->tell(UserNotice::SEMINAR_REINSTATED, $seminar->fresh(), 'reinstated:'.$appeal->id);
+        }
+
+        $this->notices->record(UserNotice::SEMINAR_APPEAL_DECIDED, User::find($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':appeal:'.$appeal->id);
+        ModerationAction::record($seminar, $moderator, $reinstate ? ModerationAction::SEMINAR_REINSTATED : ModerationAction::SEMINAR_APPEAL_DENIED, $note);
+    }
+
+    /** A moderator bars a registered person from the seminar's room because of a report about them. They stay registered; they cannot get back in. */
+    public function barFromRoom(Seminar $seminar, User $target, User $moderator, string $note): void
+    {
+        DB::table('seminar_room_bans')->insertOrIgnore(['seminar_id' => $seminar->id, 'user_id' => $target->id, 'created_at' => now()]);
+        app(P2pRoom::class)->remove($seminar, $target);
+
+        if ($seminar->isRoom() && app(LiveKit::class)->configured()) {
+            try {
+                app(LiveKit::class)->remove($seminar, $target);
+            } catch (\Throwable) {
+                // The ban already stops a new entry pass; disconnecting someone who is in the room right now is best effort.
+            }
+        }
+
+        ModerationAction::record($seminar, $moderator, ModerationAction::SEMINAR_PERSON_BARRED, $note);
     }
 
     public function dismissReport(SeminarReport $report, User $moderator, string $note): void

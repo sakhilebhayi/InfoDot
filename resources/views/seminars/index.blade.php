@@ -67,4 +67,5 @@
             </ul>
         </section>
     @endif
+    <p class="ix-hint" style="margin-top: 32px;">Want a copy of everything InfoDot holds about your seminars (registrations, tickets, ratings, chat, reports, payout and invoice records)? <a href="{{ route('seminars.export') }}" style="text-decoration: underline;">Download my seminar data</a>.</p>
 </x-app-layout>

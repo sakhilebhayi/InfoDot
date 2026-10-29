@@ -13,6 +13,18 @@ return [
     'max_duration_minutes' => 480,
     'max_capacity' => 5000,
     'min_ratings_shown' => 3,           // a host's average is shown publicly only from this many ratings
+    'removal_appeal_days' => (int) env('SEMINARS_REMOVAL_APPEAL_DAYS', 30),   // a host can appeal a moderator's removal within this many days
+
+    /*
+    | How long records are kept (php artisan seminars:prune). Owner decisions of 2026-10-29. `money_years` is a proposal the owner's adviser must
+    | confirm against the record-keeping periods that apply; set it to 0 to switch that part off until then.
+    */
+    'retention' => [
+        'money_years' => (int) env('SEMINARS_MONEY_RETENTION_YEARS', 5),       // money records of people whose account is gone, after the last payment or invoice
+        'room_days' => (int) env('SEMINARS_ROOM_RETENTION_DAYS', 30),          // small-room peers, messages, chat and room bans, after the seminar ended
+        'points_outbox_days' => (int) env('SEMINARS_POINTS_OUTBOX_RETENTION_DAYS', 30),   // sent Dot Points rows
+        'reports_months' => (int) env('SEMINARS_REPORTS_RETENTION_MONTHS', 12), // closed reports about seminars and appeals that were decided
+    ],
 
     /*
     | Paid seminars. OFF until SEMINARS_PAID_ENABLED. The host sets the ticket price; InfoDot keeps `platform_percent` of it and the host

@@ -51,11 +51,17 @@ class ModerationAction extends Model
 
     public const SEMINAR_REMOVED = 'seminar_removed';
 
+    public const SEMINAR_REINSTATED = 'seminar_reinstated';
+
+    public const SEMINAR_APPEAL_DENIED = 'seminar_appeal_denied';
+
+    public const SEMINAR_PERSON_BARRED = 'seminar_person_barred';
+
     public const ACTIONS = [
         self::DISMISSED, self::HIDDEN, self::RESTORED, self::ACCEPTANCE_REVOKED,
         self::APPEAL_UPHELD, self::APPEAL_DENIED, self::VERIFIED, self::UNVERIFIED, self::APPROVED,
         self::TOPIC_ADDED, self::TOPIC_RENAMED, self::TOPIC_ACTIVATED, self::TOPIC_DEACTIVATED, self::TOPICS_SET,
-        self::LIBRARY_ADOPTED, self::LIBRARY_DECLINED, self::LIBRARY_WITHDRAWN, self::SEMINAR_REMOVED,
+        self::LIBRARY_ADOPTED, self::LIBRARY_DECLINED, self::LIBRARY_WITHDRAWN, self::SEMINAR_REMOVED, self::SEMINAR_REINSTATED, self::SEMINAR_APPEAL_DENIED, self::SEMINAR_PERSON_BARRED,
     ];
 
     /** What each action is called on screen. */
@@ -78,6 +84,9 @@ class ModerationAction extends Model
         self::LIBRARY_DECLINED => 'Library recommendation declined',
         self::LIBRARY_WITHDRAWN => 'Withdrawn from the library',
         self::SEMINAR_REMOVED => 'Seminar removed',
+        self::SEMINAR_REINSTATED => 'Seminar reinstated on appeal',
+        self::SEMINAR_APPEAL_DENIED => 'Removal appeal denied',
+        self::SEMINAR_PERSON_BARRED => 'Person barred from a room',
     ];
 
     protected $fillable = ['actor_id', 'actor_uuid', 'subject_type', 'subject_id', 'action', 'reason', 'report_id', 'appeal_id'];

@@ -35,6 +35,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('reputation:recalculate')->dailyAt('03:40')->withoutOverlapping()->onOneServer();
         $schedule->command('seminars:invoice-commission')->monthlyOn(1, '04:15')->withoutOverlapping()->onOneServer();
         $schedule->command('seminars:sweep-payments')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
+        $schedule->command('seminars:prune')->dailyAt('03:50')->withoutOverlapping()->onOneServer();
         $schedule->command('seminars:remind')->everyTenMinutes()->withoutOverlapping()->onOneServer();
         $schedule->command('seminars:award-hosts')->everyThirtyMinutes()->withoutOverlapping()->onOneServer();
         $schedule->command('notices:prune')->dailyAt('03:20')->withoutOverlapping()->onOneServer();

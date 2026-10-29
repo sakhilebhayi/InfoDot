@@ -54,6 +54,8 @@ class SeminarsController extends Controller
 
         return view('seminars.show', [
             'seminar' => $seminar->load('topic'), 'host' => $seminar->host, 'isHost' => $isHost,
+            'appeal' => \App\Models\SeminarRemovalAppeal::where('seminar_id', $seminar->id)->first(),
+            'canReportPerson' => $seminar->status === Seminar::PUBLISHED && ($isHost || ($reg && $reg->status !== SeminarRegistration::CANCELLED)),
             'reg' => $reg && $reg->status !== SeminarRegistration::CANCELLED ? $reg : null,
             'registeredCount' => SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->count(),
             'stats' => $this->seminars->hostStats($seminar->host),
@@ -190,10 +192,27 @@ class SeminarsController extends Controller
     /** A signed-in person reports a seminar to the moderators. */
     public function report(Request $request, Seminar $seminar): RedirectResponse
     {
-        $data = $request->validate(['reason' => ['required', 'in:'.implode(',', array_keys(\App\Models\SeminarReport::REASONS))], 'detail' => ['nullable', 'string', 'max:1000']]);
-        $this->seminars->report($seminar, $request->user(), $data['reason'], $data['detail'] ?? null);
+        $data = $request->validate(['reason' => ['required', 'in:'.implode(',', array_keys(\App\Models\SeminarReport::REASONS))], 'detail' => ['nullable', 'string', 'max:1000'], 'about_name' => ['nullable', 'string', 'max:60']]);
+        $this->seminars->report($seminar, $request->user(), $data['reason'], $data['detail'] ?? null, $data['about_name'] ?? null);
 
-        return back()->with('seminar_notice', 'Thank you. A moderator will look at it. The host is not told who reported it.');
+        return back()->with('seminar_notice', 'Thank you. A moderator will look at it. '.(($data['about_name'] ?? null) ? 'The person is not told who reported them.' : 'The host is not told who reported it.'));
+    }
+
+    /** A copy of everything the seminar features hold about the signed-in person. */
+    public function exportMyData(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $payload = app(\App\Services\Privacy\SeminarDataExporter::class)->export($request->user());
+
+        return response()->streamDownload(fn () => print(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)), 'my-seminar-data.json', ['Content-Type' => 'application/json']);
+    }
+
+    /** The host's one appeal against a moderator removing their seminar. */
+    public function appealRemoval(Request $request, Seminar $seminar): RedirectResponse
+    {
+        $data = $request->validate(['message' => ['required', 'string', 'min:10', 'max:1000']]);
+        $this->seminars->appealRemoval($seminar, $request->user(), $data['message']);
+
+        return back()->with('seminar_notice', 'Your appeal was sent. A different moderator will read it and the answer will appear on this page.');
     }
 
     /** "The link does not work": tells the host. */

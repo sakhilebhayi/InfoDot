@@ -15,7 +15,7 @@ class Seminar extends Model
 
     public const CANCELLED = 'cancelled';
 
-    protected $fillable = ['removed_at', 'removed_reason', 'public_code', 'join_url_status', 'join_url_checked_at', 'p2p_quality', 'p2p_uplink_kbps', 'delivery', 'price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
+    protected $fillable = ['removed_at', 'removed_reason', 'removed_refunds', 'public_code', 'join_url_status', 'join_url_checked_at', 'p2p_quality', 'p2p_uplink_kbps', 'delivery', 'price_cents', 'currency', 'host_id', 'topic_id', 'title', 'summary', 'description', 'starts_at', 'duration_minutes', 'capacity', 'join_url', 'status', 'cancelled_at'];
 
     protected function casts(): array
     {

@@ -155,6 +155,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/moderation/seminars', [\App\Http\Controllers\SeminarModerationController::class, 'index'])->middleware(['moderator', 'throttle:30,1,mod-seminars'])->name('moderation.seminars');
     Route::post('/moderation/seminars/{seminar}/remove', [\App\Http\Controllers\SeminarModerationController::class, 'remove'])->whereNumber('seminar')->middleware(['moderator', 'throttle:20,1,mod-seminar-remove'])->name('moderation.seminars.remove');
     Route::post('/moderation/seminar-reports/{report}/dismiss', [\App\Http\Controllers\SeminarModerationController::class, 'dismiss'])->whereNumber('report')->middleware(['moderator', 'throttle:30,1,mod-seminar-dismiss'])->name('moderation.seminars.dismiss');
+    Route::get('/account/seminar-data', [SeminarsController::class, 'exportMyData'])->middleware('throttle:10,1,seminar-export')->name('seminars.export');
+    Route::post('/seminars/{seminar}/removal-appeal', [SeminarsController::class, 'appealRemoval'])->whereNumber('seminar')->middleware('throttle:5,1,seminar-appeal')->name('seminars.appeal');
+    Route::post('/moderation/seminar-appeals/{appeal}', [\App\Http\Controllers\SeminarModerationController::class, 'decideAppeal'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1,mod-seminar-appeal'])->name('moderation.seminars.appeal');
+    Route::post('/moderation/seminars/{seminar}/bar/{person}', [\App\Http\Controllers\SeminarModerationController::class, 'bar'])->whereNumber(['seminar', 'person'])->middleware(['moderator', 'throttle:30,1,mod-seminar-bar'])->name('moderation.seminars.bar');
     Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.feedback');
 
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).

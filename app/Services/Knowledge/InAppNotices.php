@@ -106,7 +106,7 @@ class InAppNotices
                 return $gone;
             }
 
-            return ['text' => $this->words($notice->kind, (string) $sem->title).($notice->kind === UserNotice::SEMINAR_REMINDER ? ' Starts '.$sem->starts_at->timezone(config('app.timezone'))->format('j M, H:i').'.' : ''), 'url' => route('seminars.show', ['seminar' => $sem->id])];
+            return ['text' => $this->words($notice->kind, (string) $sem->title, $sem).($notice->kind === UserNotice::SEMINAR_REMINDER ? ' Starts '.$sem->starts_at->timezone(config('app.timezone'))->format('j M, H:i').'.' : ''), 'url' => route('seminars.show', ['seminar' => $sem->id])];
         }
 
         return $gone;
@@ -121,12 +121,12 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => 'Accepted',
             UserNotice::SOLUTION_VERIFIED => 'Verified',
             UserNotice::KNOWLEDGE_REUSED => 'Library',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED => 'Seminar',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED => 'Seminar',
             default => 'Update',
         };
     }
 
-    private function words(string $kind, string $title): string
+    private function words(string $kind, string $title, ?\App\Models\Seminar $seminar = null): string
     {
         $title = '“'.Str::limit(trim($title), 90, '…', true).'”';
 
@@ -137,7 +137,9 @@ class InAppNotices
             UserNotice::KNOWLEDGE_REUSED => "Your work on $title was added to the knowledge library.",
             UserNotice::COMMENT_RECEIVED => "Someone commented on $title. They may be asking for more detail.",
             UserNotice::SEMINAR_REMINDER => "Reminder: you registered for the seminar $title.",
-            UserNotice::SEMINAR_CANCELLED => "The seminar $title was cancelled by its host. If you paid for a ticket, it is being refunded in full.",
+            UserNotice::SEMINAR_CANCELLED => $seminar?->removed_at
+                ? "The seminar $title was removed by a moderator. If you paid for a ticket and you are due a refund, we will tell you when it is made."
+                : "The seminar $title was cancelled by its host. If you paid for a ticket, it is being refunded in full.",
             UserNotice::SEMINAR_CHANGED => "The host changed the time of the seminar $title.",
             UserNotice::SEMINAR_SPOT_OPEN => "A place opened and you are now registered for the seminar $title.",
             UserNotice::SEMINAR_REFUNDED => "Your ticket for the seminar $title was refunded. It can take a few days to show on your statement.",
@@ -146,7 +148,13 @@ class InAppNotices
             UserNotice::SEMINAR_DEBT_CLEARED => "What you owed InfoDot after a lost chargeback on your seminar $title has been paid off. Nothing more is taken.",
             UserNotice::SEMINAR_DEBT_REOPENED => "A refund on a ticket meant part of what was taken for a lost chargeback (seminar $title) was given back, so some of it is owed again.",
             UserNotice::SEMINAR_DEBT_WRITTEN_OFF => "InfoDot wrote off what was still owed after a lost chargeback on your seminar $title. Nothing more is taken for it.",
-            UserNotice::SEMINAR_REMOVED => "A moderator removed your seminar $title. Anyone who paid is being refunded in full. If you think this was a mistake, contact us.",
+            UserNotice::SEMINAR_REMOVED => "A moderator removed your seminar $title. ".match ($seminar?->removed_refunds) {
+                'complainants' => 'Tickets are being refunded to the people who reported it.',
+                'none' => 'The seminar had already taken place, so tickets were not refunded.',
+                default => 'Anyone who paid is being refunded in full.',
+            }.' If you think this was a mistake, you can appeal once on the seminar page.',
+            UserNotice::SEMINAR_REINSTATED => "The seminar $title was removed but is back on. You are still registered if you were before. Tickets that were already refunded stay refunded.",
+            UserNotice::SEMINAR_APPEAL_DECIDED => "A different moderator looked at your appeal about the seminar $title. The answer and its reason are on the seminar page.",
             UserNotice::SEMINAR_LINK_BROKEN => "Someone could not open the meeting link for your seminar $title. Please check it and fix it before the start.",
             default => 'Something happened to your work.',
         };
@@ -160,7 +168,7 @@ class InAppNotices
             UserNotice::SOLUTION_VERIFIED => 'A solution of yours was verified; it is no longer available.',
             UserNotice::KNOWLEDGE_REUSED => 'Some of your work was added to the knowledge library; it is no longer available.',
             UserNotice::COMMENT_RECEIVED => 'Someone commented on something of yours that is no longer available.',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED => 'A seminar notice that is no longer available.',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED => 'A seminar notice that is no longer available.',
             default => 'Something happened to your work that is no longer available.',
         };
     }
