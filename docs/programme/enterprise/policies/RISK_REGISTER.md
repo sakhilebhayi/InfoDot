@@ -1,0 +1,22 @@
+# Risk register (2026-10-30)
+
+Likelihood and impact are my judgement from the evidence in `../FINDINGS.md`, not measured probabilities. L and I are 1 (low) to 3 (high); score = L x I. "Owner" is who has to act; I did not assign people, so every owner is the account owner unless a role is named. Reviewed when `FINDINGS.md` changes; a risk leaves this table only when its mitigation has evidence.
+
+| ID | Risk | L | I | Score | Where it comes from | Mitigation in place | Next step | Owner |
+|---|---|---|---|---|---|---|---|---|
+| R-01 | The database or the host is lost and InfoDot cannot be restored, or restored late | 2 | 3 | **6** | C-10: the MySQL dump has never been restored; the one off-host copy is a laptop; the passphrase copy is not evidenced | Nightly encrypted backups, verified archives, daily pull to the Mac | Run Drill B (`RECOVERY_DRILL.md`) and record it; copy the passphrase to a password manager; consider a second off-host destination | Owner |
+| R-02 | A problem goes unseen because nobody is alerted | 3 | 2 | **6** | Sentry has no DSN; no monitor on `/ready` | `ops:check`, scheduler heartbeat, request ids, `/ready` (all deployed and verified) | Set the Sentry DSN and an alert rule; point an uptime monitor at `/ready` | Owner |
+| R-03 | A paid-seminar defect moves money wrongly | 2 | 3 | **6** | Concurrency (C-11, C-13, C-26) is not testable on SQLite; Paystack split refunds untested | Fixes and tests for double refund, double checkout, sweep race; Billing idempotency | Paystack test-mode run including a refund of a split payment (`R13_GO_LIVE.md`); a MySQL concurrency test; no real tickets before both | Owner |
+| R-04 | Load on a 1 GB shared account takes the whole estate down | 2 | 3 | **6** | No load test; small-room polling takes a row lock per poll (C-09); 30 entry processes shared by 26 apps | Rate limits, bounded lists, indexes | A staging copy with seeded data and a load script; keep small rooms off until measured | Owner |
+| R-05 | A change breaks production | 2 | 2 | **4** | P-01: no branch protection; deploys are manual and leave the site down on failure by design | CI gates (advisories, PHPStan baseline, Pint, tests, MySQL migrations, build); rollback copies; deploy smoke check | Turn on branch protection with the CI checks required; drill the rollback (Drill A) | Owner |
+| R-06 | Personal data is kept or shared contrary to POPIA | 2 | 3 | **6** | No Information Officer registration confirmed; processors without agreements; retention only partly scheduled; the policy and terms are drafts | Erasure on deletion, export, retention job for seminar data, drafts reconciled with the code | Adviser review and publication of the policy and terms; vendor agreements (`VENDOR_REGISTER.md`); PAIA manual | Owner and adviser |
+| R-07 | A hostile or compromised Dot platform takes over an InfoDot account | 1 | 3 | **3** | A-01 (fixed): launch tokens were accepted for InfoDot login | Fixed and tested; handoff tokens cannot mint more | Other platforms' copies of the same handler are outside this repository | Owner |
+| R-08 | A removed or refunded attendee keeps room access | 2 | 1 | **2** | A-05 | Tokens now 10 minutes; removal disconnects | None needed beyond monitoring | n/a |
+| R-09 | Static-analysis and style debt hides real defects | 2 | 2 | **4** | 154 legacy PHPStan findings | Baseline can only shrink (ceiling enforced); new code is gated | Reduce by typing the shared `Model $item` parameters | Engineering |
+| R-10 | Dependencies fall behind (Laravel 13, Livewire 4, PHPUnit 13 majors) | 2 | 2 | **4** | `composer outdated` | Advisories are gated; weekly audit workflow | A planned major upgrade with its own test pass; enable Dependabot security updates (P-02) | Owner |
+| R-11 | A kill switch that is too blunt makes an incident worse | 2 | 2 | **4** | `SEMINARS_PAID_ENABLED=false` also stops refunds and Billing callbacks (see `INCIDENT_RESPONSE.md`) | Documented | Add a narrower switch that stops only new checkouts (an engineering task, not done) | Engineering |
+| R-12 | The one person who can approve, deploy and restore is unavailable | 2 | 3 | **6** | Single owner for decisions, host access and the backup passphrase | None | Name a deputy for host access; store the passphrase and deploy secrets where a second person can reach them in an emergency | Owner |
+
+## Accepted risks
+
+None have been formally accepted. A risk is accepted only by the owner, in writing, with a date; add it here when that happens.
