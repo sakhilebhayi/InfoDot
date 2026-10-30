@@ -6,7 +6,7 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 
 | | Baseline | After PR #161 |
 |---|---|---|
-| Total (100) | **36** | **58** |
+| Total (100) | **36** | **59** |
 | Release blockers open | 3 (payment races, account takeover from a satellite, untested restore) | **1** (untested restore, C-10) once deployed; 3 until then |
 | Lowest dimension against the 7/10 floor | Performance 0/8, Reliability 1/9 | Performance 2/8, Reliability 3/9 |
 | 9+/10 reached | No | **No.** Needs 90+, every dimension at 7/10 or better, no blocker |
@@ -18,7 +18,7 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 | Security (20) | No high/critical advisory, enforced in CI (4) | 2 | 4 | `composer audit` 0 and `npm audit` 0; `tools/ci-composer-audit.sh` and `npm audit --audit-level=high` in `ci.yml`. Baseline: none present at high, but not a gate |
 | | Access control tested per state-changing route (6) | 3 | 4 | Regression tests for each fix; not every route has a test that fails without its check |
 | | Input handling (4) | 3 | 4 | Reviewer found no XSS/SQLi/SSRF; size limits added; webhooks fail closed. Baseline lacked size limits and had a GET login |
-| | Secrets (2) | 1 | 1 | Scanning on; a key was committed (B-01), its status is an Owner check |
+| | Secrets (2) | 1 | 2 | Scanning on; the committed `APP_KEY` was checked on the host and is not the live key (B-01); Pusher credentials in the same file not yet compared |
 | | Rate limiting (2) | 1 | 1 | Auth forms and per-route buckets fixed; the Livewire header search fan-out is unthrottled (B-07) |
 | | Headers and session (2) | 0 | 1 | Headers added; no CSP; secure cookie set by env only |
 | Tenancy (15) | Cross-team test per class of tenant data (9) | 4 | 5 | Existing `TenantIsolationTest` plus removed-member Livewire test; no test yet for cache keys, exports, or the LiveKit token |
@@ -51,7 +51,7 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 | | Incident procedure and processor list (1) | 0 | 0 | |
 | Business and UX (6) | Journeys as automated or recorded end-to-end tests (4) | 1 | 1 | Feature tests and a puppeteer room test exist; not whole journeys |
 | | Accessibility and mobile checks recorded (2) | 0 | 0 | |
-| **Total (100)** | | **36** | **58** | |
+| **Total (100)** | | **36** | **59** | |
 
 ## What would move the score most (largest gap first)
 
