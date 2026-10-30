@@ -83,6 +83,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/mentions/search', [PickerController::class, 'mentions'])->middleware('throttle:60,1,mentions-search')->name('mentions.search');
     Route::get('/solutions/picker', [PickerController::class, 'solutions'])->middleware('throttle:60,1,solutions-picker')->name('solutions.picker');
+    Route::post('/knowledge/similar', [PickerController::class, 'similar'])->middleware('throttle:30,1,knowledge-similar')->name('knowledge.similar');
 
     // -------------------------------------------------------
     // Attachments (R-15): uploads for questions, solutions, answers and comments, and the only door to the files

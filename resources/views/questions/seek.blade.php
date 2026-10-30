@@ -26,6 +26,8 @@
             @error('mentions')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         </div>
 
+        @include('partials.similar-panel', ['kind' => 'question', 'fields' => ['question', 'description']])
+
         @include('attachments._uploader', ['idPrefix' => 'ask', 'old' => old('attachments')])
         @error('attachments')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         @error('attachments.*.uuid')<p class="ix-error" role="alert">{{ $message }}</p>@enderror

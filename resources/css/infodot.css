@@ -7160,3 +7160,14 @@ body {
 .ix-reccard__kind .material-symbols-rounded { font-size: 15px; }
 .ix-reccard__title { font-weight: 600; }
 .ix-reccard__meta { font-size: 0.85rem; color: var(--ix-text-2); }
+
+/* ------------------------------------------------------------------ duplicate detection panel (R-16) */
+.ix-similar { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--ix-rule); border-left: 3px solid var(--ix-stencil); border-radius: var(--ix-radius-sm); background: var(--ix-panel); }
+.ix-similar__head { margin: 0; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.ix-similar__head .material-symbols-rounded { font-size: 18px; color: var(--ix-text-3); }
+.ix-similar__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ix-similar__item { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-sunken); }
+.ix-similar__item.is-strong { border-color: var(--ix-stencil); }
+.ix-similar__item small { color: var(--ix-text-2); }
+.ix-similar__badge { justify-self: start; font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; background: var(--ix-signal-wash); color: var(--ix-text-2); }
+.ix-similar__item.is-strong .ix-similar__badge { background: var(--ix-stencil); color: #1b2124; }

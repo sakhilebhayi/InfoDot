@@ -176,3 +176,59 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 });
+
+// R-16 phase 3: watches a composer's title and details and quietly asks whether similar content already exists.
+// Debounced well above typing speed, deduped by text, stale responses dropped. Guidance only — never blocks posting.
+document.addEventListener('alpine:init', () => {
+    window.Alpine.data('similarFinder', (opts = {}) => ({
+        results: [],
+        checked: false,
+        timer: null,
+        controller: null,
+        lastText: null,
+
+        init() {
+            this.$root.closest('form')?.addEventListener('input', (event) => {
+                if (event.target.matches(opts.watch ?? 'input[type=text], textarea')) this.plan();
+            });
+        },
+
+        text() {
+            const form = this.$root.closest('form');
+            if (!form) return '';
+            return (opts.fields ?? [])
+                .map((name) => form.querySelector('[name="' + name + '"]')?.value ?? '')
+                .join(' ')
+                .trim();
+        },
+
+        plan() {
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => this.check(), opts.debounce ?? 700);
+        },
+
+        async check() {
+            const text = this.text();
+            if (text.length < 12 || text === this.lastText) return;
+            this.lastText = text;
+            this.controller?.abort();
+            this.controller = new AbortController();
+            try {
+                const r = await fetch(opts.url, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                            ?? document.querySelector('input[name="_token"]')?.value ?? '',
+                    },
+                    body: JSON.stringify({ kind: opts.kind, text }),
+                    signal: this.controller.signal,
+                });
+                if (!r.ok) return;
+                this.results = await r.json();
+                this.checked = true;
+            } catch { /* aborted or offline: say nothing */ }
+        },
+    }));
+});

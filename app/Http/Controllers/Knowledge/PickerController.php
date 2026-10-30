@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SolutionConfirmation;
 use App\Models\Solutions;
 use App\Services\Knowledge\MentionService;
+use App\Services\Knowledge\SimilarContent;
 use App\Support\Reference;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,23 @@ class PickerController extends Controller
 
         $results = Cache::remember('mentions:u'.$user->id.':'.md5(mb_strtolower($query)), 60,
             fn () => $mentions->search($user, $query));
+
+        return response()->json($results);
+    }
+
+    /** Duplicate detection behind the composers: existing content that may already cover what is being written. */
+    public function similar(Request $request, SimilarContent $similar): JsonResponse
+    {
+        $data = $request->validate([
+            'kind' => 'required|in:question,solution',
+            'text' => 'required|string|min:12|max:21000',
+        ]);
+
+        $user = $request->user();
+        $results = Cache::remember(
+            'similar:u'.$user->id.':t'.($user->current_team_id ?? 0).':'.$data['kind'].':'.md5(mb_strtolower(trim($data['text']))), 60,
+            fn () => $similar->find($user, $data['kind'], $data['text']),
+        );
 
         return response()->json($results);
     }
