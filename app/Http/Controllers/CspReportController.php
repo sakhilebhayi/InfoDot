@@ -26,10 +26,13 @@ class CspReportController extends Controller
                 continue;
             }
 
-            $directive = preg_replace('/[^a-z-]/', '', strtolower((string) ($r['effective-directive'] ?? $r['effectiveDirective'] ?? $r['violated-directive'] ?? '')));
-            $blocked = (string) ($r['blocked-uri'] ?? $r['blockedURL'] ?? '');
+            // The payload is attacker-controlled: a field may be an array (a string cast would throw
+            // under Laravel's warning handler) and a forged host could be arbitrarily long (the
+            // once-a-day cache key must stay within the cache store's key limits). R-22 hardening.
+            $directive = substr(preg_replace('/[^a-z-]/', '', strtolower($this->firstString($r, ['effective-directive', 'effectiveDirective', 'violated-directive']))), 0, 40);
+            $blocked = $this->firstString($r, ['blocked-uri', 'blockedURL']);
             $host = in_array($blocked, ['inline', 'eval', 'self', ''], true) ? ($blocked ?: 'none') : (strtolower((string) parse_url($blocked, PHP_URL_HOST)) ?: 'other');
-            $host = preg_replace('/[^a-z0-9.\-]/', '', $host);
+            $host = substr(preg_replace('/[^a-z0-9.\-]/', '', $host), 0, 100);
 
             if ($directive !== '' && Cache::add("csp:$directive:$host:".now()->format('Y-m-d'), 1, 90000)) {
                 Log::info('csp.violation', ['directive' => $directive, 'blocked_host' => $host]);
@@ -37,5 +40,17 @@ class CspReportController extends Controller
         }
 
         return response()->noContent();
+    }
+
+    /** The first of the named keys whose value is a non-empty string; anything else is ignored. */
+    private function firstString(array $report, array $keys): string
+    {
+        foreach ($keys as $key) {
+            if (isset($report[$key]) && is_string($report[$key]) && $report[$key] !== '') {
+                return $report[$key];
+            }
+        }
+
+        return '';
     }
 }
