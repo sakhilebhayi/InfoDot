@@ -380,6 +380,8 @@ class SeminarService
      */
     public function removeByModerator(Seminar $seminar, User $moderator, string $reason, string $refunds = 'all'): void
     {
+        abort_unless($moderator->isModerator(), 403);   // the route says so too; a service called from anywhere else must not rely on that
+
         if ($seminar->removed_at !== null) {
             return;
         }
@@ -428,6 +430,8 @@ class SeminarService
      */
     public function decideRemovalAppeal(SeminarRemovalAppeal $appeal, User $moderator, bool $reinstate, string $note): void
     {
+        abort_unless($moderator->isModerator(), 403);
+
         $seminar = Seminar::findOrFail($appeal->seminar_id);
         $appeal = $appeal->fresh();
 
@@ -469,6 +473,8 @@ class SeminarService
     /** A moderator bars a registered person from the seminar's room because of a report about them. They stay registered; they cannot get back in. */
     public function barFromRoom(Seminar $seminar, User $target, User $moderator, string $note): void
     {
+        abort_unless($moderator->isModerator(), 403);
+
         DB::table('seminar_room_bans')->insertOrIgnore(['seminar_id' => $seminar->id, 'user_id' => $target->id, 'created_at' => now()]);
         app(P2pRoom::class)->remove($seminar, $target);
 
@@ -485,6 +491,13 @@ class SeminarService
 
     public function dismissReport(SeminarReport $report, User $moderator, string $note): void
     {
+        abort_unless($moderator->isModerator(), 403);
+
+        // A report that was already decided (actioned by a removal, or dismissed) is not decided a second time.
+        if ($report->fresh()?->status !== 'open') {
+            throw ValidationException::withMessages(['reason' => 'This report has already been decided.']);
+        }
+
         if (Seminar::whereKey($report->seminar_id)->value('host_id') === $moderator->id) {
             throw ValidationException::withMessages(['reason' => 'You cannot decide a report about your own seminar.']);
         }

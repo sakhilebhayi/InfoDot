@@ -27,6 +27,7 @@ use Sentry\ResultStatus;
 use Sentry\SentrySdk;
 use Sentry\Transport\Result;
 use Sentry\Transport\TransportInterface;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\Feature\Knowledge\Concerns\MakesCommunity;
 use Tests\TestCase;
 
@@ -231,6 +232,33 @@ class MoneyAndTenantFixesTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $service->decideRemovalAppeal($appeal, $mod, true, 'I agree with myself.');
+    }
+
+    public function test_the_seminar_moderation_services_refuse_a_caller_who_is_not_a_moderator_and_a_report_is_decided_once(): void
+    {
+        $service = app(SeminarService::class);
+        $host = $this->member('Host');
+        $s = $service->save($host, null, ['title' => 'T', 'summary' => 'x', 'starts_at' => now()->addDays(3)->format('Y-m-d\TH:i'), 'duration_minutes' => 60, 'join_url' => 'https://meet.example.test/r'], true);
+        $report = $service->report($s, $this->member('Reporter'), 'spam', null);
+        $plain = $this->member('Plain');
+
+        foreach ([
+            fn () => $service->removeByModerator($s, $plain, 'A reason that is long enough.'),
+            fn () => $service->dismissReport($report, $plain, 'A note.'),
+            fn () => $service->barFromRoom($s, $this->member('Target'), $plain, 'A note.'),
+        ] as $call) {
+            try {
+                $call();
+                $this->fail('a non-moderator must be refused');
+            } catch (HttpException $e) {
+                $this->assertSame(403, $e->getStatusCode());
+            }
+        }
+
+        $mod = $this->moderator();
+        $service->dismissReport($report, $mod, 'Nothing wrong with it.');
+        $this->expectException(ValidationException::class);
+        $service->dismissReport($report, $this->moderator(), 'Deciding it again.');
     }
 
     public function test_a_draft_seminar_cannot_be_removed_by_a_moderator(): void
