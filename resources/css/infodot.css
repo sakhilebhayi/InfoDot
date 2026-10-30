@@ -7191,3 +7191,135 @@ body {
 .ix-improve__versions summary { cursor: pointer; }
 .ix-improve__snapshot { margin-top: 8px; padding: 10px; border-left: 3px solid var(--ix-rule-strong); background: var(--ix-sunken); display: grid; gap: 8px; }
 .ix-improve__snapshot ol { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+
+/* --------------------------------------------------------------------------
+   Landing: the researched library ledger (R-10/R-24). A register, not a card
+   grid: one rule-separated row per entry, its real reference up front, the
+   stencil reserved for the tally numeral. Tokens only; both themes below.
+   -------------------------------------------------------------------------- */
+.lp-library__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    max-width: 980px;
+    margin: 0 auto 28px;
+}
+
+.lp-library__head > div { max-width: 640px; }
+
+.lp-library__tally {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.lp-library__num {
+    font-size: 88px;
+    line-height: 0.9;
+    color: var(--ix-knowledge);
+}
+
+.lp-library__word {
+    font-weight: 650;
+    font-size: 14px;
+    line-height: 1.25;
+    text-transform: lowercase;
+    color: var(--ix-muted);
+}
+
+.lp-ledger {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0;
+    list-style: none;
+    border-top: 2px solid var(--ix-ink);
+}
+
+.lp-ledger li { border-bottom: 1px solid var(--ix-line); }
+
+.lp-ledger a {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.15s ease-out;
+}
+
+.lp-ledger a:hover { background: var(--ix-raised); }
+
+.lp-ledger a:focus-visible {
+    outline: 2px solid var(--ix-knowledge);
+    outline-offset: -2px;
+}
+
+.lp-ledger__ref { flex: none; }
+
+.lp-ledger__body { min-width: 0; }
+
+.lp-ledger__body strong {
+    display: block;
+    font-weight: 650;
+    font-size: 17px;
+    line-height: 1.35;
+}
+
+.lp-ledger__meta {
+    display: block;
+    margin-top: 3px;
+    font-size: 13.5px;
+    color: var(--ix-muted);
+}
+
+.lp-ledger .material-symbols-rounded {
+    color: var(--ix-knowledge);
+    transition: transform 0.15s ease-out;
+}
+
+.lp-ledger a:hover .material-symbols-rounded { transform: translateX(4px); }
+
+.lp-library__foot {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    max-width: 980px;
+    margin: 22px auto 0;
+}
+
+.lp-library__note {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ix-muted);
+}
+
+@media (max-width: 760px) {
+    .lp-library__head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .lp-library__num { font-size: 64px; }
+
+    .lp-ledger a {
+        grid-template-columns: 1fr auto;
+        grid-template-areas: 'ref arrow' 'body body';
+        row-gap: 8px;
+    }
+
+    .lp-ledger__ref { grid-area: ref; justify-self: start; }
+    .lp-ledger__body { grid-area: body; }
+    .lp-ledger .material-symbols-rounded { grid-area: arrow; }
+
+    .lp-library__foot { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lp-ledger a,
+    .lp-ledger .material-symbols-rounded { transition: none; }
+}
