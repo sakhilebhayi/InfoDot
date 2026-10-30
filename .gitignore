@@ -19,3 +19,6 @@ yarn-error.log
 /public/vendor/livewire
 
 .DS_Store
+
+# Meilisearch data (not used; search uses the database and Scout tntsearch)
+/data.ms/

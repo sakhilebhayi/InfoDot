@@ -118,6 +118,14 @@ class AnswerService
         }
 
         DB::transaction(function () use ($answer, $by): void {
+            // Two people accepting at once (the asker and a moderator, or a double click) must not leave two accepted answers or send two
+            // credits: take the question's row first, then look again at what is accepted.
+            Questions::withoutGlobalScopes()->whereKey($answer->question_id)->lockForUpdate()->first();
+
+            if (Answer::withoutGlobalScopes()->whereKey($answer->id)->whereNotNull('accepted_at')->exists()) {
+                return;
+            }
+
             $previous = Answer::withoutGlobalScopes()->where('question_id', $answer->question_id)->whereNotNull('accepted_at')->get();
 
             foreach ($previous as $old) {

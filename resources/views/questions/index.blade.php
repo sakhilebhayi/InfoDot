@@ -62,6 +62,7 @@
                         </li>
                     @endforeach
                 </ul>
+                @if ($limited)<p class="ix-hint">Showing the latest 200. Pick a topic above to narrow the list.</p>@endif
             </div>
 
             <aside class="ix-board__rail">
