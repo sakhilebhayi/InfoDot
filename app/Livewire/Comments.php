@@ -8,6 +8,7 @@ use App\Models\UserNotice;
 use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Knowledge\InAppNotices;
+use App\Services\Knowledge\MentionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
@@ -25,6 +26,9 @@ class Comments extends Component
 
     /** JSON the attachment widget keeps current: [{uuid, caption}, ...]. */
     public string $attachmentsPayload = '';
+
+    /** JSON the @mention box keeps current: [{type, id}, ...]. */
+    public string $mentionsPayload = '';
 
     protected array $rules = [
         'newCommentState.body' => 'required|max:5000',
@@ -87,13 +91,16 @@ class Comments extends Component
         RateLimiter::hit($limit, 60);
 
         $items = AttachmentService::parsePayload($this->attachmentsPayload);
+        $mentionItems = MentionService::parsePayload($this->mentionsPayload);
 
         $comment = $this->model->comments()->make(['body' => $this->newCommentState['body']]);
         $comment->user()->associate(auth()->user());
         $comment->save();
 
         app(AttachmentService::class)->bind($items, $comment, auth()->user());
+        app(MentionService::class)->record($comment, auth()->user(), $mentionItems);
         $this->attachmentsPayload = '';
+        $this->mentionsPayload = '';
         $this->dispatch('comment-attachments-clear');
 
         // The owner of the question or solution is told someone commented (often a request for more detail). Never the commenter,

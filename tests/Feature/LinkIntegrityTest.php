@@ -37,7 +37,8 @@ class LinkIntegrityTest extends TestCase
     {
         $host = parse_url(config('app.url'), PHP_URL_HOST) ?: 'localhost';
         $links = [];
-        preg_match_all('/<a\b[^>]*\bhref="([^"]*)"/i', $html, $m);
+        // \s before href: an Alpine-bound attribute (x-bind:href="expr") is an expression, not a link to follow.
+        preg_match_all('/<a\b[^>]*\shref="([^"]*)"/i', $html, $m);
         foreach ($m[1] as $href) {
             $href = html_entity_decode($href);
             if ($href === '' || str_starts_with($href, '#') || preg_match('#^(mailto:|tel:|javascript:)#i', $href)) {

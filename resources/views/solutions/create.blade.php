@@ -25,6 +25,8 @@
                 @error('solution_description')<p class="ix-error">{{ $message }}</p>@enderror
             </div>
 
+            @include('partials.similar-panel', ['kind' => 'solution', 'fields' => ['solution_title', 'solution_description']])
+
             <div class="ix-field">
                 <label class="ix-label" for="tags-input">Tags</label>
                 <input class="ix-input" name="tags-input" id="tags-input" type="text" value="{{ old('tags-input') }}" placeholder="{{ $industry['solution_tags'] }}" required @error('tags-input') aria-invalid="true" @enderror>

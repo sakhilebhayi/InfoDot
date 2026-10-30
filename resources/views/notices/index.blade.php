@@ -6,7 +6,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Notifications</h1>
-            <p class="ix-lede">What has happened to your own work: an answer to your question, a comment on it, your answer accepted, your solution verified, your work added to the knowledge library. Only you see this page.</p>
+            <p class="ix-lede">What has happened to your own work: an answer to your question, your answer accepted, your solution verified, tried in practice or recommended, a mention of you or your business, an improvement proposed to your solution or a decision on yours. Only you see this page.</p>
         </div>
         @if ($unread > 0)
             <form method="POST" action="{{ route('notices.read-all') }}">

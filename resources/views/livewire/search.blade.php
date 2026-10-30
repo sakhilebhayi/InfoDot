@@ -25,7 +25,7 @@
             aria-controls="ix-search-list"
             :aria-expanded="open"
             @focus="open = true"
-            wire:model.live.debounce.200ms="query"
+            wire:model.live.debounce.{{ (int) config('search.debounce_ms') }}ms="query"
             wire:keydown.escape="$set('query', '')"
             wire:keydown.arrow-up.prevent="decrementHighlight"
             wire:keydown.arrow-down.prevent="incrementHighlight"

@@ -8,6 +8,7 @@ use App\Models\Answer;
 use App\Models\Questions;
 use App\Models\Topic;
 use App\Services\Attachments\AttachmentService;
+use App\Services\Knowledge\MentionService;
 use App\Services\Knowledge\TopicService;
 use App\Support\Industry;
 use App\Support\Related;
@@ -64,7 +65,7 @@ class QuestionsController extends Controller
     public function view($qid, TopicService $topics)
     {
         // Not found, not forbidden: do not reveal that another company's question exists.
-        $question = Questions::where('id', $qid)->with(['topics', 'attachments'])->firstOrFail();
+        $question = Questions::where('id', $qid)->with(['topics', 'attachments', 'mentions.mentionedUser', 'mentions.mentionedTeam'])->firstOrFail();
 
         return view('questions.view', [
             'question' => $question,
@@ -81,6 +82,7 @@ class QuestionsController extends Controller
                 'question' => 'required|min:3|max:255',
                 'description' => 'required|min:3|max:20000',
                 'publish' => 'nullable|boolean',
+                'mentions' => 'nullable|string|max:2000',
             ] + TopicService::rules() + AttachmentService::rules(),
             [ // 2nd array is the rules custom message
                 'required' => 'The :attribute field is mandatory.',
@@ -94,10 +96,13 @@ class QuestionsController extends Controller
         $question->question = $request->input('question');
         $question->description = $request->input('description');
 
-        DB::transaction(function () use ($question, $request, $topics, $attachments) {
+        $mentionItems = MentionService::parsePayload($request->input('mentions'));
+
+        DB::transaction(function () use ($question, $request, $topics, $attachments, $mentionItems) {
             $question->save();
             $topics->file($question, $request->input('topics'));
             $attachments->bind($request->input('attachments', []) ?: [], $question, $request->user());
+            app(MentionService::class)->record($question, $request->user(), $mentionItems);
         });
 
         event(new QuestionSubmitted('infodot:question:'.$question->id, [

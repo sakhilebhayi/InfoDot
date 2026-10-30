@@ -70,6 +70,10 @@
                 </ol>
             </section>
 
+            <livewire:solution-confirmations :solution-id="$solution->id" />
+
+            <livewire:solution-improvements :solution-id="$solution->id" />
+
             <livewire:comments :model="$solution" :solution="$solution" />
         </article>
 
@@ -78,6 +82,9 @@
                 <h2>Details</h2>
                 <dl>
                     <div><dt>Written by</dt><dd><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a>@if ($solution->user->isOfficialAccount()) <span class="ix-chip ix-chip--info">Official</span>@endif</dd></div>
+                    @if (($improvers ?? collect())->isNotEmpty())
+                        <div><dt>Improved by</dt><dd>@foreach ($improvers as $improver)<a href="{{ route('profile.show', ['id' => $improver->id]) }}">{{ $improver->name }}</a>@if (! $loop->last), @endif @endforeach</dd></div>
+                    @endif
                     <div><dt>Added</dt><dd>{{ $solution->created_at->diffForHumans() }}</dd></div>
                     <div><dt>Time it takes</dt><dd>@if ($solution->duration_type === 'infinite') Unknown @else {{ $solution->duration }} {{ Str::plural(rtrim($solution->duration_type, 's'), $solution->duration) }} @endif</dd></div>
                     <div><dt>Visible to</dt><dd>{{ $solution->isHidden() ? 'You and moderators' : ($solution->isPublic() ? 'Everyone' : 'Your company') }}</dd></div>

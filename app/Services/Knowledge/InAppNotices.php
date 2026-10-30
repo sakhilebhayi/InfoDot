@@ -169,6 +169,10 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => 'Accepted',
             UserNotice::SOLUTION_VERIFIED => 'Verified',
             UserNotice::KNOWLEDGE_REUSED => 'Library',
+            UserNotice::SOLUTION_CONFIRMED => 'Tried it',
+            UserNotice::MENTIONED => 'Mention',
+            UserNotice::SOLUTION_RECOMMENDED => 'Recommended',
+            UserNotice::IMPROVEMENT_PROPOSED, UserNotice::IMPROVEMENT_APPROVED, UserNotice::IMPROVEMENT_REJECTED, UserNotice::IMPROVEMENT_CLARIFY => 'Improvement',
             UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED, UserNotice::SEMINAR_REPORT_DECIDED => 'Seminar',
             default => 'Update',
         };
@@ -184,6 +188,13 @@ class InAppNotices
             UserNotice::SOLUTION_VERIFIED => "Your solution $title was verified by a moderator.",
             UserNotice::KNOWLEDGE_REUSED => "Your work on $title was added to the knowledge library.",
             UserNotice::COMMENT_RECEIVED => "Someone commented on $title. They may be asking for more detail.",
+            UserNotice::SOLUTION_CONFIRMED => "Someone tried your solution $title in practice and confirmed it worked for them.",
+            UserNotice::MENTIONED => "You were mentioned on $title — someone thinks you have the experience to help.",
+            UserNotice::SOLUTION_RECOMMENDED => "Your solution $title was recommended as an answer to a question.",
+            UserNotice::IMPROVEMENT_PROPOSED => "Someone proposed an improvement to your solution $title. Review it on the solution page — nothing changes until you approve it.",
+            UserNotice::IMPROVEMENT_APPROVED => "Your proposed improvement to $title was approved and is now part of the solution, credited to you.",
+            UserNotice::IMPROVEMENT_REJECTED => "Your proposed improvement to $title was not taken up. The author's note, if any, is on the solution page.",
+            UserNotice::IMPROVEMENT_CLARIFY => "The author of $title asked you to clarify your proposed improvement. Their question is on the solution page.",
             UserNotice::SEMINAR_REMINDER => "Reminder: you registered for the seminar $title.",
             UserNotice::SEMINAR_CANCELLED => $seminar?->removed_at
                 ? "The seminar $title was removed by a moderator. If you paid for a ticket and you are due a refund, we will tell you when it is made."

@@ -6,6 +6,7 @@ use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ExpertiseSharingController;
+use App\Http\Controllers\Knowledge\PickerController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
 use App\Http\Controllers\NoticesController;
@@ -76,6 +77,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // People: the members of the company the person is acting for
     // -------------------------------------------------------
     Route::get('/people', [PeopleController::class, 'index'])->name('people');
+
+    // -------------------------------------------------------
+    // Composer lookups (R-16): @mention autocomplete and the recommend-a-solution picker
+    // -------------------------------------------------------
+    Route::get('/mentions/search', [PickerController::class, 'mentions'])->middleware('throttle:60,1,mentions-search')->name('mentions.search');
+    Route::get('/solutions/picker', [PickerController::class, 'solutions'])->middleware('throttle:60,1,solutions-picker')->name('solutions.picker');
+    Route::post('/knowledge/similar', [PickerController::class, 'similar'])->middleware('throttle:30,1,knowledge-similar')->name('knowledge.similar');
 
     // -------------------------------------------------------
     // Attachments (R-15): uploads for questions, solutions, answers and comments, and the only door to the files

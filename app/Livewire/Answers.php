@@ -5,10 +5,16 @@ namespace App\Livewire;
 use App\Models\Answer;
 use App\Models\ContentReport;
 use App\Models\Questions;
+use App\Models\SolutionRecommendation;
+use App\Models\Solutions;
+use App\Models\UserNotice;
 use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\AnswerService;
+use App\Services\Knowledge\InAppNotices;
+use App\Services\Knowledge\MentionService;
 use App\Services\Knowledge\TopicBadges;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
@@ -26,6 +32,12 @@ class Answers extends Component
     /** JSON the attachment widget keeps current: [{uuid, caption}, ...]. */
     public string $attachmentsPayload = '';
 
+    /** JSON the @mention box keeps current: [{type, id}, ...]. */
+    public string $mentionsPayload = '';
+
+    /** JSON the recommend-a-solution picker keeps current: [{id}, ...]. */
+    public string $recommendationsPayload = '';
+
     public ?int $reporting = null;
 
     public string $reason = 'low_quality';
@@ -39,13 +51,59 @@ class Answers extends Component
     {
         $this->validateOnly('body', ['body' => ['required', 'string']]);
         $items = AttachmentService::parsePayload($this->attachmentsPayload);
+        $mentionItems = MentionService::parsePayload($this->mentionsPayload);
+        $recommended = $this->recommendedSolutions();
 
         $answer = $service->publish($this->question, Auth::user(), $this->body);
         $attachments->bind($items, $answer, Auth::user());
+        app(MentionService::class)->record($answer, Auth::user(), $mentionItems);
+        $this->recommend($answer, $recommended);
 
-        $this->reset('body', 'attachmentsPayload');
+        $this->reset('body', 'attachmentsPayload', 'mentionsPayload', 'recommendationsPayload');
         $this->dispatch('answer-attachments-clear');
         session()->flash('answer-status', 'Your answer is posted.');
+    }
+
+    /** The solutions the picker chose, re-read under this person's own visibility: what they may not see is not found. */
+    /** @return Collection<int, Solutions> */
+    private function recommendedSolutions(): Collection
+    {
+        $json = trim($this->recommendationsPayload);
+
+        if ($json === '' || $json === '[]') {
+            return new Collection;
+        }
+
+        $rows = json_decode($json, true);
+
+        if (! is_array($rows) || count($rows) > 3) {
+            throw ValidationException::withMessages(['recommendations' => 'The recommended solutions could not be read. Remove them and pick again.']);
+        }
+
+        $ids = collect($rows)->map(fn ($row) => (int) (is_array($row) ? ($row['id'] ?? 0) : 0))->filter(fn ($id) => $id > 0)->unique()->values();
+
+        return Solutions::whereIn('id', $ids)->get();
+    }
+
+    /** @param  Collection<int, Solutions>  $solutions */
+    private function recommend(Answer $answer, Collection $solutions): void
+    {
+        foreach ($solutions as $solution) {
+            SolutionRecommendation::firstOrCreate(
+                ['answer_id' => $answer->id, 'solution_id' => $solution->id],
+                ['recommender_id' => Auth::id(), 'created_at' => now()],
+            );
+
+            // The solution's author hears their work was recommended; record() itself skips self-recommendation.
+            try {
+                app(InAppNotices::class)->record(
+                    UserNotice::SOLUTION_RECOMMENDED, $solution->user, 'solution', $solution->id,
+                    'infodot:recommendation:'.$answer->id.':'.$solution->id, Auth::user(),
+                );
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
     }
 
     public function accept(int $answerId, AnswerService $service): void
@@ -89,7 +147,7 @@ class Answers extends Component
 
         $answers = Answer::where('question_id', $this->question->id)
             ->where('status', Answer::PUBLISHED)
-            ->with('user', 'question', 'attachments')
+            ->with('user', 'question', 'attachments', 'mentions.mentionedUser', 'mentions.mentionedTeam', 'recommendations.solution.user')
             ->orderByRaw('accepted_at is null')->orderBy('created_at')
             ->get();
 
