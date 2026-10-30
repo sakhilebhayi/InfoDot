@@ -87,7 +87,7 @@ Source: three read-only code audits (access control and tenancy; input handling,
 | P-06 | Pipeline | Pint failed on 39 files | Low | tool run | Fixed (PR #161) |
 | P-07 | Dependencies | symfony/mime 7.4.19 (CVE-2026-45070, medium); 2 npm moderate (build-time) | Medium | tool run | Fixed (PR #161); composer audit 0, npm audit 0 |
 | P-08 | Repo | `.phpunit.cache/test-results` is tracked and dirties every run | Info | R | Open |
-| O-01 | Observability | A dead scheduler stops points delivery, refund retries and digests with no error. `/ready` now reports `degraded` when the scheduler heartbeat (written every minute) is older than 15 minutes; an outside monitor must call `/ready` for this to reach a person | Medium | R, T | Fixed (this PR) in code. **Owner:** point an uptime monitor at `https://infodot.co.za/ready` |
+| O-01 | Observability | A dead scheduler stops points delivery, refund retries and digests with no error. `/ready` now reports `degraded` when the scheduler heartbeat (written every minute) is older than 15 minutes; an outside monitor must call `/ready` for this to reach a person | Medium | R, T | Fixed (this PR) in code. **Verified on production 2026-10-30** (heartbeat 0 minutes old, `ops:check` clean: `evidence/2026-10-30-ops-checks.md`). **Owner:** point an uptime monitor at `https://infodot.co.za/ready` |
 | P-09 | Deploy | A failed deploy after maintenance mode starts leaves the site down by design; the rollback copy is manual and not drilled | Medium | R | Open, Owner |
 
 ## Raised by reviewers and not carried into the register
