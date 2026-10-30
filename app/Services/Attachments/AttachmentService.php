@@ -15,6 +15,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Smalot\PdfParser\Parser;
 
 /**
  * Every rule about uploaded files lives here (R-15): what may be uploaded, how much, who may see a file, and how an
@@ -83,7 +84,7 @@ class AttachmentService
      * Make this person's listed uploads part of the given content. Called inside the same transaction that creates the
      * content. $items come from the form: [['uuid' => ..., 'caption' => ...], ...] in display order.
      *
-     * @param  list<array{uuid: string, caption?: string|null}>  $items
+     * @param  array<int|string, array{uuid?: string|null, caption?: string|null}>  $items
      */
     public function bind(array $items, Model $attachable, User $owner): void
     {
@@ -106,6 +107,8 @@ class AttachmentService
             throw ValidationException::withMessages(['attachments' => 'One of the attachments is no longer available (uploads are kept for a day before a form uses them). Remove it and upload it again.']);
         }
 
+        $pdfIds = [];
+
         foreach (array_values($items) as $sort => $item) {
             $attachment = $found[(string) $item['uuid']] ?? null;
             if (! $attachment) {
@@ -121,7 +124,86 @@ class AttachmentService
                 'expires_at' => null,
             ])->save();
             $found->forget((string) $item['uuid']);
+
+            if ($attachment->kind === Attachment::PDF && $attachment->extracted_text === null) {
+                $pdfIds[] = $attachment->id;
+            }
         }
+
+        // PDF text joins the parent's search index, best-effort and after the response: a slow or broken PDF never
+        // delays or fails the submission (there is no queue worker on this host; afterResponse is the pattern).
+        foreach ($pdfIds as $id) {
+            dispatch(function () use ($id) {
+                $attachment = Attachment::find($id);
+                if ($attachment) {
+                    app(AttachmentService::class)->extractText($attachment);
+                }
+            })->afterResponse();
+        }
+    }
+
+    /**
+     * Pull the readable text out of a PDF so search and "more like this" can see it. Best-effort: a PDF that cannot be
+     * parsed (scanned pages, encryption) simply contributes nothing — OCR would need an external service (R-15 §6).
+     */
+    public function extractText(Attachment $attachment): void
+    {
+        if ($attachment->kind !== Attachment::PDF) {
+            return;
+        }
+
+        try {
+            $document = (new Parser)->parseFile(Storage::disk(Attachment::DISK)->path($attachment->path));
+            $text = trim(preg_replace('/\s+/u', ' ', $document->getText()) ?? '');
+
+            $attachment->forceFill([
+                'extracted_text' => $text === '' ? null : Str::limit($text, 20000, ''),
+                'meta' => array_merge($attachment->meta ?? [], ['pages' => count($document->getPages())]),
+            ])->save();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return;
+        }
+
+        // The content the text belongs to re-enters the search index with it.
+        $parent = $attachment->attachable()->withoutGlobalScopes()->first();
+        [$content] = $parent ? $this->resolve($parent) : [null];
+
+        if ($content && method_exists($content, 'searchable')) {
+            $content->searchable();
+        }
+    }
+
+    /**
+     * The hidden JSON field a Livewire form carries, turned into bind() items. Garbage in the payload is a 422, never
+     * a crash: the field is written by the widget but arrives from the browser.
+     *
+     * @return list<array{uuid: string, caption: string}>
+     */
+    public static function parsePayload(?string $json): array
+    {
+        $json = trim((string) $json);
+
+        if ($json === '' || $json === '[]') {
+            return [];
+        }
+
+        $rows = json_decode($json, true);
+
+        if (! is_array($rows) || count($rows) > (int) config('attachments.max_per_item')) {
+            throw ValidationException::withMessages(['attachments' => 'The attachments could not be read. Remove them and add them again.']);
+        }
+
+        $items = [];
+        foreach ($rows as $row) {
+            if (! is_array($row) || ! Str::isUuid($row['uuid'] ?? '')) {
+                throw ValidationException::withMessages(['attachments' => 'The attachments could not be read. Remove them and add them again.']);
+            }
+            $items[] = ['uuid' => (string) $row['uuid'], 'caption' => (string) ($row['caption'] ?? '')];
+        }
+
+        return $items;
     }
 
     /** The validation rules a composer form uses for its attachments[] payload. */
@@ -163,7 +245,7 @@ class AttachmentService
         }
 
         if ($restricted || (method_exists($content, 'isHidden') && $content->isHidden())) {
-            return $user->id === $attachment->user_id || $user->id === $content->user_id || $user->isModerator();
+            return $user->id === $attachment->user_id || $user->id === $content->getAttribute('user_id') || $user->isModerator();
         }
 
         return $this->answers->canSeeContent($content, $user);
@@ -226,7 +308,8 @@ class AttachmentService
             $extensions = $rules['mimes'][$mime] ?? null;
 
             if ($extensions !== null && in_array($extension, $extensions, true)) {
-                return [$kind, $mime];
+                // Stored and served under the canonical type, whatever libmagic called the container.
+                return [$kind, $mime === 'application/mp4' ? 'video/mp4' : $mime];
             }
         }
 

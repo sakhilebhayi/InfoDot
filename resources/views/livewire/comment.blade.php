@@ -6,6 +6,7 @@
             @if ($comment->commentable && $comment->user_id !== null && $comment->user_id === $comment->commentable->user_id)<em class="ix-comment__tag">{{ $comment->commentable instanceof \App\Models\Questions ? 'Asker' : 'Author' }}</em>@endif
             <span>{{ $comment->created_at->diffForHumans() }}</span>
         </div>
-        <p>{{ $comment->body }}</p>
+        <p>{!! nl2br(e($comment->body)) !!}</p>
+    @include('attachments._list', ['attachments' => $comment->attachments, 'compact' => true])
     </div>
 </div>

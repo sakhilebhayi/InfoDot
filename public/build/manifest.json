@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-epymgBLn.css",
+    "file": "assets/app-C4x4pIE5.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -116,6 +116,142 @@
     "file": "assets/tutor-CYTf0nmx.png",
     "src": "resources/img/apps/tutor.png"
   },
+  "resources/img/arrow-mask.png": {
+    "file": "assets/arrow-mask-BvtlvTEr.png",
+    "src": "resources/img/arrow-mask.png"
+  },
+  "resources/img/landing/couturiere.jpg": {
+    "file": "assets/couturiere-CDo3s3_6.jpg",
+    "src": "resources/img/landing/couturiere.jpg"
+  },
+  "resources/img/landing/hero-1920.jpg": {
+    "file": "assets/hero-1920-D58jPPo_.jpg",
+    "src": "resources/img/landing/hero-1920.jpg"
+  },
+  "resources/img/landing/hero-960.jpg": {
+    "file": "assets/hero-960-BWEQMnG8.jpg",
+    "src": "resources/img/landing/hero-960.jpg"
+  },
+  "resources/img/landing/market.jpg": {
+    "file": "assets/market-WTcKys8c.jpg",
+    "src": "resources/img/landing/market.jpg"
+  },
+  "resources/img/landing/platforms/agents.png": {
+    "file": "assets/agents-Bk9zXlP-.png",
+    "src": "resources/img/landing/platforms/agents.png"
+  },
+  "resources/img/landing/platforms/analytics.png": {
+    "file": "assets/analytics-DY77snL3.png",
+    "src": "resources/img/landing/platforms/analytics.png"
+  },
+  "resources/img/landing/platforms/auction.png": {
+    "file": "assets/auction-BF_stMNO.png",
+    "src": "resources/img/landing/platforms/auction.png"
+  },
+  "resources/img/landing/platforms/billing.png": {
+    "file": "assets/billing-DGyqV9MQ.png",
+    "src": "resources/img/landing/platforms/billing.png"
+  },
+  "resources/img/landing/platforms/central.png": {
+    "file": "assets/central-CbCyW9DJ.png",
+    "src": "resources/img/landing/platforms/central.png"
+  },
+  "resources/img/landing/platforms/charts.png": {
+    "file": "assets/charts-DwmhJxhw.png",
+    "src": "resources/img/landing/platforms/charts.png"
+  },
+  "resources/img/landing/platforms/design.png": {
+    "file": "assets/design-DRWEBpPQ.png",
+    "src": "resources/img/landing/platforms/design.png"
+  },
+  "resources/img/landing/platforms/docs.png": {
+    "file": "assets/docs-BfBm8SNW.png",
+    "src": "resources/img/landing/platforms/docs.png"
+  },
+  "resources/img/landing/platforms/dopemine.png": {
+    "file": "assets/dopemine-CKrEixDB.png",
+    "src": "resources/img/landing/platforms/dopemine.png"
+  },
+  "resources/img/landing/platforms/ehail.png": {
+    "file": "assets/ehail-CPB-7s69.png",
+    "src": "resources/img/landing/platforms/ehail.png"
+  },
+  "resources/img/landing/platforms/emall.png": {
+    "file": "assets/emall-N6xTX7bs.png",
+    "src": "resources/img/landing/platforms/emall.png"
+  },
+  "resources/img/landing/platforms/engage.png": {
+    "file": "assets/engage-DOG71cIe.png",
+    "src": "resources/img/landing/platforms/engage.png"
+  },
+  "resources/img/landing/platforms/farms.png": {
+    "file": "assets/farms-5nEfnWlq.png",
+    "src": "resources/img/landing/platforms/farms.png"
+  },
+  "resources/img/landing/platforms/files.png": {
+    "file": "assets/files-Bjxd4wjB.png",
+    "src": "resources/img/landing/platforms/files.png"
+  },
+  "resources/img/landing/platforms/finance.png": {
+    "file": "assets/finance-BSTemPlg.png",
+    "src": "resources/img/landing/platforms/finance.png"
+  },
+  "resources/img/landing/platforms/forms.png": {
+    "file": "assets/forms-C97XVnln.png",
+    "src": "resources/img/landing/platforms/forms.png"
+  },
+  "resources/img/landing/platforms/hr.png": {
+    "file": "assets/hr-Dxxj3ONr.png",
+    "src": "resources/img/landing/platforms/hr.png"
+  },
+  "resources/img/landing/platforms/infodot.png": {
+    "file": "assets/infodot-abSzFYkd.png",
+    "src": "resources/img/landing/platforms/infodot.png"
+  },
+  "resources/img/landing/platforms/memory.png": {
+    "file": "assets/memory-KKjPT9Ri.png",
+    "src": "resources/img/landing/platforms/memory.png"
+  },
+  "resources/img/landing/platforms/mines.png": {
+    "file": "assets/mines-Cxn-BWSo.png",
+    "src": "resources/img/landing/platforms/mines.png"
+  },
+  "resources/img/landing/platforms/notify.png": {
+    "file": "assets/notify-DcKMoG35.png",
+    "src": "resources/img/landing/platforms/notify.png"
+  },
+  "resources/img/landing/platforms/plug.png": {
+    "file": "assets/plug-CTlziqYU.png",
+    "src": "resources/img/landing/platforms/plug.png"
+  },
+  "resources/img/landing/platforms/press.png": {
+    "file": "assets/press-ChbIus8y.png",
+    "src": "resources/img/landing/platforms/press.png"
+  },
+  "resources/img/landing/platforms/projects.png": {
+    "file": "assets/projects-Yb4AG84T.png",
+    "src": "resources/img/landing/platforms/projects.png"
+  },
+  "resources/img/landing/platforms/pulse.png": {
+    "file": "assets/pulse-BhrmxaqQ.png",
+    "src": "resources/img/landing/platforms/pulse.png"
+  },
+  "resources/img/landing/platforms/sheet.png": {
+    "file": "assets/sheet-CybF4iaE.png",
+    "src": "resources/img/landing/platforms/sheet.png"
+  },
+  "resources/img/landing/platforms/tasks.png": {
+    "file": "assets/tasks-Utvsz598.png",
+    "src": "resources/img/landing/platforms/tasks.png"
+  },
+  "resources/img/landing/platforms/tutor.png": {
+    "file": "assets/tutor-BgZFKuZA.png",
+    "src": "resources/img/landing/platforms/tutor.png"
+  },
+  "resources/img/landing/seamstress.jpg": {
+    "file": "assets/seamstress-zGZr6jQC.jpg",
+    "src": "resources/img/landing/seamstress.jpg"
+  },
   "resources/img/platforms/docs.png": {
     "file": "assets/docs-Bgi7gZB8.png",
     "src": "resources/img/platforms/docs.png"
@@ -125,9 +261,27 @@
     "src": "resources/img/platforms/files.png"
   },
   "resources/js/app.js": {
-    "file": "assets/app-aZbUtiHs.js",
+    "file": "assets/app-C5v2MBB5.js",
     "name": "app",
     "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/landing.js": {
+    "file": "assets/landing-BirDQNgK.js",
+    "name": "landing",
+    "src": "resources/js/landing.js",
+    "isEntry": true
+  },
+  "resources/js/seminar-p2p.js": {
+    "file": "assets/seminar-p2p-BAQwTf-p.js",
+    "name": "seminar-p2p",
+    "src": "resources/js/seminar-p2p.js",
+    "isEntry": true
+  },
+  "resources/js/seminar-room.js": {
+    "file": "assets/seminar-room-D59fAbVh.js",
+    "name": "seminar-room",
+    "src": "resources/js/seminar-room.js",
     "isEntry": true
   }
 }

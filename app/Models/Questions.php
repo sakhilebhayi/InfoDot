@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
 /**
@@ -78,6 +79,8 @@ class Questions extends Model
             'id' => $this->getKey(),
             'question' => $this->question,
             'description' => $this->description,
+            // Text pulled out of attached PDFs (R-15), so search finds the question by its evidence too.
+            'attachment_text' => Str::limit($this->attachments()->whereNotNull('extracted_text')->pluck('extracted_text')->implode(' '), 15000, ''),
         ];
     }
 

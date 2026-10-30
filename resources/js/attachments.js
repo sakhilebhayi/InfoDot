@@ -60,13 +60,14 @@ document.addEventListener('alpine:init', () => {
                 return;
             }
 
-            const item = {
+            this.items.push({
                 key: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
                 uuid: null, kind: null, name: file.name, size: file.size, thumb: null,
                 preview: file.type?.startsWith('image/') ? URL.createObjectURL(file) : null,
                 progress: 0, error: null, caption: '', xhr: null,
-            };
-            this.items.push(item);
+            });
+            // Work through the reactive proxy the array handed back: mutating the raw object would leave the DOM stale.
+            const item = this.items[this.items.length - 1];
 
             const data = new FormData();
             data.append('file', file);

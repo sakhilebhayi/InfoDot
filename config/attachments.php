@@ -32,6 +32,8 @@ return [
             'max_bytes' => (int) env('ATTACHMENTS_VIDEO_MAX_MB', 100) * 1024 * 1024,
             'mimes' => [
                 'video/mp4' => ['mp4', 'm4v'],
+                // Some libmagic builds call an MP4 container this; it is stored and served as video/mp4.
+                'application/mp4' => ['mp4', 'm4v'],
                 'video/webm' => ['webm'],
             ],
         ],

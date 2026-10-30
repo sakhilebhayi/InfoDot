@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Solutions;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Knowledge\InAppNotices;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,9 @@ class Comments extends Component
     public mixed $solution = null;
 
     public array $newCommentState = ['body' => ''];
+
+    /** JSON the attachment widget keeps current: [{uuid, caption}, ...]. */
+    public string $attachmentsPayload = '';
 
     protected array $rules = [
         'newCommentState.body' => 'required|max:5000',
@@ -82,9 +86,15 @@ class Comments extends Component
 
         RateLimiter::hit($limit, 60);
 
+        $items = AttachmentService::parsePayload($this->attachmentsPayload);
+
         $comment = $this->model->comments()->make(['body' => $this->newCommentState['body']]);
         $comment->user()->associate(auth()->user());
         $comment->save();
+
+        app(AttachmentService::class)->bind($items, $comment, auth()->user());
+        $this->attachmentsPayload = '';
+        $this->dispatch('comment-attachments-clear');
 
         // The owner of the question or solution is told someone commented (often a request for more detail). Never the commenter,
         // and never able to fail the comment itself.
@@ -110,7 +120,7 @@ class Comments extends Component
 
         $comments = $this->model
             ->comments()
-            ->with('user', 'children.user', 'children.children')
+            ->with('user', 'attachments', 'children.user', 'children.children', 'children.attachments')
             ->parent()
             ->latest()
             ->get();

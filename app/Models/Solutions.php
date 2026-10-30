@@ -9,7 +9,9 @@ use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 
 /**
@@ -89,6 +91,10 @@ class Solutions extends Model
             'solution_title' => $this->solution_title,
             'solution_description' => $this->solution_description,
             'tags' => $this->tags,
+            // Text pulled out of attached PDFs, its steps' included (R-15), so search finds the solution by its material.
+            'attachment_text' => Str::limit(
+                $this->attachments()->whereNotNull('extracted_text')->pluck('extracted_text')->implode(' ')
+                .' '.$this->stepAttachments()->whereNotNull('extracted_text')->pluck('extracted_text')->implode(' '), 15000, ''),
         ];
     }
 
@@ -104,11 +110,12 @@ class Solutions extends Model
 
     public function steps()
     {
-        return $this->hasMany(Steps::class);
+        // The column is solution_id; the convention would guess solutions_id off the model's name.
+        return $this->hasMany(Steps::class, 'solution_id');
     }
 
     /** The uploads that sit on this solution's steps (the list pages count them into the indicators). */
-    public function stepAttachments()
+    public function stepAttachments(): HasManyThrough
     {
         return $this->hasManyThrough(Attachment::class, Steps::class, 'solution_id', 'attachable_id')
             ->where('attachments.attachable_type', (new Steps)->getMorphClass());

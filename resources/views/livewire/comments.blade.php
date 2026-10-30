@@ -29,6 +29,8 @@
         @error('newCommentState.body')
             <p class="ix-error">{{ $message }}</p>
         @enderror
+        @include('attachments._uploader', ['idPrefix' => 'comment', 'payloadModel' => 'attachmentsPayload', 'clearEvent' => 'comment-attachments-clear', 'label' => 'Add supporting files'])
+        @error('attachments')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         <div class="ix-actions" style="margin-top:12px">
             <button type="submit" class="ix-btn ix-btn--primary">Post reply</button>
         </div>

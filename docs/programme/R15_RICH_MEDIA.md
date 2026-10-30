@@ -77,12 +77,19 @@ support `?has=images|documents|videos`. Step attachments render under their step
 - Phase 1–2: composer widget on ask + solution forms (incl. per-step), attachments table,
   upload/bind/prune/serve, caps and quotas — built.
 - Phase 3: viewers (lightbox, PDF preview, video player), detail pages, feed indicators — built.
-- Phase 4: answers and comments accept attachments through the same widget — built.
+- Phase 4: answers and comments accept attachments through the same widget — built. Nested
+  comment replies stay text-only (the reply form lives in the per-comment component; adding the
+  widget there is a small follow-up if replies turn out to need media).
 - Phase 5: PDF text extraction into search and related-content suggestions — built. OCR, image
   understanding, video transcription — external-service dependencies, see §6.
 - Phase 6: extracted text joins the parent's search index; existing Brain candidates API already
   carries solutions (unchanged); content-type filters on feeds — built.
-- Phase 7: validation/permission matrix tests, Range tests, prune test, quota tests — built.
+- Phase 7: validation/permission matrix tests, Range tests, prune test, quota tests — built
+  (`tests/Feature/Attachments/AttachmentsTest.php`), plus a browser pass on 2026-10-30 against a
+  local dev run: upload with progress/caption through the ask form (bound and displayed with
+  lightbox), the Livewire answer path (bound, widget cleared), the per-step uploader on the
+  solution form (uploads survive step removal and reindex their field names), feed indicators and
+  the `?has=` filters, and streaming of the stored files (200/206).
 
 ## 5. Publishing/ops notes
 

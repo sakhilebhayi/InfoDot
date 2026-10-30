@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Answer;
 use App\Models\ContentReport;
 use App\Models\Questions;
+use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Knowledge\TopicBadges;
 use Illuminate\Contracts\View\View;
@@ -22,6 +23,9 @@ class Answers extends Component
 
     public string $body = '';
 
+    /** JSON the attachment widget keeps current: [{uuid, caption}, ...]. */
+    public string $attachmentsPayload = '';
+
     public ?int $reporting = null;
 
     public string $reason = 'low_quality';
@@ -31,12 +35,16 @@ class Answers extends Component
         $this->question = $question;
     }
 
-    public function publish(AnswerService $service): void
+    public function publish(AnswerService $service, AttachmentService $attachments): void
     {
         $this->validateOnly('body', ['body' => ['required', 'string']]);
+        $items = AttachmentService::parsePayload($this->attachmentsPayload);
 
-        $service->publish($this->question, Auth::user(), $this->body);
-        $this->reset('body');
+        $answer = $service->publish($this->question, Auth::user(), $this->body);
+        $attachments->bind($items, $answer, Auth::user());
+
+        $this->reset('body', 'attachmentsPayload');
+        $this->dispatch('answer-attachments-clear');
         session()->flash('answer-status', 'Your answer is posted.');
     }
 
@@ -81,7 +89,7 @@ class Answers extends Component
 
         $answers = Answer::where('question_id', $this->question->id)
             ->where('status', Answer::PUBLISHED)
-            ->with('user', 'question')
+            ->with('user', 'question', 'attachments')
             ->orderByRaw('accepted_at is null')->orderBy('created_at')
             ->get();
 

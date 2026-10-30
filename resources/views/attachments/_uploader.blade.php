@@ -27,13 +27,14 @@
     }
 @endphp
 <div class="ix-field" x-id="['{{ $idPrefix }}-att']"
-     x-data="attachmentUploader({ url: @js(route('attachments.store')), max: {{ (int) config('attachments.max_per_item') }}, items: {!! $itemsExpr !!}, preload: @js($preload) })">
+     x-data="attachmentUploader({ url: @js(route('attachments.store')), max: {{ (int) config('attachments.max_per_item') }}, items: {!! $itemsExpr !!}, preload: @js($preload) })"
+     @isset($clearEvent) x-on:{{ $clearEvent }}.window="clearAll()" @endisset>
     <span class="ix-label" :id="$id('{{ $idPrefix }}-att') + '-label'">{{ $label ?? 'Attachments' }} <span style="color:var(--ix-text-3);font-weight:400">(optional)</span></span>
 
     <div class="ix-attach" :class="{ 'is-over': over }"
          @dragover.prevent="over = true" @dragleave.prevent="over = false" @drop.prevent="drop($event)">
         <input type="file" class="ix-sr" multiple x-ref="input" :accept="accept" :id="$id('{{ $idPrefix }}-att') + '-input'"
-               :aria-labelledby="$id('{{ $idPrefix }}-att') + '-label'" @change="add($event.target.files); $event.target.value = ''">
+               aria-label="Add attachment files" @change="add($event.target.files); $event.target.value = ''">
         <button type="button" class="ix-btn ix-btn--sm" @click="pick()">
             <span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">attach_file</span>Add files
         </button>
@@ -54,7 +55,7 @@
                     <span class="ix-attach__bar" x-show="it.xhr" aria-hidden="true"><span :style="'width:' + it.progress + '%'"></span></span>
                     <span class="ix-error" x-show="it.error" x-text="it.error" role="alert"></span>
                     <input class="ix-input ix-attach__caption" type="text" maxlength="500" placeholder="Caption: what this shows"
-                           x-show="it.uuid" x-model="it.caption" @input="sync()" :aria-label="'Caption for ' + it.name">
+                           aria-label="Attachment caption" x-show="it.uuid" x-model="it.caption" @input="sync()" :aria-label="'Caption for ' + it.name">
                 </span>
                 <span class="ix-attach__tools">
                     <button type="button" class="ix-attach__tool" x-show="items.length > 1" @click="move(it, -1)" :aria-label="'Move ' + it.name + ' earlier'">

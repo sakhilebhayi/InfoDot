@@ -19,7 +19,9 @@
                 <p class="ix-answer__flag"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span> Accepted as the solution</p>
             @endif
 
-            <div class="ix-prose">{{ $answer->body }}</div>
+            <div class="ix-prose">{!! nl2br(e($answer->body)) !!}</div>
+
+            @include('attachments._list', ['attachments' => $answer->attachments, 'compact' => true])
 
             <footer class="ix-answer__meta">
                 <span>Answered by <a href="{{ route('profile.show', ['id' => $answer->user->id]) }}">{{ $answer->user->name }}</a>@if ($badge = $badges[$answer->user_id] ?? null) <span class="ix-chip" data-badge="{{ $badge['level'] }}" data-badge-topic="{{ $badge['slug'] }}" title="Other people accepted this person's answers in {{ $badge['topic'] }}">{{ $badge['topic'] }}: {{ $badge['level_name'] }}</span>@endif, {{ $answer->created_at->diffForHumans() }}</span>
@@ -73,6 +75,8 @@
             <textarea id="answer-body" wire:model="body" rows="6" maxlength="10000"
                       placeholder="What did you do, what happened, and what would you do differently? Steps and numbers help."></textarea>
             @error('body') <p class="ix-error" role="alert">{{ $message }}</p> @enderror
+            @include('attachments._uploader', ['idPrefix' => 'answer', 'payloadModel' => 'attachmentsPayload', 'clearEvent' => 'answer-attachments-clear', 'label' => 'Show your answer'])
+            @error('attachments') <p class="ix-error" role="alert">{{ $message }}</p> @enderror
             <button type="submit" class="ix-btn ix-btn--primary">Post your answer</button>
         </form>
     @endif
