@@ -70,6 +70,8 @@
                 </ol>
             </section>
 
+            <livewire:solution-confirmations :solution-id="$solution->id" />
+
             <livewire:comments :model="$solution" :solution="$solution" />
         </article>
 

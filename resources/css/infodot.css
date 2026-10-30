@@ -7129,3 +7129,13 @@ body {
     .ix-attview__fileactions { margin-left: 54px; }
     .ix-attach__item { flex-wrap: wrap; }
 }
+
+/* ------------------------------------------------------------------ "I tried this and it works" (R-16) */
+.ix-tried { margin-top: 24px; padding: 16px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); display: grid; gap: 12px; }
+.ix-tried__head h2 { margin: 0 0 4px; font-size: 1.05rem; }
+.ix-tried__row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.ix-tried__count { margin: 0; display: inline-flex; align-items: baseline; gap: 8px; color: var(--ix-text-2); }
+.ix-tried__feedback { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-sunken); }
+.ix-tried__insights { margin: 0; padding: 8px 12px; border-left: 3px solid var(--ix-ok, #1f6b45); background: var(--ix-ok-wash, rgba(31,107,69,0.12)); color: var(--ix-text-2); font-size: 0.92rem; }
+.ix-tried__people { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.9rem; }
+.ix-tried__people a { color: var(--ix-text); }

@@ -18,6 +18,20 @@ class UserNotice extends Model
 
     public const COMMENT_RECEIVED = 'comment_received';
 
+    public const SOLUTION_CONFIRMED = 'solution_confirmed';
+
+    public const MENTIONED = 'mentioned';
+
+    public const SOLUTION_RECOMMENDED = 'solution_recommended';
+
+    public const IMPROVEMENT_PROPOSED = 'improvement_proposed';
+
+    public const IMPROVEMENT_APPROVED = 'improvement_approved';
+
+    public const IMPROVEMENT_REJECTED = 'improvement_rejected';
+
+    public const IMPROVEMENT_CLARIFY = 'improvement_clarify';
+
     public const SEMINAR_REMINDER = 'seminar_reminder';
 
     public const SEMINAR_CANCELLED = 'seminar_cancelled';
@@ -60,6 +74,8 @@ class UserNotice extends Model
 
     public const KINDS = [
         self::ANSWER_RECEIVED, self::ANSWER_ACCEPTED, self::SOLUTION_VERIFIED, self::KNOWLEDGE_REUSED, self::COMMENT_RECEIVED,
+        self::SOLUTION_CONFIRMED, self::MENTIONED, self::SOLUTION_RECOMMENDED,
+        self::IMPROVEMENT_PROPOSED, self::IMPROVEMENT_APPROVED, self::IMPROVEMENT_REJECTED, self::IMPROVEMENT_CLARIFY,
         self::SEMINAR_REMINDER, self::SEMINAR_CANCELLED, self::SEMINAR_CHANGED, self::SEMINAR_SPOT_OPEN, self::SEMINAR_REFUNDED, self::SEMINAR_DISPUTE, self::SEMINAR_LINK_BROKEN,
         self::SEMINAR_DEBT_OPENED, self::SEMINAR_DEBT_CLEARED, self::SEMINAR_DEBT_REOPENED, self::SEMINAR_DEBT_WRITTEN_OFF, self::SEMINAR_REMOVED, self::SEMINAR_REINSTATED, self::SEMINAR_APPEAL_DECIDED,
         self::SEMINAR_REPORT_DECIDED,
