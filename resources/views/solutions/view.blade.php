@@ -23,7 +23,8 @@
             <h1 class="ix-detail__title">{{ $solution->solution_title }}</h1>
 
             <livewire:hidden-notice kind="solution" :item-id="$solution->id" />
-            <div class="ix-statement"><p class="ix-prose">{{ $solution->solution_description }}</p></div>
+            {{-- Written as plain text; nl2br keeps the author's paragraphs (official library entries rely on it). --}}
+            <div class="ix-statement"><p class="ix-prose">{!! nl2br(e($solution->solution_description)) !!}</p></div>
 
             @if ($tags->isNotEmpty())
                 <ul class="ix-tags" aria-label="Tags">@foreach ($tags as $tag)<li>{{ $tag }}</li>@endforeach</ul>
@@ -57,7 +58,7 @@
                             </button>
                             <div>
                                 <h3>{{ $step->solution_heading }}</h3>
-                                <p>{{ $step->solution_body }}</p>
+                                <p>{!! nl2br(e($step->solution_body)) !!}</p>
                             </div>
                         </li>
                     @empty
@@ -73,7 +74,7 @@
             <section class="ix-facts">
                 <h2>Details</h2>
                 <dl>
-                    <div><dt>Written by</dt><dd><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a></dd></div>
+                    <div><dt>Written by</dt><dd><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a>@if ($solution->user->isOfficialAccount()) <span class="ix-chip ix-chip--info">Official</span>@endif</dd></div>
                     <div><dt>Added</dt><dd>{{ $solution->created_at->diffForHumans() }}</dd></div>
                     <div><dt>Time it takes</dt><dd>@if ($solution->duration_type === 'infinite') Unknown @else {{ $solution->duration }} {{ Str::plural(rtrim($solution->duration_type, 's'), $solution->duration) }} @endif</dd></div>
                     <div><dt>Visible to</dt><dd>{{ $solution->isHidden() ? 'You and moderators' : ($solution->isPublic() ? 'Everyone' : 'Your company') }}</dd></div>
