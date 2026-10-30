@@ -4,14 +4,21 @@ namespace Tests\Feature\Hardening;
 
 use App\Models\Questions;
 use App\Models\Seminar;
+use App\Models\SeminarRegistration;
 use App\Models\SeminarReport;
 use App\Models\Solutions;
+use App\Models\Steps;
+use App\Models\Team;
+use App\Models\Topic;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Licensing\BillingEntitlements;
 use App\Services\Ops\OpsCheck;
 use App\Services\Points\RewardOutbox;
 use App\Services\Seminars\BillingMarketplace;
+use App\Services\Seminars\MeetingLinkCheck;
 use App\Services\Seminars\SeminarService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -166,5 +173,105 @@ class FinalFixesTest extends TestCase
         $outbox->flush();
 
         $this->assertSame(['22222222-2222-2222-2222-222222222222', '44444444-4444-4444-4444-444444444444'], $order);
+    }
+
+    // ---- C-19 Billing down -----------------------------------------------------------------------------------------------
+
+    public function test_a_failed_read_of_billing_is_not_repeated_on_every_view(): void
+    {
+        config(['licensing.billing_connected' => true, 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 's']);
+        $owner = $this->person('Owner');
+        $team = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
+        $service = app(BillingEntitlements::class);
+
+        $this->assertTrue($service->configured());
+
+        Http::fake(['billing.test/*' => Http::response([], 503)]);
+        $service->sync($team);
+        $service->sync($team);
+        $service->sync($team);
+
+        $this->assertSame(1, Http::recorded()->count(), 'three views while Billing is down made one call, not three');
+    }
+
+    // ---- C-18 link check outside the transaction -------------------------------------------------------------------------
+
+    public function test_the_meeting_link_is_checked_before_the_database_transaction_opens(): void
+    {
+        config(['seminars.link_check.enabled' => true]);   // phpunit.xml switches the check off for the other tests
+        $host = $this->person('Host');
+        $outside = DB::transactionLevel();
+        $seen = null;
+        MeetingLinkCheck::$resolver = function (string $h) use (&$seen) {
+            $seen = DB::transactionLevel();
+
+            return ['93.184.216.34'];
+        };
+        Http::fake(['*' => Http::response('', 200)]);
+
+        try {
+            app(SeminarService::class)->save($host, null, ['title' => 'T', 'summary' => 's', 'starts_at' => now()->addDays(3)->format('Y-m-d\TH:i'), 'duration_minutes' => 60, 'join_url' => 'https://meet.example.test/r'], true);
+        } finally {
+            MeetingLinkCheck::$resolver = null;
+        }
+
+        $this->assertSame($outside, $seen, 'no transaction (and no row lock) is held while the network is asked');
+    }
+
+    // ---- C-13 cancel once ------------------------------------------------------------------------------------------------
+
+    public function test_cancelling_twice_asks_for_each_refund_once(): void
+    {
+        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 's', 'seminars.paid.enabled' => true]);
+        Http::fake(['billing.test/*' => Http::response(['status' => 'ok'])]);
+        $s = $this->seminar($this->person('Host'));
+        $s->forceFill(['price_cents' => 1000, 'currency' => 'ZAR'])->save();
+        SeminarRegistration::create(['seminar_id' => $s->id, 'user_id' => $this->person('A')->id, 'status' => 'registered', 'payment_status' => 'paid', 'ticket_ref' => 'ta', 'amount_cents' => 1000, 'currency' => 'ZAR', 'paid_at' => now()]);
+
+        app(SeminarService::class)->cancel($s);
+        app(SeminarService::class)->cancel($s->fresh());
+
+        $this->assertSame(1, Http::recorded(fn ($r) => str_contains($r->url(), '/refund'))->count());
+    }
+
+    // ---- C-25 one report each --------------------------------------------------------------------------------------------
+
+    public function test_the_database_refuses_a_second_report_by_the_same_person_about_the_same_thing(): void
+    {
+        $s = $this->seminar($this->person('Host'));
+        $r = $this->person('Reporter');
+        $row = fn (string $name) => ['seminar_id' => $s->id, 'reporter_id' => $r->id, 'reason' => 'spam', 'about_name' => $name === '' ? null : $name, 'about_key' => mb_strtolower($name), 'created_at' => now(), 'updated_at' => now()];
+
+        DB::table('seminar_reports')->insert($row(''));
+        DB::table('seminar_reports')->insert($row('Troll'));   // a report about a person is a different subject
+
+        $this->expectException(UniqueConstraintViolationException::class);
+        DB::table('seminar_reports')->insert($row('troll'));   // the same person again, in other letters
+    }
+
+    // ---- C-27 a solution is saved whole ----------------------------------------------------------------------------------
+
+    public function test_a_solution_whose_steps_fail_to_save_leaves_nothing_behind(): void
+    {
+        $user = $this->person('Author');
+        $user->forceFill(['current_team_id' => $user->current_team_id])->save();
+        $count = 0;
+        Steps::creating(function () use (&$count) {
+            if (++$count === 2) {
+                throw new \RuntimeException('step two failed');
+            }
+        });
+
+        try {
+            $this->withoutExceptionHandling()->actingAs($user)->post('/solution/add', [
+                'solution_title' => 'Register a company', 'solution_description' => 'The order of the steps matters.', 'tags-input' => 'cipc', 'duration' => 2, 'duration_type' => 'days',
+                'solution_heading' => ['One', 'Two', 'Three'], 'solution_body' => ['a', 'b', 'c'], 'topics' => [Topic::query()->value('id')],
+            ]);
+            $this->fail('the failure should have escaped');
+        } catch (\RuntimeException) {
+        }
+
+        $this->assertSame(0, Solutions::count(), 'no half-saved solution');
+        $this->assertSame(0, Steps::count());
     }
 }

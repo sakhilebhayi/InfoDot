@@ -10,6 +10,7 @@ use App\Services\Knowledge\TopicService;
 use App\Support\Industry;
 use App\Support\Related;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SolutionsController extends Controller
 {
@@ -71,31 +72,32 @@ class SolutionsController extends Controller
                 'required' => 'The :attribute field is mandatory.',
             ] + TopicService::messages());
 
-        $solution = new Solutions;
+        // The solution, its topics and every step are saved together: a failure part-way used to leave a solution with some of its steps.
+        DB::transaction(function () use ($request, $topics) {
+            $solution = new Solutions;
 
-        $solution->user_id = auth()->user()->id;
-        $solution->team_id = auth()->user()->current_team_id;
-        $solution->visibility = $request->boolean('publish') ? Solutions::VISIBILITY_PUBLIC : Solutions::VISIBILITY_COMPANY;
-        $solution->solution_title = $request->input('solution_title');
-        $solution->solution_description = $request->input('solution_description');
-        $solution->tags = $request->input('tags-input');
-        $solution->duration = $request->input('duration');
-        $solution->duration_type = $request->input('duration_type');
-        $solution->steps = count($request->input('solution_heading'));
-        $solution->save();
-        $topics->file($solution, $request->input('topics'));
+            $solution->user_id = auth()->user()->id;
+            $solution->team_id = auth()->user()->current_team_id;
+            $solution->visibility = $request->boolean('publish') ? Solutions::VISIBILITY_PUBLIC : Solutions::VISIBILITY_COMPANY;
+            $solution->solution_title = $request->input('solution_title');
+            $solution->solution_description = $request->input('solution_description');
+            $solution->tags = $request->input('tags-input');
+            $solution->duration = $request->input('duration');
+            $solution->duration_type = $request->input('duration_type');
+            $solution->steps = count($request->input('solution_heading'));
+            $solution->save();
+            $topics->file($solution, $request->input('topics'));
 
-        $steps = $request->input('solution_heading');
+            foreach ($request->input('solution_heading') as $key => $n) {
+                $solution_step = new Steps;
 
-        foreach ($steps as $key => $n) {
-            $solution_step = new Steps;
-
-            $solution_step->user_id = auth()->user()->id;
-            $solution_step->solution_id = $solution->id;
-            $solution_step->solution_heading = $request->input('solution_heading')[$key];
-            $solution_step->solution_body = $request->input('solution_body')[$key];
-            $solution_step->save();
-        }
+                $solution_step->user_id = auth()->user()->id;
+                $solution_step->solution_id = $solution->id;
+                $solution_step->solution_heading = $request->input('solution_heading')[$key];
+                $solution_step->solution_body = $request->input('solution_body')[$key];
+                $solution_step->save();
+            }
+        });
 
         return redirect()->route('solutions');
     }
