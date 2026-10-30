@@ -103,6 +103,14 @@ class PagesController extends Controller
         ]);
     }
 
+    /** R-21: the vulnerability disclosure policy that security.txt's Policy line points at. */
+    public function security(Request $request)
+    {
+        return view('security', [
+            'security' => Str::markdown(file_get_contents(Jetstream::localizedMarkdownPath('security.md'))),
+        ]);
+    }
+
     public function solution_search_results()
     {
         $search_term = (string) request()->query('search', '');

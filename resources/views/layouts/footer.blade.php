@@ -27,6 +27,9 @@
                 <li>
                     <a href="{{ route('terms') }}" class="text-[var(--ink-soft)] hover:text-[var(--gold-deep)] text-sm font-semibold block py-1 px-3">Terms &amp; Conditions</a>
                 </li>
+                <li>
+                    <a href="{{ route('security') }}" class="text-[var(--ink-soft)] hover:text-[var(--gold-deep)] text-sm font-semibold block py-1 px-3">Security</a>
+                </li>
             </ul>
         </div>
     </div>

@@ -1,0 +1,1 @@
+<x-legal-page title="Vulnerability Disclosure" description="How to report a security vulnerability in InfoDot or a Dot ecosystem service: scope, reporting steps, what to expect, and safe harbor for good-faith research." :body="$security" />

@@ -13,6 +13,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+        // R-21: `php artisan migrate:fresh --seed` rebuilds the whole local baseline in one command.
+        // The seeder itself refuses to run in production.
+        $this->call(DemoSeeder::class);
     }
 }
