@@ -1,0 +1,805 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:allUsers\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Analytics/AnalyticsController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Analytics/AnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/EcosystemRedeemController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:allUsers\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/HomeController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Questions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/HomeController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Solutions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/HomeController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\UserNotice\>\:\:getCollection\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/NoticesController.php
+
+		-
+			message: '#^Parameter \#1 \$viewer of method App\\Http\\Controllers\\PagesController\:\:sharesATeam\(\) expects App\\Models\\User\|null, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/PagesController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Questions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/PagesController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Solutions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/PagesController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/PeopleController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:allUsers\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/PeopleController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:teamInvitations\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/PeopleController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/PeopleController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Questions/QuestionsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Questions/QuestionsController.php
+
+		-
+			message: '#^Parameter \#1 \$team of static method App\\Support\\Industry\:\:for\(\) expects App\\Models\\Team\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Questions/QuestionsController.php
+
+		-
+			message: '#^Relation ''team'' is not found in App\\Models\\Questions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Questions/QuestionsController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Questions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Questions/QuestionsController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\Reputation\\ReputationEngine\:\:snapshot\(\) expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/ReputationController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Seminar\>\:\:values\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/SeminarsController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/SeminarsController.php
+
+		-
+			message: '#^Parameter \#1 \$host of method App\\Services\\Seminars\\SeminarService\:\:hostStats\(\) expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/SeminarsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Solutions/SolutionsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Solutions/SolutionsController.php
+
+		-
+			message: '#^Parameter \#1 \$team of static method App\\Support\\Industry\:\:for\(\) expects App\\Models\\Team\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Solutions/SolutionsController.php
+
+		-
+			message: '#^Relation ''team'' is not found in App\\Models\\Solutions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Solutions/SolutionsController.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Solutions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Solutions/SolutionsController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/HiddenNotice.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/HiddenNotice.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Livewire/HiddenNotice.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$topics\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isPublic\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Cannot unset offset int on array\<string, string\>\.$#'
+			identifier: unset.offset
+			count: 1
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Offset int on array\<string, string\> on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Moderation/Library.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden_reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Called ''count'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: true$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:transform\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{item\: array, since\: Carbon\\Carbon\}, Closure\(App\\Models\\Questions\)\: array\{item\: array, since\: Carbon\\Carbon\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Livewire/Moderation/Queue.php
+
+		-
+			message: '#^Call to function is_array\(\) with list\<string\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Livewire/Moderation/Topics.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Questions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Livewire/Moderation/Topics.php
+
+		-
+			message: '#^Relation ''user'' is not found in App\\Models\\Solutions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Livewire/Moderation/Topics.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/ReportContent.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/ReportContent.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Search\:\:\$industry\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Search.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Search\:\:\$items\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Search.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Search\:\:\$reference\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Search.php
+
+		-
+			message: '#^Parameter \#1 \$team of static method App\\Support\\Industry\:\:for\(\) expects App\\Models\\Team\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Livewire/Search.php
+
+		-
+			message: '#^Parameter \#2 \$team of static method App\\Support\\PlatformSearch\:\:search\(\) expects App\\Models\\Team\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Livewire/Search.php
+
+		-
+			message: '#^Relation ''team'' is not found in App\\Models\\Questions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Livewire/Search.php
+
+		-
+			message: '#^Relation ''team'' is not found in App\\Models\\Solutions model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Livewire/Search.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Answer\:\:\$hidden_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Answer.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:active\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/LibraryEntry.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$hidden_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Questions.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Questions.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Models/Seminar.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$hidden_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Solutions.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Solutions.php
+
+		-
+			message: '#^Property App\\Providers\\EventServiceProvider\:\:\$listen \(array\<class\-string, array\<int, class\-string\>\>\) does not accept default value of type array\<string, list\<list\<string\>\|string\>\>\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: app/Providers/EventServiceProvider.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/AchievementService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$team\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$team\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Parameter \#1 \$question of method App\\Services\\Knowledge\\AnswerService\:\:canSee\(\) expects App\\Models\\Questions, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/Knowledge/AnswerService.php
+
+		-
+			message: '#^Cannot call method timezone\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\UserNotice\> in PHPDoc tag @return does not specify all template types of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\: TKey, TValue$#'
+			identifier: generics.lessTypes
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Method App\\Services\\Knowledge\\InAppNotices\:\:page\(\) should return Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\UserNotice\> but returns Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\UserNotice\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Type App\\Models\\UserNotice in generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\UserNotice\> in PHPDoc tag @return is not subtype of template type TKey of \(int\|string\) of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:likes\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/Knowledge/LikeToggle.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/ModerationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/ModerationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/ModerationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/Knowledge/ModerationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/ModerationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: app/Services/Knowledge/ModerationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isPublic\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Knowledge/ModerationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isVerified\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/Knowledge/ModerationService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\UserTopicBadge\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/TopicBadges.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\UserTopicBadge\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/TopicBadges.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/TopicBadges.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:topics\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/Knowledge/TopicService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$verifier\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$visibility\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Access to undefined constant Illuminate\\Database\\Eloquent\\Model\:\:VISIBILITY_PUBLIC\.$#'
+			identifier: classConstant.notFound
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Method App\\Services\\Library\\LibraryService\:\:corroboration\(\) should return array\{by\: App\\Models\\User\|null, at\: Illuminate\\Support\\Carbon, label\: string\}\|null but returns array\{by\: Illuminate\\Database\\Eloquent\\Model\|null, at\: string, label\: ''Accepted by''\}\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Method App\\Services\\Library\\LibraryService\:\:corroboration\(\) should return array\{by\: App\\Models\\User\|null, at\: Illuminate\\Support\\Carbon, label\: string\}\|null but returns array\{by\: mixed, at\: string, label\: ''Verified by''\}\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/Library/LibraryService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments int, array\{string\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Services/Reputation/ReputationEngine.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Services/Reputation/ReputationEngine.php
+
+		-
+			message: '#^Loose comparison using \=\= between string and array\<string, array\{points\: float, score\: float, evidence\: array\<string, float\|int\>\}\> will always evaluate to false\.$#'
+			identifier: equal.alwaysFalse
+			count: 1
+			path: app/Services/Reputation/ReputationEngine.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ReputationRingFlag\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Reputation/ReputationEngine.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ReputationSnapshot\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/Reputation/ReputationEngine.php
+
+		-
+			message: '#^Parameter \#2 \$array of function array_map expects array, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/Reputation/ReputationEngine.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Services/Reputation/ReputationEngine.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/Reputation/ReputationEngine.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\SeminarRegistration\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Seminars/CommissionInvoices.php
+
+		-
+			message: '#^Cannot call method greaterThan\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Seminars/HostDebtLedger.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Seminar\:\:\$host_points_event_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/Seminars/SeminarHostPoints.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Seminar\:\:\$host_points_reversed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Seminars/SeminarHostPoints.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Seminars/SeminarHostPoints.php
+
+		-
+			message: '#^Cannot call method equalTo\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Seminars/SeminarService.php
+
+		-
+			message: '#^Cannot call method gte\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Seminars/SeminarService.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Services/Seminars/SeminarService.php
+
+		-
+			message: '#^Cannot call method lt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Seminars/SeminarService.php
+
+		-
+			message: '#^Cannot call method lte\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/Seminars/SeminarService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$hidden_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Support/Knowledge/ModerationStatus.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$hidden_reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Support/Knowledge/ModerationStatus.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Support/Knowledge/ModerationStatus.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Support/Knowledge/ModerationStatus.php
+
+		-
+			message: '#^Call to an undefined method DOMNameSpaceNode\|DOMNode\:\:setAttribute\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Support/LegalDocument.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$payload$#'
+			identifier: parameter.notFound
+			count: 1
+			path: app/Support/MembershipWebhook.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Support/Reference.php
