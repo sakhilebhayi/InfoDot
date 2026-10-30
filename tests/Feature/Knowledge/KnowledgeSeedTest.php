@@ -169,6 +169,21 @@ MD;
         }
     }
 
+    public function test_a_seeded_entry_renders_with_its_paragraphs_and_the_official_mark(): void
+    {
+        $this->entry();
+        $this->artisan('knowledge:seed', ['--dir' => $this->dir])->assertExitCode(0);
+        $solution = Solutions::withoutGlobalScopes()->where('seed_key', 'pay-yourself-first')->firstOrFail();
+
+        $reader = User::factory()->withPersonalTeam()->create();
+        $response = $this->actingAs($reader)->get(route('solutions.view', ['id' => $solution->id]));
+
+        $response->assertOk();
+        $response->assertSee('Keep business and personal money apart');
+        $response->assertSee('Official');
+        $response->assertSee('<br />', false); // the summary's paragraphs survive rendering
+    }
+
     public function test_every_shipped_entry_validates(): void
     {
         $files = glob(database_path('knowledge/*/*.md')) ?: [];

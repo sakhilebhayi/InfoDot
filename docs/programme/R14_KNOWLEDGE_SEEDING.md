@@ -80,13 +80,29 @@ validates.
 
 ### Batch 1 — Stage 1, essential survival knowledge (2026-10-30)
 
-Eight entries, researched 2026-10-30 (web research with source verification; SA official sources
-for regulatory content). Files in `database/knowledge/stage-1/`. Topics introduced: Starting a
-business, Money and cash flow, Customers and sales, Pricing, Planning and strategy, Legal and
-compliance.
+Eight entries, researched 2026-10-30 (web research with per-claim source verification; SA official
+sources for regulatory content). Files in `database/knowledge/stage-1/`. Topics introduced:
+Starting a business, Money and cash flow, Customers and sales, Pricing, Planning and strategy,
+Legal and compliance.
 
-Entry list and review notes are kept beside the files as they land; anything a batch could not
-verify is marked inside the entry itself, never stated as fact.
+| Key | Title | Topics |
+| --- | --- | --- |
+| rolling-cash-flow-forecast | Run your business on a rolling 13-week cash flow forecast | Money and cash flow, Planning and strategy |
+| getting-paid-on-time | Get your invoices paid on time | Money and cash flow, Customers and sales |
+| finding-your-first-customers | Find your first customers without a marketing budget | Customers and sales, Starting a business |
+| keeping-the-customers-you-have | Keep the customers you already have | Customers and sales, Money and cash flow |
+| pricing-products-and-services | Price your products and services from a real cost floor | Pricing, Money and cash flow |
+| one-page-business-plan | Write a one-page business plan you will actually use | Planning and strategy, Starting a business |
+| register-your-business-properly | Register and run a business legally in South Africa | Legal and compliance, Starting a business |
+| separate-business-and-personal-money | Separate business and personal money, and keep books SARS will accept | Money and cash flow, Starting a business |
+
+Research notes for this batch (what verified, what did not): claims that failed verification were
+left out or flagged inside the entry — among them the "82% fail from cash flow" line (no primary
+source), the flat "5x cheaper to retain" figure (published as HBR's 5–25x range instead), any
+underpricing prevalence statistic, and a statutory UIF registration deadline with the Department
+of Employment and Labour (none verified; the entry says to confirm the channel). Regulatory
+figures (VAT R2.3m threshold, SDL R500k exemption, UIF ceiling, CIPC fees, Small Claims R30 000
+limit, prescribed interest) carry "as at" wording and their official source.
 
 ## 4. Still requires review (owner)
 
