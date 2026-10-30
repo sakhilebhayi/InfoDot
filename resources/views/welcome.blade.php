@@ -8,6 +8,13 @@
     $examples = ['How do I register a business?', 'How do I price my work?', 'How do I find customers?', 'How do I track my cash?', 'How do I hire my first person?'];
     $search = fn (string $words) => route('solution_search_results', ['search' => $words]);
     $first = auth()->check() ? \Illuminate\Support\Str::of(auth()->user()->name)->before(' ')->toString() : null;
+    // The researched library: public solutions published by the official InfoDot account (R-14/R-23).
+    // Real rows from the database — the section disappears entirely when none exist yet.
+    $library = \App\Models\Solutions::withoutGlobalScopes()->whereNotNull('seed_key')
+        ->where('visibility', \App\Models\Solutions::VISIBILITY_PUBLIC)
+        ->with('topics')->orderByDesc('id')->limit(6)->get();
+    $libraryCount = $library->count() < 6 ? $library->count()
+        : \App\Models\Solutions::withoutGlobalScopes()->whereNotNull('seed_key')->where('visibility', \App\Models\Solutions::VISIBILITY_PUBLIC)->count();
 @endphp
 <x-public-layout landing title="InfoDot" description="Search practical business solutions from people who have done it, or ask your own question. InfoDot is where the Dot.Eco-system keeps what it knows about running a business.">
     {{-- Who publishes this site, for search engines (R-17 §13.3). Facts only: name, address, contact page. --}}
@@ -39,7 +46,7 @@
                 <li><a href="{{ $search('cash') }}">Manage cash</a></li>
                 <li><a href="{{ $search('hire') }}">Hire someone</a></li>
             </ul>
-            <p class="lp-hero__ask" data-hero>Can't find it? <a href="{{ route('seek') }}">Ask a new question</a>.</p>
+            <p class="lp-hero__ask" data-hero>Can't find it? <a href="{{ route('seek') }}">Ask a new question</a>.@guest New here? <a href="{{ route('register') }}">Create a free account</a>.@endguest</p>
         </div>
     </section>
 
@@ -102,6 +109,36 @@
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}" width="1400" height="1050" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" loading="lazy" decoding="async">
         </div>
     </figure>
+
+    @if ($library->isNotEmpty())
+        <section class="ix-pubsec" aria-labelledby="library-title">
+            <div class="lp-library__head">
+                <div>
+                    <h2 id="library-title" data-reveal>A library you can act on</h2>
+                    <p class="ix-pubsec__lede" data-reveal>Researched business solutions, published under InfoDot's official account: numbered steps you can follow, written from sources that are named and dated — SARS, National Treasury, the Information Regulator, and the people who study each subject. Where a figure changes yearly, the entry says so and shows when it was last verified.</p>
+                </div>
+                <p class="lp-library__tally" data-reveal><span class="ix-stencil-num lp-library__num">{{ $libraryCount }}</span><span class="lp-library__word">researched<br>entries</span></p>
+            </div>
+            <ol class="lp-ledger" data-reveal>
+                @foreach ($library as $entry)
+                    <li>
+                        <a href="{{ route('solutions.view', $entry->id) }}">
+                            <span class="ix-ref lp-ledger__ref">{{ \App\Support\Reference::for($entry) }}</span>
+                            <span class="lp-ledger__body">
+                                <strong>{{ $entry->solution_title }}</strong>
+                                <span class="lp-ledger__meta">{{ $entry->steps }} steps · about {{ $entry->duration }} {{ $entry->duration == 1 ? \Illuminate\Support\Str::singular($entry->duration_type) : $entry->duration_type }}@if ($entry->topics->isNotEmpty()) · {{ $entry->topics->pluck('name')->join(', ') }}@endif</span>
+                            </span>
+                            <span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ol>
+            <div class="lp-library__foot" data-reveal>
+                <a href="{{ route('solutions') }}" class="ix-btn lp-btn">Browse all solutions</a>
+                <p class="lp-library__note">Reading one asks you to sign in first — the account is free, and you come straight back to the entry.</p>
+            </div>
+        </section>
+    @endif
 
     <section class="ix-pubsec" aria-labelledby="how-title">
         <h2 id="how-title" data-reveal>What InfoDot does today</h2>
