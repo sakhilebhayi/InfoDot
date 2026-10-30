@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Ops\OpsCheck;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,11 @@ class ReadinessController extends Controller
                 $key = 'ready:'.bin2hex(random_bytes(4));
                 Cache::put($key, '1', 10);
                 abort_unless(Cache::pull($key) === '1', 500);
+            },
+            // A dead scheduler stops points delivery, refund retries and digests without any error. The heartbeat is written every minute.
+            'scheduler' => function () {
+                $age = app(OpsCheck::class)->minutesSinceHeartbeat();
+                abort_if($age !== null && $age > 15, 500, 'scheduler heartbeat is stale');
             },
             'storage' => fn () => abort_unless(is_writable(storage_path('framework')) && is_writable(storage_path('logs')), 500),
         ];
