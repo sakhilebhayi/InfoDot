@@ -52,13 +52,12 @@ InfoDot is the central identity hub for the Dot Ecosystem — a unified gateway 
 | Framework | Laravel 12 |
 | Language | PHP 8.4 |
 | Frontend | Livewire 3 · Alpine.js 3 · Tailwind CSS |
-| Database | PostgreSQL 16 (shared across ecosystem) |
+| Database | MySQL in production, SQLite in tests |
 | Realtime | Laravel Reverb |
 | Auth | Laravel Sanctum (InfoDot SSO) |
-| AI | Anthropic Claude (`claude-sonnet-4-6`) |
-| Storage | AWS S3 / Local (Flysystem) |
-| Search | Laravel Scout · Meilisearch |
-| Queue | Redis · Laravel Horizon |
+| Storage | Local (Flysystem) |
+| Search | Laravel Scout · TNTSearch, plus scoped database queries |
+| Queue | None: synchronous, with scheduled commands run by cron |
 
 ## Quick Start
 
