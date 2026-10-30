@@ -2,7 +2,7 @@
 
 ## How a change reaches production
 
-1. **Branch and pull request.** Every change goes through a pull request from a branch. (Nothing enforces this: `main` has no branch protection, so a direct push is technically possible. FINDINGS P-01.)
+1. **Branch and pull request.** Every change goes through a pull request from a branch. Since 2026-10-30 `main` enforces it: eleven required CI checks (admins included), no force pushes, no deletion. A direct push lands only if its commit already carries passing required checks, which a fresh commit never does, so in practice everything goes through a pull request and its checks.
 2. **Automatic checks** (`.github/workflows/ci.yml`, run on every pull request and again as the release gate): high or critical advisories (Composer), `npm audit` at high, PHPStan level 5 against the baseline with a ceiling that can only fall, Pint, the OpenAPI file parses, the full test suite (1,241 tests), migrations on MySQL, the production frontend build, coverage measured (94.0% of lines), GitGuardian secret scanning, and the host-tool tests (backup, cron runner, docroot guard and others).
 3. **Review.** The owner reads the summary and approves the merge in the conversation. A second reviewer does not exist. Perch Scan runs on each pull request and has failed on every pull request in this programme with unexplained labels; it is not treated as a gate, and where its pointers could be checked they have been; that found several real defects in the audit's own changes (for example a canonical-URL fix that would have broken login on `www.infodot.co.za`, and an advisory gate that failed open).
 4. **Merge** (squash) by the owner's instruction only.
@@ -23,7 +23,7 @@ The same path, faster: a pull request, the checks, the owner's approval. If the 
 
 | Capability | Who has it today | Notes |
 |---|---|---|
-| Merge to `main` | The repository owner, and any session acting with the owner's `gh` login | No branch protection and no second approver |
+| Merge to `main` | The repository owner, and any session acting with the owner's `gh` login | Eleven required checks must pass first (admins included); no second approver exists yet |
 | Run the deploy workflow | Same | Uses repository secrets `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` |
 | Host shell, `.env`, database | The owner (SSH key); the deploy key can run the pipeline's fixed commands | The database password and `APP_KEY` were rotated 2026-10-27 |
 | Read the backup passphrase | Whoever has the host account | A password-manager copy is an outstanding owner item |
@@ -36,6 +36,6 @@ None has been done. A first review is: list the repository collaborators and dep
 
 ## Changes this document recommends (not made)
 
-1. Turn on branch protection for `main`: require the CI checks, block force pushes and deletion. Because the owner is the only committer, do not require a human review until there is a second person. This changes how merges work, so it is the owner's decision.
-2. Turn on Dependabot security updates.
-3. Name a deputy who can reach the host and the backup passphrase.
+1. ~~Turn on branch protection for `main`~~ **Done 2026-10-30** on the owner's instruction: the eleven CI checks are required (admins included), force pushes and deletion are blocked, and no human review is required while there is one committer. A flaky required check (the docroot inventory test has flaked twice) blocks the merge until its rerun passes; that is the intended trade.
+2. ~~Turn on Dependabot security updates~~ **Done 2026-10-30**, with vulnerability alerts.
+3. Name a deputy who can reach the host and the backup passphrase. **Still open.**

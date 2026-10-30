@@ -6,9 +6,9 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 
 | | Baseline | After (through #168) |
 |---|---|---|
-| Total (100) | **36** | **76** |
+| Total (100) | **36** | **78** |
 | Release blockers open | 3 (payment races, account takeover from a satellite, untested restore) | **1** (untested restore, C-10) |
-| Lowest dimension against the 7/10 floor | Performance 0/8, Reliability 1/9 | Performance 4/8, DevOps 4/8 |
+| Lowest dimension against the 7/10 floor | Performance 0/8, Reliability 1/9 | Performance 4/8, Privacy 5/8 |
 | 9+/10 reached | No | **No.** Needs 90+, every dimension at 7/10 or better, no blocker |
 
 ## By criterion
@@ -40,7 +40,7 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 | | Health check (2) | 1 | 2 | `/up` plus `/ready` |
 | | Queue/schedule failures visible and retried safely (2) | 0 | 2 | `ops:check` reports parked/stale outbox rows, unconfirmed refunds and unreleased holds; `/ready` shows a stale scheduler; locks expire in 30 minutes; refunds are marked before Billing is called. Not yet proven on production (needs a monitor on `/ready`) |
 | | Structured logs, request id, no personal data (2) | 0 | 1 | Request id on every log line, Sentry event and response; daily rotation. Logs are plain text, not JSON |
-| DevOps (8) | Required checks on the default branch (2) | 0 | 0 | P-01 |
+| DevOps (8) | Required checks on the default branch (2) | 0 | 2 | Eleven CI jobs required on `main` since 2026-10-30, admins included, force pushes and deletion blocked (P-01); Dependabot security updates on (P-02) |
 | | Release gate runs the same checks (2) | 1 | 2 | `deploy.yml` calls `ci.yml` |
 | | Migration check on MySQL (1) | 1 | 1 | |
 | | Post-deploy smoke test (1) | 1 | 1 | |
@@ -51,12 +51,12 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 | | Incident procedure and processor list (1) | 0 | 1 | `policies/INCIDENT_RESPONSE.md` and `policies/VENDOR_REGISTER.md` exist. They are procedures: not yet rehearsed, and the vendor facts marked [OWNER] are unfilled. Counted because the criterion asks that they be documented |
 | Business and UX (6) | Journeys as automated or recorded end-to-end tests (4) | 1 | 4 | CustomerJourneysTest: five whole journeys through the real routes, including the paid ticket from payout setup to receipt and data rights |
 | | Accessibility and mobile checks recorded (2) | 0 | 1 | AccessibilityBaselineTest: lang, zoomable viewport, one h1, labels, alt text, no positive tabindex on 11 pages. Colour, focus order and screen readers still need a person |
-| **Total (100)** | | **36** | **76** | |
+| **Total (100)** | | **36** | **78** | |
 
 ## What would move the score most (largest gap first)
 
 1. **Performance (4 points open).** Response times and throughput against a seeded staging copy. Queries are now bounded and budget-tested, but no number has been measured, so no capacity claim exists. **Owner: the staging copy.**
-2. **DevOps (4 open).** Branch protection with the CI checks required (Owner), a drilled code rollback and the recorded MySQL restore (Owner runs the drills in `policies/RECOVERY_DRILL.md`; the restore is also the last release blocker).
+2. **DevOps (2 open).** A drilled code rollback and the recorded MySQL restore (Owner runs the drills in `policies/RECOVERY_DRILL.md`; the restore is also the last release blocker).
 3. **Privacy (4 open).** Adviser review and publication of the policy and terms; the processor facts marked [OWNER] in the vendor register; retention for data of people who still have an account.
 4. **Reliability (3 open).** A Sentry DSN and an alert that reaches a person, an uptime monitor on `/ready` (both Owner), and JSON logs turned on with a reader.
 5. **Tenancy (6 open from 15).** The matrix covers seminars and knowledge; cache keys and the entitlement data could still use their own cross-company tests.
