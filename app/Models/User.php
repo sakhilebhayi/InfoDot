@@ -95,9 +95,18 @@ class User extends Authenticatable implements MustVerifyEmail
         ];
     }
 
+    /**
+     * The fallback avatar for a person with no profile photo: their initial, drawn inline. The old Gravatar URL put a hash of the
+     * person's email address into every page that showed them (anyone could confirm an address by hashing a guess), and sent each
+     * viewer's address and referer to a third party. Nothing leaves the page now.
+     */
     public function avatar(): string
     {
-        return 'https://www.gravatar.com/avatar/'.md5($this->email).'?d=mp';
+        $initial = mb_strtoupper(mb_substr(trim($this->name) ?: '?', 0, 1));
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="#31394d"/>'
+            .'<text x="32" y="42" text-anchor="middle" font-family="sans-serif" font-size="28" fill="#dae2fd">'.e($initial).'</text></svg>';
+
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
     }
 
     public function likes()

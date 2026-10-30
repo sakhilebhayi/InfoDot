@@ -274,4 +274,17 @@ class FinalFixesTest extends TestCase
         $this->assertSame(0, Solutions::count(), 'no half-saved solution');
         $this->assertSame(0, Steps::count());
     }
+
+    // ---- B-15 avatars ----------------------------------------------------------------------------------------------------
+
+    public function test_the_fallback_avatar_carries_no_hash_of_the_email_and_no_third_party(): void
+    {
+        $person = $this->person('Zanele');
+        $avatar = $person->avatar();
+
+        $this->assertStringStartsWith('data:image/svg+xml', $avatar);
+        $this->assertStringNotContainsString('gravatar', $avatar);
+        $this->assertStringNotContainsString(md5($person->email), $avatar);
+        $this->assertStringContainsString('Z', (string) base64_decode(substr($avatar, strlen('data:image/svg+xml;base64,'))));
+    }
 }
