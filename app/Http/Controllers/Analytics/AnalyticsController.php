@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Questions;
 use App\Models\Solutions;
+use App\Models\User;
 use App\Support\Platforms;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -26,8 +28,10 @@ class AnalyticsController extends Controller
         $questions = fn (): Builder => Questions::withoutGlobalScope('knowledge-visibility')->where('team_id', $teamId);
         $solutions = fn (): Builder => Solutions::withoutGlobalScope('knowledge-visibility')->where('team_id', $teamId);
 
-        $members = $team ? $team->allUsers() : collect();
-        $memberIds = $members->pluck('id');
+        // Ids and join dates only (not whole user rows): a company can have many members.
+        $members = $team
+            ? DB::table('users')->where(fn ($q) => $q->where('users.id', $team->user_id)->orWhereIn('users.id', DB::table('team_user')->where('team_id', $team->id)->select('user_id')))->get(['users.id', 'users.created_at'])
+            : collect();
 
         // ── Headline counts ───────────────────────────────────────────────
         $totalUsers = $members->count();
@@ -44,8 +48,8 @@ class AnalyticsController extends Controller
         $thisMonth = now()->startOfMonth();
         $lastMonth = now()->subMonth()->startOfMonth();
 
-        $usersThisMonth = $members->filter(fn ($u) => $u->created_at >= $thisMonth)->count();
-        $usersLastMonth = $members->filter(fn ($u) => $u->created_at >= $lastMonth && $u->created_at < $thisMonth)->count();
+        $usersThisMonth = $members->filter(fn ($u) => Carbon::parse($u->created_at) >= $thisMonth)->count();
+        $usersLastMonth = $members->filter(fn ($u) => Carbon::parse($u->created_at) >= $lastMonth && Carbon::parse($u->created_at) < $thisMonth)->count();
         $solutionsThisMonth = $solutions()->where('created_at', '>=', $thisMonth)->count();
         $solutionsLastMonth = $solutions()->whereBetween('created_at', [$lastMonth, $thisMonth])->count();
         $questionsThisMonth = $questions()->where('created_at', '>=', $thisMonth)->count();
@@ -53,12 +57,9 @@ class AnalyticsController extends Controller
 
         // ── 6-month activity trend ────────────────────────────────────────
         $months = collect(range(5, 0))->map(fn ($i) => now()->subMonths($i)->startOfMonth());
-        $solutionTrend = $months->map(fn (Carbon $m) => $solutions()->whereYear('created_at', $m->year)
-            ->whereMonth('created_at', $m->month)->count()
-        );
-        $questionTrend = $months->map(fn (Carbon $m) => $questions()->whereYear('created_at', $m->year)
-            ->whereMonth('created_at', $m->month)->count()
-        );
+        // A plain date range per month (the index on created_at can serve it); YEAR()/MONTH() of the column could not.
+        $solutionTrend = $months->map(fn (Carbon $m) => $solutions()->where('created_at', '>=', $m)->where('created_at', '<', $m->copy()->addMonth())->count());
+        $questionTrend = $months->map(fn (Carbon $m) => $questions()->where('created_at', '>=', $m)->where('created_at', '<', $m->copy()->addMonth())->count());
 
         $monthLabels = $months->map(fn (Carbon $m) => $m->format('M'));
 
@@ -69,11 +70,12 @@ class AnalyticsController extends Controller
             ->get(['id', 'solution_title']);
 
         // ── Top contributors: members who asked the most ──────────────────
-        $topContributors = $members->map(function ($u) use ($questions) {
-            $u->questions_count = $questions()->where('user_id', $u->id)->count();
-
-            return $u;
-        })->sortByDesc('questions_count')->take(5)->values();
+        // One grouped query for the five who asked most, then only those five people are loaded (it was a count query per member).
+        $counts = $questions()->whereIn('user_id', $members->pluck('id'))->selectRaw('user_id, count(*) as asked')->groupBy('user_id')->orderByDesc('asked')->orderBy('user_id')->limit(5)->pluck('asked', 'user_id');
+        // The list always shows up to five members, so people who have not asked yet fill the remaining places (the owner first), as before.
+        $fill = $members->sortBy(fn ($m) => [$m->id === $team?->user_id ? 0 : 1, $m->id])->pluck('id')->reject(fn ($id) => $counts->has($id))->take(max(0, 5 - $counts->count()));
+        $people = User::whereIn('id', $counts->keys()->merge($fill))->get()->keyBy('id');
+        $topContributors = $counts->keys()->merge($fill)->map(fn ($id) => $people->get($id))->filter()->each(fn ($u) => $u->questions_count = (int) ($counts[$u->id] ?? 0))->values();
 
         // ── Knowledge health (0–100): how much gets answered ──────────────
         // 60% solve rate, 40% replies per question (5 or more counts in full).

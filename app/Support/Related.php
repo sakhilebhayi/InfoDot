@@ -6,6 +6,7 @@ use App\Models\Questions;
 use App\Models\Solutions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
@@ -31,13 +32,30 @@ final class Related
     /** @return Collection<int, Questions> */
     public static function questions(Questions $question, int $limit = 4): Collection
     {
-        return self::match(Questions::query()->where('id', '!=', $question->id), ['question', 'description'], self::words($question->question), $limit);
+        // The words are matched against long text, which costs a scan. The answer is remembered for two minutes for this person (their id is
+        // part of the key, because what they may see is part of the answer).
+        return self::remembered('q', $question->id, $limit, fn () => self::match(Questions::query()->where('id', '!=', $question->id), ['question', 'description'], self::words($question->question), $limit));
     }
 
     /** @return Collection<int, Solutions> */
     public static function solutions(Solutions $solution, int $limit = 4): Collection
     {
-        return self::match(Solutions::query()->where('id', '!=', $solution->id), ['solution_title', 'tags'], self::words($solution->solution_title.' '.$solution->tags), $limit);
+        return self::remembered('s', $solution->id, $limit, fn () => self::match(Solutions::query()->where('id', '!=', $solution->id), ['solution_title', 'tags'], self::words($solution->solution_title.' '.$solution->tags), $limit));
+    }
+
+    /** @param  \Closure(): Collection  $compute */
+    private static function remembered(string $kind, int $id, int $limit, \Closure $compute): Collection
+    {
+        $user = auth()->user();
+
+        // Not signed in (a console command, a test without a user): compute, remember nothing.
+        if ($user === null) {
+            return $compute();
+        }
+
+        // The key holds the person AND the company they are working in: someone removed from a company has no current company, so the
+        // answer they were given while a member is not served to them again.
+        return Cache::remember("related:$kind:$id:$limit:u{$user->id}:t".($user->current_team_id ?? 0), 120, $compute);
     }
 
     private static function match(Builder $query, array $columns, array $words, int $limit): Collection

@@ -12,6 +12,7 @@ use App\Support\Reference;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -124,11 +125,12 @@ class Search extends Component
 
         $like = '%'.$this->escapeLike(trim($this->query)).'%';
 
-        return Solutions::where(function ($q) use ($like) {
+        // Typing the same thing again (or the same word by two people's keystrokes) is answered from memory for a minute, per person.
+        return Cache::remember('search:s:u'.Auth::id().':t'.(Auth::user()->current_team_id ?? 0).':'.md5($like), 60, fn () => Solutions::where(function ($q) use ($like) {
             $q->where('solution_title', 'like', $like)
                 ->orWhere('solution_description', 'like', $like)
                 ->orWhere('tags', 'like', $like);
-        })->latest()->limit(4)->get();
+        })->latest()->limit(4)->get());
     }
 
     #[Computed]
@@ -140,10 +142,10 @@ class Search extends Component
 
         $like = '%'.$this->escapeLike(trim($this->query)).'%';
 
-        return Questions::where(function ($q) use ($like) {
+        return Cache::remember('search:q:u'.Auth::id().':t'.(Auth::user()->current_team_id ?? 0).':'.md5($like), 60, fn () => Questions::where(function ($q) use ($like) {
             $q->where('question', 'like', $like)
                 ->orWhere('description', 'like', $like);
-        })->latest()->limit(4)->get();
+        })->latest()->limit(4)->get());
     }
 
     /**

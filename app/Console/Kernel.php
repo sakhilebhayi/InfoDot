@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
         // In-app notifications: read ones go after 90 days, any after a year.
         // Advisory ring flags first, so the score recalculation that follows already reflects what is open.
         $schedule->command('reputation:detect-rings')->dailyAt('03:10')->withoutOverlapping(30)->onOneServer();
-        $schedule->command('reputation:recalculate')->dailyAt('03:40')->withoutOverlapping(30)->onOneServer();
+        $schedule->command('reputation:recalculate --resume --budget=80')->everyTenMinutes()->between('03:40', '06:40')->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:invoice-commission')->monthlyOn(1, '04:15')->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:sweep-payments')->everyFiveMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:prune')->dailyAt('03:50')->withoutOverlapping(30)->onOneServer();

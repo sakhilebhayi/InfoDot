@@ -81,7 +81,7 @@ class Answers extends Component
 
         $answers = Answer::where('question_id', $this->question->id)
             ->where('status', Answer::PUBLISHED)
-            ->with('user')
+            ->with('user', 'question')
             ->orderByRaw('accepted_at is null')->orderBy('created_at')
             ->get();
 

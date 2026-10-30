@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Reputation\ReputationEngine;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ReputationRingFlag extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(fn () => ReputationEngine::ringFlagsChanged());
+        static::deleted(fn () => ReputationEngine::ringFlagsChanged());
+    }
+
     public const OPEN = 'open';
 
     public const DISMISSED = 'dismissed';

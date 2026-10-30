@@ -17,6 +17,7 @@ class NoticesController extends Controller
     {
         $user = $request->user();
         $page = $this->notices->page($user);
+        $this->notices->preload($page->getCollection());
         $rows = $page->getCollection()->map(fn ($n) => ['notice' => $n] + $this->notices->describe($n));
 
         return view('notices.index', ['page' => $page, 'rows' => $rows, 'unread' => $this->notices->unreadCount($user), 'wants' => $user->wantsInAppNotices()]);
