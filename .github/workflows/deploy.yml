@@ -296,6 +296,17 @@ jobs:
             echo "== docroot build/ did not exist; linked to $APPDIR/public/build"
           fi
 
+          # ---- static files the docroot serves as its own physical copies (not through PHP):
+          # refresh the repo-owned ones, or edits to them never reach the browser (robots.txt
+          # sat at its June copy until R-17). index.php is deliberately untouched — on this
+          # host it carries the docroot-to-app path bootstrap.
+          for F in robots.txt; do
+            if [ -f "public/$F" ] && [ ! -L "$DOCROOT/$F" ]; then
+              cp -f "public/$F" "$DOCROOT/$F"
+              echo "== docroot $F refreshed from the repo"
+            fi
+          done
+
           # ---- database
           echo "== Pending migrations:"
           $PHP artisan migrate:status --pending 2>&1 | tail -25 || true
