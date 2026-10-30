@@ -147,8 +147,8 @@
     <section class="ix-pubsec ix-pubsec--tint" aria-labelledby="who-title">
         <div class="lp-founder">
             <div>
-                <h2 id="who-title" data-reveal>Built in the open</h2>
-                <p class="ix-pubsec__lede" data-reveal>InfoDot is one platform in the Dot.Eco-system. It is built with an AI-assisted workflow: a person decides what gets built and the rules it must follow, reviews what ships, and runs it in production. We say what works today and nothing more.</p>
+                <h2 id="who-title" data-reveal>One platform in the Dot.Eco-system</h2>
+                <p class="ix-pubsec__lede" data-reveal>InfoDot works alongside the other Dot platforms, and this site says what works today and nothing more.</p>
             </div>
             <ul class="ix-intents" data-reveal>
                 <li><a href="{{ route('about') }}" class="ix-intent"><span><strong>About InfoDot</strong><span>Why it exists and how it is run.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>

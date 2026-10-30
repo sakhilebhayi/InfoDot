@@ -1,7 +1,7 @@
-<x-public-layout title="About" band="INFO" crumb="About" description="InfoDot helps people start, operate, manage and grow successful businesses by combining collective human experience, practical knowledge and AI-assisted guidance.">
+<x-public-layout title="About" band="INFO" crumb="About" description="InfoDot helps people start, operate, manage and grow successful businesses by combining collective human experience, practical knowledge and business intelligence.">
     <article class="ix-prose">
         <h1 class="ix-h1">About InfoDot</h1>
-        <p class="ix-lede">InfoDot exists to help people start, operate, manage and grow successful businesses by combining collective human experience, practical knowledge, AI-assisted guidance and business intelligence from across the Dot.Eco-system.</p>
+        <p class="ix-lede">InfoDot exists to help people start, operate, manage and grow successful businesses by combining collective human experience, practical knowledge and business intelligence from across the Dot.Eco-system.</p>
 
         <h2>Why it exists</h2>
         <p>A growing business has a sales system, an accounting package, a stock sheet, a job board and a few WhatsApp groups. Each holds a slice of the truth, and what the business has learned lives in people's heads. The people who have to decide are never quite sure the figure is current, or that anyone has solved the same problem before. InfoDot is where a business, and the businesses around it, write down what they know so the next person does not start from nothing.</p>
