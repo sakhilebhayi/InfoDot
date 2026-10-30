@@ -17,10 +17,12 @@ use App\Listeners\ForwardKnowledgeEventToMemory;
 use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Listeners\RecordInAppNotice;
 use App\Listeners\RefreshAchievements;
+use App\Livewire\Teams\TeamMemberManager;
 use App\Models\File;
 use App\Models\Folder;
 use App\Models\Questions;
 use App\Models\Solutions;
+use App\Support\CanonicalUrl;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -28,6 +30,8 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Cashier\Cashier;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,7 +42,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // Cashier registers POST /stripe/webhook, and without a webhook secret it accepts unsigned events from anyone. Leave the route out
+        // until STRIPE_WEBHOOK_SECRET is set.
+        if (! config('cashier.webhook.secret')) {
+            Cashier::ignoreRoutes();
+        }
     }
 
     /**
@@ -48,6 +56,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if ($this->app->isProduction()) {
+            CanonicalUrl::apply($this->app->runningInConsole() ? null : $this->app['request']);
+        }
+
+        // Jetstream's team member manager with a server-side check on cancelling invitations (app/Livewire/Teams/TeamMemberManager.php).
+        Livewire::component('teams.team-member-manager', TeamMemberManager::class);
+
         // Community knowledge events -> durable outbox -> the Dot Points ledger (signed, retried).
         foreach ([
             QuestionSubmitted::class,
@@ -112,6 +127,10 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('knowledge-candidates', fn (Request $request) => Limit::perMinute((int) config('knowledge.candidates.per_minute', 60))->by($request->ip()));
         RateLimiter::for('ecosystem-redeem', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
+        // Their own buckets, so a burst of payment or room callbacks cannot lock out sign-in redeems, or the reverse. Verification of the
+        // signature happens after the limiter, so the allowance is generous: a 200-person room start sends 200 joins in a minute.
+        RateLimiter::for('billing-callbacks', fn (Request $request) => Limit::perMinute(300)->by($request->ip()));
+        RateLimiter::for('livekit-webhook', fn (Request $request) => Limit::perMinute(600)->by($request->ip()));
 
         Relation::morphMap([
             'file' => File::class,

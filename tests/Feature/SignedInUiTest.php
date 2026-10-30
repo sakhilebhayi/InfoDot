@@ -155,7 +155,7 @@ class SignedInUiTest extends TestCase
     {
         $asker = $this->member();
         $other = $this->member();
-        $question = $this->question($asker);
+        $question = $this->question($asker, ['visibility' => 'public']);
 
         $this->actingAs($other);
         Livewire::test(Comments::class, ['model' => $question, 'question' => $question])

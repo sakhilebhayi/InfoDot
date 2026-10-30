@@ -5,8 +5,11 @@ namespace Tests\Feature\Reputation;
 use App\Models\Answer;
 use App\Models\ReputationRingFlag;
 use App\Models\User;
+use App\Models\UserNotice;
 use App\Services\Reputation\ReputationEngine;
 use App\Services\Reputation\RingDetector;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -310,7 +313,7 @@ class RingDetectionTest extends TestCase
 
     public function test_the_unique_key_is_the_kind_and_the_member_set(): void
     {
-        $this->expectException(\Illuminate\Database\UniqueConstraintViolationException::class);
+        $this->expectException(UniqueConstraintViolationException::class);
         $row = ['kind' => 'cycle', 'member_ids' => [1, 2, 3], 'member_hash' => ReputationRingFlag::hashOf([3, 1, 2]), 'edge_count' => 3, 'internal_ratio' => 1, 'detected_at' => now()];
         ReputationRingFlag::create($row);
         ReputationRingFlag::create($row);
@@ -344,7 +347,7 @@ class RingDetectionTest extends TestCase
 
     public function test_the_command_is_scheduled_daily_before_the_recalculation(): void
     {
-        $events = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events());
+        $events = collect(app(Schedule::class)->events());
         $detect = $events->first(fn ($e) => str_contains($e->command, 'reputation:detect-rings'));
         $recalc = $events->first(fn ($e) => str_contains($e->command, 'reputation:recalculate'));
 
@@ -426,7 +429,7 @@ class RingDetectionTest extends TestCase
         $this->actingAs($this->moderator())->post(route('moderation.rings.review', $flag), ['decision' => 'confirmed', 'note' => 'Linked accounts'])->assertRedirect();
 
         $this->assertLessThan($before->total, $engine->snapshot($a)->total);
-        $this->assertSame(0, \App\Models\UserNotice::count(), 'nobody is notified');
+        $this->assertSame(0, UserNotice::count(), 'nobody is notified');
         $this->assertDatabaseMissing('reward_outbox', ['type' => 'infodot.contribution.flagged']);
     }
 

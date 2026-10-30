@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\EcosystemRedeemController;
 use App\Http\Controllers\Api\EcosystemTokenController;
 use App\Http\Controllers\Api\KnowledgeCandidatesController;
 use App\Http\Controllers\Api\ResourceRegistryController;
+use App\Http\Controllers\Api\SeminarRoomWebhookController;
+use App\Http\Controllers\Api\SeminarTicketEventsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,11 +38,11 @@ Route::get('/knowledge/candidates', KnowledgeCandidatesController::class)
     ->name('api.knowledge.candidates');
 
 // Dot.Billing reports a paid or refunded seminar ticket. Signed with the callback secret; see SeminarTicketEventsController.
-Route::post('/billing/ticket-events', \App\Http\Controllers\Api\SeminarTicketEventsController::class)
-    ->middleware('throttle:ecosystem-redeem')
+Route::post('/billing/ticket-events', SeminarTicketEventsController::class)
+    ->middleware('throttle:billing-callbacks')
     ->name('api.billing.ticket-events');
 
 // LiveKit tells InfoDot who connected to a seminar room. Signed with the LiveKit API secret; see SeminarRoomWebhookController.
-Route::post('/seminars/livekit-webhook', \App\Http\Controllers\Api\SeminarRoomWebhookController::class)
-    ->middleware('throttle:ecosystem-redeem')
+Route::post('/seminars/livekit-webhook', SeminarRoomWebhookController::class)
+    ->middleware('throttle:livekit-webhook')
     ->name('api.seminars.livekit-webhook');

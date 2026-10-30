@@ -7,8 +7,9 @@ use App\Models\User;
 use App\Services\Licensing\BillingCompanies;
 use App\Support\Knowledge\Signature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Factory;
+use Illuminate\Http\Client\Request;
 use Illuminate\Queue\CallQueuedClosure;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
@@ -29,7 +30,7 @@ class BillingCompanySyncTest extends TestCase
 
     private function fake(array $map): void
     {
-        Http::swap(new \Illuminate\Http\Client\Factory);
+        Http::swap(new Factory);
         Http::fake($map);
     }
 

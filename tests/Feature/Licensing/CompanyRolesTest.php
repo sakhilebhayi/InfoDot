@@ -6,6 +6,7 @@ use App\Actions\Jetstream\InviteTeamMember;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\TeamRoles;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -133,7 +134,7 @@ class CompanyRolesTest extends TestCase
         [, $team, $with] = $this->company();
         $member = $with('member');
 
-        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
+        $this->expectException(AuthorizationException::class);
         app(InviteTeamMember::class)->invite($member, $team, 'a@example.test', 'member');
     }
 

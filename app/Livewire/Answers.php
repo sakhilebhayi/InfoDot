@@ -76,6 +76,9 @@ class Answers extends Component
     public function render(AnswerService $service): View
     {
         $user = Auth::user();
+        // Livewire restores the question without the visibility scopes: ask again, on every refresh, whether this person may still see it.
+        abort_unless($service->canSeeContent($this->question, $user), 404);
+
         $answers = Answer::where('question_id', $this->question->id)
             ->where('status', Answer::PUBLISHED)
             ->with('user')

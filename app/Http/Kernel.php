@@ -8,6 +8,8 @@ use App\Http\Middleware\EnsureModerator;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RecordUxSignals;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\ThrottleAccountForms;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
 use App\Http\Middleware\VerifyCsrfToken;
@@ -46,6 +48,8 @@ class Kernel extends HttpKernel
         ValidatePostSize::class,
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
+        SecurityHeaders::class,
+        ThrottleAccountForms::class,
         RecordUxSignals::class, // R-12: counts only (also sees addresses no route answers); off unless UX_SIGNALS=true
     ];
 

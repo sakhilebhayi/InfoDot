@@ -62,8 +62,72 @@ jobs:
           DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
         run: php artisan migrate:fresh --seed
 
+      # Release gates added by the enterprise-readiness programme (docs/programme/enterprise/). Each passes on the
+      # current code; each fails on a NEW problem. Legacy findings are in phpstan-baseline.neon and may only shrink.
+      - name: "The advisory gate itself fails closed (stub composer: no output, garbage, high, critical)"
+        run: bash tools/test-ci-composer-audit.sh
+
+      - name: Dependency advisories (high or critical block the release)
+        run: bash tools/ci-composer-audit.sh
+
+      - name: Static analysis (PHPStan level 5 against the baseline)
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+      - name: API description parses (docs/api/openapi.yaml)
+        run: |
+          php -r 'require "vendor/autoload.php"; $y = Symfony\Component\Yaml\Yaml::parseFile("docs/api/openapi.yaml"); if (! isset($y["paths"])) { exit(1); }'
+
+      - name: Code style (Pint, whole repository)
+        run: vendor/bin/pint --test
+
       - name: Run Tests
         run: php artisan test
+
+  frontend:
+    name: frontend build and advisories
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install from the lockfile
+        run: npm ci --no-audit
+      - name: Advisories (high or critical block the release)
+        run: npm audit --audit-level=high
+      - name: Production build
+        run: npm run build
+
+  coverage:
+    name: test coverage (measured, not yet gating)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          tools: composer:v2
+          coverage: pcov
+          extensions: sqlite3, pdo_sqlite
+      - name: Prepare Environment
+        run: |
+          cp .env.example .env
+          mkdir -p database
+          touch database/database.sqlite
+      - run: composer install --no-interaction --prefer-dist
+      - run: php artisan key:generate
+      - name: Run tests with coverage
+        run: php -d pcov.directory=app vendor/bin/phpunit --coverage-clover coverage.xml --coverage-text=coverage.txt --colors=never
+      - name: Summarise
+        run: |
+          { echo '### Line coverage of app/'; echo; grep -m1 -E '^\s*Lines:' coverage.txt || tail -n 12 coverage.txt; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.xml
+            coverage.txt
 
   cron-runner:
     name: cron runner (fake host)

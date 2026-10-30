@@ -14,6 +14,7 @@ use App\Models\Topic;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -56,6 +57,36 @@ class CorePlatformFeaturesTest extends TestCase
             'user_id' => $user->id,
             'question' => 'How do I register a business?',
         ]);
+    }
+
+    public function test_posting_a_question_never_puts_other_questions_in_the_session(): void
+    {
+        $user = $this->createVerifiedUserWithCurrentTeam();
+        $topic = Topic::query()->value('id');
+
+        foreach (range(1, 40) as $i) {
+            Questions::create(['user_id' => $user->id, 'team_id' => $user->current_team_id, 'question' => "Existing question $i", 'description' => str_repeat('long description ', 400), 'visibility' => 'public']);
+        }
+
+        $this->actingAs($user)->post('/questions/add', ['topics' => [$topic], 'question' => 'One more question', 'description' => 'Details of it.'])
+            ->assertRedirect('questions')->assertSessionHas('status')->assertSessionMissing('questions');
+
+        $this->assertLessThan(8000, strlen(serialize(session()->all())), 'the session must stay small');
+    }
+
+    public function test_the_question_list_is_bounded_and_says_so(): void
+    {
+        $user = $this->createVerifiedUserWithCurrentTeam();
+        $now = now();
+        $rows = [];
+
+        foreach (range(1, 205) as $i) {
+            $rows[] = ['user_id' => $user->id, 'team_id' => $user->current_team_id, 'question' => "Bulk question $i", 'description' => 'x', 'visibility' => 'public', 'status' => 0, 'created_at' => $now->copy()->subSeconds($i), 'updated_at' => $now];
+        }
+
+        DB::table('questions')->insert($rows);
+
+        $this->actingAs($user)->get('/questions')->assertOk()->assertSee('Showing the latest 200')->assertSee('Bulk question 1')->assertDontSee('Bulk question 205');
     }
 
     public function test_authenticated_user_can_create_solution_with_steps(): void

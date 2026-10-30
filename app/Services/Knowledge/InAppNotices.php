@@ -3,6 +3,7 @@
 namespace App\Services\Knowledge;
 
 use App\Models\Questions;
+use App\Models\Seminar;
 use App\Models\Solutions;
 use App\Models\User;
 use App\Models\UserNotice;
@@ -100,9 +101,9 @@ class InAppNotices
         }
 
         if ($notice->subject_type === 'seminar') {
-            $sem = \App\Models\Seminar::find($notice->subject_id);
+            $sem = Seminar::find($notice->subject_id);
 
-            if ($sem === null || $sem->status === \App\Models\Seminar::DRAFT) {
+            if ($sem === null || $sem->status === Seminar::DRAFT) {
                 return $gone;
             }
 
@@ -126,7 +127,7 @@ class InAppNotices
         };
     }
 
-    private function words(string $kind, string $title, ?\App\Models\Seminar $seminar = null): string
+    private function words(string $kind, string $title, ?Seminar $seminar = null): string
     {
         $title = '“'.Str::limit(trim($title), 90, '…', true).'”';
 

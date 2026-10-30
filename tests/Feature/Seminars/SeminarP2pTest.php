@@ -11,6 +11,7 @@ use App\Services\Seminars\SeminarService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -57,7 +58,7 @@ class SeminarP2pTest extends TestCase
         return $u;
     }
 
-    private function join(Seminar $s, User $u, bool $relay = false): \Illuminate\Testing\TestResponse
+    private function join(Seminar $s, User $u, bool $relay = false): TestResponse
     {
         return $this->actingAs($u)->postJson('/seminars/'.$s->id.'/p2p/join', ['can_relay' => $relay]);
     }
@@ -407,4 +408,3 @@ class SeminarP2pTest extends TestCase
         $this->assertStringContainsString('The people watching can see <b>your internet address', $host);
     }
 }
-

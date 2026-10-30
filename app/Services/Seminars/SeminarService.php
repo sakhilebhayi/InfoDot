@@ -2,17 +2,19 @@
 
 namespace App\Services\Seminars;
 
-use App\Models\Seminar;
 use App\Models\ModerationAction;
+use App\Models\Seminar;
 use App\Models\SeminarFeedback;
+use App\Models\SeminarHostAgreement;
+use App\Models\SeminarPayoutAccount;
+use App\Models\SeminarRegistration;
 use App\Models\SeminarRemovalAppeal;
 use App\Models\SeminarReport;
-use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarTicketEvent;
-use App\Models\SeminarRegistration;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\InAppNotices;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -53,7 +55,7 @@ class SeminarService
     /** @param  array<string, mixed>  $data  validated by rules() */
     public function save(User $host, ?Seminar $seminar, array $data, bool $publish): Seminar
     {
-        $starts = \Illuminate\Support\Carbon::parse($data['starts_at'], config('app.timezone'))->utc();
+        $starts = Carbon::parse($data['starts_at'], config('app.timezone'))->utc();
         $this->assertLead($starts);
 
         return DB::transaction(function () use ($host, $seminar, $data, $publish, $starts) {
@@ -261,6 +263,11 @@ class SeminarService
                 throw ValidationException::withMessages(['refund' => 'This ticket cannot be refunded now.']);
             }
 
+            // One refund at a time: a second submit (a double click) would otherwise be a second, differently keyed request to Billing.
+            if ($locked->refund_pending_cents !== null) {
+                throw ValidationException::withMessages(['refund' => 'A refund for this ticket is already on its way. Wait until it is confirmed.']);
+            }
+
             if ($cents < 1 || $cents > $locked->refundableCents()) {
                 throw ValidationException::withMessages(['refund' => 'Enter an amount between R0.01 and '.Seminar::money($locked->refundableCents()).'.']);
             }
@@ -373,8 +380,15 @@ class SeminarService
      */
     public function removeByModerator(Seminar $seminar, User $moderator, string $reason, string $refunds = 'all'): void
     {
+        abort_unless($moderator->isModerator(), 403);   // the route says so too; a service called from anywhere else must not rely on that
+
         if ($seminar->removed_at !== null) {
             return;
+        }
+
+        // A draft is the host's private work: it is not published, so there is nothing to remove.
+        if ($seminar->status === Seminar::DRAFT) {
+            throw ValidationException::withMessages(['reason' => 'A draft cannot be removed; it is not published.']);
         }
 
         // Before the start everyone who paid is refunded. Once it has started the moderator chooses: everyone, only the people who reported it, or no one.
@@ -416,8 +430,15 @@ class SeminarService
      */
     public function decideRemovalAppeal(SeminarRemovalAppeal $appeal, User $moderator, bool $reinstate, string $note): void
     {
+        abort_unless($moderator->isModerator(), 403);
+
         $seminar = Seminar::findOrFail($appeal->seminar_id);
         $appeal = $appeal->fresh();
+
+        // A moderator does not decide an appeal about their own seminar (content moderation has the same rule).
+        if ($seminar->host_id === $moderator->id) {
+            throw ValidationException::withMessages(['appeal' => 'You cannot decide an appeal about your own seminar.']);
+        }
 
         if ($appeal->status !== SeminarRemovalAppeal::OPEN) {
             throw ValidationException::withMessages(['appeal' => 'This appeal has already been decided.']);
@@ -452,6 +473,8 @@ class SeminarService
     /** A moderator bars a registered person from the seminar's room because of a report about them. They stay registered; they cannot get back in. */
     public function barFromRoom(Seminar $seminar, User $target, User $moderator, string $note): void
     {
+        abort_unless($moderator->isModerator(), 403);
+
         DB::table('seminar_room_bans')->insertOrIgnore(['seminar_id' => $seminar->id, 'user_id' => $target->id, 'created_at' => now()]);
         app(P2pRoom::class)->remove($seminar, $target);
 
@@ -468,6 +491,17 @@ class SeminarService
 
     public function dismissReport(SeminarReport $report, User $moderator, string $note): void
     {
+        abort_unless($moderator->isModerator(), 403);
+
+        // A report that was already decided (actioned by a removal, or dismissed) is not decided a second time.
+        if ($report->fresh()?->status !== 'open') {
+            throw ValidationException::withMessages(['reason' => 'This report has already been decided.']);
+        }
+
+        if (Seminar::whereKey($report->seminar_id)->value('host_id') === $moderator->id) {
+            throw ValidationException::withMessages(['reason' => 'You cannot decide a report about your own seminar.']);
+        }
+
         $report->forceFill(['status' => 'dismissed', 'resolved_by' => $moderator->id, 'resolution_note' => mb_substr($note, 0, 500), 'resolved_at' => now()])->save();
     }
 
@@ -508,7 +542,6 @@ class SeminarService
         ];
     }
 
-
     /** Parses the host's price. Null (free) unless paid seminars are on, the host has a payout account and the amount is within bounds. */
     private function priceFrom(User $host, mixed $price): ?int
     {
@@ -528,7 +561,7 @@ class SeminarService
             throw ValidationException::withMessages(['price' => 'Paid seminars open once the host agreement has been approved. We will tell you.']);
         }
 
-        if (! \App\Models\SeminarHostAgreement::where('user_id', $host->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists()) {
+        if (! SeminarHostAgreement::where('user_id', $host->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists()) {
             throw ValidationException::withMessages(['price' => 'Read and accept the host agreement (on the page where you set up payouts) before you charge for a seminar.']);
         }
 
@@ -579,8 +612,16 @@ class SeminarService
                 throw ValidationException::withMessages(['seminar' => 'You already have a ticket.']);
             }
 
-            if ($existing && $existing->status === SeminarRegistration::PENDING_PAYMENT && $existing->hold_expires_at?->isFuture() && $existing->checkout_url) {
-                return [$existing, true];
+            if ($existing && $existing->status === SeminarRegistration::PENDING_PAYMENT && $existing->hold_expires_at?->isFuture()) {
+                if ($existing->checkout_url) {
+                    return [$existing, true];
+                }
+
+                // The first request is still asking Billing for the payment page. A second one now would make a second ticket reference and
+                // overwrite the first, and a payment made on the first would match no registration. Wait for it (a minute at most).
+                if ($existing->updated_at?->gt(now()->subMinute())) {
+                    throw ValidationException::withMessages(['seminar' => 'Your ticket is being prepared. Wait a moment and try again.']);
+                }
             }
 
             $taken = SeminarRegistration::where('seminar_id', $locked->id)->where(fn ($q) => $q->where('status', SeminarRegistration::REGISTERED)
@@ -759,7 +800,16 @@ class SeminarService
         $n = 0;
 
         foreach (SeminarRegistration::where('status', SeminarRegistration::PENDING_PAYMENT)->where('hold_expires_at', '<', now())->get() as $reg) {
-            $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null, 'checkout_url' => null])->save();
+            // Release only if the row is still an unpaid, expired hold at the moment of the update. A payment confirmed since the list was read
+            // (the callback runs in another request) must not be overwritten.
+            $released = SeminarRegistration::whereKey($reg->id)->where('status', SeminarRegistration::PENDING_PAYMENT)->where('payment_status', 'pending')
+                ->where('hold_expires_at', '<', now())
+                ->update(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null, 'checkout_url' => null]);
+
+            if ($released === 0) {
+                continue;
+            }
+
             $n++;
 
             try {
@@ -821,7 +871,7 @@ class SeminarService
         }
     }
 
-    private function assertLead(\Illuminate\Support\Carbon $starts): void
+    private function assertLead(Carbon $starts): void
     {
         if ($starts->lt(now()->addMinutes((int) config('seminars.min_lead_minutes', 60)))) {
             throw ValidationException::withMessages(['starts_at' => 'A seminar must start at least '.config('seminars.min_lead_minutes', 60).' minutes from now.']);

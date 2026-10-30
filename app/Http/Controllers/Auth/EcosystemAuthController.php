@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\EcosystemHandoff;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,12 @@ class EcosystemAuthController extends Controller
             return $this->refused();
         }
 
+        // Only a POST signs anyone in. A GET could be a link an attacker sent a victim ("login CSRF": the victim is signed in as the attacker),
+        // so it is refused like any bad token and the person lands on the plain sign-in page.
+        if (! $request->isMethod('post')) {
+            return $this->refused();
+        }
+
         $token = $request->input('token');
 
         $accessToken = is_string($token) && $token !== '' ? PersonalAccessToken::findToken($token) : null;
@@ -33,6 +40,9 @@ class EcosystemAuthController extends Controller
         if (
             ! $accessToken
             || ! $accessToken->can('ecosystem:read')
+            // A token minted for one satellite is for that satellite's redeem call only. Accepted here it would let a compromised satellite
+            // replay a person's launch token against InfoDot and get a full session, without two-factor.
+            || $accessToken->name !== EcosystemHandoff::tokenName(null)
             || ($accessToken->expires_at && $accessToken->expires_at->isPast())
         ) {
             return $this->refused();

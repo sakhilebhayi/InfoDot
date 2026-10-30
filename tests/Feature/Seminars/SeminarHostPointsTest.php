@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Points\RewardOutbox;
 use App\Services\Seminars\SeminarHostPoints;
 use App\Services\Seminars\SeminarService;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
@@ -372,7 +373,7 @@ class SeminarHostPointsTest extends TestCase
 
     public function test_the_command_runs_every_thirty_minutes(): void
     {
-        $event = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())->first(fn ($e) => str_contains($e->command, 'seminars:award-hosts'));
+        $event = collect(app(Schedule::class)->events())->first(fn ($e) => str_contains($e->command, 'seminars:award-hosts'));
 
         $this->assertNotNull($event);
         $this->assertSame('*/30 * * * *', $event->expression);

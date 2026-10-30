@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Seminar;
 use App\Models\User;
+use App\Services\Seminars\P2pCapacity;
 use App\Services\Seminars\P2pRoom;
-use App\Services\Seminars\SeminarService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -119,7 +119,7 @@ class SeminarP2pController extends Controller
         $kbps = (int) $request->query('kbps');
         abort_if($kbps < 50 || $kbps > 1_000_000, 422);
 
-        return $this->json(\App\Services\Seminars\P2pCapacity::all($kbps));
+        return $this->json(P2pCapacity::all($kbps));
     }
 
     private function guard(Request $request, Seminar $seminar): void

@@ -7,6 +7,7 @@ use App\Models\TeamLicence;
 use App\Models\TeamLicenceEvent;
 use App\Models\User;
 use Closure;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -102,7 +103,7 @@ class SeatLedger
                         && $locked->teamInvitations()->where('email', $exceptEmail)->exists();
                     $reserved = $s['reserved'] - ($holdsThisSeat ? 1 : 0);
 
-                    if ($s['people'] + $reserved + 1 > $s['capacity']) {
+                    if ($s['capacity'] < $s['people'] + $reserved + 1) {
                         $refusal = ['capacity' => $s['capacity'], 'people' => $s['people'], 'reserved' => $reserved];
 
                         throw SeatLimitReached::withMessages(['email' => $this->message($locked, $s)])->errorBag('addTeamMember');
@@ -130,7 +131,7 @@ class SeatLedger
         ]);
     }
 
-    /** @return \Illuminate\Support\Collection<int, TeamLicenceEvent> */
+    /** @return Collection<int, TeamLicenceEvent> */
     public function history(Team $team, int $limit = 8)
     {
         return TeamLicenceEvent::where('team_id', $team->getKey())->orderByDesc('id')->limit($limit)->get();

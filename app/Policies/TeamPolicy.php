@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Models\Team;
-use App\Support\TeamRoles;
 use App\Models\User;
+use App\Support\TeamRoles;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TeamPolicy
@@ -58,7 +58,8 @@ class TeamPolicy
      */
     public function addTeamMember(User $user, Team $team)
     {
-        return TeamRoles::assignableBy($user, $team) !== [];
+        // A personal workspace is one person's. Inviting people into it would make an unlicensed, unlimited company (seat limits skip it).
+        return ! $team->personal_team && TeamRoles::assignableBy($user, $team) !== [];
     }
 
     /**

@@ -4,13 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Seminar;
 use App\Models\SeminarFeedback;
+use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarRegistration;
+use App\Models\SeminarRemovalAppeal;
+use App\Models\SeminarReport;
+use App\Models\SeminarSellerProfile;
 use App\Models\Topic;
 use App\Models\User;
+use App\Services\Privacy\SeminarDataExporter;
+use App\Services\Seminars\MeetingLinkCheck;
 use App\Services\Seminars\SeminarService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Contracts\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Free seminars. Hosts manage their own; everyone signed in can find, register for, join and rate. Drafts are the host's alone. */
 class SeminarsController extends Controller
@@ -54,7 +62,7 @@ class SeminarsController extends Controller
 
         return view('seminars.show', [
             'seminar' => $seminar->load('topic'), 'host' => $seminar->host, 'isHost' => $isHost,
-            'appeal' => \App\Models\SeminarRemovalAppeal::where('seminar_id', $seminar->id)->first(),
+            'appeal' => SeminarRemovalAppeal::where('seminar_id', $seminar->id)->first(),
             'canReportPerson' => $seminar->status === Seminar::PUBLISHED && ($isHost || ($reg && $reg->status !== SeminarRegistration::CANCELLED)),
             'reg' => $reg && $reg->status !== SeminarRegistration::CANCELLED ? $reg : null,
             'registeredCount' => SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->count(),
@@ -161,7 +169,7 @@ class SeminarsController extends Controller
     public function receipt(Request $request, Seminar $seminar): View
     {
         $reg = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $request->user()->id)->whereNotNull('paid_at')->firstOrFail();
-        $profile = \App\Models\SeminarSellerProfile::where('user_id', $seminar->host_id)->first();
+        $profile = SeminarSellerProfile::where('user_id', $seminar->host_id)->first();
         $taxInvoice = config('seminars.paid.issue_tax_invoices') && $profile?->vat_number && $profile->authorises_receipts;
         $rate = (int) config('seminars.paid.vat_rate_percent', 15);
 
@@ -172,12 +180,12 @@ class SeminarsController extends Controller
     }
 
     /** The "test this link" button on the form. */
-    public function linkCheck(Request $request): \Illuminate\Http\JsonResponse
+    public function linkCheck(Request $request): JsonResponse
     {
         $url = (string) $request->query('url', '');
         abort_if(strlen($url) > 500, 422);
 
-        return response()->json(app(\App\Services\Seminars\MeetingLinkCheck::class)->check($url), 200, ['Cache-Control' => 'no-store, private']);
+        return response()->json(app(MeetingLinkCheck::class)->check($url), 200, ['Cache-Control' => 'no-store, private']);
     }
 
     /** The short InfoDot link. It always opens: it goes to the seminar's page (signing in first when needed). */
@@ -192,18 +200,18 @@ class SeminarsController extends Controller
     /** A signed-in person reports a seminar to the moderators. */
     public function report(Request $request, Seminar $seminar): RedirectResponse
     {
-        $data = $request->validate(['reason' => ['required', 'in:'.implode(',', array_keys(\App\Models\SeminarReport::REASONS))], 'detail' => ['nullable', 'string', 'max:1000'], 'about_name' => ['nullable', 'string', 'max:60']]);
+        $data = $request->validate(['reason' => ['required', 'in:'.implode(',', array_keys(SeminarReport::REASONS))], 'detail' => ['nullable', 'string', 'max:1000'], 'about_name' => ['nullable', 'string', 'max:60']]);
         $this->seminars->report($seminar, $request->user(), $data['reason'], $data['detail'] ?? null, $data['about_name'] ?? null);
 
         return back()->with('seminar_notice', 'Thank you. A moderator will look at it. '.(($data['about_name'] ?? null) ? 'The person is not told who reported them.' : 'The host is not told who reported it.'));
     }
 
     /** A copy of everything the seminar features hold about the signed-in person. */
-    public function exportMyData(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportMyData(Request $request): StreamedResponse
     {
-        $payload = app(\App\Services\Privacy\SeminarDataExporter::class)->export($request->user());
+        $payload = app(SeminarDataExporter::class)->export($request->user());
 
-        return response()->streamDownload(fn () => print(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)), 'my-seminar-data.json', ['Content-Type' => 'application/json']);
+        return response()->streamDownload(fn () => print (json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)), 'my-seminar-data.json', ['Content-Type' => 'application/json']);
     }
 
     /** The host's one appeal against a moderator removing their seminar. */
@@ -228,7 +236,7 @@ class SeminarsController extends Controller
     {
         return [
             'paidOn' => (bool) config('seminars.paid.enabled'),
-            'hasPayout' => \App\Models\SeminarPayoutAccount::where('user_id', $user->id)->where('status', 'active')->exists(),
+            'hasPayout' => SeminarPayoutAccount::where('user_id', $user->id)->where('status', 'active')->exists(),
             'percent' => (int) config('seminars.paid.platform_percent', 10),
         ];
     }

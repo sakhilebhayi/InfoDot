@@ -67,6 +67,7 @@
                     </li>
                 @endforeach
             </ul>
+            @if ($limited)<p class="ix-hint">Showing the latest 200. Pick a topic above to narrow the list.</p>@endif
 
             <section class="ix-ideas ix-ideas--wide" aria-label="Ideas">
                 <h2 class="ix-ideas__head">Worth writing down at a {{ strtolower($industry['label']) }} business</h2>

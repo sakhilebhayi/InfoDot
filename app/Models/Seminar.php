@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /** A free seminar a person hosts. The join link is the host's own; see config/seminars.php. */
 class Seminar extends Model
@@ -26,7 +27,7 @@ class Seminar extends Model
     {
         // Every seminar gets a short InfoDot link that always opens, so a host never has to hand out a typed address.
         static::creating(function (self $seminar) {
-            $seminar->public_code ??= \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(8));
+            $seminar->public_code ??= Str::lower(Str::random(8));
         });
     }
 

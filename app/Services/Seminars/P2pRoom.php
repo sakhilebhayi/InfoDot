@@ -4,6 +4,7 @@ namespace App\Services\Seminars;
 
 use App\Models\P2pPeer;
 use App\Models\Seminar;
+use App\Models\SeminarRegistration;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -55,7 +56,7 @@ class P2pRoom
             return $seminar->hasEnded() ? 'This seminar has finished.' : null;
         }
 
-        $registered = \App\Models\SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', \App\Models\SeminarRegistration::REGISTERED)->exists();
+        $registered = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', SeminarRegistration::REGISTERED)->exists();
 
         return match (true) {
             P2pPeer::where('seminar_id', $seminar->id)->where('user_id', $user->id)->where('status', 'removed')->exists() => 'The host removed you from this room.',
@@ -96,7 +97,7 @@ class P2pRoom
             if (! $isHost) {
                 $this->place($locked, $peer);
                 // Connecting to the room is what counts as attending (there is no media server to say so).
-                \App\Models\SeminarRegistration::where('seminar_id', $locked->id)->where('user_id', $user->id)->where('status', \App\Models\SeminarRegistration::REGISTERED)->whereNull('attended_at')->update(['attended_at' => now()]);
+                SeminarRegistration::where('seminar_id', $locked->id)->where('user_id', $user->id)->where('status', SeminarRegistration::REGISTERED)->whereNull('attended_at')->update(['attended_at' => now()]);
             }
 
             return $this->state($locked, $peer);

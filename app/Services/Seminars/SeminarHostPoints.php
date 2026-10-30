@@ -41,7 +41,7 @@ class SeminarHostPoints
     /**
      * What counts for this seminar right now: attendees and ratings from outside the host's companies.
      *
-     * @return array{attendees: int, ratings: int, average: ?float, colleagues: int}  `average` is unrounded; `colleagues` is only how many attendees were left out
+     * @return array{attendees: int, ratings: int, average: ?float, colleagues: int} `average` is unrounded; `colleagues` is only how many attendees were left out
      */
     public function figures(Seminar $seminar): array
     {

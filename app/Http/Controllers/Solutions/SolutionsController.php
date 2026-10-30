@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 
 class SolutionsController extends Controller
 {
+    /** The list pages show the latest this many and say so; narrowing by topic reaches the rest. Unbounded, they grew with the table. */
+    private const LIST_LIMIT = 200;
+
     public function index(Request $request, TopicService $topics)
     {
         // ?topic=slug narrows the list; ?topic=none shows what has no topic yet. An unknown slug is simply an empty list.
@@ -25,10 +28,12 @@ class SolutionsController extends Controller
             ->when($untagged, fn ($q) => $q->untagged())
             ->when($slug !== '' && ! $untagged, fn ($q) => $topic ? $q->inTopic($topic) : $q->whereRaw('0 = 1'))
             ->latest()
+            ->limit(self::LIST_LIMIT)
             ->get();
 
         return view('solutions.index', [
             'solutions' => $solutions,
+            'limited' => $solutions->count() >= self::LIST_LIMIT,
             'industry' => Industry::for(auth()->user()->currentTeam),
             'topicChoices' => $topics->choices(),
             'activeTopic' => $topic,
@@ -52,15 +57,15 @@ class SolutionsController extends Controller
         $request->validate(
             [ // 1st array is field rules
                 'solution_title' => 'required|min:3|max:255',
-                'solution_description' => 'required|min:3',
-                'tags-input' => 'required|min:3',
+                'solution_description' => 'required|min:3|max:20000',
+                'tags-input' => 'required|min:3|max:255',
                 'publish' => 'nullable|boolean',
-                'duration' => 'required|integer|min:1',
+                'duration' => 'required|integer|min:1|max:10000',
                 'duration_type' => 'required|in:hours,days,weeks,months,years,infinite',
-                'solution_heading' => 'required|array|min:1',
+                'solution_heading' => 'required|array|min:1|max:50',
                 'solution_heading.*' => 'required|string|max:255',
-                'solution_body' => 'required|array',
-                'solution_body.*' => 'required|string',
+                'solution_body' => 'required|array|max:50',
+                'solution_body.*' => 'required|string|max:5000',
             ] + TopicService::rules(),
             [ // 2nd array is the rules custom message
                 'required' => 'The :attribute field is mandatory.',

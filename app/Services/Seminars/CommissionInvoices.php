@@ -47,7 +47,16 @@ class CommissionInvoices
             ->merge(DB::table('seminar_refund_lines')->whereBetween('created_at', [$from, $to])->pluck('host_id'))->unique();
 
         foreach ($hosts as $hostId) {
-            $n += (int) ($this->issueFor(User::findOrFail($hostId), $month) !== null);
+            $host = User::find($hostId);
+
+            // A host whose account was deleted cannot be invoiced; one missing person must not stop everyone else's invoice.
+            if ($host === null) {
+                Log::warning('Seminar commission invoice skipped: the host account no longer exists.', ['host_id' => $hostId, 'period' => $month->format('Y-m')]);
+
+                continue;
+            }
+
+            $n += (int) ($this->issueFor($host, $month) !== null);
         }
 
         return $n;

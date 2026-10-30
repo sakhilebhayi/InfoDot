@@ -4,11 +4,14 @@ namespace Tests\Feature\Seminars;
 
 use App\Actions\Jetstream\DeleteUser;
 use App\Models\ModerationAction;
+use App\Models\ReputationRingFlag;
+use App\Models\ReputationSnapshot;
 use App\Models\Seminar;
 use App\Models\SeminarRegistration;
 use App\Models\SeminarReport;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Knowledge\InAppNotices;
 use App\Services\Seminars\SeminarService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -196,17 +199,17 @@ class SeminarReportsAndErasureTest extends TestCase
     {
         $me = $this->person('Me');
         $other = $this->person('Other');
-        \App\Models\ReputationRingFlag::create(['kind' => 'cycle', 'member_ids' => [$me->id, $other->id], 'member_hash' => \App\Models\ReputationRingFlag::hashOf([$me->id, $other->id]), 'edge_count' => 2, 'internal_ratio' => 1.0, 'status' => 'open', 'detected_at' => now()]);
-        \App\Models\ReputationSnapshot::create(['user_id' => $me->id, 'rules_version' => 1, 'total' => 10, 'tier' => 'Starter', 'dimensions' => [], 'computed_at' => now()]);
+        ReputationRingFlag::create(['kind' => 'cycle', 'member_ids' => [$me->id, $other->id], 'member_hash' => ReputationRingFlag::hashOf([$me->id, $other->id]), 'edge_count' => 2, 'internal_ratio' => 1.0, 'status' => 'open', 'detected_at' => now()]);
+        ReputationSnapshot::create(['user_id' => $me->id, 'rules_version' => 1, 'total' => 10, 'tier' => 'Starter', 'dimensions' => [], 'computed_at' => now()]);
 
         app(DeleteUser::class)->delete($me);
 
-        $this->assertSame(0, \App\Models\ReputationRingFlag::count());
-        $this->assertSame(0, \App\Models\ReputationSnapshot::where('user_id', $me->id)->count());
+        $this->assertSame(0, ReputationRingFlag::count());
+        $this->assertSame(0, ReputationSnapshot::where('user_id', $me->id)->count());
     }
 
     public function test_a_notice_to_a_person_who_no_longer_exists_is_ignored(): void
     {
-        $this->assertFalse(app(\App\Services\Knowledge\InAppNotices::class)->record(UserNotice::SEMINAR_REFUNDED, null, 'seminar', 1, 'x'));
+        $this->assertFalse(app(InAppNotices::class)->record(UserNotice::SEMINAR_REFUNDED, null, 'seminar', 1, 'x'));
     }
 }

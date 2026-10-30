@@ -4,12 +4,14 @@ namespace Tests\Feature\Licensing;
 
 use App\Actions\Jetstream\AddTeamMember;
 use App\Actions\Jetstream\InviteTeamMember;
+use App\Actions\Jetstream\RemoveTeamMember;
 use App\Models\Team;
 use App\Models\TeamLicence;
 use App\Models\TeamLicenceEvent;
 use App\Models\User;
 use App\Services\Licensing\SeatLedger;
 use App\Services\Licensing\SeatLimitReached;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -99,16 +101,26 @@ class SeatLedgerTest extends TestCase
         $this->assertSame(2, $team->teamInvitations()->count());
     }
 
-    public function test_personal_workspaces_are_not_licensed(): void
+    public function test_personal_workspaces_are_not_licensed_and_cannot_take_other_people(): void
     {
         $user = User::factory()->withPersonalTeam()->create();
         $team = $user->currentTeam;
 
-        foreach (['a', 'b', 'c', 'd', 'e'] as $n) {
-            $this->invite($user, $team, "$n@example.test");
-        }
-        $this->assertSame(5, $team->teamInvitations()->count());
         $this->assertFalse(app(SeatLedger::class)->summary($team)['applies']);
+
+        // Seat limits skip a personal workspace, so it must not be possible to turn one into an unlicensed company.
+        $this->expectException(AuthorizationException::class);
+        $this->invite($user, $team, 'a@example.test');
+    }
+
+    public function test_a_personal_workspace_adds_nobody_either_way(): void
+    {
+        $user = User::factory()->withPersonalTeam()->create();
+        $other = User::factory()->create();
+
+        $this->assertFalse($user->can('addTeamMember', $user->currentTeam));
+        $this->assertSame(0, $user->currentTeam->teamInvitations()->count());
+        $this->assertFalse($other->belongsToTeam($user->currentTeam));
     }
 
     public function test_a_company_over_capacity_keeps_everyone_and_only_new_additions_are_blocked(): void
@@ -200,7 +212,7 @@ class SeatLedgerTest extends TestCase
         $team->users()->attach($m, ['role' => 'member']);
 
         $this->actingAs($owner);
-        app(\App\Actions\Jetstream\RemoveTeamMember::class)->remove($owner, $team, $m);
+        app(RemoveTeamMember::class)->remove($owner, $team, $m);
 
         $this->assertDatabaseHas('team_licence_events', ['team_id' => $team->id, 'type' => 'left']);
         $this->assertNotNull(User::find($m->id));

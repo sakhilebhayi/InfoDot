@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Questions;
 
 use App\Events\Knowledge\QuestionSubmitted;
-use App\Events\Questions\QuestionWasAsked;
 use App\Http\Controllers\Controller;
 use App\Models\Answer;
 use App\Models\Questions;
@@ -16,6 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 class QuestionsController extends Controller
 {
+    /** The list pages show the latest this many and say so; narrowing by topic reaches the rest. Unbounded, they grew with the table. */
+    private const LIST_LIMIT = 200;
+
     public function index(Request $request, TopicService $topics)
     {
         // ?topic=slug narrows the list; ?topic=none shows what has no topic yet. An unknown slug is simply an empty list.
@@ -28,10 +30,12 @@ class QuestionsController extends Controller
             ->when($untagged, fn ($q) => $q->untagged())
             ->when($slug !== '' && ! $untagged, fn ($q) => $topic ? $q->inTopic($topic) : $q->whereRaw('0 = 1'))
             ->latest()
+            ->limit(self::LIST_LIMIT)
             ->get();
 
         return view('questions.index', [
             'questions' => $questions,
+            'limited' => $questions->count() >= self::LIST_LIMIT,
             'industry' => Industry::for(auth()->user()->currentTeam),
             'topicChoices' => $topics->choices(),
             'activeTopic' => $topic,
@@ -69,7 +73,7 @@ class QuestionsController extends Controller
         $request->validate(
             [ // 1st array is field rules
                 'question' => 'required|min:3|max:255',
-                'description' => 'required|min:3',
+                'description' => 'required|min:3|max:20000',
                 'publish' => 'nullable|boolean',
             ] + TopicService::rules(),
             [ // 2nd array is the rules custom message
@@ -96,9 +100,8 @@ class QuestionsController extends Controller
             'visibility' => $question->visibility,
         ]));
 
-        $questions = Questions::all();
-        // event(new QuestionWasAsked($question));
-
-        return redirect('questions')->with(['questions' => $questions]);
+        // Nothing but a short message goes into the session. This used to flash `Questions::all()`: the session payload column is
+        // TEXT (about 64 KB), so once enough long questions existed, saving the session failed after the question was already stored.
+        return redirect('questions')->with('status', 'Your question was posted.');
     }
 }

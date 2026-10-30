@@ -23,5 +23,10 @@
     "dependencies": {
         "gsap": "3.12.7",
         "livekit-client": "^2.23.0"
+    },
+    "overrides": {
+        "@tailwindcss/typography": {
+            "postcss-selector-parser": "6.1.5"
+        }
     }
 }

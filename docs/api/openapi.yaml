@@ -1,0 +1,198 @@
+openapi: 3.1.0
+info:
+  title: InfoDot server-to-server API
+  version: "2026-10-30"
+  description: |
+    The endpoints other Dot platforms and providers call on InfoDot (routes/api.php). InfoDot has no public third-party API.
+    Written from the controllers on 2026-10-30; the controller is the source of truth. Every endpoint fails closed: an unset secret
+    refuses every call. Signed calls use HMAC-SHA256 over `{timestamp}.{raw body}` with headers `X-InfoDot-Timestamp` and
+    `X-InfoDot-Signature: sha256=<hex>` (helper `App\Support\Knowledge\Signature`); the timestamp window is 300 seconds for ticket events.
+    Replays are made harmless by idempotency (a ticket event is applied once per event and ticket), not by a nonce.
+servers:
+  - url: https://infodot.co.za/api
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      description: A signed-in person's Sanctum token.
+    platformSecret:
+      type: http
+      scheme: bearer
+      description: The per-platform service secret (config ecosystem.service_secrets.<platform>), compared in constant time.
+    hmac:
+      type: apiKey
+      in: header
+      name: X-InfoDot-Signature
+      description: "sha256=<hex HMAC-SHA256 of '{X-InfoDot-Timestamp}.{raw body}'>"
+    livekitJwt:
+      type: http
+      scheme: bearer
+      description: A JWT signed with the LiveKit API secret that carries the SHA-256 of the body.
+  schemas:
+    Refusal:
+      type: object
+      description: Every refusal to a platform looks the same; the reason goes to the log, never the token.
+      properties:
+        error: { type: string, examples: [invalid_request] }
+paths:
+  /user:
+    get:
+      summary: The signed-in person (Sanctum)
+      security: [{ sanctum: [] }]
+      responses:
+        "200": { description: "The user record." }
+        "401": { description: "Unauthenticated." }
+  /ecosystem/token:
+    post:
+      summary: Mint a single-purpose handoff token for a platform
+      description: Ability `ecosystem:read`, expires after `ecosystem.handoff_ttl` minutes (default 5), bound to the named platform.
+      security: [{ sanctum: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                platform: { type: string, description: A key from config ecosystem.platforms. }
+      responses:
+        "200":
+          description: The token, shown once.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  expires_at: { type: string, format: date-time }
+        "422": { description: "Unknown platform." }
+  /ecosystem/redeem:
+    post:
+      summary: A platform proves a handoff token
+      description: Rate limited (`throttle:ecosystem-redeem`). The token is single use, bound to the platform and the person must have a verified email. Refusals are identical.
+      security: [{ platformSecret: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, platform]
+              properties:
+                token: { type: string, maxLength: 255 }
+                platform: { type: string, maxLength: 40 }
+      responses:
+        "200":
+          description: The person and their companies with roles.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      name: { type: string }
+                      email: { type: string, format: email }
+                      email_verified: { type: boolean }
+                  teams:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        uuid: { type: string, format: uuid }
+                        name: { type: string }
+                        personal: { type: boolean }
+                  current_team_id: { type: integer }
+                  current_team_uuid: { type: string, format: uuid }
+        "401": { description: "Service secret missing or wrong." }
+        "403": { $ref: "#/components/schemas/Refusal" }
+  /ecosystem/resources:
+    post:
+      summary: The owning platform registers a pointer to an object (files, docs)
+      description: "A platform may register only the types it is authoritative for (files: `file`; docs: `document`), only for real non-personal companies, and only its own pointers."
+      security: [{ platformSecret: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [platform, team_uuid, type, object_uuid, path]
+              properties:
+                platform: { type: string }
+                team_uuid: { type: string, format: uuid }
+                type: { type: string, maxLength: 20 }
+                object_uuid: { type: string, maxLength: 64 }
+                path: { type: string, maxLength: 255, description: "Must match ^/(?!/)(?!.*\\.\\.)[A-Za-z0-9/_\\-.]*$" }
+      responses:
+        "201": { description: "Created (200 when it already existed). Returns uuid, reference and url." }
+        "401": { description: "Service secret missing or wrong." }
+        "403": { description: "The platform is not authoritative for that type." }
+        "422": { description: "Unknown company or invalid input." }
+  /ecosystem/resources/{objectUuid}:
+    delete:
+      summary: Remove the caller's own pointer
+      security: [{ platformSecret: [] }]
+      parameters:
+        - { name: objectUuid, in: path, required: true, schema: { type: string } }
+        - { name: platform, in: query, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "{ok: true}; scoped to the caller's platform, so one platform cannot remove another's pointers." }
+        "401": { description: "Service secret missing or wrong." }
+  /knowledge/candidates:
+    get:
+      summary: Dot.Brain pulls candidates for the Verified library
+      description: "Public, community-corroborated answers and solutions as references and facts only. Rate limited; signed GET (empty body). Cache-Control: no-store."
+      security: [{ hmac: [] }]
+      parameters:
+        - { name: since, in: query, schema: { type: string, format: date-time }, description: ISO 8601 with an explicit offset. }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1 }, description: "Default `knowledge.candidates.default_limit` (100), maximum `knowledge.candidates.max_limit` (200)." }
+      responses:
+        "200": { description: "A page of candidates (shape in App\\Services\\Knowledge\\CandidateFeed)." }
+        "401": { description: "Bad or missing signature, or the secret is unset." }
+        "422": { description: "{code: invalid_request, message}" }
+  /billing/ticket-events:
+    post:
+      summary: Dot.Billing reports a ticket or host-debt event
+      description: |
+        Signed with the callback secret, 300 second window, refused while paid seminars are off. Events `ticket.paid`, `ticket.refunded`,
+        `ticket.disputed`, `ticket.dispute_resolved` and `host_debt.opened|reopened|cleared|written_off`. Applied once per event and ticket.
+        The only thing that turns a payment into a registration.
+      security: [{ hmac: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event, ticket_ref, amount_cents, currency]
+              properties:
+                event: { type: string }
+                ticket_ref: { type: string }
+                amount_cents: { type: integer }
+                currency: { type: string, minLength: 3, maxLength: 3 }
+                refund_amount_cents: { type: integer }
+                refunded_total_cents: { type: integer }
+                refund_key: { type: string }
+      responses:
+        "200":
+          description: The outcome.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [applied, duplicate, ignored, mismatch, open, cleared, written_off] }
+        "400": { description: "Body is not valid JSON of the required shape." }
+        "401": { description: "Bad signature, outside the window, or paid seminars are off." }
+  /seminars/livekit-webhook:
+    post:
+      summary: LiveKit reports a participant joining a seminar room
+      description: Only `participant_joined` is used. The room must be `seminar-<id>` and the identity `u<id>`; the host and anyone not registered are ignored.
+      security: [{ livekitJwt: [] }]
+      responses:
+        "200": { description: "{status: recorded|ignored}" }
+        "401": { description: "LiveKit is not configured or the JWT / body hash does not verify." }

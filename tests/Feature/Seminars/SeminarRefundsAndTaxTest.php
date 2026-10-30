@@ -4,6 +4,7 @@ namespace Tests\Feature\Seminars;
 
 use App\Models\Seminar;
 use App\Models\SeminarCommissionInvoice;
+use App\Models\SeminarHostAgreement;
 use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarRegistration;
 use App\Models\SeminarSellerProfile;
@@ -18,6 +19,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -47,7 +49,7 @@ class SeminarRefundsAndTaxTest extends TestCase
     {
         $h = $this->person('Host');
         SeminarPayoutAccount::create(['user_id' => $h->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
-        \App\Models\SeminarHostAgreement::create(['user_id' => $h->id, 'version' => 'v1', 'accepted_at' => now()]);
+        SeminarHostAgreement::create(['user_id' => $h->id, 'version' => 'v1', 'accepted_at' => now()]);
 
         return $h;
     }
@@ -58,7 +60,7 @@ class SeminarRefundsAndTaxTest extends TestCase
             'duration_minutes' => 60, 'join_url' => 'https://meet.example.test/room', 'price' => '200.00'], true);
     }
 
-    private function cb(string $event, string $ref, array $extra = [], int $amount = 20000): \Illuminate\Testing\TestResponse
+    private function cb(string $event, string $ref, array $extra = [], int $amount = 20000): TestResponse
     {
         $body = json_encode(['event' => $event, 'ticket_ref' => $ref, 'reference' => 'ref_1', 'amount_cents' => $amount, 'currency' => 'ZAR'] + $extra);
         $h = Signature::headers('cb', $body);

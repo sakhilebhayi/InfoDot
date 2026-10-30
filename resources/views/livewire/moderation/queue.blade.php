@@ -80,7 +80,7 @@
                         <p class="ix-mod__by">By <a href="{{ route('profile.show', ['id' => $item['author']->id]) }}">{{ $item['author']->name }}</a></p>
                     @endif
 
-                    @if ($tab === 'reports' && $row['reports']->isNotEmpty())
+                    @if ($tab === 'reports' && ! $item['restricted'] && $row['reports']->isNotEmpty())
                         <h3 class="ix-mod__sub">{{ ucfirst($status) }} {{ Str::plural('report', $row['reports']->count()) }}</h3>
                         <ul class="ix-mod__reports">
                             @foreach ($row['reports'] as $report)
@@ -96,7 +96,7 @@
                         </ul>
                     @endif
 
-                    @if ($tab === 'appeals')
+                    @if ($tab === 'appeals' && ! $item['restricted'])
                         @php($appeal = $row['appeal'])
                         <dl class="ix-mod__facts">
                             <div><dt>Hidden because</dt><dd>{{ $item['hiddenReason'] ?? 'The reason is on the item trail below.' }}</dd></div>

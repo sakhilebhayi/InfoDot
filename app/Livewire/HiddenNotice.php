@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -19,8 +20,10 @@ use Livewire\Component;
  */
 class HiddenNotice extends Component
 {
+    #[Locked]
     public string $kind;
 
+    #[Locked]
     public int $itemId;
 
     public string $appealText = '';

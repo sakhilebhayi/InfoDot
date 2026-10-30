@@ -5,8 +5,10 @@ namespace App\Livewire;
 use App\Models\Solutions;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Knowledge\AnswerService;
 use App\Services\Knowledge\InAppNotices;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -21,15 +23,23 @@ class Comments extends Component
     public array $newCommentState = ['body' => ''];
 
     protected array $rules = [
-        'newCommentState.body' => 'required',
+        'newCommentState.body' => 'required|max:5000',
     ];
 
     protected array $validationAttributes = [
         'newCommentState.body' => 'comment',
     ];
 
+    /** Livewire restores the model without the visibility scopes, so every call asks again whether this person may still see it. */
+    private function ensureVisible(): void
+    {
+        abort_unless(auth()->check() && app(AnswerService::class)->canSeeContent($this->model, auth()->user()), 404);
+    }
+
     public function storeLike(): void
     {
+        $this->ensureVisible();
+
         $like = $this->model->likes()->where('user_id', Auth::id())->first();
 
         if ($like) {
@@ -58,7 +68,19 @@ class Comments extends Component
 
     public function postComment(): void
     {
+        $this->ensureVisible();
         $this->validate();
+
+        // A person cannot flood a thread (each comment also notifies the owner).
+        $limit = 'comment:'.auth()->id();
+
+        if (RateLimiter::tooManyAttempts($limit, 20)) {
+            $this->addError('newCommentState.body', 'You are posting too fast. Please wait a minute.');
+
+            return;
+        }
+
+        RateLimiter::hit($limit, 60);
 
         $comment = $this->model->comments()->make(['body' => $this->newCommentState['body']]);
         $comment->user()->associate(auth()->user());
@@ -84,6 +106,8 @@ class Comments extends Component
 
     public function render(): View
     {
+        $this->ensureVisible();
+
         $comments = $this->model
             ->comments()
             ->with('user', 'children.user', 'children.children')

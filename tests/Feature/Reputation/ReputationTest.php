@@ -4,6 +4,7 @@ namespace Tests\Feature\Reputation;
 
 use App\Models\ReputationAppeal;
 use App\Models\ReputationSnapshot;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Reputation\ReputationEngine;
@@ -147,7 +148,7 @@ class ReputationTest extends TestCase
     public function test_a_tier_gives_no_organisation_permission(): void
     {
         $owner = User::factory()->create();
-        $team = \App\Models\Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
+        $team = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
         $member = $this->person('Luminary');
         $team->users()->attach($member, ['role' => 'member']);
         config(['reputation.tiers.luminary.from' => 0, 'reputation.tiers.spark.from' => -1]);
