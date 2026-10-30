@@ -1,5 +1,5 @@
 {{-- Moderators: remove a seminar. $seminar, $idPrefix. Before the start everyone who paid is refunded; once it has started the moderator chooses. --}}
-<form method="POST" action="{{ route('moderation.seminars.remove', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 520px;" onsubmit="return confirm('Remove this seminar? Everyone who registered is told. The host is told why.');">@csrf
+<form method="POST" action="{{ route('moderation.seminars.remove', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 520px;" x-data @submit="confirm('Remove this seminar? Everyone who registered is told. The host is told why.') || $event.preventDefault()">@csrf
     <label class="ix-label" for="{{ $idPrefix }}-why-{{ $seminar->id }}">Reason (the host sees this)</label>
     <input class="ix-input" id="{{ $idPrefix }}-why-{{ $seminar->id }}" name="reason" type="text" minlength="10" maxlength="500" required>
     @if ($seminar->starts_at->isPast())

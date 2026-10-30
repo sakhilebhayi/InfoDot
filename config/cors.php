@@ -19,7 +19,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // The APIs under api/* are server-to-server (HMAC); no browser calls them cross-origin. R-19 pins
+    // the allowed origins to our own hosts so a stray wildcard never becomes an exposure later.
+    'allowed_origins' => [env('APP_URL', 'https://infodot.co.za'), 'https://www.infodot.co.za'],
 
     'allowed_origins_patterns' => [],
 

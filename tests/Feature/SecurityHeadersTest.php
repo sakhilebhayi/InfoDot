@@ -41,7 +41,9 @@ class SecurityHeadersTest extends TestCase
 
         $policy = (string) $r->headers->get('Content-Security-Policy');
         $this->assertStringContainsString("default-src 'self'", $policy);
-        $this->assertStringContainsString('report-uri /csp-report', $policy, 'violations keep logging while enforced');
+        $this->assertStringContainsString('report-uri /csp-report', $policy, 'legacy reporting stays for older browsers');
+        $this->assertStringContainsString('report-to csp', $policy, 'modern reporting is declared');
+        $this->assertStringContainsString('csp="', (string) $r->headers->get('Reporting-Endpoints'), 'the reporting endpoint is named');
         $this->assertStringNotContainsString('unpkg.com', $policy, 'unused origins were dropped before enforcing');
         $this->assertStringNotContainsString('gravatar', $policy);
         $this->assertFalse($r->headers->has('Content-Security-Policy-Report-Only'));
@@ -51,6 +53,34 @@ class SecurityHeadersTest extends TestCase
         $fallback = $this->get('/login');
         $this->assertStringContainsString("default-src 'self'", (string) $fallback->headers->get('Content-Security-Policy-Report-Only'));
         $this->assertFalse($fallback->headers->has('Content-Security-Policy'));
+    }
+
+    public function test_script_execution_is_nonce_based_with_no_unsafe_inline(): void
+    {
+        $r = $this->get('/login');
+        $policy = (string) $r->headers->get('Content-Security-Policy');
+
+        preg_match('/script-src ([^;]+);/', $policy, $m);
+        $scriptSrc = $m[1] ?? '';
+
+        $this->assertStringNotContainsString("'unsafe-inline'", $scriptSrc, 'inline scripts run by nonce only');
+        $this->assertMatchesRegularExpression("/'nonce-[A-Za-z0-9+\/=]+'/", $scriptSrc);
+        $this->assertStringContainsString("'unsafe-eval'", $scriptSrc, 'documented stack requirement: Livewire 3 bundles Alpine, whose evaluator needs it');
+        $this->assertStringContainsString("script-src-attr 'none'", $policy, 'native on*= handlers are banned (all were converted to Alpine directives)');
+        $this->assertStringContainsString("object-src 'none'", $policy);
+        $this->assertStringContainsString("frame-src 'self'", $policy, 'PDF previews stay same-origin');
+
+        // The page's own script tags carry the header's nonce, so they actually run under the policy.
+        preg_match("/'nonce-([A-Za-z0-9+\/=]+)'/", $scriptSrc, $n);
+        $this->assertStringContainsString('nonce="'.$n[1].'"', $r->getContent(), 'rendered scripts carry the same per-request nonce');
+    }
+
+    public function test_options_on_the_root_is_the_framework_answering_truthfully(): void
+    {
+        $r = $this->call('OPTIONS', '/');
+
+        $r->assertOk();
+        $this->assertSame('GET,HEAD', str_replace(' ', '', (string) $r->headers->get('Allow')), 'the Allow header matches the methods the route really supports');
     }
 
     public function test_violation_reports_are_accepted_without_a_session_and_keep_only_the_directive_and_host(): void

@@ -33,7 +33,8 @@ class FrontendScriptsTest extends TestCase
 
         $html = $this->actingAs($this->signedIn())->get('/questions')->assertOk()->getContent();
 
-        preg_match('/<script src="([^"]+)"\s+data-csrf/', $html, $m);
+        // Livewire's tag now carries the per-request CSP nonce between src and data-csrf (R-19).
+        preg_match('/<script src="([^"]+)"[^>]*data-csrf/', $html, $m);
         $this->assertNotEmpty($m, 'Livewire script tag not found');
         $this->assertMatchesRegularExpression('#^/livewire/livewire(\.min)?\.js\?id=#', $m[1]);
     }

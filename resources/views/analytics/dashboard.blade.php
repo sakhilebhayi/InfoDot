@@ -282,7 +282,7 @@
     </div>
 
     @if($trendTotal > 0)
-    <script>
+    <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
     document.addEventListener('DOMContentLoaded', function () {
         const el = document.getElementById('activityChart')
         if (!el || typeof ApexCharts === 'undefined') return

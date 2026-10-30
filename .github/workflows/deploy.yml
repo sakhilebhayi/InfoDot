@@ -300,8 +300,9 @@ jobs:
           # refresh the repo-owned ones, or edits to them never reach the browser (robots.txt
           # sat at its June copy until R-17). index.php is deliberately untouched — on this
           # host it carries the docroot-to-app path bootstrap.
-          for F in robots.txt; do
+          for F in robots.txt .well-known/security.txt; do
             if [ -f "public/$F" ] && [ ! -L "$DOCROOT/$F" ]; then
+              mkdir -p "$(dirname "$DOCROOT/$F")"
               cp -f "public/$F" "$DOCROOT/$F"
               echo "== docroot $F refreshed from the repo"
             fi

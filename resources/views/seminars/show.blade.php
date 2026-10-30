@@ -189,10 +189,10 @@
                                 <td>{{ $p->status === 'waitlist' ? 'Waiting list' : 'Registered' }}</td>
                                 <td>
                                     @if ($p->status === 'registered' && $seminar->isP2p() && config('seminars.p2p.enabled'))
-                                        <form method="POST" action="{{ route('seminars.p2p.remove', [$seminar, $p->user_id]) }}" style="display: inline;" onsubmit="return confirm('Remove this person from the room?');">@csrf<button class="ix-btn ix-btn--sm" type="submit">Remove from room</button></form>
+                                        <form method="POST" action="{{ route('seminars.p2p.remove', [$seminar, $p->user_id]) }}" style="display: inline;" x-data @submit="confirm('Remove this person from the room?') || $event.preventDefault()">@csrf<button class="ix-btn ix-btn--sm" type="submit">Remove from room</button></form>
                                     @endif
                                     @if ($p->status === 'registered' && $seminar->isRoom() && config('seminars.video.enabled'))
-                                        <form method="POST" action="{{ route('seminars.room.remove', [$seminar, $p->user_id]) }}" style="display: inline;" onsubmit="return confirm('Remove this person from the room?');">@csrf<button class="ix-btn ix-btn--sm" type="submit">Remove from room</button></form>
+                                        <form method="POST" action="{{ route('seminars.room.remove', [$seminar, $p->user_id]) }}" style="display: inline;" x-data @submit="confirm('Remove this person from the room?') || $event.preventDefault()">@csrf<button class="ix-btn ix-btn--sm" type="submit">Remove from room</button></form>
                                     @endif
                                     @if ($p->status === 'registered')
                                         <form method="POST" action="{{ route('seminars.attendance', [$seminar, $p->user_id]) }}">@csrf
@@ -206,7 +206,7 @@
                                         {{ match ($p->payment_status) { 'paid' => 'Paid', 'partially_refunded' => 'Part refunded', 'refunded' => 'Refunded', 'chargeback' => 'Charged back', default => 'Not paid' } }}
                                         @if ($p->dispute_status === 'open')<span class="ix-chip">Disputed</span>@endif
                                         @if (in_array($p->payment_status, ['paid', 'partially_refunded'], true) && $p->dispute_status !== 'open' && $p->refundableCents() > 0)
-                                            <form method="POST" action="{{ route('seminars.refund', [$seminar, $p->user_id]) }}" style="display: flex; gap: 6px; margin-top: 6px;" onsubmit="return confirm('Refund this amount to the attendee? This cannot be undone.');">@csrf
+                                            <form method="POST" action="{{ route('seminars.refund', [$seminar, $p->user_id]) }}" style="display: flex; gap: 6px; margin-top: 6px;" x-data @submit="confirm('Refund this amount to the attendee? This cannot be undone.') || $event.preventDefault()">@csrf
                                                 <label class="ix-sr" for="rf-{{ $p->id }}">Refund amount in rand</label>
                                                 <input class="ix-input" id="rf-{{ $p->id }}" name="amount" type="text" inputmode="decimal" placeholder="{{ number_format($p->refundableCents() / 100, 2, '.', '') }}" style="width: 110px;">
                                                 <button class="ix-btn ix-btn--sm" type="submit">Refund</button>
@@ -230,7 +230,7 @@
             @endif
 
             @if ($seminar->status !== 'cancelled' && ! $seminar->hasEnded())
-                <form method="POST" action="{{ route('seminars.cancel', $seminar) }}" style="margin-top: 20px;" onsubmit="return confirm('Cancel this seminar? Everyone who registered will be told.');">@csrf
+                <form method="POST" action="{{ route('seminars.cancel', $seminar) }}" style="margin-top: 20px;" x-data @submit="confirm('Cancel this seminar? Everyone who registered will be told.') || $event.preventDefault()">@csrf
                     <button class="ix-btn ix-btn--danger" type="submit">Cancel this seminar</button>
                 </form>
             @endif

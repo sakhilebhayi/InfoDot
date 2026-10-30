@@ -6,7 +6,7 @@
             <h1 class="ix-h1">{{ $isCredit ? 'Credit note' : 'Tax invoice' }} {{ $invoice->number }}</h1>
             <p class="ix-lede">Commission for {{ $invoice->period }}, issued {{ $invoice->issued_at->format('j M Y') }}</p>
         </div>
-        <button class="ix-btn" type="button" onclick="window.print()">Print</button>
+        <button class="ix-btn" type="button" x-data @click="window.print()">Print</button>
     </div>
     <table class="ix-table" style="max-width: 720px;">
         <tbody>

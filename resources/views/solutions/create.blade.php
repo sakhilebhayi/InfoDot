@@ -10,7 +10,7 @@
     <div class="ix-split" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)">
         <form class="ix-form" style="max-width:none" method="POST" action="{{ route('solutions.add') }}"
               x-data="{ steps: {{ json_encode(collect(old('solution_heading', ['']))->map(fn ($h, $i) => ['h' => $h, 'b' => old('solution_body.'.$i, ''), 'files' => []])->values()) }} }"
-              onkeydown="return event.key != 'Enter' || event.target.tagName === 'TEXTAREA';">
+              @keydown.enter="if ($event.target.tagName !== 'TEXTAREA') $event.preventDefault()">
             @csrf
 
             <div class="ix-field">
@@ -124,7 +124,7 @@
                 <p class="ix-ideas__sub" style="margin:0 0 8px">Ideas for {{ $industry['label'] }}. Tap one to use it as the title.</p>
                 <ul class="ix-ideas__list">
                     @foreach ($industry['solutions'] as $idea)
-                        <li><button type="button" class="ix-idea" onclick="const f=document.getElementById('solution_title'); f.value=this.dataset.t; f.focus();" data-t="{{ $idea }}">{{ $idea }}</button></li>
+                        <li><button type="button" class="ix-idea" x-data @click="const f = document.getElementById('solution_title'); f.value = $el.dataset.t; f.focus()" data-t="{{ $idea }}">{{ $idea }}</button></li>
                     @endforeach
                 </ul>
             </div>
