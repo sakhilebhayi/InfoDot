@@ -22,3 +22,6 @@ yarn-error.log
 
 # Meilisearch data (not used; search uses the database and Scout tntsearch)
 /data.ms/
+
+# PHPUnit result cache: rewritten on every run
+/.phpunit.cache/

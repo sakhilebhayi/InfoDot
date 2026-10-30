@@ -353,7 +353,8 @@ class RingDetectionTest extends TestCase
 
         $this->assertNotNull($detect);
         $this->assertSame('10 3 * * *', $detect->expression);
-        $this->assertSame('40 3 * * *', $recalc->expression);
+        $this->assertStringContainsString('--resume', $recalc->command);   // overnight, in short slices, so one run never exceeds the cron limit
+        $this->assertSame('*/10 * * * *', $recalc->expression);
     }
 
     // ---- the score discount ----------------------------------------------------------------------------------------------------

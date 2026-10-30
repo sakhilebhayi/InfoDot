@@ -40,7 +40,13 @@ class FrontendScriptsTest extends TestCase
 
     public function test_the_livewire_script_is_served_as_javascript(): void
     {
-        $this->get('/livewire/livewire.js')->assertOk();
+        // Livewire registers /livewire/livewire.js with debug on and /livewire/livewire.min.js with it off, so ask for the one the page emits.
+        $html = $this->actingAs($this->signedIn())->get('/questions')->assertOk()->getContent();
+        preg_match('#/livewire/livewire(\.min)?\.js#', $html, $m);
+        $this->assertNotEmpty($m, 'Livewire script tag not found');
+
+        $served = $this->get($m[0])->assertOk();
+        $this->assertStringContainsString('javascript', (string) $served->headers->get('content-type'));
     }
 
     public function test_no_stale_published_livewire_assets_shadow_the_package(): void

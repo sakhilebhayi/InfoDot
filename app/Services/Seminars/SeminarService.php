@@ -14,6 +14,7 @@ use App\Models\SeminarTicketEvent;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\InAppNotices;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -58,7 +59,21 @@ class SeminarService
         $starts = Carbon::parse($data['starts_at'], config('app.timezone'))->utc();
         $this->assertLead($starts);
 
-        return DB::transaction(function () use ($host, $seminar, $data, $publish, $starts) {
+        // A typed link is checked before it is accepted: a made-up or mistyped one is the commonest reason nobody can join. The check makes
+        // network calls (DNS and up to four requests of several seconds), so it runs BEFORE the transaction: inside it, a slow link held the
+        // host's row lock and a PHP worker for the whole time.
+        $delivery = in_array($data['delivery'] ?? 'link', ['room', 'p2p'], true) ? $data['delivery'] : 'link';
+        $linkCheck = null;
+
+        if ($delivery === 'link' && filled($data['join_url'] ?? null) && ($seminar === null || $seminar->join_url !== ($data['join_url'] ?? null) || $seminar->join_url_status === null)) {
+            $linkCheck = app(MeetingLinkCheck::class)->check((string) $data['join_url']);
+
+            if ($linkCheck['status'] === 'bad') {
+                throw ValidationException::withMessages(['join_url' => $linkCheck['message']]);
+            }
+        }
+
+        return DB::transaction(function () use ($host, $seminar, $data, $publish, $starts, $delivery, $linkCheck) {
             User::whereKey($host->getKey())->lockForUpdate()->first();
 
             if ($seminar !== null && $seminar->status === Seminar::CANCELLED) {
@@ -71,7 +86,6 @@ class SeminarService
                 $this->assertRoomToPublish($host);
             }
 
-            $delivery = in_array($data['delivery'] ?? 'link', ['room', 'p2p'], true) ? $data['delivery'] : 'link';
             $p2pPlan = null;
             if ($delivery === 'p2p') {
                 if (! config('seminars.p2p.enabled')) {
@@ -90,16 +104,6 @@ class SeminarService
             }
             if ($delivery === 'link' && blank($data['join_url'] ?? null)) {
                 throw ValidationException::withMessages(['join_url' => 'Add your meeting link, or choose an InfoDot room.']);
-            }
-
-            // A typed link is checked before it is accepted: a made-up or mistyped one is the commonest reason nobody can join.
-            $linkCheck = null;
-            if ($delivery === 'link' && ($seminar === null || $seminar->join_url !== ($data['join_url'] ?? null) || $seminar->join_url_status === null)) {
-                $linkCheck = app(MeetingLinkCheck::class)->check((string) $data['join_url']);
-
-                if ($linkCheck['status'] === 'bad') {
-                    throw ValidationException::withMessages(['join_url' => $linkCheck['message']]);
-                }
             }
 
             $priceCents = $this->priceFrom($host, $data['price'] ?? null);
@@ -138,12 +142,26 @@ class SeminarService
      */
     public function cancel(Seminar $seminar, string $refunds = 'all', array $refundUserIds = []): void
     {
-        if ($seminar->status === Seminar::CANCELLED) {
+        // Flip the status under the seminar's row lock and only once: a host and a moderator cancelling at the same moment would otherwise both
+        // pass an unlocked status check and both send every refund. The refunds themselves are requested outside the lock (they are network calls).
+        $wasPublished = DB::transaction(function () use ($seminar) {
+            $locked = Seminar::whereKey($seminar->id)->lockForUpdate()->first();
+
+            if ($locked === null || $locked->status === Seminar::CANCELLED) {
+                return null;
+            }
+
+            $was = $locked->isPublished();
+            $locked->forceFill(['status' => Seminar::CANCELLED, 'cancelled_at' => now()])->save();
+
+            return $was;
+        });
+
+        if ($wasPublished === null) {
             return;
         }
 
-        $wasPublished = $seminar->isPublished();
-        $seminar->forceFill(['status' => Seminar::CANCELLED, 'cancelled_at' => now()])->save();
+        $seminar->refresh();
 
         if ($wasPublished) {
             $this->tell(UserNotice::SEMINAR_CANCELLED, $seminar, 'cancelled');
@@ -375,9 +393,17 @@ class SeminarService
             throw ValidationException::withMessages(['report' => $aboutName === null ? 'This seminar cannot be reported by you.' : 'You cannot report someone in this seminar.']);
         }
 
-        return SeminarReport::firstOrCreate(['seminar_id' => $seminar->id, 'reporter_id' => $reporter->id, 'about_name' => $aboutName], [
-            'reason' => $reason, 'detail' => $detail !== null && trim($detail) !== '' ? mb_substr(trim($detail), 0, 1000) : null,
-        ]);
+        // One report per person per subject, enforced by the database (about_key: the lower-cased name, or empty for the seminar itself).
+        // Two simultaneous submits cannot both create it; the loser gets the first one back.
+        $key = $aboutName === null ? '' : mb_substr(mb_strtolower($aboutName), 0, 60);
+
+        try {
+            return SeminarReport::firstOrCreate(['seminar_id' => $seminar->id, 'reporter_id' => $reporter->id, 'about_key' => $key], [
+                'about_name' => $aboutName, 'reason' => $reason, 'detail' => $detail !== null && trim($detail) !== '' ? mb_substr(trim($detail), 0, 1000) : null,
+            ]);
+        } catch (UniqueConstraintViolationException) {
+            return SeminarReport::where('seminar_id', $seminar->id)->where('reporter_id', $reporter->id)->where('about_key', $key)->firstOrFail();
+        }
     }
 
     /**
@@ -403,10 +429,16 @@ class SeminarService
             ? SeminarReport::where('seminar_id', $seminar->id)->whereNull('about_name')->pluck('reporter_id')->map(fn ($id) => (int) $id)->all()
             : [];
 
+        $reporters = SeminarReport::where('seminar_id', $seminar->id)->where('status', 'open')->whereNull('about_name')->get(['id', 'reporter_id']);
         $seminar->forceFill(['removed_at' => now(), 'removed_reason' => mb_substr($reason, 0, 500), 'removed_refunds' => $refunds])->save();
         $this->cancel($seminar->fresh(), $refunds, $complainants);
         $this->notices->record(UserNotice::SEMINAR_REMOVED, User::find($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':removed');
         ModerationAction::record($seminar, $moderator, ModerationAction::SEMINAR_REMOVED, $reason.' [refunds: '.$refunds.']');
+
+        // Whoever reported it hears that a moderator acted (never what the moderator wrote, and never who else reported).
+        foreach ($reporters as $r) {
+            $this->notices->record(UserNotice::SEMINAR_REPORT_DECIDED, User::find($r->reporter_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':report:'.$r->id);
+        }
         SeminarReport::where('seminar_id', $seminar->id)->where('status', 'open')->update(['status' => 'actioned', 'resolved_by' => $moderator->id, 'resolution_note' => 'Seminar removed.', 'resolved_at' => now()]);
     }
 
@@ -509,6 +541,8 @@ class SeminarService
         }
 
         $report->forceFill(['status' => 'dismissed', 'resolved_by' => $moderator->id, 'resolution_note' => mb_substr($note, 0, 500), 'resolved_at' => now()])->save();
+
+        $this->notices->record(UserNotice::SEMINAR_REPORT_DECIDED, User::find($report->reporter_id), 'seminar', $report->seminar_id, 'seminar:'.$report->seminar_id.':report:'.$report->id);
     }
 
     public function linkReports(Seminar $seminar): int
@@ -599,6 +633,12 @@ class SeminarService
      */
     public function startCheckout(Seminar $seminar, User $user): string
     {
+        // The narrow switch: stops NEW ticket sales while refunds, Billing's callbacks and tickets already paid carry on. (SEMINARS_PAID_ENABLED=false
+        // stops all of those too, which strands payments already in flight.)
+        if (! config('seminars.paid.checkout_enabled', true)) {
+            throw ValidationException::withMessages(['seminar' => 'Ticket sales are paused for a short while. Please try again later. Tickets already bought are not affected.']);
+        }
+
         if ($seminar->host_id === $user->id) {
             throw ValidationException::withMessages(['seminar' => 'You are hosting this seminar.']);
         }
@@ -687,12 +727,14 @@ class SeminarService
                 return 'duplicate';
             }
 
-            $reg = SeminarRegistration::where('ticket_ref', $ticketRef)->lockForUpdate()->first();
+            // Lock order everywhere is seminar first, then registration (register, unregister, checkout and cancel do the same). Locking the
+            // registration first here could deadlock with a person's own checkout or cancel at the same moment.
+            $seminarId = SeminarRegistration::where('ticket_ref', $ticketRef)->value('seminar_id');
+            $seminar = $seminarId ? Seminar::whereKey($seminarId)->lockForUpdate()->first() : null;
+            $reg = $seminar ? SeminarRegistration::where('ticket_ref', $ticketRef)->lockForUpdate()->first() : null;
             $outcome = 'unknown';
 
             if ($reg) {
-                $seminar = Seminar::whereKey($reg->seminar_id)->lockForUpdate()->first();
-
                 if ($amountCents !== (int) $reg->amount_cents || strtoupper($currency) !== strtoupper((string) $reg->currency)) {
                     Log::warning('Seminar ticket callback did not match what was asked for.', ['ticket_ref' => $ticketRef, 'event' => $event]);
                     $outcome = 'mismatch';
@@ -860,9 +902,8 @@ class SeminarService
         foreach (Seminar::where('status', Seminar::PUBLISHED)->where('starts_at', '>', now())->where('starts_at', '<=', now()->addDay())->get() as $seminar) {
             $window = $seminar->starts_at->lte(now()->addHour()) ? 'hour' : 'day';
 
-            foreach (SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->get() as $reg) {
-                $sent += (int) $this->notices->record(UserNotice::SEMINAR_REMINDER, User::find($reg->user_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':'.$window);
-            }
+            $ids = SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->pluck('user_id')->all();
+            $sent += $this->noticeMany(UserNotice::SEMINAR_REMINDER, $ids, $seminar, 'seminar:'.$seminar->id.':'.$window);
         }
 
         return $sent;
@@ -870,11 +911,28 @@ class SeminarService
 
     private function tell(string $kind, Seminar $seminar, string $suffix): void
     {
-        $host = User::find($seminar->host_id);
+        $ids = SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('status', [SeminarRegistration::REGISTERED, SeminarRegistration::WAITLIST])->pluck('user_id')->all();
+        $this->noticeMany($kind, $ids, $seminar, 'seminar:'.$seminar->id.':'.$suffix, User::find($seminar->host_id));
+    }
 
-        foreach (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('status', [SeminarRegistration::REGISTERED, SeminarRegistration::WAITLIST])->pluck('user_id') as $uid) {
-            $this->notices->record($kind, User::find($uid), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':'.$suffix, $host);
+    /**
+     * Tells many people the same thing with three queries however many there are (it was two per person, every ten minutes for reminders):
+     * who already has this notice, then the people who do not. @param  list<int>  $userIds @return int how many were told
+     */
+    private function noticeMany(string $kind, array $userIds, Seminar $seminar, string $ref, ?User $actor = null): int
+    {
+        if ($userIds === []) {
+            return 0;
         }
+
+        $already = UserNotice::where('kind', $kind)->where('ref', mb_substr($ref, 0, 96))->whereIn('user_id', $userIds)->pluck('user_id')->all();
+        $told = 0;
+
+        foreach (User::whereIn('id', array_diff($userIds, $already))->get() as $person) {
+            $told += (int) $this->notices->record($kind, $person, 'seminar', $seminar->id, $ref, $actor);
+        }
+
+        return $told;
     }
 
     private function assertLead(Carbon $starts): void

@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\Knowledge\AchievementService;
 use App\Services\Seminars\SeminarService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -67,12 +68,18 @@ class ReputationEngine
     /** Stores the result if it differs from the last snapshot. Nothing is stored for a person who opted out. @return ?ReputationSnapshot the current snapshot */
     public function snapshot(User $user): ?ReputationSnapshot
     {
-        if ($user->optedOutOfReputation()) {
+        // Asked of the database, not of the model in hand: a person who switches the score off while a long run is under way must not get a
+        // snapshot written afterwards (forget() has already deleted theirs).
+        if ($user->optedOutOfReputation() || User::whereKey($user->id)->value('reputation_opt_out')) {
             return null;
         }
 
         $r = $this->compute($user);
         $last = ReputationSnapshot::where('user_id', $user->id)->latest('id')->first();
+        if (User::whereKey($user->id)->value('reputation_opt_out')) {
+            return null;
+        }
+
         $dims = collect($r['dimensions'])->map(fn ($d) => ['points' => $d['points'], 'score' => $d['score'], 'evidence' => $d['evidence']])->all();
 
         if ($last && $last->rules_version === $r['rules_version'] && $last->total === $r['total'] && $last->tier === $r['tier'] && $last->dimensions == $dims) {
@@ -80,6 +87,25 @@ class ReputationEngine
         }
 
         return ReputationSnapshot::create(['user_id' => $user->id, 'rules_version' => $r['rules_version'], 'total' => $r['total'], 'tier' => $r['tier'], 'dimensions' => $dims, 'computed_at' => now()]);
+    }
+
+    /** Keeps each person's newest snapshots only (config reputation.keep_snapshots, default 60); the history is for explaining a number, not for ever. @return int rows removed */
+    public function pruneSnapshots(?int $keep = null): int
+    {
+        $keep ??= (int) config('reputation.keep_snapshots', 60);
+        $removed = 0;
+
+        $heavy = ReputationSnapshot::query()->select('user_id')->groupBy('user_id')->havingRaw('count(*) > ?', [$keep])->pluck('user_id');
+
+        foreach ($heavy as $uid) {
+            $cutoff = ReputationSnapshot::where('user_id', $uid)->orderByDesc('id')->skip($keep)->take(1)->value('id');
+
+            if ($cutoff !== null) {
+                $removed += ReputationSnapshot::where('user_id', $uid)->where('id', '<=', $cutoff)->delete();
+            }
+        }
+
+        return $removed;
     }
 
     /** Opting out removes everything stored about the person's score, including appeals; opting back in starts fresh. */
@@ -182,6 +208,32 @@ class ReputationEngine
      *
      * @return array<int, true>
      */
+    /** The open and confirmed flags, read once a minute at most: the nightly run asked for them again for every person. */
+    private function effectiveFlags(): Collection
+    {
+        if ($this->flagsLoadedAt === null || $this->flagsVersion !== self::$flagsGeneration || $this->flagsLoadedAt->diffInSeconds(now()) > 60) {
+            $this->flagsVersion = self::$flagsGeneration;
+            $this->flags = ReputationRingFlag::effective()->get(['member_ids']);
+            $this->flagsLoadedAt = now();
+        }
+
+        return $this->flags;
+    }
+
+    private ?Carbon $flagsLoadedAt = null;
+
+    private int $flagsVersion = 0;
+
+    /** Bumped whenever a ring flag is saved or deleted, so a cached list is never used after a moderator's decision. */
+    private static int $flagsGeneration = 1;
+
+    public static function ringFlagsChanged(): void
+    {
+        self::$flagsGeneration++;
+    }
+
+    private ?Collection $flags = null;
+
     private function ringMates(User $user): array
     {
         if (! config('reputation.rings.enabled', true)) {
@@ -189,7 +241,7 @@ class ReputationEngine
         }
 
         $mates = [];
-        foreach (ReputationRingFlag::effective()->get(['member_ids']) as $flag) {
+        foreach ($this->effectiveFlags() as $flag) {
             $members = array_map('intval', $flag->member_ids);
 
             if (in_array((int) $user->id, $members, true)) {

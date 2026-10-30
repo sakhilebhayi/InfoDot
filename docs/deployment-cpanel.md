@@ -18,7 +18,7 @@ Nothing in the repository says how the host copy got there. On 2026-10-17 its `/
 1. Repository secrets: `DEPLOY_HOST` (`infodot.co.za`), `DEPLOY_USER` (`infodotc`), `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS`. `DEPLOY_PATH` is optional; set it to `/home/infodotc/public_html/main` to skip discovery. Without it the app is the one `artisan` found under `~/public_html` (or `~/infodot.co.za` if that exists).
 2. Run **Drift Report**. Read it.
 3. Run **Deploy to Production** with `confirm=adopt` once. It makes a rollback copy, turns the folder into a checkout of `main` without deleting anything untracked (`.env`, `storage/`), installs dependencies, ships the build, forces `APP_DEBUG=false`, lists pending migrations (it does **not** run them unless you also pass `migrate=migrate`), rebuilds the caches and checks the site.
-4. InfoDot's database is PostgreSQL in production (to be confirmed from the host `.env`), which the rollback tarball does **not** cover. Take a database backup in cPanel, check the pending-migration list, then run `confirm=deploy`.
+4. InfoDot's database is **MySQL** in production according to `docs/programme/BACKUPS.md` (its backups are `mysqldump` archives). Confirm it from the host once: `php artisan tinker --execute="echo DB::connection()->getDriverName();"`. The rollback tarball does **not** cover the database. Take a database backup (`dot-backup run`, or cPanel), check the pending-migration list, then run `confirm=deploy`.
 
 ## Every release after that
 
@@ -30,13 +30,13 @@ Run **Deploy to Production** with `confirm=deploy`. It runs the test gate first.
 - A failure after maintenance mode starts **leaves the site down** and says so. A failure before it says the site is untouched.
 - `APP_DEBUG` is forced to `false` on every run. `APP_ENV=local` and an `http://` `APP_URL` are reported as warnings.
 - Git hooks on the host never run during a release.
-- No cron lines: InfoDot has no scheduled commands and no queued jobs.
+- **Scheduled commands exist** (about twenty: points and Memory outboxes, refund and hold sweeps, reminders, pruning, `ops:check`, a one-minute scheduler heartbeat). They run through the host's cron runner (`schedule:run` every minute). `php artisan schedule:list` shows them. There is no queue worker: `QUEUE_CONNECTION=sync`, and background work is `afterResponse` closures plus those commands.
 - The smoke check requests `/`, `/login`, `/up`, the built CSS and a harmless `POST /up`, and fails the run if any is wrong or a debug page is served. `/up` is a GET-only route added for this.
 - Platform URLs come from `config/ecosystem.php` and can be overridden with `DOT_*_URL`; the SSO handoff only sends tokens to `ECOSYSTEM_TRUSTED_DOMAINS` (see PR #3).
 
 ## Not covered yet
 
-No Dot.Brain guardian health document, no backups, no scheduler probe.
+No Dot.Brain guardian health document. Backups are described in `docs/programme/BACKUPS.md`; the scheduler is watched by the heartbeat that `/ready` reports (`docs/programme/enterprise/policies/INCIDENT_RESPONSE.md`).
 
 ## The app folder is inside the web root: the guard block (S-2h)
 

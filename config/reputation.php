@@ -19,6 +19,9 @@
 */
 
 return [
+    // How many snapshots of one person are kept (the newest). The history is there to explain a number, not to grow for ever.
+    'keep_snapshots' => (int) env('REPUTATION_KEEP_SNAPSHOTS', 60),
+
     'enabled' => (bool) env('REPUTATION_ENABLED', false),
 
     'version' => 1,

@@ -4,7 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon|null $attended_at
+ * @property Carbon|null $hold_expires_at
+ * @property Carbon|null $paid_at
+ * @property Carbon|null $refund_requested_at
+ * @property Carbon|null $refunded_at
+ * @property Carbon|null $disputed_at
+ */
 class SeminarRegistration extends Model
 {
     public const REGISTERED = 'registered';

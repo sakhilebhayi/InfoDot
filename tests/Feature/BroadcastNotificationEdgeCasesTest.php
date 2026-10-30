@@ -61,17 +61,16 @@ class BroadcastNotificationEdgeCasesTest extends TestCase
         $response->assertStatus(403);
     }
 
-    public function test_authenticated_user_can_authorize_question_channel(): void
+    public function test_the_question_channel_authorises_nobody_until_it_is_scoped_to_a_company(): void
     {
+        // It used to say yes to every signed-in person. The event is not dispatched today; if it ever is, a private question must not go out
+        // to everyone, so the channel refuses until it checks the company and the item's visibility.
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post('/broadcasting/auth', [
+        $this->actingAs($user)->post('/broadcasting/auth', [
             'socket_id' => '1234.5678',
             'channel_name' => 'private-question',
-        ]);
-
-        $response->assertOk();
-        $response->assertSee('auth');
+        ])->assertStatus(403);
     }
 
     public function test_database_notification_channel_stores_standard_payload_shape(): void

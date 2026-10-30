@@ -43,14 +43,18 @@ class BillingEntitlements
 
         $key = 'licence:billing:'.$team->uuid;
 
-        if (Cache::has($key)) {
+        // A failed read is remembered briefly too. Without that, every seat screen view and every invitation waited out the 3-second timeout
+        // for as long as Billing was down.
+        if (Cache::has($key) || Cache::has($key.':failed')) {
             return false;
         }
 
         $payload = $this->fetch((string) $team->uuid);
 
         if ($payload === null) {
-            return false; // not cached, so the next view tries again; the stored licence is untouched
+            Cache::put($key.':failed', true, (int) config('licensing.billing.failure_backoff_seconds', 30));
+
+            return false; // the stored licence is untouched; it is tried again after the short back-off
         }
 
         Cache::put($key, true, (int) config('licensing.billing.cache_seconds', 300));

@@ -2,17 +2,29 @@
 
 namespace App\Models;
 
+use App\Services\Reputation\ReputationEngine;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * An advisory flag: these accounts accept each other's answers more than ordinary help would. Open and confirmed flags lower
  * the weight of acceptances between their members in the knowledge score (see ReputationEngine); dismissed ones do nothing.
  * Nothing here is shown to the people in it.
  */
+/**
+ * @property Carbon|null $detected_at
+ * @property Carbon|null $reviewed_at
+ */
 class ReputationRingFlag extends Model
 {
+    protected static function booted(): void
+    {
+        static::saved(fn () => ReputationEngine::ringFlagsChanged());
+        static::deleted(fn () => ReputationEngine::ringFlagsChanged());
+    }
+
     public const OPEN = 'open';
 
     public const DISMISSED = 'dismissed';

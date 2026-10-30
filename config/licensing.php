@@ -36,6 +36,7 @@ return [
         'secret' => env('BILLING_ENTITLEMENT_SECRET'),
         'timeout_seconds' => 3,
         'cache_seconds' => 300,
+        'failure_backoff_seconds' => (int) env('LICENCE_BILLING_FAILURE_BACKOFF', 30),   // after a failed read, do not ask again for this long
     ],
 
     // Whether a real payment backend is connected for seat purchases. Off until Dot.Billing (or the chosen provider) can charge and confirm.

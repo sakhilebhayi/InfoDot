@@ -49,6 +49,9 @@ return [
         // BILLING_MARKETPLACE_AGREEMENT_VERSION; changing the wording means a new version that every host must accept again.
         'agreement_version' => env('SEMINARS_HOST_AGREEMENT_VERSION', 'v1'),
         'agreement_approved' => (bool) env('SEMINARS_HOST_AGREEMENT_APPROVED', false),
+        // Pauses NEW ticket sales only. Refunds, Billing's callbacks and tickets already paid keep working. Set false to stop sales in an incident
+        // without the side effects of SEMINARS_PAID_ENABLED=false.
+        'checkout_enabled' => (bool) env('SEMINARS_CHECKOUT_ENABLED', true),
 
         'refund_hours_before' => (int) env('SEMINARS_REFUND_HOURS_BEFORE', 24),
 

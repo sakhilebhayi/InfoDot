@@ -12,6 +12,6 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'csp-report',   // sent by the browser, not by a form; it carries no session and changes nothing
     ];
 }

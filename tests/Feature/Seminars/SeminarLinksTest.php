@@ -119,6 +119,20 @@ class SeminarLinksTest extends TestCase
         $this->assertStringContainsString('could not open', $r['message']);
     }
 
+    public function test_a_redirect_cannot_lead_to_another_port_an_ip_address_or_an_address_with_a_password(): void
+    {
+        foreach (['https://b.example.test:8443/x', 'https://user:secret@b.example.test/x', 'https://93.184.216.34/x'] as $target) {
+            Cache::flush();
+            $this->fake(['a.example.test/*' => Http::response('', 302, ['Location' => $target]), '*' => Http::response('', 200)]);
+
+            $this->assertSame('warn', $this->check('https://a.example.test/start')['status'], "must not follow $target");
+        }
+
+        Cache::flush();
+        $this->fake(['a.example.test/*' => Http::response('', 302, ['Location' => 'https://b.example.test:443/x']), 'b.example.test/*' => Http::response('', 200)]);
+        $this->assertSame('ok', $this->check('https://a.example.test/start')['status'], 'the standard port is fine');
+    }
+
     public function test_redirects_are_followed_a_few_hops_and_never_into_private_space_or_off_https(): void
     {
         $this->fake(['a.example.test/*' => Http::response('', 302, ['Location' => 'https://b.example.test/x']), 'b.example.test/*' => Http::response('', 200)]);
