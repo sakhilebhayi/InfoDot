@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Passport\Passport;
 
 /**
  * The failures that used to be silent: events parked after their last retry, deliveries that never went out, refunds Billing never confirmed,
@@ -45,6 +46,9 @@ class OpsCheck
 
         // RFC 9116 requires a future Expires in security.txt; this starts shouting 30 days before it lapses (R-19).
         $found['security_txt_expiring_30d'] = $this->securityTxtExpiring() ? 1 : 0;
+
+        // R-20: without the OIDC signing keys every platform sign-in fails; deploy generates them once.
+        $found['sso_signing_keys_missing'] = is_file(Passport::keyPath('oauth-private.key')) ? 0 : 1;
 
         return $found;
     }

@@ -253,6 +253,13 @@ jobs:
 
           composer install --no-interaction --optimize-autoloader --no-dev
 
+          # ---- OIDC signing keys (R-20). Generated once; storage/ is untracked so they survive
+          # every later deploy's git reset --hard. passport:keys never overwrites existing keys.
+          if [ ! -f storage/oauth-private.key ]; then
+            $PHP artisan passport:keys
+            chmod 600 storage/oauth-private.key
+          fi
+
           # ---- production invariants
           # APP_DEBUG=true makes any error, even a harmless 405, answer every
           # visitor with a ~840 KB debug page (ecosystem audit D9). Forced off

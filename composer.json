@@ -2,14 +2,19 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.4",
         "guzzlehttp/guzzle": "^7.10",
+        "jeremy379/laravel-openid-connect": "^3.3",
         "laravel/cashier": "^16.6",
         "laravel/framework": "^12.0",
         "laravel/jetstream": "^5.0",
+        "laravel/passport": "^13.10",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",
         "laravel/scout": "^10.25",
@@ -63,7 +68,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "laravel/passport"
+            ]
         }
     },
     "config": {
