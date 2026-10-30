@@ -37,4 +37,18 @@ return [
         // Requests per minute per address on the candidates endpoint.
         'per_minute' => (int) env('KNOWLEDGE_CANDIDATES_PER_MINUTE', 60),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | The official InfoDot account (R-14)
+    |--------------------------------------------------------------------------
+    | Platform-curated library entries (database/knowledge/, published by `knowledge:seed`) belong to this account, so
+    | readers can tell official guidance from community contributions: the author shows as this name with an "Official"
+    | mark. The command creates the account on first run, verified, with a random password nobody holds; it is not a
+    | moderator and cannot verify its own entries — that stays with human moderators.
+    */
+    'official' => [
+        'email' => env('KNOWLEDGE_OFFICIAL_EMAIL', 'library@infodot.co.za'),
+        'name' => env('KNOWLEDGE_OFFICIAL_NAME', 'InfoDot'),
+    ],
 ];

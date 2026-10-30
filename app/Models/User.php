@@ -86,6 +86,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return (bool) $this->is_moderator;
     }
 
+    /** The official InfoDot account that platform-curated library entries are published under (R-14). */
+    public function isOfficialAccount(): bool
+    {
+        $email = (string) config('knowledge.official.email');
+
+        return $email !== '' && strcasecmp((string) $this->email, $email) === 0;
+    }
+
     public function toSearchableArray(): array
     {
         return [
