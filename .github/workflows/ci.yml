@@ -271,3 +271,16 @@ jobs:
           DB_USERNAME: root
           DB_PASSWORD: root
         run: php artisan migrate:fresh --force
+
+      # SQLite (the test suite) ignores row locks, so the lockForUpdate() calls that guard seats, seminar capacity and answer
+      # acceptance are only proven here: several PHP processes race the same rows on this real MySQL and the invariants are checked.
+      - name: Concurrency invariants on MySQL (seats, capacity, accept)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: infodot_ci
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          CACHE_DRIVER: file
+        run: php tools/mysql-concurrency-test.php
