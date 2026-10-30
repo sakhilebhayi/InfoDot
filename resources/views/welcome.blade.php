@@ -10,6 +10,14 @@
     $first = auth()->check() ? \Illuminate\Support\Str::of(auth()->user()->name)->before(' ')->toString() : null;
 @endphp
 <x-public-layout landing title="InfoDot" description="Search practical business solutions from people who have done it, or ask your own question. InfoDot is where the Dot.Eco-system keeps what it knows about running a business.">
+    {{-- Who publishes this site, for search engines (R-17 §13.3). Facts only: name, address, contact page. --}}
+    <script type="application/ld+json">{!! json_encode([
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            ['@type' => 'Organization', 'name' => 'InfoDot', 'url' => route('welcome'), 'logo' => asset('img/logo1.png')],
+            ['@type' => 'WebSite', 'name' => 'InfoDot', 'url' => route('welcome')],
+        ],
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
     <section class="lp-hero" aria-labelledby="hero-title">
         <img class="lp-hero__bg" src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-960.jpg') }} 960w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }} 1920w" sizes="100vw" width="1920" height="1280" alt="" fetchpriority="high" decoding="async">
         <div class="lp-hero__veil" aria-hidden="true"></div>

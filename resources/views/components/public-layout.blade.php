@@ -6,8 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="color-scheme" content="light dark">
-    <title>{{ $title === 'InfoDot' ? 'InfoDot: build your business with collective intelligence' : $title.' · InfoDot' }}</title>
-    @if ($description)<meta name="description" content="{{ $description }}">@endif
+    @php($fullTitle = $title === 'InfoDot' ? 'InfoDot: build your business with collective intelligence' : $title.' · InfoDot')
+    @php($metaDescription = $description ?? 'InfoDot: ask business questions, follow verified solutions, and open every Dot platform with one account.')
+    <title>{{ $fullTitle }}</title>
+    <meta name="description" content="{{ $metaDescription }}">
+    {{-- One address per page (R-17 §13): the canonical strips query strings so filters and trackers never split the page's identity. --}}
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta property="og:site_name" content="InfoDot">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ $fullTitle }}">
+    <meta property="og:description" content="{{ $metaDescription }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta name="twitter:card" content="summary">
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
