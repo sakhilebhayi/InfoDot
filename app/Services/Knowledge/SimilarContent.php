@@ -95,8 +95,11 @@ class SimilarContent
      * Public candidates from the search index (ranked), plus the person's own company's content the index never holds.
      * Everything is re-read through the visibility scope, so nothing leaks whatever the index answers.
      *
-     * @param  class-string<Questions>|class-string<Solutions>  $model
+     * @template TModel of Questions|Solutions
+     *
+     * @param  class-string<TModel>  $model
      * @param  list<string>  $terms
+     * @return Collection<int, TModel>
      */
     private function candidates(string $model, string $text, array $terms, User $viewer): Collection
     {
@@ -119,7 +122,10 @@ class SimilarContent
             ->latest()->limit(15)->pluck('id')->all();
 
         // The scoped read is what decides visibility; index hits the person may not see are simply not found.
-        return $model::with('user')->whereIn('id', array_unique(array_merge($ids, $likeIds)))->get();
+        /** @var Collection<int, TModel> $found */
+        $found = $model::with('user')->whereIn('id', array_unique(array_merge($ids, $likeIds)))->get();
+
+        return $found;
     }
 
     /** @return list<string> the words that carry meaning, lowercased, deduplicated, capped */

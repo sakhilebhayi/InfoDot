@@ -124,17 +124,18 @@ class ImprovementService
                 $solution->solution_description = $improvement->proposed_body;
             } elseif ($improvement->target_kind === 'step') {
                 $step = Steps::where('solution_id', $solution->id)->findOrFail($improvement->step_id);
+                // setAttribute: the legacy 'array' cast on these string columns confuses static analysis, not the data.
                 if ($improvement->proposed_heading !== null) {
-                    $step->solution_heading = $improvement->proposed_heading;
+                    $step->setAttribute('solution_heading', $improvement->proposed_heading);
                 }
-                $step->solution_body = $improvement->proposed_body;
+                $step->setAttribute('solution_body', $improvement->proposed_body);
                 $step->save();
             } else { // new-step
                 $step = new Steps;
                 $step->user_id = $improvement->proposer_id;
                 $step->solution_id = $solution->id;
-                $step->solution_heading = (string) $improvement->proposed_heading;
-                $step->solution_body = $improvement->proposed_body;
+                $step->setAttribute('solution_heading', (string) $improvement->proposed_heading);
+                $step->setAttribute('solution_body', $improvement->proposed_body);
                 $step->save();
                 $improvement->forceFill(['step_id' => $step->id])->save();
             }
@@ -218,8 +219,10 @@ class ImprovementService
     private function stepsSnapshot(Solutions $solution): array
     {
         return Steps::where('solution_id', $solution->id)->orderBy('id')->get()
-            ->map(fn (Steps $step) => ['heading' => (string) $step->solution_heading, 'body' => (string) $step->solution_body])
-            ->values()->all();
+            ->map(fn (Steps $step) => [
+                'heading' => (string) $step->getAttribute('solution_heading'),
+                'body' => (string) $step->getAttribute('solution_body'),
+            ])->values()->all();
     }
 
     private function tell(string $kind, ?User $recipient, Solutions $solution, SolutionImprovement $improvement, User $actor): void

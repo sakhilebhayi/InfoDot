@@ -45,16 +45,19 @@ class SolutionImprovement extends Model
         return ['decided_at' => 'datetime'];
     }
 
+    /** @return BelongsTo<Solutions, $this> */
     public function solution(): BelongsTo
     {
         return $this->belongsTo(Solutions::class, 'solution_id')->withoutGlobalScopes();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function proposer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'proposer_id');
     }
 
+    /** @return BelongsTo<Steps, $this> */
     public function step(): BelongsTo
     {
         return $this->belongsTo(Steps::class, 'step_id');

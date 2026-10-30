@@ -45,7 +45,8 @@ document.addEventListener('alpine:init', () => {
             try {
                 const r = await fetch(opts.url + '?q=' + encodeURIComponent(term), { headers: jsonHeaders, signal: this.controller.signal });
                 if (!r.ok) { this.open = false; return; }
-                this.results = await r.json();
+                const rows = await r.json();
+                this.results.splice(0, this.results.length, ...rows);
                 this.highlight = 0;
                 this.open = this.results.length > 0;
                 this.area = area;
@@ -136,7 +137,8 @@ document.addEventListener('alpine:init', () => {
             try {
                 const r = await fetch(opts.url + '?q=' + encodeURIComponent(term), { headers: jsonHeaders, signal: this.controller.signal });
                 if (!r.ok) { this.open = false; return; }
-                this.results = await r.json();
+                const rows = await r.json();
+                this.results.splice(0, this.results.length, ...rows);
                 this.open = true;
             } catch { /* aborted or offline */ }
             finally { this.searching = false; }
@@ -226,7 +228,9 @@ document.addEventListener('alpine:init', () => {
                     signal: this.controller.signal,
                 });
                 if (!r.ok) return;
-                this.results = await r.json();
+                // Replace in place: reassigning the array can leave effects registered on the root element stale.
+                const rows = await r.json();
+                this.results.splice(0, this.results.length, ...rows);
                 this.checked = true;
             } catch { /* aborted or offline: say nothing */ }
         },

@@ -169,9 +169,10 @@ class PagesController extends Controller
         // Few hits by exact words: offer close matches by meaning (the same scorer the composers use), so a problem
         // described differently from the original wording is still found (R-16 phase 6).
         $related = [];
-        if (Auth::check() && $textSearch && trim($search_term) !== '' && request()->query('qpage') === null && request()->query('spage') === null
+        $viewer = Auth::user();
+        if ($viewer instanceof User && $textSearch && trim($search_term) !== '' && request()->query('qpage') === null && request()->query('spage') === null
             && ($results['questions']->total() + $results['solutions']->total()) < (int) config('search.related_fallback_below')) {
-            $related = app(SimilarContent::class)->find(Auth::user(), 'question', $search_term);
+            $related = app(SimilarContent::class)->find($viewer, 'question', $search_term);
         }
 
         $elapsedMs = (int) round((microtime(true) - $startedAt) * 1000);

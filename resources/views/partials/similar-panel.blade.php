@@ -12,7 +12,7 @@
         <template x-for="r in results" :key="r.kind + r.id">
             <li class="ix-similar__item" :class="{ 'is-strong': r.label === 'very-similar' }">
                 <span class="ix-similar__badge" x-text="r.label === 'very-similar' ? 'Very similar' : 'Related'"></span>
-                <a :href="r.url" target="_blank" rel="noopener">
+                <a x-bind:href="r.url" target="_blank" rel="noopener">
                     <span x-text="(r.kind === 'question' ? 'Question: ' : 'Solution: ') + r.title"></span>
                 </a>
                 <small>

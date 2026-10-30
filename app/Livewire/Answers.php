@@ -65,6 +65,7 @@ class Answers extends Component
     }
 
     /** The solutions the picker chose, re-read under this person's own visibility: what they may not see is not found. */
+    /** @return Collection<int, Solutions> */
     private function recommendedSolutions(): Collection
     {
         $json = trim($this->recommendationsPayload);
@@ -84,6 +85,7 @@ class Answers extends Component
         return Solutions::whereIn('id', $ids)->get();
     }
 
+    /** @param  Collection<int, Solutions>  $solutions */
     private function recommend(Answer $answer, Collection $solutions): void
     {
         foreach ($solutions as $solution) {

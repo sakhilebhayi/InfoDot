@@ -25,17 +25,20 @@ class SolutionRecommendation extends Model
         return ['created_at' => 'datetime'];
     }
 
+    /** @return BelongsTo<Answer, $this> */
     public function answer(): BelongsTo
     {
         return $this->belongsTo(Answer::class);
     }
 
+    /** @return BelongsTo<Solutions, $this> */
     public function solution(): BelongsTo
     {
         // Unscoped: whether the viewer may see it is decided where the card is drawn.
         return $this->belongsTo(Solutions::class, 'solution_id')->withoutGlobalScopes();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function recommender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recommender_id');

@@ -31,6 +31,7 @@ class SolutionVersion extends Model
         return ['steps' => 'array', 'created_at' => 'datetime'];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function contributor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'contributor_id');

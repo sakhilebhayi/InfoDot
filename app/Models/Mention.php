@@ -33,11 +33,13 @@ class Mention extends Model
         return $this->morphTo();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function mentionedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'mentioned_user_id');
     }
 
+    /** @return BelongsTo<Team, $this> */
     public function mentionedTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'mentioned_team_id');
