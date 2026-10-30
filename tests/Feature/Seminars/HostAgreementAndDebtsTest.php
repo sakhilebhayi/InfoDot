@@ -16,6 +16,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -48,7 +49,7 @@ class HostAgreementAndDebtsTest extends TestCase
         return app(SeminarService::class)->save($host, null, ['title' => 'Pricing', 'summary' => 'A practical hour.', 'starts_at' => now()->addDays(3)->format('Y-m-d\TH:i'), 'duration_minutes' => 60, 'join_url' => 'https://meet.example.test/room', 'price' => $price], true);
     }
 
-    private function billingCallback(array $body): \Illuminate\Testing\TestResponse
+    private function billingCallback(array $body): TestResponse
     {
         $raw = json_encode($body);
         $h = Signature::headers('cb', $raw);

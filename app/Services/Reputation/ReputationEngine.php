@@ -13,6 +13,7 @@ use App\Models\Solutions;
 use App\Models\User;
 use App\Services\Knowledge\AchievementService;
 use App\Services\Seminars\SeminarService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -87,7 +88,7 @@ class ReputationEngine
         ReputationAppeal::where('user_id', $user->id)->delete();
         ReputationSnapshot::where('user_id', $user->id)->delete();
         // Groups flagged as boosting each other that include this person go too: nothing about them is kept once they switch the score off.
-        \App\Models\ReputationRingFlag::all()->filter(fn ($f) => in_array($user->id, (array) $f->member_ids, true))->each->delete();
+        ReputationRingFlag::all()->filter(fn ($f) => in_array($user->id, (array) $f->member_ids, true))->each->delete();
     }
 
     /** @return array<string, mixed> everything stored about one person's score, for them to keep (POPIA section 23) */
@@ -97,7 +98,7 @@ class ReputationEngine
             'person' => $user->email,
             'exported_at' => now()->toIso8601String(),
             'snapshots' => ReputationSnapshot::where('user_id', $user->id)->orderBy('id')->get()->map(fn ($s) => ['computed_at' => $s->computed_at?->toIso8601String(), 'rules_version' => $s->rules_version, 'total' => $s->total, 'tier' => $s->tier, 'dimensions' => $s->dimensions])->all(),
-            'ring_flags' => \App\Models\ReputationRingFlag::all()->filter(fn ($f) => in_array($user->id, (array) $f->member_ids, true))->map(fn ($f) => [
+            'ring_flags' => ReputationRingFlag::all()->filter(fn ($f) => in_array($user->id, (array) $f->member_ids, true))->map(fn ($f) => [
                 'kind' => $f->kind, 'members_in_group' => count((array) $f->member_ids), 'status' => $f->status, 'detected_at' => $f->detected_at?->toIso8601String(),
                 'reviewed_at' => $f->reviewed_at?->toIso8601String(), 'review_note' => $f->review_note,
             ])->values()->all(),
@@ -209,6 +210,6 @@ class ReputationEngine
             ->merge(Answer::withoutGlobalScope('moderation-visibility')->where('user_id', $user->id)->where('status', Answer::PUBLISHED)->whereNull('hidden_at')->where('is_self_answer', false)->whereIn('question_id', $publicQuestionIds)->where('created_at', '>=', $since)->pluck('created_at'))
             ->merge(Solutions::withoutGlobalScopes()->where('user_id', $user->id)->where('visibility', Solutions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->where('created_at', '>=', $since)->pluck('created_at'));
 
-        return $dates->map(fn ($d) => \Illuminate\Support\Carbon::parse($d)->format('o-W'))->unique()->count();
+        return $dates->map(fn ($d) => Carbon::parse($d)->format('o-W'))->unique()->count();
     }
 }

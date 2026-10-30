@@ -9,6 +9,7 @@ use App\Services\Reputation\ReputationEngine;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /** Your own progress, and nobody else's. Off until REPUTATION_ENABLED. Every action is scoped to the signed-in person; none takes a user id. */
 class ReputationController extends Controller
@@ -73,17 +74,18 @@ class ReputationController extends Controller
     }
 
     /** Everything stored about your own score, as a file you keep. */
-    public function export(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function export(Request $request): StreamedResponse
     {
         $this->switchedOn();
         $payload = $this->engine->export($request->user());
 
-        return response()->streamDownload(fn () => print(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)), 'my-knowledge-score.json', ['Content-Type' => 'application/json']);
+        return response()->streamDownload(fn () => print (json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)), 'my-knowledge-score.json', ['Content-Type' => 'application/json']);
     }
 
     public function appeals(): View
     {
         $this->switchedOn();
+
         return view('reputation.appeals', ['appeals' => ReputationAppeal::with('user')->where('status', 'open')->oldest('id')->get(), 'engine' => $this->engine]);
     }
 

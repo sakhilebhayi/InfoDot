@@ -8,6 +8,8 @@ use App\Models\UserNotice;
 use App\Services\Seminars\MeetingLinkCheck;
 use App\Services\Seminars\SeminarService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -43,7 +45,7 @@ class SeminarLinksTest extends TestCase
     /** Http::fake keeps earlier fakes (the first match wins), so start from a clean client each time. */
     private function fake(array $map): void
     {
-        Http::swap(new \Illuminate\Http\Client\Factory);
+        Http::swap(new Factory);
         Http::fake($map);
     }
 
@@ -110,7 +112,7 @@ class SeminarLinksTest extends TestCase
 
     public function test_a_page_that_cannot_be_reached_is_a_warning_not_a_refusal(): void
     {
-        $this->fake(['*' => fn () => throw new \Illuminate\Http\Client\ConnectionException('timeout')]);
+        $this->fake(['*' => fn () => throw new ConnectionException('timeout')]);
 
         $r = $this->check('https://meet.example.test/slow');
         $this->assertSame('warn', $r['status']);
@@ -313,4 +315,3 @@ class SeminarLinksTest extends TestCase
         $this->assertSame(['link', null, null], [$s->delivery, $s->p2p_quality, $s->p2p_uplink_kbps]);
     }
 }
-

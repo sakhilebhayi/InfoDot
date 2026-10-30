@@ -3,6 +3,7 @@
 namespace Tests\Feature\Seminars;
 
 use App\Models\Seminar;
+use App\Models\SeminarHostAgreement;
 use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarRegistration;
 use App\Models\User;
@@ -14,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -40,7 +42,7 @@ class PaidSeminarsTest extends TestCase
     {
         $h = $this->person('Host');
         SeminarPayoutAccount::create(['user_id' => $h->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
-        \App\Models\SeminarHostAgreement::create(['user_id' => $h->id, 'version' => 'v1', 'accepted_at' => now()]);
+        SeminarHostAgreement::create(['user_id' => $h->id, 'version' => 'v1', 'accepted_at' => now()]);
 
         return $h;
     }
@@ -61,7 +63,7 @@ class PaidSeminarsTest extends TestCase
         ]);
     }
 
-    private function billingCallback(string $event, string $ref, int $amount = 20000, string $currency = 'ZAR', ?string $secret = null): \Illuminate\Testing\TestResponse
+    private function billingCallback(string $event, string $ref, int $amount = 20000, string $currency = 'ZAR', ?string $secret = null): TestResponse
     {
         $body = json_encode(['event' => $event, 'ticket_ref' => $ref, 'reference' => 'ref_1', 'amount_cents' => $amount, 'currency' => $currency]);
         $h = Signature::headers($secret ?? self::CALLBACK_SECRET, $body);

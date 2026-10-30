@@ -135,4 +135,3 @@ return [
         'max_redirects' => 3,
     ],
 ];
-

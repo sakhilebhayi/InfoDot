@@ -3,8 +3,8 @@
 namespace App\Policies;
 
 use App\Models\Team;
-use App\Support\TeamRoles;
 use App\Models\User;
+use App\Support\TeamRoles;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TeamPolicy

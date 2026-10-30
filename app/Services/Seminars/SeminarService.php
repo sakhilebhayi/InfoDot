@@ -2,17 +2,19 @@
 
 namespace App\Services\Seminars;
 
-use App\Models\Seminar;
 use App\Models\ModerationAction;
+use App\Models\Seminar;
 use App\Models\SeminarFeedback;
+use App\Models\SeminarHostAgreement;
+use App\Models\SeminarPayoutAccount;
+use App\Models\SeminarRegistration;
 use App\Models\SeminarRemovalAppeal;
 use App\Models\SeminarReport;
-use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarTicketEvent;
-use App\Models\SeminarRegistration;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\InAppNotices;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -53,7 +55,7 @@ class SeminarService
     /** @param  array<string, mixed>  $data  validated by rules() */
     public function save(User $host, ?Seminar $seminar, array $data, bool $publish): Seminar
     {
-        $starts = \Illuminate\Support\Carbon::parse($data['starts_at'], config('app.timezone'))->utc();
+        $starts = Carbon::parse($data['starts_at'], config('app.timezone'))->utc();
         $this->assertLead($starts);
 
         return DB::transaction(function () use ($host, $seminar, $data, $publish, $starts) {
@@ -508,7 +510,6 @@ class SeminarService
         ];
     }
 
-
     /** Parses the host's price. Null (free) unless paid seminars are on, the host has a payout account and the amount is within bounds. */
     private function priceFrom(User $host, mixed $price): ?int
     {
@@ -528,7 +529,7 @@ class SeminarService
             throw ValidationException::withMessages(['price' => 'Paid seminars open once the host agreement has been approved. We will tell you.']);
         }
 
-        if (! \App\Models\SeminarHostAgreement::where('user_id', $host->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists()) {
+        if (! SeminarHostAgreement::where('user_id', $host->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists()) {
             throw ValidationException::withMessages(['price' => 'Read and accept the host agreement (on the page where you set up payouts) before you charge for a seminar.']);
         }
 
@@ -821,7 +822,7 @@ class SeminarService
         }
     }
 
-    private function assertLead(\Illuminate\Support\Carbon $starts): void
+    private function assertLead(Carbon $starts): void
     {
         if ($starts->lt(now()->addMinutes((int) config('seminars.min_lead_minutes', 60)))) {
             throw ValidationException::withMessages(['starts_at' => 'A seminar must start at least '.config('seminars.min_lead_minutes', 60).' minutes from now.']);

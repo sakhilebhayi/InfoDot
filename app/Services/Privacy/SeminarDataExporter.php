@@ -3,6 +3,7 @@
 namespace App\Services\Privacy;
 
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,7 +17,7 @@ class SeminarDataExporter
     {
         $id = $user->id;
         $titles = fn (array $ids) => $ids === [] ? collect() : DB::table('seminars')->whereIn('id', array_unique($ids))->pluck('title', 'id');
-        $iso = fn ($v) => $v === null ? null : \Illuminate\Support\Carbon::parse($v)->toIso8601String();
+        $iso = fn ($v) => $v === null ? null : Carbon::parse($v)->toIso8601String();
 
         $hosted = DB::table('seminars')->where('host_id', $id)->orderBy('id')->get();
         $regs = DB::table('seminar_registrations')->where('user_id', $id)->orderBy('id')->get();

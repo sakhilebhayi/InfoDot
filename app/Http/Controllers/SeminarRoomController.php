@@ -11,6 +11,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /** The seminar's InfoDot room. The page is open only to the host and to people who registered, inside the window; the token is fetched when they connect. */
 class SeminarRoomController extends Controller
@@ -47,7 +48,7 @@ class SeminarRoomController extends Controller
 
         try {
             $target = User::findOrFail($person);
-            \Illuminate\Support\Facades\DB::table('seminar_room_bans')->insertOrIgnore(['seminar_id' => $seminar->id, 'user_id' => $target->id, 'created_at' => now()]);   // they cannot get a new token
+            DB::table('seminar_room_bans')->insertOrIgnore(['seminar_id' => $seminar->id, 'user_id' => $target->id, 'created_at' => now()]);   // they cannot get a new token
             $this->livekit->remove($seminar, $target);
         } catch (MarketplaceUnavailable $e) {
             return back()->withErrors(['room' => $e->getMessage()]);

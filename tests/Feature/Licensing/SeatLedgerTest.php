@@ -4,6 +4,7 @@ namespace Tests\Feature\Licensing;
 
 use App\Actions\Jetstream\AddTeamMember;
 use App\Actions\Jetstream\InviteTeamMember;
+use App\Actions\Jetstream\RemoveTeamMember;
 use App\Models\Team;
 use App\Models\TeamLicence;
 use App\Models\TeamLicenceEvent;
@@ -200,7 +201,7 @@ class SeatLedgerTest extends TestCase
         $team->users()->attach($m, ['role' => 'member']);
 
         $this->actingAs($owner);
-        app(\App\Actions\Jetstream\RemoveTeamMember::class)->remove($owner, $team, $m);
+        app(RemoveTeamMember::class)->remove($owner, $team, $m);
 
         $this->assertDatabaseHas('team_licence_events', ['team_id' => $team->id, 'type' => 'left']);
         $this->assertNotNull(User::find($m->id));

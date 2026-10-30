@@ -4,11 +4,11 @@ namespace App\Actions\Jetstream;
 
 use App\Services\Licensing\SeatLedger;
 use App\Support\TeamRoles;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Laravel\Jetstream\Contracts\InvitesTeamMembers;
 use Laravel\Jetstream\Events\InvitingTeamMember;
 use Laravel\Jetstream\Jetstream;

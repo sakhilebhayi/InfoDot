@@ -18,9 +18,13 @@ use App\Models\User;
 final class TeamRoles
 {
     public const OWNER = 'owner';
+
     public const ADMIN = 'admin';
+
     public const MANAGER = 'manager';
+
     public const MEMBER = 'member';
+
     public const LEGACY_EDITOR = 'editor';
 
     /** The roles a person can be given today, in the order shown. */

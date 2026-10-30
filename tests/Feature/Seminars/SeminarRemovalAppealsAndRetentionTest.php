@@ -11,7 +11,9 @@ use App\Models\SeminarReport;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Privacy\SeminarDataExporter;
+use App\Services\Privacy\SeminarRecordPruner;
 use App\Services\Seminars\SeminarService;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -284,7 +286,7 @@ class SeminarRemovalAppealsAndRetentionTest extends TestCase
 
     private function prune(bool $dry = false): array
     {
-        return app(\App\Services\Privacy\SeminarRecordPruner::class)->run($dry);
+        return app(SeminarRecordPruner::class)->run($dry);
     }
 
     public function test_room_data_goes_thirty_days_after_the_seminar_ended_and_not_before(): void
@@ -392,7 +394,7 @@ class SeminarRemovalAppealsAndRetentionTest extends TestCase
     public function test_the_command_prints_counts_only_and_is_scheduled_daily(): void
     {
         $this->artisan('seminars:prune --dry')->assertSuccessful();
-        $this->assertTrue(collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())->contains(fn ($e) => str_contains($e->command, 'seminars:prune') && $e->expression === '50 3 * * *'));
+        $this->assertTrue(collect(app(Schedule::class)->events())->contains(fn ($e) => str_contains($e->command, 'seminars:prune') && $e->expression === '50 3 * * *'));
     }
 
     public function test_deleting_a_host_deletes_their_removal_appeal(): void

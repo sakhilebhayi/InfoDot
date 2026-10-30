@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -50,7 +51,7 @@ class SeminarVideoTest extends TestCase
         return json_decode(base64_decode(strtr($p, '-_', '+/')), true);
     }
 
-    private function webhook(array $body, ?string $secret = null, ?string $tamper = null): \Illuminate\Testing\TestResponse
+    private function webhook(array $body, ?string $secret = null, ?string $tamper = null): TestResponse
     {
         $raw = json_encode($body);
         $b64 = fn ($x) => rtrim(strtr(base64_encode($x), '+/', '-_'), '=');
@@ -264,4 +265,3 @@ class SeminarVideoTest extends TestCase
         $this->assertSame('registered', SeminarRegistration::where('user_id', $guest->id)->value('status'), 'still registered; only barred from the room');
     }
 }
-

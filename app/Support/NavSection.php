@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Questions;
+use App\Models\Seminar;
 use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\Topic;
@@ -85,7 +86,7 @@ class NavSection
             request()->routeIs('moderation.friction') => [['Moderation', route('moderation')], ['Where people struggle', null]],
             request()->routeIs('moderation.library*') => [['Moderation', route('moderation')], ['Verified library', null]],
             request()->routeIs('library') => [$knowledge, ['Library', null]],
-            request()->routeIs('seminars.show') => [$knowledge, ['Seminars', route('seminars')], [self::title(\App\Models\Seminar::class, 'title', request()->route('seminar')?->getKey()), null]],
+            request()->routeIs('seminars.show') => [$knowledge, ['Seminars', route('seminars')], [self::title(Seminar::class, 'title', request()->route('seminar')?->getKey()), null]],
             request()->routeIs('seminars*') => [$knowledge, ['Seminars', null]],
             request()->routeIs('solution_search_results') => [$knowledge, ['Search', null]],
             request()->routeIs('topics') => [$knowledge, ['Topics', null]],

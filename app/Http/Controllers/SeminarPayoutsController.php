@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SeminarHostAgreement;
+use App\Models\SeminarHostDebt;
 use App\Models\SeminarPayoutAccount;
+use App\Models\SeminarSellerProfile;
 use App\Services\Seminars\BillingMarketplace;
 use App\Services\Seminars\MarketplaceUnavailable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
  * Where a host says where their ticket earnings are paid. The account number goes straight to Dot.Billing (and on to Paystack) and is
@@ -34,12 +38,12 @@ class SeminarPayoutsController extends Controller
 
         return view('seminars.payouts', [
             'account' => SeminarPayoutAccount::where('user_id', $request->user()->id)->first(), 'banks' => $banks,
-            'seller' => \App\Models\SeminarSellerProfile::where('user_id', $request->user()->id)->first(),
+            'seller' => SeminarSellerProfile::where('user_id', $request->user()->id)->first(),
             'agreementApproved' => (bool) config('seminars.paid.agreement_approved'),
             'agreementVersion' => (string) config('seminars.paid.agreement_version', 'v1'),
-            'agreementText' => config('seminars.paid.agreement_approved') ? \Illuminate\Support\Str::markdown((string) @file_get_contents(resource_path('markdown/host-agreement.md')), ['html_input' => 'strip', 'allow_unsafe_links' => false]) : null,
-            'accepted' => \App\Models\SeminarHostAgreement::where('user_id', $request->user()->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->first(),
-            'debts' => \App\Models\SeminarHostDebt::where('user_id', $request->user()->id)->orderByDesc('id')->get(),
+            'agreementText' => config('seminars.paid.agreement_approved') ? Str::markdown((string) @file_get_contents(resource_path('markdown/host-agreement.md')), ['html_input' => 'strip', 'allow_unsafe_links' => false]) : null,
+            'accepted' => SeminarHostAgreement::where('user_id', $request->user()->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->first(),
+            'debts' => SeminarHostDebt::where('user_id', $request->user()->id)->orderByDesc('id')->get(),
             'percent' => (int) config('seminars.paid.platform_percent', 10),
         ]);
     }
@@ -64,7 +68,7 @@ class SeminarPayoutsController extends Controller
         ]);
 
         // A host who already accepted the current agreement does not have to accept it again for a new payout account: tell Billing.
-        $accepted = \App\Models\SeminarHostAgreement::where('user_id', $request->user()->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists();
+        $accepted = SeminarHostAgreement::where('user_id', $request->user()->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists();
 
         if ($accepted) {
             try {
@@ -87,7 +91,7 @@ class SeminarPayoutsController extends Controller
             'authorises_receipts' => ['nullable', 'boolean'],
         ], ['vat_number.regex' => 'A South African VAT number is 10 digits and starts with 4. Leave it empty if you are not registered for VAT.']);
 
-        \App\Models\SeminarSellerProfile::updateOrCreate(['user_id' => $request->user()->id], [
+        SeminarSellerProfile::updateOrCreate(['user_id' => $request->user()->id], [
             'trading_name' => $data['trading_name'], 'vat_number' => $data['vat_number'] ?: null, 'authorises_receipts' => $request->boolean('authorises_receipts'),
         ]);
 
@@ -114,7 +118,7 @@ class SeminarPayoutsController extends Controller
             return back()->withErrors(['accept' => $e->getMessage()]);
         }
 
-        \App\Models\SeminarHostAgreement::firstOrCreate(['user_id' => $request->user()->id, 'version' => $version], ['accepted_at' => now()]);
+        SeminarHostAgreement::firstOrCreate(['user_id' => $request->user()->id, 'version' => $version], ['accepted_at' => now()]);
 
         return redirect()->route('seminars.payouts')->with('seminar_notice', 'Thank you. You can now charge for seminars.');
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\Seminars\HostDebtLedger;
 use App\Services\Seminars\SeminarService;
 use App\Support\Knowledge\Signature;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +15,7 @@ use Illuminate\Http\Request;
  */
 class SeminarTicketEventsController extends Controller
 {
-    public function __invoke(Request $request, SeminarService $seminars, \App\Services\Seminars\HostDebtLedger $debts): JsonResponse
+    public function __invoke(Request $request, SeminarService $seminars, HostDebtLedger $debts): JsonResponse
     {
         $secret = (string) config('seminars.paid.callback_secret');
 

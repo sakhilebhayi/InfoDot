@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Licensing;
 
+use App\Actions\Jetstream\InviteTeamMember;
 use App\Models\Team;
 use App\Models\TeamLicence;
 use App\Models\User;
@@ -9,9 +10,12 @@ use App\Services\Licensing\BillingEntitlements;
 use App\Services\Licensing\SeatLedger;
 use App\Support\Knowledge\Signature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /** Purchased seats come only from Dot.Billing's signed answer; any failure leaves the licence untouched. */
@@ -104,7 +108,7 @@ class BillingEntitlementsTest extends TestCase
         }
 
         Cache::flush();
-        Http::fake(['billing.test/*' => fn () => throw new \Illuminate\Http\Client\ConnectionException('down')]);
+        Http::fake(['billing.test/*' => fn () => throw new ConnectionException('down')]);
         $this->assertFalse(app(BillingEntitlements::class)->sync($team));
         $this->assertSame(4, TeamLicence::where('team_id', $team->id)->value('purchased_seats'));
     }
@@ -142,10 +146,10 @@ class BillingEntitlementsTest extends TestCase
         $team = $this->company();
         $owner = $team->owner;
         Http::fake(['billing.test/*' => Http::response($this->answer(['seat_limit' => 5]))]);
-        \Illuminate\Support\Facades\Mail::fake();
+        Mail::fake();
 
         foreach (['a', 'b', 'c', 'd'] as $n) {
-            app(\App\Actions\Jetstream\InviteTeamMember::class)->invite($owner, $team, "$n@example.test", 'member');
+            app(InviteTeamMember::class)->invite($owner, $team, "$n@example.test", 'member');
         }
 
         $this->assertSame(4, $team->teamInvitations()->count(), 'five paid seats allow the owner plus four invitations');
@@ -155,13 +159,13 @@ class BillingEntitlementsTest extends TestCase
     {
         $team = $this->company();
         Http::fake(['billing.test/*' => Http::response(['error' => 'not_found'], 404)]);
-        \Illuminate\Support\Facades\Log::spy();
+        Log::spy();
 
         $this->assertFalse(app(BillingEntitlements::class)->sync($team));
         $this->assertFalse(app(BillingEntitlements::class)->sync($team));
 
         Http::assertSentCount(1);
-        \Illuminate\Support\Facades\Log::shouldNotHaveReceived('warning');
+        Log::shouldNotHaveReceived('warning');
         $this->assertSame(3, app(SeatLedger::class)->summary($team)['capacity']);
     }
 
