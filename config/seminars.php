@@ -92,7 +92,8 @@ return [
         'url' => env('LIVEKIT_URL'),                    // wss://live.example.org (the browser connects here)
         'api_key' => env('LIVEKIT_API_KEY'),
         'api_secret' => env('LIVEKIT_API_SECRET'),
-        'token_minutes_after_end' => 15,                // a token stays valid until the seminar ends plus this
+        'token_minutes_after_end' => 15,                // a token is never valid beyond the seminar's end plus this
+        'token_ttl_minutes' => (int) env('SEMINARS_VIDEO_TOKEN_TTL_MINUTES', 10),   // and never for longer than this: it cannot be revoked, so it is short
         'max_participants' => (int) env('SEMINARS_VIDEO_MAX_PARTICIPANTS', 100),
     ],
 

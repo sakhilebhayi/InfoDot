@@ -6,7 +6,7 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 
 | | Baseline | After PR #161 |
 |---|---|---|
-| Total (100) | **36** | **64** |
+| Total (100) | **36** | **66** |
 | Release blockers open | 3 (payment races, account takeover from a satellite, untested restore) | **1** (untested restore, C-10) once deployed; 3 until then |
 | Lowest dimension against the 7/10 floor | Performance 0/8, Reliability 1/9 | Performance 2/8, Reliability 6/9 |
 | 9+/10 reached | No | **No.** Needs 90+, every dimension at 7/10 or better, no blocker |
@@ -21,7 +21,7 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 | | Secrets (2) | 1 | 2 | Scanning on; the committed `APP_KEY` was checked on the host and is not the live key (B-01); Pusher credentials in the same file not yet compared |
 | | Rate limiting (2) | 1 | 2 | Auth forms, per-route buckets and the Livewire header search fan-out (B-07) |
 | | Headers and session (2) | 0 | 1 | Headers added; no CSP; secure cookie set by env only |
-| Tenancy (15) | Cross-team test per class of tenant data (9) | 4 | 5 | Existing `TenantIsolationTest` plus removed-member Livewire test; no test yet for cache keys, exports, or the LiveKit token |
+| Tenancy (15) | Cross-team test per class of tenant data (9) | 4 | 7 | Existing `TenantIsolationTest` (knowledge), the removed-member Livewire test, and `SeminarAccessMatrixTest` (seminar edit/cancel/refund, attendee and rating data, meeting link, receipts, invoices, debts, exports, moderation). Still no test for cache keys; the LiveKit token is short-lived but not revocable
 | | Role matrix incl. revoked/removed (4) | 2 | 3 | Invitation cancel and personal-team tests added |
 | | Lifecycle keeps personal identity (2) | 1 | 1 | Not fully tested |
 | Code quality (8) | PHPStan baseline that only shrinks, in CI (4) | 1 | 4 | 154 legacy findings remain; `phpstan-baseline.max` and `tools/check-phpstan-baseline.sh` make the baseline unable to grow |
@@ -51,7 +51,7 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 | | Incident procedure and processor list (1) | 0 | 0 | |
 | Business and UX (6) | Journeys as automated or recorded end-to-end tests (4) | 1 | 1 | Feature tests and a puppeteer room test exist; not whole journeys |
 | | Accessibility and mobile checks recorded (2) | 0 | 0 | |
-| **Total (100)** | | **36** | **64** | |
+| **Total (100)** | | **36** | **66** | |
 
 ## What would move the score most (largest gap first)
 
