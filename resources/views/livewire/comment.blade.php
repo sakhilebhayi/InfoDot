@@ -7,6 +7,7 @@
             <span>{{ $comment->created_at->diffForHumans() }}</span>
         </div>
         <p>{!! nl2br(e($comment->body)) !!}</p>
+    @include('partials.mention-chips', ['item' => $comment])
     @include('attachments._list', ['attachments' => $comment->attachments, 'compact' => true])
     </div>
 </div>

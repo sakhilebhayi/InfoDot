@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasAttachments;
+use App\Models\Concerns\HasMentions;
 use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,7 @@ use Illuminate\Support\Str;
 class Answer extends Model
 {
     use HasAttachments;
+    use HasMentions;
     use IsModerated;
     use SoftDeletes;
 
@@ -37,6 +39,12 @@ class Answer extends Model
     public static function hashBody(string $body): string
     {
         return hash('sha256', mb_strtolower(preg_replace('/\s+/u', ' ', trim($body))));
+    }
+
+    /** Existing solutions offered with this answer (R-16): references to the originals, drawn as cards. */
+    public function recommendations()
+    {
+        return $this->hasMany(SolutionRecommendation::class, 'answer_id');
     }
 
     public function question(): BelongsTo

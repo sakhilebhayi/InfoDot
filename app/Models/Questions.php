@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasKnowledgeVisibility;
+use App\Models\Concerns\HasMentions;
 use App\Models\Concerns\HasTopics;
 use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Builder;
@@ -33,6 +34,7 @@ class Questions extends Model
     use HasAttachments;
     use HasFactory;
     use HasKnowledgeVisibility;
+    use HasMentions;
     use HasTopics;
     use IsModerated;
     use Searchable;

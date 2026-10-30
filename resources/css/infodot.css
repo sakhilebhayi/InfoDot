@@ -7139,3 +7139,24 @@ body {
 .ix-tried__insights { margin: 0; padding: 8px 12px; border-left: 3px solid var(--ix-ok, #1f6b45); background: var(--ix-ok-wash, rgba(31,107,69,0.12)); color: var(--ix-text-2); font-size: 0.92rem; }
 .ix-tried__people { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.9rem; }
 .ix-tried__people a { color: var(--ix-text); }
+
+/* ------------------------------------------------------------------ mentions, pickers, recommendation cards (R-16) */
+.ix-mention { position: relative; display: grid; gap: 6px; }
+.ix-mention__hint { margin: 0; font-size: 0.8rem; }
+.ix-mention__drop { position: absolute; z-index: 30; top: 100%; left: 0; right: 0; max-height: 260px; overflow: auto; border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius-sm); background: var(--ix-panel); box-shadow: 0 10px 24px rgba(10, 12, 13, 0.18); }
+.ix-mention__option { display: flex; justify-content: space-between; gap: 10px; width: 100%; padding: 8px 12px; border: 0; background: none; text-align: left; cursor: pointer; color: var(--ix-text); }
+.ix-mention__option small { color: var(--ix-text-3); white-space: nowrap; }
+.ix-mention__option.is-active, .ix-mention__option:hover { background: var(--ix-hover); }
+.ix-mention__option:focus-visible { outline: 2px solid var(--ix-focus); outline-offset: -2px; }
+.ix-mention__chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.ix-mention__chips .ix-chip { display: inline-flex; align-items: center; gap: 6px; }
+.ix-mention__x { border: 0; background: none; cursor: pointer; color: inherit; font-size: 14px; line-height: 1; padding: 0 2px; }
+.ix-mention__x:focus-visible { outline: 2px solid var(--ix-focus); outline-offset: 1px; }
+.ix-mentioned { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 0; }
+.ix-mentioned__label { color: var(--ix-text-3); font-size: 0.85rem; }
+.ix-reccard { display: grid; gap: 4px; margin-top: 12px; padding: 10px 12px; border: 1px solid var(--ix-rule); border-left: 3px solid var(--ix-knowledge); border-radius: var(--ix-radius-sm); background: var(--ix-panel); text-decoration: none; color: var(--ix-text); }
+.ix-reccard:hover { background: var(--ix-hover); }
+.ix-reccard__kind { display: inline-flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--ix-text-3); text-transform: none; }
+.ix-reccard__kind .material-symbols-rounded { font-size: 15px; }
+.ix-reccard__title { font-weight: 600; }
+.ix-reccard__meta { font-size: 0.85rem; color: var(--ix-text-2); }

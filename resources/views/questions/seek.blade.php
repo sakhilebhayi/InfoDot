@@ -18,9 +18,12 @@
 
         <div class="ix-field">
             <label class="ix-label" for="description">Details</label>
-            <textarea class="ix-textarea" name="description" id="description" rows="7" placeholder="{{ $industry['ask_details'] }}" required @error('description') aria-invalid="true" aria-describedby="description-error" @enderror>{{ old('description') }}</textarea>
+            <x-mention-box name="mentions">
+                <textarea class="ix-textarea" name="description" id="description" rows="7" placeholder="{{ $industry['ask_details'] }}" required @error('description') aria-invalid="true" aria-describedby="description-error" @enderror>{{ old('description') }}</textarea>
+            </x-mention-box>
             <p class="ix-hint">What are you trying to achieve, what happened, since when, and what have you tried? Attach the evidence below — a report, photos of the problem, a short video.</p>
             @error('description')<p class="ix-error" id="description-error">{{ $message }}</p>@enderror
+            @error('mentions')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         </div>
 
         @include('attachments._uploader', ['idPrefix' => 'ask', 'old' => old('attachments')])

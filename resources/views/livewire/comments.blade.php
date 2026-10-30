@@ -25,10 +25,13 @@
 
     <form wire:submit.prevent="postComment" style="margin-top:20px;max-width:680px">
         <label for="comment" class="ix-label">Your reply</label>
-        <textarea name="comment" id="comment" rows="4" wire:model="newCommentState.body" class="ix-textarea" placeholder="Share what worked, or what you would try next."></textarea>
+        <x-mention-box payload-model="mentionsPayload" clear-event="comment-attachments-clear">
+            <textarea name="comment" id="comment" rows="4" wire:model="newCommentState.body" class="ix-textarea" placeholder="Share what worked, or what you would try next."></textarea>
+        </x-mention-box>
         @error('newCommentState.body')
             <p class="ix-error">{{ $message }}</p>
         @enderror
+        @error('mentions')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         @include('attachments._uploader', ['idPrefix' => 'comment', 'payloadModel' => 'attachmentsPayload', 'clearEvent' => 'comment-attachments-clear', 'label' => 'Add supporting files'])
         @error('attachments')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         <div class="ix-actions" style="margin-top:12px">

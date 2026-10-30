@@ -25,6 +25,8 @@
                 <div class="ix-statement"><p class="ix-prose">{!! nl2br(e($question->description)) !!}</p></div>
             @endif
 
+            @include('partials.mention-chips', ['item' => $question])
+
             @include('attachments._list', ['attachments' => $question->attachments])
 
             <livewire:answers :question="$question" />
