@@ -93,7 +93,7 @@
             @error('body') <p class="ix-error" role="alert">{{ $message }}</p> @enderror
             @error('mentions') <p class="ix-error" role="alert">{{ $message }}</p> @enderror
 
-            <div class="ix-field" x-data="solutionPicker({ url: @js(route('solutions.picker')), max: 3 })" x-on:answer-attachments-clear.window="clearAll()" @click.outside="open = false">
+            <div class="ix-field" x-data="solutionPicker({ url: @js(route('solutions.picker')), max: 3, debounce: {{ (int) config('search.debounce_ms') }} })" x-on:answer-attachments-clear.window="clearAll()" @click.outside="open = false">
                 <label class="ix-label" for="answer-recommend">Recommend an existing solution <span style="color:var(--ix-text-3);font-weight:400">(optional)</span></label>
                 <input class="ix-input" id="answer-recommend" type="search" x-model="query" @input="onInput()" placeholder="Search published solutions by title or tag" autocomplete="off">
                 <div class="ix-mention__drop" x-show="open" x-cloak role="listbox" aria-label="Solutions to recommend">

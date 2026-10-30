@@ -4,7 +4,7 @@
     plain forms; $clearEvent empties the chips after a Livewire submit.
 --}}
 @props(['payloadModel' => null, 'name' => 'mentions', 'clearEvent' => null])
-<div class="ix-mention" x-data="mentionPicker({ url: @js(route('mentions.search')), max: {{ \App\Services\Knowledge\MentionService::MAX_PER_ITEM }} })"
+<div class="ix-mention" x-data="mentionPicker({ url: @js(route('mentions.search')), max: {{ \App\Services\Knowledge\MentionService::MAX_PER_ITEM }}, debounce: {{ (int) config('search.debounce_ms') }} })"
      @input="onInput($event)" @keydown="onKey($event)" @click.outside="open = false"
      @if ($clearEvent) x-on:{{ $clearEvent }}.window="clearAll()" @endif>
     {{ $slot }}

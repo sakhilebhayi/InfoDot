@@ -107,3 +107,19 @@
             </section>
         @endif
     @endif
+
+{{-- Few hits by exact words: close matches by meaning, from the same scorer the composers use (R-16). --}}
+@if (! empty($related))
+    <section class="ix-similar" style="margin-top:18px" aria-labelledby="related-h">
+        <p class="ix-similar__head" id="related-h"><span class="material-symbols-rounded" aria-hidden="true">travel_explore</span> Close matches for what you described</p>
+        <ul class="ix-similar__list">
+            @foreach ($related as $row)
+                <li class="ix-similar__item {{ $row['label'] === 'very-similar' ? 'is-strong' : '' }}">
+                    <span class="ix-similar__badge">{{ $row['label'] === 'very-similar' ? 'Very similar' : 'Related' }}</span>
+                    <a href="{{ $row['url'] }}">{{ $row['kind'] === 'question' ? 'Question: ' : 'Solution: ' }}{{ $row['title'] }}</a>
+                    <small>{{ $row['excerpt'] }} — {{ $row['author'] }}, {{ $row['date'] }}@if ($row['tried']), tried by {{ $row['tried'] }}@endif</small>
+                </li>
+            @endforeach
+        </ul>
+    </section>
+@endif

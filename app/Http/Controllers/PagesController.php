@@ -9,6 +9,7 @@ use App\Models\Solutions;
 use App\Models\Topic;
 use App\Models\User;
 use App\Services\Knowledge\AchievementService;
+use App\Services\Knowledge\SimilarContent;
 use App\Services\Knowledge\TopicBadges;
 use App\Services\Points\PointsClient;
 use App\Services\Ux\UxSignals;
@@ -106,6 +107,7 @@ class PagesController extends Controller
     {
         $search_term = (string) request()->query('search', '');
         $driver = \DB::connection()->getDriverName();
+        $startedAt = microtime(true);
 
         // ?topic=slug narrows the results to one topic. With a topic and no words, everything under the topic is listed.
         $topicSlug = trim((string) request()->query('topic', ''));
@@ -164,8 +166,22 @@ class PagesController extends Controller
             app(UxSignals::class)->record($found === 0 ? 'search.empty' : 'search.run', '/solution-results', $found === 0 ? 'failure' : 'success');
         }
 
+        // Few hits by exact words: offer close matches by meaning (the same scorer the composers use), so a problem
+        // described differently from the original wording is still found (R-16 phase 6).
+        $related = [];
+        if (Auth::check() && $textSearch && trim($search_term) !== '' && request()->query('qpage') === null && request()->query('spage') === null
+            && ($results['questions']->total() + $results['solutions']->total()) < (int) config('search.related_fallback_below')) {
+            $related = app(SimilarContent::class)->find(Auth::user(), 'question', $search_term);
+        }
+
+        $elapsedMs = (int) round((microtime(true) - $startedAt) * 1000);
+        if ($elapsedMs >= (int) config('search.log_slow_ms')) {
+            \Log::info('Slow search', ['ms' => $elapsedMs, 'terms' => mb_strlen($search_term), 'topic' => $topicSlug !== '']);
+        }
+
         return view('search_results', [
             'results' => $results,
+            'related' => $related,
             'searchTerm' => $search_term,
             'topicSlug' => $topicSlug,
             'topicChoices' => Topic::active()->ordered()->get(),
