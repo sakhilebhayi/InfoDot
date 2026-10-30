@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Services\Ops\OpsCheck;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -15,6 +16,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // Contribution events waiting for the Dot Points ledger (retried with growing delays; see RewardOutbox).
+        // Proof that the scheduler is running (read by /ready), and a check for failures that used to be silent.
+        $schedule->call(fn () => app(OpsCheck::class)->beat())->name('ops-heartbeat')->everyMinute();
+        $schedule->command('ops:check')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('points:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
 
         // Emails people before some of their points lapse (the points service pulls no addresses; see the command).

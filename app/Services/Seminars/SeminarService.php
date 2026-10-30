@@ -153,14 +153,20 @@ class SeminarService
         app(SeminarHostPoints::class)->reverseIfAwarded($seminar);
 
         // Everyone who paid is refunded in full; anyone part-way through paying is released.
-        foreach (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'pending'])->get() as $reg) {
-            if ($reg->payment_status === 'paid') {
-                if ($refunds === 'none' || ($refunds === 'complainants' && ! in_array($reg->user_id, $refundUserIds, true))) {
-                    continue;
-                }
+        $regs = SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'pending'])->get();
+        $refundable = $regs->filter(fn ($r) => $r->payment_status === 'paid'
+            && ! ($refunds === 'none' || ($refunds === 'complainants' && ! in_array($r->user_id, $refundUserIds, true))));
 
-                $reg->forceFill(['refund_requested_at' => $reg->refund_requested_at ?? now()])->save();
-                $this->requestRefund($reg);
+        // Mark every refund as requested BEFORE the first call to Billing. Each call can take seconds; if this request is cut off part-way
+        // (a PHP time limit), the rest are already marked and `seminars:sweep-payments` asks Billing for them. Marked afterwards, they would be
+        // forgotten: paid, with no refund requested.
+        SeminarRegistration::whereIn('id', $refundable->pluck('id'))->whereNull('refund_requested_at')->update(['refund_requested_at' => now()]);
+
+        foreach ($regs as $reg) {
+            if ($reg->payment_status === 'paid') {
+                if ($refundable->contains('id', $reg->id)) {
+                    $this->requestRefund($reg->fresh());
+                }
             } else {
                 $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null, 'checkout_url' => null])->save();
 

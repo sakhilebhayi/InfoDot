@@ -85,18 +85,6 @@ parameters:
 			path: app/Http/Controllers/PeopleController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$team_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Questions/QuestionsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$visibility\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Questions/QuestionsController.php
-
-		-
 			message: '#^Parameter \#1 \$team of static method App\\Support\\Industry\:\:for\(\) expects App\\Models\\Team\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
 			identifier: argument.type
 			count: 2
@@ -137,18 +125,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/SeminarsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$team_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Solutions/SolutionsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$visibility\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Solutions/SolutionsController.php
 
 		-
 			message: '#^Parameter \#1 \$team of static method App\\Support\\Industry\:\:for\(\) expects App\\Models\\Team\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
@@ -251,18 +227,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 2
 			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Queue.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Queue.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden_reason\.$#'
@@ -391,34 +355,10 @@ parameters:
 			path: app/Models/LibraryEntry.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$hidden_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Questions.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$visibility\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Questions.php
-
-		-
 			message: '#^Cannot call method copy\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 2
 			path: app/Models/Seminar.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$hidden_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Solutions.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$visibility\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Solutions.php
 
 		-
 			message: '#^Property App\\Providers\\EventServiceProvider\:\:\$listen \(array\<class\-string, array\<int, class\-string\>\>\) does not accept default value of type array\<string, list\<list\<string\>\|string\>\>\.$#'
@@ -431,36 +371,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Services/Knowledge/AchievementService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$team\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$team_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$visibility\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$team\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$team_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/AnswerService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
@@ -596,12 +506,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$verifier\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$visibility\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/Library/LibraryService.php
@@ -761,18 +665,6 @@ parameters:
 			identifier: method.nonObject
 			count: 1
 			path: app/Services/Seminars/SeminarService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$hidden_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Support/Knowledge/ModerationStatus.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Questions\:\:\$hidden_reason\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Support/Knowledge/ModerationStatus.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_title\.$#'

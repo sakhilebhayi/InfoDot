@@ -7,8 +7,23 @@ use App\Models\Concerns\HasTopics;
 use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int|null $team_id
+ * @property string $visibility public or private (a company's own)
+ * @property string $solution_title
+ * @property string|null $solution_description
+ * @property string|null $tags
+ * @property Carbon|null $hidden_at
+ * @property int|null $hidden_by
+ * @property string|null $hidden_reason
+ * @property-read User $user
+ * @property-read Team|null $team
+ */
 class Solutions extends Model
 {
     use HasFactory;

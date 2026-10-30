@@ -8,8 +8,23 @@ use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int|null $team_id
+ * @property string $visibility public or private (a company's own)
+ * @property string $question
+ * @property string|null $description
+ * @property int|null $status 1 once an answer is accepted
+ * @property Carbon|null $hidden_at
+ * @property int|null $hidden_by
+ * @property string|null $hidden_reason
+ * @property-read User $user
+ * @property-read Team|null $team
+ */
 class Questions extends Model
 {
     use HasFactory;

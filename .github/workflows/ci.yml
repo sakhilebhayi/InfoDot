@@ -70,6 +70,9 @@ jobs:
       - name: Dependency advisories (high or critical block the release)
         run: bash tools/ci-composer-audit.sh
 
+      - name: The static-analysis baseline may only shrink
+        run: bash tools/check-phpstan-baseline.sh
+
       - name: Static analysis (PHPStan level 5 against the baseline)
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 

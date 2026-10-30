@@ -12,6 +12,7 @@ use App\Support\Reference;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -51,6 +52,17 @@ class Search extends Component
         }
 
         $this->externalFor = $query;
+
+        // Each new query asks several other platforms over the network. A person typing cannot ask more than 40 times a minute.
+        $key = 'search-external:'.Auth::id();
+
+        if (RateLimiter::tooManyAttempts($key, 40)) {
+            $this->external = [];
+
+            return;
+        }
+
+        RateLimiter::hit($key, 60);
         $this->external = PlatformSearch::search(Auth::user(), Auth::user()->currentTeam, $query);
     }
 
