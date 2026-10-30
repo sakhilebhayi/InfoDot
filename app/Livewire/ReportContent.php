@@ -8,13 +8,16 @@ use App\Services\Knowledge\ModerationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /** "Report" on a question or solution (answers report from their own list). AnswerService decides; this only asks. */
 class ReportContent extends Component
 {
+    #[Locked]
     public string $kind;
 
+    #[Locked]
     public int $itemId;
 
     public bool $open = false;

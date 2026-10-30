@@ -58,7 +58,8 @@ class TeamPolicy
      */
     public function addTeamMember(User $user, Team $team)
     {
-        return TeamRoles::assignableBy($user, $team) !== [];
+        // A personal workspace is one person's. Inviting people into it would make an unlicensed, unlimited company (seat limits skip it).
+        return ! $team->personal_team && TeamRoles::assignableBy($user, $team) !== [];
     }
 
     /**

@@ -64,7 +64,7 @@ class CorePlatformFeaturesTest extends TestCase
         $topic = Topic::query()->value('id');
 
         foreach (range(1, 40) as $i) {
-            \App\Models\Questions::create(['user_id' => $user->id, 'team_id' => $user->current_team_id, 'question' => "Existing question $i", 'description' => str_repeat('long description ', 400), 'visibility' => 'public']);
+            Questions::create(['user_id' => $user->id, 'team_id' => $user->current_team_id, 'question' => "Existing question $i", 'description' => str_repeat('long description ', 400), 'visibility' => 'public']);
         }
 
         $this->actingAs($user)->post('/questions/add', ['topics' => [$topic], 'question' => 'One more question', 'description' => 'Details of it.'])

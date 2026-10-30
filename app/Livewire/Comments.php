@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Solutions;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Knowledge\AnswerService;
 use App\Services\Knowledge\InAppNotices;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -29,8 +30,16 @@ class Comments extends Component
         'newCommentState.body' => 'comment',
     ];
 
+    /** Livewire restores the model without the visibility scopes, so every call asks again whether this person may still see it. */
+    private function ensureVisible(): void
+    {
+        abort_unless(auth()->check() && app(AnswerService::class)->canSeeContent($this->model, auth()->user()), 404);
+    }
+
     public function storeLike(): void
     {
+        $this->ensureVisible();
+
         $like = $this->model->likes()->where('user_id', Auth::id())->first();
 
         if ($like) {
@@ -59,6 +68,7 @@ class Comments extends Component
 
     public function postComment(): void
     {
+        $this->ensureVisible();
         $this->validate();
 
         // A person cannot flood a thread (each comment also notifies the owner).
@@ -96,6 +106,8 @@ class Comments extends Component
 
     public function render(): View
     {
+        $this->ensureVisible();
+
         $comments = $this->model
             ->comments()
             ->with('user', 'children.user', 'children.children')

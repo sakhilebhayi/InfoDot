@@ -17,6 +17,7 @@ use App\Listeners\ForwardKnowledgeEventToMemory;
 use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Listeners\RecordInAppNotice;
 use App\Listeners\RefreshAchievements;
+use App\Livewire\Teams\TeamMemberManager;
 use App\Models\File;
 use App\Models\Folder;
 use App\Models\Questions;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -57,6 +59,9 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction()) {
             CanonicalUrl::apply();
         }
+
+        // Jetstream's team member manager with a server-side check on cancelling invitations (app/Livewire/Teams/TeamMemberManager.php).
+        Livewire::component('teams.team-member-manager', TeamMemberManager::class);
 
         // Community knowledge events -> durable outbox -> the Dot Points ledger (signed, retried).
         foreach ([

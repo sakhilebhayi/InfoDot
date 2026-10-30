@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -14,11 +15,21 @@ class InviteTeamMemberTest extends TestCase
 {
     use RefreshDatabase;
 
+    /** Invitations belong to companies: a personal workspace takes nobody else (TeamPolicy::addTeamMember). */
+    private function ownerOfACompany(): User
+    {
+        $user = User::factory()->create();
+        $company = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false]);
+        $user->forceFill(['current_team_id' => $company->id])->save();
+
+        return $user;
+    }
+
     public function test_team_members_can_be_invited_to_team()
     {
         Mail::fake();
 
-        $this->actingAs($user = User::factory()->withPersonalTeam()->create());
+        $this->actingAs($user = $this->ownerOfACompany());
 
         $component = Livewire::test(TeamMemberManager::class, ['team' => $user->currentTeam])
             ->set('addTeamMemberForm', [
@@ -33,7 +44,7 @@ class InviteTeamMemberTest extends TestCase
 
     public function test_team_member_invitations_can_be_cancelled()
     {
-        $this->actingAs($user = User::factory()->withPersonalTeam()->create());
+        $this->actingAs($user = $this->ownerOfACompany());
 
         // Add the team member...
         $component = Livewire::test(TeamMemberManager::class, ['team' => $user->currentTeam])

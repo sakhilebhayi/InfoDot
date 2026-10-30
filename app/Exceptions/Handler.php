@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Sentry\Laravel\Integration;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -35,8 +36,9 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
+        // Sentry was installed but nothing sent it exceptions. With no DSN configured this does nothing.
         $this->reportable(function (Throwable $e) {
-            //
+            Integration::captureUnhandledException($e);
         });
     }
 }

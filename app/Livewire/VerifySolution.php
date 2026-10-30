@@ -7,6 +7,7 @@ use App\Services\Knowledge\ModerationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -15,6 +16,7 @@ use Livewire\Component;
  */
 class VerifySolution extends Component
 {
+    #[Locked]
     public int $solutionId;
 
     public string $note = '';

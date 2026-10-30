@@ -263,6 +263,11 @@ class SeminarService
                 throw ValidationException::withMessages(['refund' => 'This ticket cannot be refunded now.']);
             }
 
+            // One refund at a time: a second submit (a double click) would otherwise be a second, differently keyed request to Billing.
+            if ($locked->refund_pending_cents !== null) {
+                throw ValidationException::withMessages(['refund' => 'A refund for this ticket is already on its way. Wait until it is confirmed.']);
+            }
+
             if ($cents < 1 || $cents > $locked->refundableCents()) {
                 throw ValidationException::withMessages(['refund' => 'Enter an amount between R0.01 and '.Seminar::money($locked->refundableCents()).'.']);
             }
@@ -379,6 +384,11 @@ class SeminarService
             return;
         }
 
+        // A draft is the host's private work: it is not published, so there is nothing to remove.
+        if ($seminar->status === Seminar::DRAFT) {
+            throw ValidationException::withMessages(['reason' => 'A draft cannot be removed; it is not published.']);
+        }
+
         // Before the start everyone who paid is refunded. Once it has started the moderator chooses: everyone, only the people who reported it, or no one.
         $refunds = $seminar->starts_at->isFuture() || ! in_array($refunds, ['all', 'complainants', 'none'], true) ? 'all' : $refunds;
         $complainants = $refunds === 'complainants'
@@ -420,6 +430,11 @@ class SeminarService
     {
         $seminar = Seminar::findOrFail($appeal->seminar_id);
         $appeal = $appeal->fresh();
+
+        // A moderator does not decide an appeal about their own seminar (content moderation has the same rule).
+        if ($seminar->host_id === $moderator->id) {
+            throw ValidationException::withMessages(['appeal' => 'You cannot decide an appeal about your own seminar.']);
+        }
 
         if ($appeal->status !== SeminarRemovalAppeal::OPEN) {
             throw ValidationException::withMessages(['appeal' => 'This appeal has already been decided.']);
@@ -470,6 +485,10 @@ class SeminarService
 
     public function dismissReport(SeminarReport $report, User $moderator, string $note): void
     {
+        if (Seminar::whereKey($report->seminar_id)->value('host_id') === $moderator->id) {
+            throw ValidationException::withMessages(['reason' => 'You cannot decide a report about your own seminar.']);
+        }
+
         $report->forceFill(['status' => 'dismissed', 'resolved_by' => $moderator->id, 'resolution_note' => mb_substr($note, 0, 500), 'resolved_at' => now()])->save();
     }
 
@@ -580,8 +599,16 @@ class SeminarService
                 throw ValidationException::withMessages(['seminar' => 'You already have a ticket.']);
             }
 
-            if ($existing && $existing->status === SeminarRegistration::PENDING_PAYMENT && $existing->hold_expires_at?->isFuture() && $existing->checkout_url) {
-                return [$existing, true];
+            if ($existing && $existing->status === SeminarRegistration::PENDING_PAYMENT && $existing->hold_expires_at?->isFuture()) {
+                if ($existing->checkout_url) {
+                    return [$existing, true];
+                }
+
+                // The first request is still asking Billing for the payment page. A second one now would make a second ticket reference and
+                // overwrite the first, and a payment made on the first would match no registration. Wait for it (a minute at most).
+                if ($existing->updated_at?->gt(now()->subMinute())) {
+                    throw ValidationException::withMessages(['seminar' => 'Your ticket is being prepared. Wait a moment and try again.']);
+                }
             }
 
             $taken = SeminarRegistration::where('seminar_id', $locked->id)->where(fn ($q) => $q->where('status', SeminarRegistration::REGISTERED)
@@ -760,7 +787,16 @@ class SeminarService
         $n = 0;
 
         foreach (SeminarRegistration::where('status', SeminarRegistration::PENDING_PAYMENT)->where('hold_expires_at', '<', now())->get() as $reg) {
-            $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null, 'checkout_url' => null])->save();
+            // Release only if the row is still an unpaid, expired hold at the moment of the update. A payment confirmed since the list was read
+            // (the callback runs in another request) must not be overwritten.
+            $released = SeminarRegistration::whereKey($reg->id)->where('status', SeminarRegistration::PENDING_PAYMENT)->where('payment_status', 'pending')
+                ->where('hold_expires_at', '<', now())
+                ->update(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null, 'checkout_url' => null]);
+
+            if ($released === 0) {
+                continue;
+            }
+
             $n++;
 
             try {
