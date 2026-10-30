@@ -8,7 +8,7 @@
     </div>
 
     <div class="ix-ask-grid">
-    <form class="ix-form" x-data="{ q: @js(old('question', request('question', ''))) }" method="POST" action="{{ route('questions.add') }}" onkeydown="return event.key != 'Enter' || event.target.tagName === 'TEXTAREA';">
+    <form class="ix-form" x-data="{ q: @js(old('question', request('question', ''))) }" method="POST" action="{{ route('questions.add') }}" @keydown.enter="if ($event.target.tagName !== 'TEXTAREA') $event.preventDefault()">
         @csrf
         <div class="ix-field">
             <label class="ix-label" for="question">Question</label>
@@ -60,7 +60,7 @@
         <p class="ix-ideas__sub">Tap one to start from it, then make it yours.</p>
         <ul>
             @foreach ($industry['questions'] as $idea)
-                <li><button type="button" class="ix-idea" onclick="const f=document.getElementById('question'); f.value=this.dataset.q; f.dispatchEvent(new Event('input')); f.focus();" data-q="{{ $idea }}">{{ $idea }}</button></li>
+                <li><button type="button" class="ix-idea" x-data @click="const f = document.getElementById('question'); f.value = $el.dataset.q; f.dispatchEvent(new Event('input')); f.focus()" data-q="{{ $idea }}">{{ $idea }}</button></li>
             @endforeach
         </ul>
     </aside>

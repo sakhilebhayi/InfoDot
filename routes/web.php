@@ -56,6 +56,14 @@ Route::get('/', function () {
 // The public pages a crawler may index (R-17 §13). Everything else is behind sign-in.
 Route::get('/sitemap.xml', SitemapController::class)->middleware('throttle:30,1,sitemap')->name('sitemap');
 
+// RFC 9116 disclosure file (R-19). The web server serves the physical copy first; this route is the
+// safety net on hosts whose docroot copy lags a deploy.
+Route::get('/.well-known/security.txt', function () {
+    abort_unless(is_file(public_path('.well-known/security.txt')), 404);
+
+    return response(file_get_contents(public_path('.well-known/security.txt')), 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+})->middleware('throttle:30,1,security-txt')->name('security.txt');
+
 Route::match(['get', 'post'], '/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
     ->withoutMiddleware(['Illuminate\Foundation\Http\Middleware\PreventRequestForgery', 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken', 'Illuminate\Foundation\Http\Middleware\ValidateCsrfToken'])
     ->name('auth.ecosystem');

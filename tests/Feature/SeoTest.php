@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /** R-17 §13: the public pages are discoverable, consistently described, and nothing private leaks into the map. */
@@ -91,6 +92,21 @@ class SeoTest extends TestCase
     {
         $this->get('/terms-of-service')->assertMovedPermanently()->assertRedirect('/terms');
         $this->get('/privacy-policy')->assertMovedPermanently()->assertRedirect('/policy');
+    }
+
+    public function test_security_txt_is_published_valid_and_not_near_expiry(): void
+    {
+        $response = $this->get('/.well-known/security.txt');
+
+        $response->assertOk();
+        $body = $response->getContent();
+        $this->assertStringContainsString('Contact: mailto:privacy@infodot.co.za', $body);
+        $this->assertStringContainsString('Canonical: https://infodot.co.za/.well-known/security.txt', $body);
+
+        preg_match('/^Expires:\s*(\S+)/m', $body, $m);
+        $expires = Carbon::parse($m[1] ?? 'now');
+        $this->assertTrue($expires->greaterThan(now()->addDays(30)), 'security.txt must carry a comfortably future Expires (ops:check alerts at 30 days)');
+        $this->assertTrue($expires->lessThan(now()->addDays(400)), 'RFC 9116 recommends expiry within a year');
     }
 
     public function test_password_hashing_defaults_to_the_current_cost(): void

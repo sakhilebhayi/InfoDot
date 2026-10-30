@@ -2,6 +2,7 @@
 
 namespace App\Services\Ops;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -42,7 +43,25 @@ class OpsCheck
             ->where('refund_requested_at', '<', now()->subDay())->whereIn('payment_status', ['paid', 'partially_refunded'])->count();
         $found['holds_not_released_1h'] = (int) DB::table('seminar_registrations')->where('status', 'pending_payment')->where('hold_expires_at', '<', now()->subHour())->count();
 
+        // RFC 9116 requires a future Expires in security.txt; this starts shouting 30 days before it lapses (R-19).
+        $found['security_txt_expiring_30d'] = $this->securityTxtExpiring() ? 1 : 0;
+
         return $found;
+    }
+
+    private function securityTxtExpiring(): bool
+    {
+        $path = public_path('.well-known/security.txt');
+
+        if (! is_file($path) || ! preg_match('/^Expires:\s*(\S+)/mi', (string) file_get_contents($path), $m)) {
+            return true; // missing file or missing Expires is itself a problem worth one alert a day
+        }
+
+        try {
+            return now()->addDays(30)->greaterThan(Carbon::parse($m[1]));
+        } catch (\Throwable) {
+            return true;
+        }
     }
 
     /** @param  array<string, int>  $found @return list<string> the kinds reported now */

@@ -5,7 +5,7 @@
             <h1 class="ix-h1">{{ $taxInvoice ? 'Tax invoice' : 'Receipt' }}</h1>
             <p class="ix-lede">{{ $seminar->title }}</p>
         </div>
-        <button class="ix-btn" type="button" onclick="window.print()">Print</button>
+        <button class="ix-btn" type="button" x-data @click="window.print()">Print</button>
     </div>
     <table class="ix-table" style="max-width: 640px;">
         <tbody>

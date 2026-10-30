@@ -128,7 +128,7 @@
             <a class="ix-btn ix-btn--ghost" href="{{ $editing ? route('seminars.show', $seminar) : route('seminars') }}">Cancel</a>
         </div>
     </form>
-    <script>
+    <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
             function seminarDelivery(delivery, kbps, quality, speedUrl, planUrl, linkUrl) {
                 return {
                     delivery, kbps, quality, plans: {}, testing: false, message: '', linkMsg: '', linkStatus: '', linkChecking: false,
