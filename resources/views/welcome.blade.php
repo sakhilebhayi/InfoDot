@@ -147,8 +147,8 @@
     <section class="ix-pubsec ix-pubsec--tint" aria-labelledby="who-title">
         <div class="lp-founder">
             <div>
-                <h2 id="who-title" data-reveal>One platform in the Dot.Eco-system</h2>
-                <p class="ix-pubsec__lede" data-reveal>InfoDot works alongside the other Dot platforms, and this site says what works today and nothing more.</p>
+                <h2 id="who-title" data-reveal>Know exactly what you are signing up for</h2>
+                <p class="ix-pubsec__lede" data-reveal>InfoDot is one platform in the Dot.Eco-system, and these pages promise only what already works. Read why it exists, what it does today, and who sees what you ask, before you create an account.</p>
             </div>
             <ul class="ix-intents" data-reveal>
                 <li><a href="{{ route('about') }}" class="ix-intent"><span><strong>About InfoDot</strong><span>Why it exists and how it is run.</span></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a></li>
