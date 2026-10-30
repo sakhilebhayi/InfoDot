@@ -37,7 +37,7 @@ Source: three read-only code audits (access control and tenancy; input handling,
 | A-02 | Tenancy | Livewire restores models without visibility scopes; a removed member with an open page could still read new comments/answers and post | Medium | R, T: `Comments`, `Answers` | Fixed (PR #161) |
 | A-03 | Licensing | A personal workspace could invite unlimited people (seat limits skip it) and share company-only content. An existing test asserted five invitations succeeded | Medium | R, T | Fixed (PR #161) |
 | A-04 | Moderation | The moderator queue printed reporter names, report text and appeal text for another company's private items | Medium | R: `queue.blade.php` | Fixed (PR #161) |
-| A-05 | Rooms | LiveKit join tokens last until the seminar ends plus 15 minutes and cannot be revoked; a removed, refunded or charged-back attendee keeps access with the token they hold | Medium | A | Open (needs short tokens with a refresh endpoint) |
+| A-05 | Rooms | LiveKit join tokens could not be revoked and lasted until the seminar ended plus 15 minutes; a removed, refunded or charged-back attendee kept access with the token they held | Medium | A | Mitigated (this PR): tokens now last 10 minutes at most (`SEMINARS_VIDEO_TOKEN_TTL_MINUTES`), still capped at the seminar's end plus 15. The page fetches a fresh, re-checked token when it reconnects or is reloaded. A person already in the room can stay until they disconnect: removal still disconnects them |
 | A-06 | Seminar moderation | A moderator could decide appeals or dismiss reports about their own seminar (content moderation forbids this); a draft could be removed | Medium | R, T (my code from #158) | Fixed (PR #161) |
 | A-07 | Teams | Any member could cancel a company's pending invitations from the browser (Jetstream's action checks nothing) | Medium | R (vendor code), T | Fixed (PR #161) |
 | A-08 / B-05 | SSO | A GET `/auth/ecosystem?token=` signed the visitor in without the origin check (login CSRF) | Medium | R, T | Fixed (PR #161) |
@@ -89,6 +89,10 @@ Source: three read-only code audits (access control and tenancy; input handling,
 | P-08 | Repo | `.phpunit.cache/test-results` is tracked and dirties every run | Info | R | Open |
 | O-01 | Observability | A dead scheduler stops points delivery, refund retries and digests with no error. `/ready` now reports `degraded` when the scheduler heartbeat (written every minute) is older than 15 minutes; an outside monitor must call `/ready` for this to reach a person | Medium | R, T | Fixed (this PR) in code. **Verified on production 2026-10-30** (heartbeat 0 minutes old, `ops:check` clean: `evidence/2026-10-30-ops-checks.md`). **Owner:** point an uptime monitor at `https://infodot.co.za/ready` |
 | P-09 | Deploy | A failed deploy after maintenance mode starts leaves the site down by design; the rollback copy is manual and not drilled | Medium | R | Open, Owner |
+
+## Access checks that held (tested, no finding)
+
+`tests/Feature/Hardening/SeminarAccessMatrixTest.php` runs the paid-seminar routes as the host, a ticket holder, a stranger, another host and a signed-out visitor. Edit, update, cancel, attendance and refund are host-only (403, and nothing changes and Billing is never called); a refund aimed at another host's seminar is 404; the page shows ratings and names to the host only and never prints the meeting link; receipts are the buyer's; invoices, debts and account digits are the host's own; the data download holds only the caller's data; moderation screens are moderator-only; every page redirects a signed-out visitor. No gap was found.
 
 ## Raised by reviewers and not carried into the register
 

@@ -99,9 +99,32 @@ class SeminarVideoTest extends TestCase
         $this->assertSame([false, true, true], [$g['video']['canPublish'], $g['video']['canPublishData'], $g['video']['canSubscribe']]);
         $this->assertSame('u'.$guest->id, $g['sub']);
         $this->assertSame(self::KEY, $g['iss']);
-        $this->assertGreaterThan($s->endsAt()->timestamp, $g['exp'], 'valid until the seminar ends plus a little');
-        $this->assertLessThanOrEqual($s->endsAt()->timestamp + 15 * 60, $g['exp']);
+        $this->assertLessThanOrEqual($s->endsAt()->timestamp + 15 * 60, $g['exp'], 'never beyond the seminar plus the grace');
+        $this->assertEqualsWithDelta(now()->timestamp + 10 * 60, $g['exp'], 5, 'and short, because a token cannot be taken back');
         $this->assertSame('wss://live.example.test', $svc->joinToken($s, $guest)['url']);
+    }
+
+    public function test_a_token_lasts_ten_minutes_at_most_so_a_removed_person_cannot_keep_coming_back(): void
+    {
+        $s = $this->room();
+        $svc = app(LiveKit::class);
+        $guest = $this->person('Guest');
+
+        $early = $this->decode($svc->joinToken($s, $guest)['token']);
+        $this->assertLessThanOrEqual(now()->timestamp + 600 + 5, $early['exp']);
+
+        // Near the end it still stops at the end plus the grace, not ten minutes later.
+        Carbon::setTestNow($s->endsAt()->subMinutes(2));
+        try {
+            $late = $this->decode($svc->joinToken($s, $guest)['token']);
+            $this->assertEqualsWithDelta(now()->timestamp + 600, $late['exp'], 5);
+
+            config(['seminars.video.token_ttl_minutes' => 60, 'seminars.video.token_minutes_after_end' => 15]);
+            $capped = $this->decode($svc->joinToken($s, $guest)['token']);
+            $this->assertSame($s->endsAt()->timestamp + 15 * 60, $capped['exp'], 'the ceiling still applies');
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_only_the_registered_inside_the_window_get_a_token_and_it_is_never_cached(): void

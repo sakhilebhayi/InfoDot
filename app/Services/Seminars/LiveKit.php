@@ -33,7 +33,10 @@ class LiveKit
     public function joinToken(Seminar $seminar, User $user): array
     {
         $host = $seminar->host_id === $user->id;
-        $exp = $seminar->endsAt()->addMinutes((int) config('seminars.video.token_minutes_after_end', 15))->timestamp;
+        // A token cannot be taken back, so it is short: someone removed from the room, refunded or charged back can re-enter on the token
+        // they already hold for at most this long. The page fetches a fresh one (checked again) whenever it reconnects. Never longer than the seminar plus the grace.
+        $ceiling = $seminar->endsAt()->addMinutes((int) config('seminars.video.token_minutes_after_end', 15))->timestamp;
+        $exp = min($ceiling, now()->timestamp + (int) config('seminars.video.token_ttl_minutes', 10) * 60);
 
         $token = $this->sign([
             'iss' => config('seminars.video.api_key'), 'sub' => self::identity($user), 'name' => mb_substr($user->name, 0, 60),
