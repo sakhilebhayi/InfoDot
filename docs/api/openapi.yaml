@@ -41,8 +41,8 @@ paths:
       summary: The signed-in person (Sanctum)
       security: [{ sanctum: [] }]
       responses:
-        "200": { description: The user record. }
-        "401": { description: Unauthenticated. }
+        "200": { description: "The user record." }
+        "401": { description: "Unauthenticated." }
   /ecosystem/token:
     post:
       summary: Mint a single-purpose handoff token for a platform
@@ -65,7 +65,7 @@ paths:
                 properties:
                   token: { type: string }
                   expires_at: { type: string, format: date-time }
-        "422": { description: Unknown platform. }
+        "422": { description: "Unknown platform." }
   /ecosystem/redeem:
     post:
       summary: A platform proves a handoff token
@@ -107,7 +107,7 @@ paths:
                         personal: { type: boolean }
                   current_team_id: { type: integer }
                   current_team_uuid: { type: string, format: uuid }
-        "401": { description: Service secret missing or wrong. }
+        "401": { description: "Service secret missing or wrong." }
         "403": { $ref: "#/components/schemas/Refusal" }
   /ecosystem/resources:
     post:
@@ -128,10 +128,10 @@ paths:
                 object_uuid: { type: string, maxLength: 64 }
                 path: { type: string, maxLength: 255, description: "Must match ^/(?!/)(?!.*\\.\\.)[A-Za-z0-9/_\\-.]*$" }
       responses:
-        "201": { description: Created (200 when it already existed). Returns uuid, reference and url. }
-        "401": { description: Service secret missing or wrong. }
-        "403": { description: The platform is not authoritative for that type. }
-        "422": { description: Unknown company or invalid input. }
+        "201": { description: "Created (200 when it already existed). Returns uuid, reference and url." }
+        "401": { description: "Service secret missing or wrong." }
+        "403": { description: "The platform is not authoritative for that type." }
+        "422": { description: "Unknown company or invalid input." }
   /ecosystem/resources/{objectUuid}:
     delete:
       summary: Remove the caller's own pointer
@@ -141,7 +141,7 @@ paths:
         - { name: platform, in: query, required: true, schema: { type: string } }
       responses:
         "200": { description: "{ok: true}; scoped to the caller's platform, so one platform cannot remove another's pointers." }
-        "401": { description: Service secret missing or wrong. }
+        "401": { description: "Service secret missing or wrong." }
   /knowledge/candidates:
     get:
       summary: Dot.Brain pulls candidates for the Verified library
@@ -151,8 +151,8 @@ paths:
         - { name: since, in: query, schema: { type: string, format: date-time }, description: ISO 8601 with an explicit offset. }
         - { name: limit, in: query, schema: { type: integer, minimum: 1 }, description: "Default `knowledge.candidates.default_limit` (100), maximum `knowledge.candidates.max_limit` (200)." }
       responses:
-        "200": { description: A page of candidates (shape in App\Services\Knowledge\CandidateFeed). }
-        "401": { description: Bad or missing signature, or the secret is unset. }
+        "200": { description: "A page of candidates (shape in App\\Services\\Knowledge\\CandidateFeed)." }
+        "401": { description: "Bad or missing signature, or the secret is unset." }
         "422": { description: "{code: invalid_request, message}" }
   /billing/ticket-events:
     post:
@@ -186,8 +186,8 @@ paths:
                 type: object
                 properties:
                   status: { type: string, enum: [applied, duplicate, ignored, mismatch, open, cleared, written_off] }
-        "400": { description: Body is not valid JSON of the required shape. }
-        "401": { description: Bad signature, outside the window, or paid seminars are off. }
+        "400": { description: "Body is not valid JSON of the required shape." }
+        "401": { description: "Bad signature, outside the window, or paid seminars are off." }
   /seminars/livekit-webhook:
     post:
       summary: LiveKit reports a participant joining a seminar room
@@ -195,4 +195,4 @@ paths:
       security: [{ livekitJwt: [] }]
       responses:
         "200": { description: "{status: recorded|ignored}" }
-        "401": { description: LiveKit is not configured or the JWT / body hash does not verify. }
+        "401": { description: "LiveKit is not configured or the JWT / body hash does not verify." }
