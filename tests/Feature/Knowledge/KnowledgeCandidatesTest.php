@@ -182,7 +182,7 @@ class KnowledgeCandidatesTest extends TestCase
         $item = $body['items'][0];
         $this->assertSame([
             'contribution_ref', 'kind', 'topics', 'url', 'author_uuid', 'created_at', 'edited_at', 'accepted_by_independent', 'accepted_at',
-            'verified_by_independent', 'verified_at', 'helpful_count', 'reuse_count', 'hidden', 'reversed',
+            'verified_by_independent', 'verified_at', 'helpful_count', 'tried_count', 'reuse_count', 'hidden', 'reversed',
         ], array_keys($item));
         $this->assertSame('infodot:answer:'.$answer->id, $item['contribution_ref']);
         $this->assertSame('answer', $item['kind']);

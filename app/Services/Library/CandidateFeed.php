@@ -55,9 +55,12 @@ class CandidateFeed
             ->values();
 
         $topics = $this->topics($rows);
-        $helpful = $this->helpfulCounts($solutions->pluck('id')->all());
+        $solutionIds = $solutions->pluck('id')->all();
+        $helpful = $this->helpfulCounts($solutionIds);
+        $tried = $this->triedCounts($solutionIds);
+        $reused = $this->reuseCounts($solutionIds);
 
-        $items = $rows->map(fn ($r) => $this->item($r['kind'], $r['row'], $topics, $helpful))->all();
+        $items = $rows->map(fn ($r) => $this->item($r['kind'], $r['row'], $topics, $helpful, $tried, $reused))->all();
         $last = $rows->last();
 
         return ['items' => $items, 'next_since' => $last ? $this->iso($last['row']->changed_at) : null];
@@ -112,7 +115,7 @@ class CandidateFeed
             ->where(fn ($q) => $q
                 ->where(fn ($c) => $c->whereNotNull('solutions.verified_at')->whereNotNull('solutions.verified_by')->whereColumn('solutions.verified_by', '<>', 'solutions.user_id'))
                 ->orWhereColumn('solutions.updated_at', '>', 'solutions.created_at'))
-            ->selectRaw('solutions.id, solutions.created_at, solutions.verified_at, solutions.verified_by, solutions.user_id, solutions.hidden_at, '
+            ->selectRaw('solutions.id, solutions.created_at, solutions.updated_at, solutions.version, solutions.verified_at, solutions.verified_by, solutions.user_id, solutions.hidden_at, '
                 .'users.uuid as author_uuid, '.$this->solutionChangedAt().' as changed_at')
             ->orderByRaw($this->solutionChangedAt())
             ->orderBy('solutions.id');
@@ -168,7 +171,31 @@ class CandidateFeed
             ->pluck('n', 'id')->map(fn ($n) => (int) $n)->all();
     }
 
-    private function item(string $kind, object $row, array $topics, array $helpful): array
+    /** @return array<int, int> implementation confirmations per solution (never the author's own; the UI already refuses those) */
+    private function triedCounts(array $solutionIds): array
+    {
+        if ($solutionIds === []) {
+            return [];
+        }
+
+        return DB::table('solution_confirmations')->whereIn('solution_id', $solutionIds)
+            ->selectRaw('solution_id as id, count(*) as n')->groupBy('solution_id')
+            ->pluck('n', 'id')->map(fn ($n) => (int) $n)->all();
+    }
+
+    /** @return array<int, int> how often the solution was recommended as an answer to a question */
+    private function reuseCounts(array $solutionIds): array
+    {
+        if ($solutionIds === []) {
+            return [];
+        }
+
+        return DB::table('solution_recommendations')->whereIn('solution_id', $solutionIds)
+            ->selectRaw('solution_id as id, count(*) as n')->groupBy('solution_id')
+            ->pluck('n', 'id')->map(fn ($n) => (int) $n)->all();
+    }
+
+    private function item(string $kind, object $row, array $topics, array $helpful, array $tried = [], array $reused = []): array
     {
         if ($kind === 'answer') {
             $independent = $row->accepted_at !== null && $row->accepted_by !== null && (int) $row->accepted_by !== (int) $row->user_id;
@@ -187,13 +214,17 @@ class CandidateFeed
             'url' => $url,
             'author_uuid' => $row->author_uuid,
             'created_at' => $this->iso($row->created_at),
-            'edited_at' => null,
+            // R-16: an approved improvement bumps the version, so Brain can see corroborated content changed and when.
+            'edited_at' => $kind === 'solution' && (int) ($row->version ?? 1) > 1 ? $this->iso($row->updated_at) : null,
             'accepted_by_independent' => $kind === 'answer' && $independent,
             'accepted_at' => $kind === 'answer' && $independent ? $this->iso($row->accepted_at) : null,
             'verified_by_independent' => $kind === 'solution' && $independent,
             'verified_at' => $kind === 'solution' && $independent ? $this->iso($row->verified_at) : null,
             'helpful_count' => $kind === 'solution' ? ($helpful[$row->id] ?? 0) : 0,
-            'reuse_count' => 0,
+            // R-16: implementation confirmations ("I tried this and it works") and in-answer recommendations are real
+            // reuse signals now, kept apart from likes on purpose.
+            'tried_count' => $kind === 'solution' ? ($tried[$row->id] ?? 0) : 0,
+            'reuse_count' => $kind === 'solution' ? ($reused[$row->id] ?? 0) : 0,
             'hidden' => $hidden,
             'reversed' => ! $independent,
         ];
