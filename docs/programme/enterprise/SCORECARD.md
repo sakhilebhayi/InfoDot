@@ -6,7 +6,7 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 
 | | Baseline | After PR #161 |
 |---|---|---|
-| Total (100) | **36** | **66** |
+| Total (100) | **36** | **67** |
 | Release blockers open | 3 (payment races, account takeover from a satellite, untested restore) | **1** (untested restore, C-10) once deployed; 3 until then |
 | Lowest dimension against the 7/10 floor | Performance 0/8, Reliability 1/9 | Performance 2/8, Reliability 6/9 |
 | 9+/10 reached | No | **No.** Needs 90+, every dimension at 7/10 or better, no blocker |
@@ -48,10 +48,10 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 | Privacy (8) | Export and deletion implemented and tested (3) | 3 | 3 | PRs #156 and #158 |
 | | Retention schedule enforced by a job (2) | 1 | 1 | `seminars:prune` covers seminar data only |
 | | Policy text matches code, adviser-reviewed (2) | 0 | 0 | Drafts reconciled; only the host agreement approved; policy and terms not live |
-| | Incident procedure and processor list (1) | 0 | 0 | |
+| | Incident procedure and processor list (1) | 0 | 1 | `policies/INCIDENT_RESPONSE.md` and `policies/VENDOR_REGISTER.md` exist. They are procedures: not yet rehearsed, and the vendor facts marked [OWNER] are unfilled. Counted because the criterion asks that they be documented |
 | Business and UX (6) | Journeys as automated or recorded end-to-end tests (4) | 1 | 1 | Feature tests and a puppeteer room test exist; not whole journeys |
 | | Accessibility and mobile checks recorded (2) | 0 | 0 | |
-| **Total (100)** | | **36** | **66** | |
+| **Total (100)** | | **36** | **67** | |
 
 ## What would move the score most (largest gap first)
 

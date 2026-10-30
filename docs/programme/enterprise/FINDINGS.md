@@ -2,6 +2,10 @@
 
 Source: three read-only code audits (access control and tenancy; input handling, integrations and secrets; reliability and performance), the tool baseline in [BASELINE.md](BASELINE.md), and live read-only checks of infodot.co.za. Code audited: `main` at `c89286f`. Nothing in this file was invented; where a claim rests on a reviewer's reading only, it says so.
 
+## Related documents
+
+`BASELINE.md`, `SCORECARD.md`, `READINESS_MODEL.md`; procedures in `policies/` (incident response, recovery drills, vendor register, risk register, change and access).
+
 ## Method
 
 - **Severity.** *Critical*: a deterministic production failure on a core path, or an exploitable cross-tenant leak, account takeover or loss of money with no special conditions. *High*: the same outcomes but needing a condition (a hostile satellite, a double click, a slow call), or a defect that blinds operators (no error reporting). *Medium*: a bounded or defence-in-depth weakness, or a scale problem. *Low*: hygiene or latent. *Info*: noted.
@@ -88,6 +92,7 @@ Source: three read-only code audits (access control and tenancy; input handling,
 | P-07 | Dependencies | symfony/mime 7.4.19 (CVE-2026-45070, medium); 2 npm moderate (build-time) | Medium | tool run | Fixed (PR #161); composer audit 0, npm audit 0 |
 | P-08 | Repo | `.phpunit.cache/test-results` is tracked and dirties every run | Info | R | Open |
 | O-01 | Observability | A dead scheduler stops points delivery, refund retries and digests with no error. `/ready` now reports `degraded` when the scheduler heartbeat (written every minute) is older than 15 minutes; an outside monitor must call `/ready` for this to reach a person | Medium | R, T | Fixed (this PR) in code. **Verified on production 2026-10-30** (heartbeat 0 minutes old, `ops:check` clean: `evidence/2026-10-30-ops-checks.md`). **Owner:** point an uptime monitor at `https://infodot.co.za/ready` |
+| O-02 | Incident control | The only switch that stops new paid checkouts is `SEMINARS_PAID_ENABLED=false`, which also stops all refund requests to Billing and makes Billing's callbacks answer 401, so using it mid-incident can strand in-flight payments | Medium | R: `BillingMarketplace::configured`, `SeminarTicketEventsController` | Open (engineering: a narrower switch). Documented in `policies/INCIDENT_RESPONSE.md` |
 | P-09 | Deploy | A failed deploy after maintenance mode starts leaves the site down by design; the rollback copy is manual and not drilled | Medium | R | Open, Owner |
 
 ## Access checks that held (tested, no finding)
