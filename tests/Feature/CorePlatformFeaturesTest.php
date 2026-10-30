@@ -58,6 +58,21 @@ class CorePlatformFeaturesTest extends TestCase
         ]);
     }
 
+    public function test_posting_a_question_never_puts_other_questions_in_the_session(): void
+    {
+        $user = $this->createVerifiedUserWithCurrentTeam();
+        $topic = Topic::query()->value('id');
+
+        foreach (range(1, 40) as $i) {
+            \App\Models\Questions::create(['user_id' => $user->id, 'team_id' => $user->current_team_id, 'question' => "Existing question $i", 'description' => str_repeat('long description ', 400), 'visibility' => 'public']);
+        }
+
+        $this->actingAs($user)->post('/questions/add', ['topics' => [$topic], 'question' => 'One more question', 'description' => 'Details of it.'])
+            ->assertRedirect('questions')->assertSessionHas('status')->assertSessionMissing('questions');
+
+        $this->assertLessThan(8000, strlen(serialize(session()->all())), 'the session must stay small');
+    }
+
     public function test_authenticated_user_can_create_solution_with_steps(): void
     {
         $user = $this->createVerifiedUserWithCurrentTeam();

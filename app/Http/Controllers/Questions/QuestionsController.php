@@ -96,9 +96,8 @@ class QuestionsController extends Controller
             'visibility' => $question->visibility,
         ]));
 
-        $questions = Questions::all();
-        // event(new QuestionWasAsked($question));
-
-        return redirect('questions')->with(['questions' => $questions]);
+        // Nothing but a short message goes into the session. This used to flash `Questions::all()`: the session payload column is
+        // TEXT (about 64 KB), so once enough long questions existed, saving the session failed after the question was already stored.
+        return redirect('questions')->with('status', 'Your question was posted.');
     }
 }
