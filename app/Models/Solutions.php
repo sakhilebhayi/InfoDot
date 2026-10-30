@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasKnowledgeVisibility;
 use App\Models\Concerns\HasTopics;
 use App\Models\Concerns\IsModerated;
@@ -27,11 +28,22 @@ use Laravel\Scout\Searchable;
  */
 class Solutions extends Model
 {
+    use HasAttachments;
     use HasFactory;
     use HasKnowledgeVisibility;
     use HasTopics;
     use IsModerated;
     use Searchable;
+
+    /** Steps go by database cascade, which skips model events: their attachments are cleared here. */
+    protected static function booted(): void
+    {
+        static::deleting(function (self $solution) {
+            Attachment::where('attachable_type', (new Steps)->getMorphClass())
+                ->whereIn('attachable_id', $solution->steps()->select('id'))
+                ->get()->each->delete();
+        });
+    }
 
     protected $fillable = [
         'user_id', 'team_id', 'visibility', 'solution_title', 'solution_description', 'tags', 'duration', 'duration_type', 'steps',
@@ -93,6 +105,13 @@ class Solutions extends Model
     public function steps()
     {
         return $this->hasMany(Steps::class);
+    }
+
+    /** The uploads that sit on this solution's steps (the list pages count them into the indicators). */
+    public function stepAttachments()
+    {
+        return $this->hasManyThrough(Attachment::class, Steps::class, 'solution_id', 'attachable_id')
+            ->where('attachments.attachable_type', (new Steps)->getMorphClass());
     }
 
     public function comments()

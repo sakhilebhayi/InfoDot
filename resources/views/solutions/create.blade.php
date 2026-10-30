@@ -9,7 +9,7 @@
 
     <div class="ix-split" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)">
         <form class="ix-form" style="max-width:none" method="POST" action="{{ route('solutions.add') }}"
-              x-data="{ steps: {{ json_encode(collect(old('solution_heading', ['']))->map(fn ($h, $i) => ['h' => $h, 'b' => old('solution_body.'.$i, '')])->values()) }} }"
+              x-data="{ steps: {{ json_encode(collect(old('solution_heading', ['']))->map(fn ($h, $i) => ['h' => $h, 'b' => old('solution_body.'.$i, ''), 'files' => []])->values()) }} }"
               onkeydown="return event.key != 'Enter' || event.target.tagName === 'TEXTAREA';">
             @csrf
 
@@ -70,6 +70,12 @@
                                 <label class="ix-label" :for="'body-' + i">What to do</label>
                                 <textarea class="ix-textarea" style="min-height:88px" name="solution_body[]" :id="'body-' + i" x-model="step.b" required></textarea>
                             </div>
+                            @include('attachments._uploader', [
+                                'idPrefix' => 'sol-step',
+                                'nameExpr' => "'step_attachments[' + i + ']'",
+                                'itemsExpr' => 'step.files',
+                                'label' => 'Show this step',
+                            ])
                             <div>
                                 <button type="button" class="ix-btn ix-btn--sm ix-btn--ghost" x-show="steps.length > 1" @click="steps.splice(i, 1)">
                                     <span class="material-symbols-rounded" aria-hidden="true" style="font-size:16px">delete</span>Remove step
@@ -88,6 +94,11 @@
             @error('solution_heading.*')<p class="ix-error">{{ $message }}</p>@enderror
             @error('solution_body.*')<p class="ix-error">{{ $message }}</p>@enderror
 
+            @include('attachments._uploader', ['idPrefix' => 'sol', 'old' => old('attachments'), 'label' => 'Supporting material', ])
+            @error('attachments')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            @error('attachments.*.uuid')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            @error('step_attachments.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            @error('step_attachments.*.*.uuid')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
 
             <div class="ix-field">
                 <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">

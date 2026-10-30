@@ -1,4 +1,5 @@
 import './bootstrap';
+import './attachments';
 import Alpine from 'alpinejs';
 
 // Platform logos are emitted into the build (public/build is the one folder every host serves from),

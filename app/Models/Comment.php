@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAttachments;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,7 @@ use Laravel\Scout\Searchable;
 
 class Comment extends Model
 {
+    use HasAttachments;
     use HasFactory, Searchable;
 
     protected $fillable = [

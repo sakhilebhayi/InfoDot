@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         // Proof that the scheduler is running (read by /ready), and a check for failures that used to be silent.
         $schedule->call(fn () => app(OpsCheck::class)->beat())->name('ops-heartbeat')->everyMinute();
         $schedule->command('ops:check')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('attachments:prune')->dailyAt('03:35')->withoutOverlapping(30)->onOneServer();
         $schedule->command('points:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
 
         // Emails people before some of their points lapse (the points service pulls no addresses; see the command).

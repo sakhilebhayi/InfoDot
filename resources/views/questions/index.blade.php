@@ -20,6 +20,7 @@
     </form>
 
     @include('topics._filter', ['route' => route('questions')])
+    @include('attachments._haspills', ['route' => route('questions'), 'filterSlug' => $filterSlug, 'filterHas' => $filterHas])
 
     @if ($total > 0)
         <div class="ix-board" x-data="{ show: 'all', q: '' }">
@@ -55,6 +56,7 @@
                                     <span>{{ $question->user->name ?? 'Former member' }}</span>
                                     <span>{{ $question->created_at->diffForHumans() }}</span>
                                     <span>{{ $question->isPublic() ? 'Everyone' : 'Your company' }}</span>
+                                    @include('attachments._meta', ['item' => $question])
                                 </p>
                                 @include('topics._chips', ['item' => $question])
                             </div>

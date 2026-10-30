@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAttachments;
 use App\Models\Concerns\HasKnowledgeVisibility;
 use App\Models\Concerns\HasTopics;
 use App\Models\Concerns\IsModerated;
@@ -28,6 +29,7 @@ use Laravel\Scout\Searchable;
  */
 class Questions extends Model
 {
+    use HasAttachments;
     use HasFactory;
     use HasKnowledgeVisibility;
     use HasTopics;
