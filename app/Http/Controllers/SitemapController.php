@@ -23,6 +23,7 @@ class SitemapController extends Controller
         'terms' => 'monthly',
         'policy' => 'monthly',
         'cookies' => 'yearly',
+        'security' => 'yearly',
     ];
 
     public function __invoke(): Response

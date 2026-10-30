@@ -11,7 +11,7 @@ class SeoTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const PUBLIC_PAGES = ['/', '/about', '/features', '/faqs', '/contact', '/complains', '/terms', '/policy', '/cookies'];
+    private const PUBLIC_PAGES = ['/', '/about', '/features', '/faqs', '/contact', '/complains', '/terms', '/policy', '/cookies', '/security'];
 
     public function test_robots_states_an_explicit_crawler_policy(): void
     {
@@ -101,7 +101,14 @@ class SeoTest extends TestCase
         $response->assertOk();
         $body = $response->getContent();
         $this->assertStringContainsString('Contact: mailto:privacy@infodot.co.za', $body);
+        $this->assertStringContainsString('Policy: https://infodot.co.za/security', $body);
         $this->assertStringContainsString('Canonical: https://infodot.co.za/.well-known/security.txt', $body);
+
+        // The Policy line must point at a live page that carries the disclosure essentials.
+        $policyPage = $this->get('/security')->assertOk()->getContent();
+        $this->assertStringContainsString('privacy@infodot.co.za', $policyPage);
+        $this->assertStringContainsString('Safe harbor', $policyPage);
+        $this->assertStringContainsString('Scope', $policyPage);
 
         preg_match('/^Expires:\s*(\S+)/m', $body, $m);
         $expires = Carbon::parse($m[1] ?? 'now');

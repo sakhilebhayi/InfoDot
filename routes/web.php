@@ -263,6 +263,7 @@ Route::get('/features', 'App\Http\Controllers\PagesController@features')->name('
 Route::get('/terms', 'App\Http\Controllers\PagesController@terms')->name('terms');
 Route::get('/policy', 'App\Http\Controllers\PagesController@policy')->name('policy');
 Route::get('/cookies', 'App\Http\Controllers\PagesController@cookies')->name('cookies');
+Route::get('/security', 'App\Http\Controllers\PagesController@security')->name('security');
 Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_search_results')->middleware('throttle:30,1,solution-results')->name('solution_search_results');
 
 // ===============================================================
