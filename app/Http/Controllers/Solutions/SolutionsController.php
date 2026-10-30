@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Solutions;
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
 use App\Models\Solutions;
+use App\Models\SolutionVersion;
 use App\Models\Steps;
 use App\Models\Topic;
+use App\Models\User;
 use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\TopicService;
 use App\Support\Industry;
@@ -129,8 +131,13 @@ class SolutionsController extends Controller
     {
         $solution = Solutions::where('id', $id)->with(['topics', 'attachments'])->firstOrFail();
 
+        // The people whose approved improvements shaped this solution (the original author keeps ownership).
+        $improvers = User::whereIn('id', SolutionVersion::where('solution_id', $solution->id)
+            ->whereNotNull('contributor_id')->distinct()->pluck('contributor_id'))->get(['id', 'name']);
+
         return view('solutions.view', [
             'solution' => $solution,
+            'improvers' => $improvers,
             'steps' => Steps::where('solution_id', $solution->id)->with('attachments')->get(),
             'related' => Related::solutions($solution),
             // Only a moderator who may correct this one is given the list to pick from.

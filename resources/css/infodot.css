@@ -7171,3 +7171,23 @@ body {
 .ix-similar__item small { color: var(--ix-text-2); }
 .ix-similar__badge { justify-self: start; font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; background: var(--ix-signal-wash); color: var(--ix-text-2); }
 .ix-similar__item.is-strong .ix-similar__badge { background: var(--ix-stencil); color: #1b2124; }
+
+/* ------------------------------------------------------------------ improvements and version history (R-16) */
+.ix-improve { margin-top: 24px; padding: 16px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); display: grid; gap: 12px; }
+.ix-improve__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ix-improve__head h2 { margin: 0; font-size: 1.05rem; display: inline-flex; align-items: baseline; gap: 8px; }
+.ix-improve__form { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-sunken); }
+.ix-improve__card { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); }
+.ix-improve__card.is-closed { opacity: 0.8; }
+.ix-improve__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--ix-text-2); font-size: 0.9rem; }
+.ix-improve__compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.ix-improve__compare > div { padding: 10px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-sunken); min-width: 0; }
+.ix-improve__compare h3 { margin: 0 0 6px; font-size: 0.8rem; text-transform: none; color: var(--ix-text-3); }
+.ix-improve__compare p { margin: 0; overflow-wrap: anywhere; }
+.ix-improve__why { margin: 0; color: var(--ix-text-2); }
+.ix-improve__decide { display: grid; gap: 8px; }
+.ix-improve__history summary { cursor: pointer; font-weight: 600; }
+.ix-improve__versions { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.ix-improve__versions summary { cursor: pointer; }
+.ix-improve__snapshot { margin-top: 8px; padding: 10px; border-left: 3px solid var(--ix-rule-strong); background: var(--ix-sunken); display: grid; gap: 8px; }
+.ix-improve__snapshot ol { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
