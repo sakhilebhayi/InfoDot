@@ -5,16 +5,29 @@ card — paid seminars and seat licensing call Billing's signed API (`BillingMar
 `config/licensing.php`: "Dot.Billing is the only place seats are bought and paid for"). So the
 live verification is a Billing-first exercise, observed from InfoDot.
 
-## 0. Preconditions (settle these first — they decide whether the test can run at all)
+## 0. Preconditions (updated 2026-10-31 from the Billing code audit)
 
-1. **Is Dot.Billing deployed to production, and where?** The repo has no deploy workflow, so
-   deployment is manual/out-of-repo. If it is not live, this blocker converts to "deploy
-   Dot.Billing first" and the test waits.
-2. Billing's Paystack keys on that host: confirm they are **live** keys (a live test with test
-   keys proves nothing) and that the webhook URL registered in the Paystack dashboard points at
-   the live Billing host.
-3. InfoDot production has `licensing.billing.url` + secret set (the signed channel), and
-   `seminars.paid.enabled` if the seminar path is being tested.
+1. **Dot.Billing IS deployed and pipelined**: live at https://billing.infodot.co.za, with a manual
+   deploy workflow in its repo (12 successful production deploys since 2026-10-18). The earlier
+   "no pipeline" note came from a stale checkout.
+2. **The code has NEVER touched real Paystack** (its own README says so; every test fakes HTTP).
+   Two production-side switches gate a live run, both on the Billing host `.env`:
+   - a live secret key, AND `PAYSTACK_ALLOW_LIVE=true` — `PaystackConfig` refuses an `sk_live_`
+     key without it (a deliberate safety catch);
+   - the webhook URL registered in the Paystack dashboard must be
+     `https://billing.infodot.co.za/webhooks/paystack`.
+3. The webhook endpoint verifies `X-Paystack-Signature` (HMAC-SHA512 over the raw body,
+   constant-time compare) BEFORE parsing; bad signature → 401. Business anomalies (unknown
+   reference, amount mismatch, replay, overpayment) return 200 and are HELD as PaymentEvents for
+   review at `/operator/payment-events` — check that queue during the test.
+4. The payer's return callback requires a signed-in session and verifies the transaction
+   server-side with Paystack; the browser redirect proves nothing by itself (by design).
+5. InfoDot-side: `licensing.billing.url` + secret set (the signed channel), and
+   `seminars.paid.enabled` only if testing the seminar path. The Billing marketplace API is OFF by
+   default (`BILLING_MARKETPLACE_ENABLED=false`) — seminar-ticket tests need it enabled and
+   configured.
+6. Deploys put Billing in maintenance mode briefly; a webhook arriving then gets 503 and Paystack
+   retries — don't run the payment window during a deploy.
 
 ## 1. The controlled transaction (you, ~20 min, coordinated window)
 
