@@ -32,7 +32,9 @@ return new class extends Migration
 
         Schema::create('sso_platform_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            // users.id is a legacy unsigned INT (increments); like every other table here, the
+            // column is indexed without a database-level FK (the types are incompatible on MySQL).
+            $table->foreignId('user_id')->index();
             $table->foreignId('dot_platform_id')->constrained()->cascadeOnDelete();
             $table->timestamp('last_issued_at');
             $table->timestamps();
