@@ -7068,3 +7068,64 @@ body {
 .ix-room__controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .ix-room__controls [aria-pressed='true'] { background: var(--ix-signal-wash); }
 
+
+/* ------------------------------------------------------------------ attachments (R-15) */
+/* The composer uploader: a quiet drop strip, then one row per file. */
+.ix-attach { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; border: 1px dashed var(--ix-rule-strong); border-radius: var(--ix-radius-sm); background: var(--ix-panel); }
+.ix-attach.is-over { border-color: var(--ix-focus); background: var(--ix-signal-wash); }
+.ix-attach__list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.ix-attach__item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-panel); }
+.ix-attach__item.is-error { border-color: var(--ix-bad, #a63a2b); }
+.ix-attach__thumb { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: var(--ix-radius-sm); background: var(--ix-sunken); color: var(--ix-text-3); overflow: hidden; }
+.ix-attach__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ix-attach__body { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.ix-attach__name { overflow-wrap: anywhere; font-size: 0.92rem; }
+.ix-attach__name small { color: var(--ix-text-3); }
+.ix-attach__bar { display: block; height: 4px; border-radius: 2px; background: var(--ix-sunken); overflow: hidden; }
+.ix-attach__bar span { display: block; height: 100%; background: var(--ix-signal); transition: width 0.2s linear; }
+.ix-attach__caption { padding: 6px 10px; font-size: 0.9rem; }
+.ix-attach__tools { display: flex; gap: 2px; }
+.ix-attach__tool { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: var(--ix-radius-sm); background: none; color: var(--ix-text-3); cursor: pointer; }
+.ix-attach__tool:hover { background: var(--ix-hover); color: var(--ix-text); }
+.ix-attach__tool .material-symbols-rounded { font-size: 18px; }
+.ix-attach__tool:focus-visible { outline: 2px solid var(--ix-focus); outline-offset: 1px; }
+
+/* Displaying attachments on questions, solutions, answers and comments. */
+.ix-attview { display: grid; gap: 14px; margin-top: 14px; }
+.ix-attview__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.ix-attview--compact .ix-attview__grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+.ix-attview__cell { min-width: 0; }
+.ix-attview__imgbtn { display: block; width: 100%; padding: 0; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-sunken); overflow: hidden; cursor: zoom-in; }
+.ix-attview__imgbtn img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.ix-attview__imgbtn:focus-visible { outline: 2px solid var(--ix-focus); outline-offset: 2px; }
+.ix-attview__cap { margin: 4px 0 0; font-size: 0.85rem; color: var(--ix-text-2); overflow-wrap: anywhere; }
+.ix-attview__video video { display: block; width: 100%; max-height: 420px; border-radius: var(--ix-radius-sm); background: #000; }
+.ix-attview__video { margin: 0; }
+.ix-attview__video figcaption { margin-top: 4px; font-size: 0.85rem; color: var(--ix-text-2); }
+.ix-attview__video figcaption small { color: var(--ix-text-3); }
+.ix-attview__file { border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-panel); }
+.ix-attview__filerow { display: flex; align-items: center; gap: 10px; padding: 8px 10px; flex-wrap: wrap; }
+.ix-attview__fileactions { display: flex; gap: 6px; margin-left: auto; }
+.ix-attview__pdf { display: block; width: 100%; height: min(70vh, 640px); border: 0; border-top: 1px solid var(--ix-rule); background: var(--ix-sunken); }
+
+/* The full-screen image viewer. */
+.ix-lightbox { border: 0; padding: 0; width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh; background: rgba(10, 12, 13, 0.94); color: #f1f3f3; }
+.ix-lightbox::backdrop { background: rgba(10, 12, 13, 0.7); }
+.ix-lightbox__stage { margin: 0; width: 100%; height: 100%; display: grid; place-items: center; grid-template-rows: 1fr auto; padding: 56px 16px 16px; box-sizing: border-box; }
+.ix-lightbox__stage img { max-width: 100%; max-height: calc(100vh - 120px); object-fit: contain; }
+.ix-lightbox__stage figcaption { padding: 10px 0 0; font-size: 0.9rem; color: #c9d1d4; text-align: center; overflow-wrap: anywhere; }
+.ix-lightbox__btn { position: fixed; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 50%; background: rgba(0, 0, 0, 0.45); color: #fff; cursor: pointer; }
+.ix-lightbox__btn:hover { background: rgba(0, 0, 0, 0.75); }
+.ix-lightbox__btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.ix-lightbox__close { top: 12px; right: 12px; }
+.ix-lightbox__prev { left: 12px; top: 50%; transform: translateY(-50%); }
+.ix-lightbox__next { right: 12px; top: 50%; transform: translateY(-50%); }
+
+/* Feed indicators: what a post carries besides text. */
+.ix-attmeta { display: inline-flex; align-items: center; gap: 3px; color: var(--ix-text-3); white-space: nowrap; }
+.ix-attmeta .material-symbols-rounded { font-size: 15px; }
+
+@media (max-width: 640px) {
+    .ix-attview__fileactions { margin-left: 54px; }
+    .ix-attach__item { flex-wrap: wrap; }
+}

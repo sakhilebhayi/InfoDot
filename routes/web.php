@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ExpertiseSharingController;
@@ -75,6 +76,14 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // People: the members of the company the person is acting for
     // -------------------------------------------------------
     Route::get('/people', [PeopleController::class, 'index'])->name('people');
+
+    // -------------------------------------------------------
+    // Attachments (R-15): uploads for questions, solutions, answers and comments, and the only door to the files
+    // -------------------------------------------------------
+    Route::post('/attachments', [AttachmentController::class, 'store'])->middleware('throttle:30,1,attachments-upload')->name('attachments.store');
+    Route::delete('/attachments/{attachment:uuid}', [AttachmentController::class, 'destroy'])->middleware('throttle:60,1,attachments-destroy')->name('attachments.destroy');
+    Route::get('/attachments/{attachment:uuid}/thumb', [AttachmentController::class, 'thumb'])->name('attachments.thumb');
+    Route::get('/attachments/{attachment:uuid}', [AttachmentController::class, 'show'])->name('attachments.show');
 
     // // -------------------------------------------------------
     // Solutions Controller

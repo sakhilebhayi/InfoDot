@@ -16,6 +16,7 @@
         "laravel/tinker": "^2.11",
         "livewire/livewire": "^3.0",
         "sentry/sentry-laravel": "^4.26",
+        "smalot/pdfparser": "^2.13",
         "staudenmeir/laravel-adjacency-list": "^1.13.11",
         "teamtnt/laravel-scout-tntsearch-driver": "^15.0"
     },

@@ -26,6 +26,8 @@
             {{-- Written as plain text; nl2br keeps the author's paragraphs (official library entries rely on it). --}}
             <div class="ix-statement"><p class="ix-prose">{!! nl2br(e($solution->solution_description)) !!}</p></div>
 
+            @include('attachments._list', ['attachments' => $solution->attachments])
+
             @if ($tags->isNotEmpty())
                 <ul class="ix-tags" aria-label="Tags">@foreach ($tags as $tag)<li>{{ $tag }}</li>@endforeach</ul>
             @endif
@@ -59,6 +61,7 @@
                             <div>
                                 <h3>{{ $step->solution_heading }}</h3>
                                 <p>{!! nl2br(e($step->solution_body)) !!}</p>
+                                @include('attachments._list', ['attachments' => $step->attachments, 'compact' => true])
                             </div>
                         </li>
                     @empty

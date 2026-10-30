@@ -21,8 +21,11 @@
             <livewire:hidden-notice kind="question" :item-id="$question->id" />
 
             @if (filled($question->description))
-                <div class="ix-statement"><p class="ix-prose">{{ $question->description }}</p></div>
+                {{-- Written as plain text; nl2br keeps the author's paragraphs. --}}
+                <div class="ix-statement"><p class="ix-prose">{!! nl2br(e($question->description)) !!}</p></div>
             @endif
+
+            @include('attachments._list', ['attachments' => $question->attachments])
 
             <livewire:answers :question="$question" />
 
