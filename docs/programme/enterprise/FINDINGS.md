@@ -47,8 +47,8 @@ Source: three read-only code audits (access control and tenancy; input handling,
 | A-08 / B-05 | SSO | A GET `/auth/ecosystem?token=` signed the visitor in without the origin check (login CSRF) | Medium | R, T | Fixed (PR #161) |
 | A-09 | Livewire | `kind`/`itemId`/`solutionId` were client-settable (existence oracle, moderator metadata) | Low | R, T | Fixed (PR #161) |
 | A-10 / B-04 | API | `/api/user` returned the whole user model including `two_factor_secret` and recovery codes | Medium | R, T | Fixed (PR #161) |
-| A-11 | Channels | `Broadcast::channel('question', fn () => true)`; the dispatch is commented out | Low (latent) | A | Open |
-| A-12 | Search | Scout indexes include company-only content; nothing queries them | Low (latent) | A | Open |
+| A-11 | Channels | `Broadcast::channel('question', fn () => true)`; the dispatch is commented out | Low (latent) | A | Fixed (PR #168): the channel authorises nobody until it is scoped; the pinned test now expects refusal |
+| A-12 | Search | Scout indexes include company-only content; nothing queries them | Low (latent) | A | Fixed (PR #168): private items are not indexed (shouldBeSearchable) |
 | A-13 | Models | Wide `$fillable` on Seminar, SeminarRegistration, Team, Questions; nothing reachable from input today | Low (latent) | A | Open |
 | B-01 | Secrets | A 32-byte `APP_KEY` and Pusher credentials were committed in `.env.production.example` (since March 2026) | Low (was High if live) | R for presence and length. **Owner check run 2026-10-30:** a hash comparison on the host showed the committed `APP_KEY` is **not** the live key (no value was printed) | Values removed (PR #161). Resolved for `APP_KEY`. **Open, Owner:** the committed Pusher key/secret were not compared; if the host's `.env` uses them, rotate them. History is not rewritten (not needed for a retired key) |
 | B-03 | Email links | Reset/verify/invitation links took their host from the request `Host` header | Medium | A; fix tested | Fixed (PR #161): a request for a Host that is not the site's own (or its www form) gets links fixed to `APP_URL`. **A first version forced the apex for www visitors too and would have broken login on `www.infodot.co.za` (the site answers there and forms post to absolute URLs); caught by the Perch scan, fixed and tested** |
@@ -57,32 +57,32 @@ Source: three read-only code audits (access control and tenancy; input handling,
 | B-08 | Headers | No security headers on the live site | Medium | **L** (GET /): no HSTS, X-Frame-Options, nosniff, referrer or permissions policy | Fixed (PR #161) except CSP: Open (needs a reporting period) |
 | B-09 | Throttling | One IP-keyed bucket shared by SSO redeem, Billing and LiveKit callbacks, ahead of signature checks | Medium | A | Fixed (PR #161): separate limiters. Trusted-proxy setup: Owner (`TrustProxies::$proxies` is unset) |
 | B-10 | Stripe | Cashier's `/stripe/webhook` registered, unsigned when no secret | Low | A; fix tested | Fixed (PR #161) |
-| B-11 | SSRF | Link checker pins DNS for port 443 only; a redirect to another port is resolved by curl | Low | A | Open |
+| B-11 | SSRF | Link checker pins DNS for port 443 only; a redirect to another port is resolved by curl | Low | A | Fixed (PR #168): redirect targets get the port, address and credential rules |
 | B-12 | Phishing | A host's meeting link is an arbitrary https URL that attendees are redirected to | Low | A | Open (report path exists) |
 | B-13 | Throttling | 38 `throttle:N,M` routes shared one counter per person | Low | R, T | Fixed (PR #161), guard test for any new one |
 | B-14 | Signing | HMAC covers timestamp and body but not method/path/query; no nonce | Low | A | Open (documented in the OpenAPI file) |
-| B-15 | Privacy | Avatar URL exposes an unsalted MD5 of the email | Low | A | Open |
-| B-16 | Config | `.env.example` defaults: debug on, guessable websocket credentials | Low | A | Fixed for the production example (PR #161); `.env.example` Open |
+| B-15 | Privacy | Avatar URL exposes an unsalted MD5 of the email | Low | A | Fixed (PR #168): the fallback avatar is an inline SVG initial; no hash, no third party |
+| B-16 | Config | `.env.example` defaults: debug on, guessable websocket credentials | Low | A | Fixed (PR #168): .env.example ships debug off and no websocket credentials |
 | B-17 | Hygiene | Meilisearch data files tracked | Low | A | Fixed (PR #161) |
-| C-12 | Search | Related-question and header search use `LIKE '%x%'` on long text per page view / keystroke burst; FULLTEXT used only on the results page | Medium | A | Open |
+| C-12 | Search | Related-question and header search use `LIKE '%x%'` on long text per page view / keystroke burst; FULLTEXT used only on the results page | Medium | A | Mitigated (PR #168): per-person results remembered for a minute, keyed by person and company; the queries are unchanged. FULLTEXT everywhere: Open |
 | C-13 | Seminars | Cancelling a seminar makes one Billing call per paid registration inside one request, unlocked; a timeout leaves later tickets unrefunded; two concurrent cancels double-send | Medium | A | Mitigated (this PR): every refund is marked requested before the first call to Billing, so a cut-off request is finished by the sweep. Still one Billing call per ticket inside the request, and two concurrent cancels are unlocked |
 | C-14 | Invoices | One deleted host stopped the whole monthly commission invoice run | Medium | R, T | Fixed (PR #161); a deleted host's commission is skipped and logged, not invoiced: Owner/adviser |
 | C-15 | Callbacks | See B-09 | Medium | | Fixed (PR #161) |
-| C-16 | Points | The outbox can send a row twice (no claim); the "earlier event" check is a LIKE scan per row | Medium | A | Open |
-| C-17 | Points | Parked or abandoned outbox rows raise no alert; commands always report success | Medium | A | Fixed (this PR): `ops:check` runs every 15 minutes and reports parked and long-stale outbox rows once a day (log and Sentry). The flush commands still return success |
-| C-18 | Seminars | Link check (DNS plus up to four 4 s hops) runs inside a database transaction | Medium | A | Open |
-| C-19 | Seats | Blocking 3 s Billing call on every seat view/invite while Billing is down | Medium | A | Open |
+| C-16 | Points | The outbox can send a row twice (no claim); the "earlier event" check is a LIKE scan per row | Medium | A | Fixed (PR #168): a row is claimed before sending; ordering uses an indexed contribution_ref column |
+| C-17 | Points | Parked or abandoned outbox rows raise no alert; commands always report success | Medium | A | Fixed (PR #163/#168): ops:check reports parked and stale rows daily; overdue appeals too |
+| C-18 | Seminars | Link check (DNS plus up to four 4 s hops) runs inside a database transaction | Medium | A | Fixed (PR #168): the link check runs before the transaction |
+| C-19 | Seats | Blocking 3 s Billing call on every seat view/invite while Billing is down | Medium | A | Fixed (PR #168): a failed Billing read backs off for 30 seconds |
 | C-20 | Mail | SMTP is called synchronously in web requests with no timeout | Medium | A | Mitigated (this PR): SMTP timeout 10 s (`MAIL_TIMEOUT`). Mail is still sent inside the web request |
-| C-21 | Seminars | Reminders and time-change notices do `User::find` per registrant | Medium | A | Open |
-| C-22 | Reputation | Nightly recalculation about 25 queries per user, likely over 115 s; opt-out race; snapshots never pruned | Medium | A | Open |
-| C-23 | Analytics | Dashboard runs a query per member and non-sargable month filters | Medium | A | Open |
-| C-24 | Indexes | Missing indexes on `associates`, `comments`, `likes`, `objects` columns the code filters on (the `constrained()`/`contrained` calls created nothing) | Medium | A | Open (only the indexes in C-07 were added) |
-| C-25 | Constraints | `seminar_reports` unique key was dropped for person reports; first-or-create races on reports, associates, debts | Low | A, R for the report key (my change) | Open |
-| C-26 | Deadlocks | Lock order differs between checkout/cancel and the ticket callback | Low | A | Open |
-| C-27 | Solutions | Creating a solution is not one transaction; unbounded tags could 500 | Low | A | Tags now capped (PR #161); transaction Open |
+| C-21 | Seminars | Reminders and time-change notices do `User::find` per registrant | Medium | A | Fixed (PR #168): reminders and change notices are three queries however many people |
+| C-22 | Reputation | Nightly recalculation about 25 queries per user, likely over 115 s; opt-out race; snapshots never pruned | Medium | A | Fixed (PR #168): the nightly run resumes in 80-second slices, re-reads the opt-out before writing, keeps 60 snapshots each, and the flag list is read once a minute |
+| C-23 | Analytics | Dashboard runs a query per member and non-sargable month filters | Medium | A | Fixed (PR #168): one grouped query for the top askers, ids instead of member rows, sargable month ranges; query-budget test |
+| C-24 | Indexes | Missing indexes on `associates`, `comments`, `likes`, `objects` columns the code filters on (the `constrained()`/`contrained` calls created nothing) | Medium | A | Fixed (PR #168): indexes for associates, comments, objects (migration 2026_10_30_100003) |
+| C-25 | Constraints | `seminar_reports` unique key was dropped for person reports; first-or-create races on reports, associates, debts | Low | A, R for the report key (my change) | Fixed (PR #168): seminar reports have an enforced unique key again (about_key); the service rides the constraint |
+| C-26 | Deadlocks | Lock order differs between checkout/cancel and the ticket callback | Low | A | Fixed (PR #168): ticket callbacks lock seminar first, like every other path |
+| C-27 | Solutions | Creating a solution is not one transaction; unbounded tags could 500 | Low | A | Fixed (PR #168): a solution, its topics and steps are one transaction; tags capped earlier |
 | C-28 | Logs | Single unrotated log file; no request id; example sets debug level | Medium | A | Rotation and request id fixed (this PR): daily files kept 14 days, every log line and the Sentry event carry `request_id`, the response has `X-Request-Id`. Logs are still plain text, not JSON |
-| C-29 | Docs | `docs/deployment-cpanel.md` says "no cron lines" and PostgreSQL; production DB engine is stated inconsistently | Medium | A | Open |
-| C-30 | N+1 | Per-row lookups in answers, notices; cross-platform search fan-out on every query; Points summary failures not cached | Low | A | Open |
+| C-29 | Docs | `docs/deployment-cpanel.md` says "no cron lines" and PostgreSQL; production DB engine is stated inconsistently | Medium | A | Fixed (PR #168): the deployment doc says MySQL and lists the scheduled commands; the example env says mysql |
+| C-30 | N+1 | Per-row lookups in answers, notices; cross-platform search fan-out on every query; Points summary failures not cached | Low | A | Mostly fixed (PR #168): notices preloaded per page, answers eager-load their question, the cross-platform fan-out is limited; the Points summary failure is still not cached |
 | P-01 | Pipeline | `main` has no branch protection and no rulesets; required checks are not enforced | High (governance) | **L** via GitHub API: "Branch not protected", rulesets `[]` | Open, Owner (changes how merges work) |
 | P-02 | Pipeline | Dependabot security updates are disabled | Medium | **L** | Open, Owner |
 | P-03 | Pipeline | `deploy.yml` says its gate runs "tests, Pint, frontend build + manifest check"; `ci.yml` ran tests only | Medium | R | Fixed (PR #161): the gate now runs advisories, PHPStan, Pint, frontend build and tests. The manifest check is still not in `ci.yml` |
@@ -90,9 +90,9 @@ Source: three read-only code audits (access control and tenancy; input handling,
 | P-05 | Pipeline | PHPStan level 5 was configured but not run in CI; 173 findings | Medium | R, tool run | Fixed (PR #161): baseline file, CI gate. This PR: documenting the Questions/Solutions columns cut the legacy debt to **154**, and `phpstan-baseline.max` plus `tools/check-phpstan-baseline.sh` make the ceiling enforced (it can only go down) |
 | P-06 | Pipeline | Pint failed on 39 files | Low | tool run | Fixed (PR #161) |
 | P-07 | Dependencies | symfony/mime 7.4.19 (CVE-2026-45070, medium); 2 npm moderate (build-time) | Medium | tool run | Fixed (PR #161); composer audit 0, npm audit 0 |
-| P-08 | Repo | `.phpunit.cache/test-results` is tracked and dirties every run | Info | R | Open |
+| P-08 | Repo | `.phpunit.cache/test-results` is tracked and dirties every run | Info | R | Fixed (PR #168): untracked and ignored |
 | O-01 | Observability | A dead scheduler stops points delivery, refund retries and digests with no error. `/ready` now reports `degraded` when the scheduler heartbeat (written every minute) is older than 15 minutes; an outside monitor must call `/ready` for this to reach a person | Medium | R, T | Fixed (this PR) in code. **Verified on production 2026-10-30** (heartbeat 0 minutes old, `ops:check` clean: `evidence/2026-10-30-ops-checks.md`). **Owner:** point an uptime monitor at `https://infodot.co.za/ready` |
-| O-02 | Incident control | The only switch that stops new paid checkouts is `SEMINARS_PAID_ENABLED=false`, which also stops all refund requests to Billing and makes Billing's callbacks answer 401, so using it mid-incident can strand in-flight payments | Medium | R: `BillingMarketplace::configured`, `SeminarTicketEventsController` | Open (engineering: a narrower switch). Documented in `policies/INCIDENT_RESPONSE.md` |
+| O-02 | Incident control | The only switch that stops new paid checkouts is `SEMINARS_PAID_ENABLED=false`, which also stops all refund requests to Billing and makes Billing's callbacks answer 401, so using it mid-incident can strand in-flight payments | Medium | R: `BillingMarketplace::configured`, `SeminarTicketEventsController` | Fixed (PR #168): SEMINARS_CHECKOUT_ENABLED pauses new sales only; the incident procedure now names it first |
 | P-09 | Deploy | A failed deploy after maintenance mode starts leaves the site down by design; the rollback copy is manual and not drilled | Medium | R | Open, Owner |
 
 ## Access checks that held (tested, no finding)
