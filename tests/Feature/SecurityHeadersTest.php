@@ -95,4 +95,15 @@ class SecurityHeadersTest extends TestCase
         $this->call('POST', '/csp-report', [], [], [], ['CONTENT_TYPE' => 'application/reports+json'], 'not json at all')->assertNoContent();
         $this->call('POST', '/csp-report', [], [], [], ['CONTENT_TYPE' => 'application/reports+json'], json_encode([['type' => 'csp-violation', 'body' => ['effectiveDirective' => 'img-src', 'blockedURL' => 'inline']]]))->assertNoContent();
     }
+
+    public function test_malformed_violation_reports_cannot_error_or_flood_the_cache(): void
+    {
+        // Array-valued fields (a string cast on these would throw under Laravel's warning handler).
+        $this->call('POST', '/csp-report', [], [], [], ['CONTENT_TYPE' => 'application/csp-report'],
+            json_encode(['csp-report' => ['effective-directive' => ['a', 'b'], 'blocked-uri' => ['x']]]))->assertNoContent();
+
+        // A forged kilometre-long host must be capped before it becomes a cache key.
+        $this->call('POST', '/csp-report', [], [], [], ['CONTENT_TYPE' => 'application/csp-report'],
+            json_encode(['csp-report' => ['effective-directive' => 'img-src', 'blocked-uri' => 'https://'.str_repeat('a', 4000).'.example']]))->assertNoContent();
+    }
 }
