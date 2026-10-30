@@ -3,6 +3,7 @@
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ExpertiseSharingController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
@@ -43,6 +44,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::post('/csp-report', CspReportController::class)->middleware('throttle:60,1,csp-report')->name('csp.report');
 Route::get('/ready', ReadinessController::class)->middleware('throttle:60,1,ready')->name('ready');
 Route::get('/', function () {
     return view('welcome');

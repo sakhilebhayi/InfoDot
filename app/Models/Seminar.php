@@ -5,9 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
-/** A free seminar a person hosts. The join link is the host's own; see config/seminars.php. */
+/**
+ * A free seminar a person hosts. The join link is the host's own; see config/seminars.php.
+ *
+ * @property Carbon $starts_at
+ * @property Carbon|null $removed_at
+ * @property Carbon|null $cancelled_at
+ * @property Carbon|null $join_url_checked_at
+ */
 class Seminar extends Model
 {
     public const DRAFT = 'draft';

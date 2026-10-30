@@ -1,9 +1,15 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:allUsers\(\)\.$#'
-			identifier: method.notFound
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$questions_count\.$#'
+			identifier: property.notFound
 			count: 1
+			path: app/Http/Controllers/Analytics/AnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 2
 			path: app/Http/Controllers/Analytics/AnalyticsController.php
 
 		-
@@ -25,38 +31,14 @@ parameters:
 			path: app/Http/Controllers/HomeController.php
 
 		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Questions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/HomeController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Solutions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/HomeController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\UserNotice\>\:\:getCollection\(\)\.$#'
 			identifier: method.notFound
-			count: 1
+			count: 2
 			path: app/Http/Controllers/NoticesController.php
 
 		-
 			message: '#^Parameter \#1 \$viewer of method App\\Http\\Controllers\\PagesController\:\:sharesATeam\(\) expects App\\Models\\User\|null, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/PagesController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Questions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/PagesController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Solutions model\.$#'
-			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/PagesController.php
 
@@ -91,18 +73,6 @@ parameters:
 			path: app/Http/Controllers/Questions/QuestionsController.php
 
 		-
-			message: '#^Relation ''team'' is not found in App\\Models\\Questions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Questions/QuestionsController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Questions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Questions/QuestionsController.php
-
-		-
 			message: '#^Parameter \#1 \$user of method App\\Services\\Reputation\\ReputationEngine\:\:snapshot\(\) expects App\\Models\\User, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -130,18 +100,6 @@ parameters:
 			message: '#^Parameter \#1 \$team of static method App\\Support\\Industry\:\:for\(\) expects App\\Models\\Team\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
 			identifier: argument.type
 			count: 2
-			path: app/Http/Controllers/Solutions/SolutionsController.php
-
-		-
-			message: '#^Relation ''team'' is not found in App\\Models\\Solutions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Http/Controllers/Solutions/SolutionsController.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Solutions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
 			path: app/Http/Controllers/Solutions/SolutionsController.php
 
 		-
@@ -277,18 +235,6 @@ parameters:
 			path: app/Livewire/Moderation/Topics.php
 
 		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Questions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Livewire/Moderation/Topics.php
-
-		-
-			message: '#^Relation ''user'' is not found in App\\Models\\Solutions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Livewire/Moderation/Topics.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -331,18 +277,6 @@ parameters:
 			path: app/Livewire/Search.php
 
 		-
-			message: '#^Relation ''team'' is not found in App\\Models\\Questions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Livewire/Search.php
-
-		-
-			message: '#^Relation ''team'' is not found in App\\Models\\Solutions model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Livewire/Search.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Answer\:\:\$hidden_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -353,12 +287,6 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: app/Models/LibraryEntry.php
-
-		-
-			message: '#^Cannot call method copy\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: app/Models/Seminar.php
 
 		-
 			message: '#^Property App\\Providers\\EventServiceProvider\:\:\$listen \(array\<class\-string, array\<int, class\-string\>\>\) does not accept default value of type array\<string, list\<list\<string\>\|string\>\>\.$#'
@@ -403,9 +331,39 @@ parameters:
 			path: app/Services/Knowledge/AnswerService.php
 
 		-
-			message: '#^Cannot call method timezone\(\) on string\.$#'
-			identifier: method.nonObject
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question\.$#'
+			identifier: property.notFound
 			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$starts_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
+			identifier: method.notFound
+			count: 2
 			path: app/Services/Knowledge/InAppNotices.php
 
 		-
@@ -417,6 +375,12 @@ parameters:
 		-
 			message: '#^Method App\\Services\\Knowledge\\InAppNotices\:\:page\(\) should return Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\UserNotice\> but returns Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\UserNotice\>\.$#'
 			identifier: return.type
+			count: 1
+			path: app/Services/Knowledge/InAppNotices.php
+
+		-
+			message: '#^Parameter \#3 \$seminar of method App\\Services\\Knowledge\\InAppNotices\:\:words\(\) expects App\\Models\\Seminar\|null, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Services/Knowledge/InAppNotices.php
 
@@ -565,32 +529,14 @@ parameters:
 			path: app/Services/Reputation/ReputationEngine.php
 
 		-
-			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 3
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
 			path: app/Services/Reputation/ReputationEngine.php
 
 		-
 			message: '#^Loose comparison using \=\= between string and array\<string, array\{points\: float, score\: float, evidence\: array\<string, float\|int\>\}\> will always evaluate to false\.$#'
 			identifier: equal.alwaysFalse
-			count: 1
-			path: app/Services/Reputation/ReputationEngine.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ReputationRingFlag\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/Reputation/ReputationEngine.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ReputationSnapshot\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Services/Reputation/ReputationEngine.php
-
-		-
-			message: '#^Parameter \#2 \$array of function array_map expects array, string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Services/Reputation/ReputationEngine.php
 
@@ -601,22 +547,10 @@ parameters:
 			path: app/Services/Reputation/ReputationEngine.php
 
 		-
-			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Services/Reputation/ReputationEngine.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\SeminarRegistration\:\:\$title\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/Seminars/CommissionInvoices.php
-
-		-
-			message: '#^Cannot call method greaterThan\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Services/Seminars/HostDebtLedger.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Seminar\:\:\$host_points_event_id\.$#'
@@ -637,32 +571,8 @@ parameters:
 			path: app/Services/Seminars/SeminarHostPoints.php
 
 		-
-			message: '#^Cannot call method equalTo\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Services/Seminars/SeminarService.php
-
-		-
-			message: '#^Cannot call method gte\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Services/Seminars/SeminarService.php
-
-		-
-			message: '#^Cannot call method isFuture\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 3
-			path: app/Services/Seminars/SeminarService.php
-
-		-
-			message: '#^Cannot call method lt\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Services/Seminars/SeminarService.php
-
-		-
-			message: '#^Cannot call method lte\(\) on string\.$#'
-			identifier: method.nonObject
+			message: '#^Offset ''join_url'' on non\-empty\-array\<string, mixed\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Services/Seminars/SeminarService.php
 

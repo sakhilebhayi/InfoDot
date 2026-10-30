@@ -3,8 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
-/** One computed result, kept forever so a score can always be explained and re-derived. Never edited. */
+/**
+ * One computed result, kept forever so a score can always be explained and re-derived. Never edited.
+ *
+ * @property Carbon|null $computed_at
+ */
 class ReputationSnapshot extends Model
 {
     public $timestamps = false;

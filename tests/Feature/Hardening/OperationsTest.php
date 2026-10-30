@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use Monolog\Formatter\JsonFormatter;
+use Monolog\Level;
+use Monolog\LogRecord;
 use Tests\TestCase;
 
 /** Failures that used to be silent are now seen (enterprise audit C-17, C-28, C-13, B-07, observability). */
@@ -189,5 +192,20 @@ class OperationsTest extends TestCase
         $other->forceFill(['current_team_id' => $team->id])->save();
         Livewire::actingAs($other)->test(Search::class)->set('query', 'invoice template')->call('loadExternal');
         $this->assertSame(1, RateLimiter::attempts('search-external:'.$other->id));
+    }
+
+    public function test_logs_can_be_written_as_json_with_the_request_id(): void
+    {
+        config(['logging.channels.daily.formatter' => JsonFormatter::class]);
+        Log::forgetChannel('daily');
+        $handler = Log::channel('daily')->getLogger()->getHandlers()[0];
+
+        $this->assertInstanceOf(JsonFormatter::class, $handler->getFormatter());
+
+        $line = $handler->getFormatter()->format(new LogRecord(new \DateTimeImmutable, 'app', Level::Warning, 'something happened', ['request_id' => 'abc12345', 'kind' => 'x']));
+        $decoded = json_decode($line, true);
+
+        $this->assertSame('something happened', $decoded['message']);
+        $this->assertSame('abc12345', $decoded['context']['request_id']);
     }
 }

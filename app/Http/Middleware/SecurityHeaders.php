@@ -25,6 +25,13 @@ class SecurityHeaders
             'Permissions-Policy' => 'camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=(), usb=()',
         ];
 
+        if (config('security.csp_report_only')) {
+            $headers['Content-Security-Policy-Report-Only'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+                ."style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
+                ."img-src 'self' data: blob: https://www.gravatar.com https://images.unsplash.com https://source.unsplash.com; media-src 'self' blob:; "
+                ."connect-src 'self' wss: https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https:; report-uri /csp-report";
+        }
+
         if ($request->isSecure() && config('security.hsts_seconds', 0) > 0) {
             $headers['Strict-Transport-Security'] = 'max-age='.(int) config('security.hsts_seconds');
         }
