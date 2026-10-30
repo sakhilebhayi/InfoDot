@@ -36,11 +36,12 @@ return new class extends Migration
                     continue;
                 }
 
-                Schema::table($table, fn (Blueprint $t) => $t->index($columns));
+                Schema::table($table, fn (Blueprint $t) => $t->index($columns, $this->nameFor($table, $columns)));
             }
         }
     }
 
+    /** Only the indexes this migration made are dropped by down(): an index that was already there is not ours to remove. */
     public function down(): void
     {
         foreach (self::INDEXES as $table => $sets) {
@@ -49,10 +50,18 @@ return new class extends Migration
             }
 
             foreach ($sets as $columns) {
-                if (Schema::hasIndex($table, $columns)) {
-                    Schema::table($table, fn (Blueprint $t) => $t->dropIndex($columns));
+                $name = $this->nameFor($table, $columns);
+
+                if (Schema::hasIndex($table, $name)) {
+                    Schema::table($table, fn (Blueprint $t) => $t->dropIndex($name));
                 }
             }
         }
+    }
+
+    /** @param  list<string>  $columns */
+    private function nameFor(string $table, array $columns): string
+    {
+        return substr('hot_'.$table.'_'.implode('_', $columns), 0, 64);
     }
 };

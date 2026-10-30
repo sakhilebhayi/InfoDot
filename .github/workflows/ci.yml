@@ -64,6 +64,9 @@ jobs:
 
       # Release gates added by the enterprise-readiness programme (docs/programme/enterprise/). Each passes on the
       # current code; each fails on a NEW problem. Legacy findings are in phpstan-baseline.neon and may only shrink.
+      - name: "The advisory gate itself fails closed (stub composer: no output, garbage, high, critical)"
+        run: bash tools/test-ci-composer-audit.sh
+
       - name: Dependency advisories (high or critical block the release)
         run: bash tools/ci-composer-audit.sh
 

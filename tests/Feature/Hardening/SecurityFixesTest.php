@@ -6,6 +6,7 @@ use App\Livewire\Comments;
 use App\Models\User;
 use App\Support\CanonicalUrl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
@@ -102,19 +103,47 @@ class SecurityFixesTest extends TestCase
 
     // ---- S-04 host header ------------------------------------------------------------------------------------------------
 
-    public function test_generated_links_use_the_configured_url_not_the_request_host(): void
+    public function test_generated_links_use_the_configured_url_when_the_request_host_is_foreign(): void
     {
         config(['app.url' => 'https://infodot.example']);
-        CanonicalUrl::apply();
 
         try {
-            $this->get('/login', ['Host' => 'evil.example']);
+            CanonicalUrl::apply(Request::create('https://evil.example/forgot-password', 'POST'));
+
             $this->assertStringStartsWith('https://infodot.example/', route('password.reset', ['token' => 'x']));
             $this->assertStringStartsWith('https://infodot.example/', url('/anything'));
         } finally {
             URL::forceRootUrl(null);
             URL::forceScheme(null);
         }
+    }
+
+    public function test_the_sites_own_hosts_including_www_keep_their_own_links_so_forms_post_where_the_session_lives(): void
+    {
+        config(['app.url' => 'https://infodot.example']);
+
+        try {
+            foreach (['infodot.example', 'www.infodot.example', 'WWW.InfoDot.Example'] as $host) {
+                URL::forceRootUrl(null);
+                URL::forceScheme(null);
+                $request = Request::create('https://'.$host.'/login');
+                $this->app->instance('request', $request);
+                URL::setRequest($request);
+                CanonicalUrl::apply($request);
+
+                $this->assertStringStartsWith('https://'.strtolower($host).'/', route('login'), "a visitor on $host must be sent to $host, not to another host");
+            }
+        } finally {
+            URL::forceRootUrl(null);
+            URL::forceScheme(null);
+        }
+    }
+
+    public function test_the_own_host_list_handles_an_app_url_with_or_without_www(): void
+    {
+        $this->assertSame(['infodot.co.za', 'www.infodot.co.za'], CanonicalUrl::ownHosts('https://infodot.co.za'));
+        $this->assertSame(['infodot.co.za', 'www.infodot.co.za'], CanonicalUrl::ownHosts('https://www.infodot.co.za'));
+        $this->assertSame([], CanonicalUrl::ownHosts(''));
     }
 
     // ---- S-05 stripe webhook ---------------------------------------------------------------------------------------------

@@ -57,7 +57,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->isProduction()) {
-            CanonicalUrl::apply();
+            CanonicalUrl::apply($this->app->runningInConsole() ? null : $this->app['request']);
         }
 
         // Jetstream's team member manager with a server-side check on cancelling invitations (app/Livewire/Teams/TeamMemberManager.php).
