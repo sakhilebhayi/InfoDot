@@ -112,7 +112,7 @@ paths:
   /ecosystem/resources:
     post:
       summary: The owning platform registers a pointer to an object (files, docs)
-      description: A platform may register only the types it is authoritative for (files: `file`; docs: `document`), only for real non-personal companies, and only its own pointers.
+      description: "A platform may register only the types it is authoritative for (files: `file`; docs: `document`), only for real non-personal companies, and only its own pointers."
       security: [{ platformSecret: [] }]
       requestBody:
         required: true
@@ -145,7 +145,7 @@ paths:
   /knowledge/candidates:
     get:
       summary: Dot.Brain pulls candidates for the Verified library
-      description: Public, community-corroborated answers and solutions as references and facts only. Rate limited; signed GET (empty body). `Cache-Control - no-store`.
+      description: "Public, community-corroborated answers and solutions as references and facts only. Rate limited; signed GET (empty body). Cache-Control: no-store."
       security: [{ hmac: [] }]
       parameters:
         - { name: since, in: query, schema: { type: string, format: date-time }, description: ISO 8601 with an explicit offset. }
