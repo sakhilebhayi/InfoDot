@@ -10,7 +10,9 @@ return [
     | The pages use inline scripts and Alpine/Livewire, so the policy allows 'unsafe-inline' and 'unsafe-eval' for now; the reports show which
     | outside hosts are really used, and the next step is a nonce-based policy that is enforced. Set false to send no header.
     */
-    'csp_report_only' => (bool) env('SECURITY_CSP_REPORT_ONLY', true),
+    // Enforced since R-18 (zero violations during the report-only period). Set true to fall back to
+    // report-only without a deploy; either way violations keep logging through /csp-report.
+    'csp_report_only' => (bool) env('SECURITY_CSP_REPORT_ONLY', false),
 
     'hsts_seconds' => (int) env('SECURITY_HSTS_SECONDS', 15552000),   // 180 days
 ];
