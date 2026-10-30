@@ -67,7 +67,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/platforms', EcosystemWidget::class)->name('ecosystem.widget');
     Route::get('/open/{resource}', ResourceOpenController::class)->name('resources.open');
     // Opens a platform signed in: a page that posts a single-use token to it. The token is never in a URL.
-    Route::get('/go/{platform}', PlatformLaunchController::class)->middleware('throttle:30,1')->name('platform.launch');
+    Route::get('/go/{platform}', PlatformLaunchController::class)->middleware('throttle:30,1,platform.launch')->name('platform.launch');
 
     // -------------------------------------------------------
     // People: the members of the company the person is acting for
@@ -79,7 +79,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/solutions', 'App\Http\Controllers\Solutions\SolutionsController@index')->name('solutions');
     Route::get('/solution/create', 'App\Http\Controllers\Solutions\SolutionsController@create')->name('add');
-    Route::post('/solution/add', 'App\Http\Controllers\Solutions\SolutionsController@add_solution')->name('solutions.add');
+    Route::post('/solution/add', 'App\Http\Controllers\Solutions\SolutionsController@add_solution')->middleware('throttle:10,1,solutions-add')->name('solutions.add');
     Route::get('/solution/view/{id}', 'App\Http\Controllers\Solutions\SolutionsController@view_solution')->name('solutions.view');
 
     // -------------------------------------------------------
@@ -87,10 +87,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::get('/questions', 'App\Http\Controllers\Questions\QuestionsController@index')->name('questions');
     Route::get('/questions/ask', 'App\Http\Controllers\Questions\QuestionsController@seek')->name('seek');
-    Route::post('/questions/add', 'App\Http\Controllers\Questions\QuestionsController@add_question')->middleware('throttle:10,1')->name('questions.add');
+    Route::post('/questions/add', 'App\Http\Controllers\Questions\QuestionsController@add_question')->middleware('throttle:10,1,questions.add')->name('questions.add');
     Route::get('/question/view/{qid}', 'App\Http\Controllers\Questions\QuestionsController@view')->name('questions.view');
-    Route::post('/question/{qid}/topics', [TopicAssignmentController::class, 'question'])->whereNumber('qid')->middleware(['moderator', 'throttle:30,1'])->name('questions.topics');
-    Route::post('/solution/{id}/topics', [TopicAssignmentController::class, 'solution'])->whereNumber('id')->middleware(['moderator', 'throttle:30,1'])->name('solutions.topics');
+    Route::post('/question/{qid}/topics', [TopicAssignmentController::class, 'question'])->whereNumber('qid')->middleware(['moderator', 'throttle:30,1,questions.topics'])->name('questions.topics');
+    Route::post('/solution/{id}/topics', [TopicAssignmentController::class, 'solution'])->whereNumber('id')->middleware(['moderator', 'throttle:30,1,solutions.topics'])->name('solutions.topics');
 
     // -------------------------------------------------------
     // Topics: browse questions and solutions by subject
@@ -109,45 +109,45 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/user/profile/edit', 'App\Http\Controllers\PagesController@edit')->name('profile.edit');
     Route::get('/user/profile/{id}', 'App\Http\Controllers\PagesController@show')->name('profile.show');
     // Whether other people may see the signed-in person's achievements and public contributions. Always their own row.
-    Route::post('/user/profile/achievements-visibility', [AchievementsController::class, 'updateVisibility'])->middleware('throttle:20,1')->name('profile.achievements-visibility');
+    Route::post('/user/profile/achievements-visibility', [AchievementsController::class, 'updateVisibility'])->middleware('throttle:20,1,profile.achievements-visibility')->name('profile.achievements-visibility');
     // Whether the person's specialist badges are shown (public unless they hide them). Always their own row.
-    Route::post('/user/profile/badges-visibility', [AchievementsController::class, 'updateBadges'])->middleware('throttle:20,1')->name('profile.badges-visibility');
+    Route::post('/user/profile/badges-visibility', [AchievementsController::class, 'updateBadges'])->middleware('throttle:20,1,profile.badges-visibility')->name('profile.badges-visibility');
 
     // Knowledge reputation: private progress (404 unless REPUTATION_ENABLED). Appeals are answered by moderators.
-    Route::get('/progress', [ReputationController::class, 'show'])->middleware('throttle:60,1')->name('reputation');
-    Route::post('/progress/preference', [ReputationController::class, 'preference'])->middleware('throttle:10,1')->name('reputation.preference');
-    Route::get('/progress/export', [ReputationController::class, 'export'])->middleware('throttle:10,1')->name('reputation.export');
-    Route::post('/progress/appeal', [ReputationController::class, 'appeal'])->middleware('throttle:10,1')->name('reputation.appeal');
-    Route::get('/moderation/reputation', [ReputationController::class, 'appeals'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation');
-    Route::post('/moderation/reputation/{appeal}', [ReputationController::class, 'resolve'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1'])->name('moderation.reputation.resolve');
+    Route::get('/progress', [ReputationController::class, 'show'])->middleware('throttle:60,1,reputation')->name('reputation');
+    Route::post('/progress/preference', [ReputationController::class, 'preference'])->middleware('throttle:10,1,reputation.preference')->name('reputation.preference');
+    Route::get('/progress/export', [ReputationController::class, 'export'])->middleware('throttle:10,1,reputation.export')->name('reputation.export');
+    Route::post('/progress/appeal', [ReputationController::class, 'appeal'])->middleware('throttle:10,1,reputation.appeal')->name('reputation.appeal');
+    Route::get('/moderation/reputation', [ReputationController::class, 'appeals'])->middleware(['moderator', 'throttle:30,1,moderation.reputation'])->name('moderation.reputation');
+    Route::post('/moderation/reputation/{appeal}', [ReputationController::class, 'resolve'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1,moderation.reputation.resolve'])->name('moderation.reputation.resolve');
     // Advisory ring flags (accounts accepting each other's answers). Moderators only; the people in a flag are not told.
-    Route::get('/moderation/rings', [ReputationRingsController::class, 'index'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.rings');
-    Route::post('/moderation/rings/{flag}', [ReputationRingsController::class, 'review'])->whereNumber('flag')->middleware(['moderator', 'throttle:30,1'])->name('moderation.rings.review');
+    Route::get('/moderation/rings', [ReputationRingsController::class, 'index'])->middleware(['moderator', 'throttle:30,1,moderation.rings'])->name('moderation.rings');
+    Route::post('/moderation/rings/{flag}', [ReputationRingsController::class, 'review'])->whereNumber('flag')->middleware(['moderator', 'throttle:30,1,moderation.rings.review'])->name('moderation.rings.review');
     // Free seminars: any verified person may host one; the host's own join link is shown only to registered people in the window.
     Route::get('/seminars', [SeminarsController::class, 'index'])->name('seminars');
-    Route::get('/seminars/payouts', [SeminarPayoutsController::class, 'index'])->middleware('throttle:30,1')->name('seminars.payouts');
-    Route::post('/seminars/payouts', [SeminarPayoutsController::class, 'store'])->middleware('throttle:5,1')->name('seminars.payouts.store');
+    Route::get('/seminars/payouts', [SeminarPayoutsController::class, 'index'])->middleware('throttle:30,1,seminars.payouts')->name('seminars.payouts');
+    Route::post('/seminars/payouts', [SeminarPayoutsController::class, 'store'])->middleware('throttle:5,1,seminars.payouts.store')->name('seminars.payouts.store');
     Route::post('/seminars/payouts/agreement', [SeminarPayoutsController::class, 'agreement'])->middleware('throttle:10,1,seminar-agreement')->name('seminars.payouts.agreement');
-    Route::post('/seminars/payouts/seller', [SeminarPayoutsController::class, 'seller'])->middleware('throttle:10,1')->name('seminars.payouts.seller');
-    Route::get('/seminars/invoices', [SeminarInvoicesController::class, 'index'])->middleware('throttle:30,1')->name('seminars.invoices');
-    Route::get('/seminars/invoices/{invoice}', [SeminarInvoicesController::class, 'show'])->whereNumber('invoice')->middleware('throttle:30,1')->name('seminars.invoice');
-    Route::get('/moderation/seminar-payments', [SeminarPaymentsModerationController::class, 'index'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.seminar-payments');
+    Route::post('/seminars/payouts/seller', [SeminarPayoutsController::class, 'seller'])->middleware('throttle:10,1,seminars.payouts.seller')->name('seminars.payouts.seller');
+    Route::get('/seminars/invoices', [SeminarInvoicesController::class, 'index'])->middleware('throttle:30,1,seminars.invoices')->name('seminars.invoices');
+    Route::get('/seminars/invoices/{invoice}', [SeminarInvoicesController::class, 'show'])->whereNumber('invoice')->middleware('throttle:30,1,seminars.invoice')->name('seminars.invoice');
+    Route::get('/moderation/seminar-payments', [SeminarPaymentsModerationController::class, 'index'])->middleware(['moderator', 'throttle:30,1,moderation.seminar-payments'])->name('moderation.seminar-payments');
     Route::get('/seminars/link-check', [SeminarsController::class, 'linkCheck'])->middleware('throttle:20,1,seminar-link-check')->name('seminars.link-check');
     Route::get('/seminars/new', [SeminarsController::class, 'create'])->name('seminars.create');
-    Route::post('/seminars', [SeminarsController::class, 'store'])->middleware('throttle:10,1')->name('seminars.store');
+    Route::post('/seminars', [SeminarsController::class, 'store'])->middleware('throttle:10,1,seminars.store')->name('seminars.store');
     Route::get('/seminars/{seminar}', [SeminarsController::class, 'show'])->whereNumber('seminar')->name('seminars.show');
     Route::get('/seminars/{seminar}/edit', [SeminarsController::class, 'edit'])->whereNumber('seminar')->name('seminars.edit');
-    Route::put('/seminars/{seminar}', [SeminarsController::class, 'update'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.update');
-    Route::post('/seminars/{seminar}/cancel', [SeminarsController::class, 'cancel'])->whereNumber('seminar')->middleware('throttle:10,1')->name('seminars.cancel');
-    Route::post('/seminars/{seminar}/register', [SeminarsController::class, 'register'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.register');
-    Route::post('/seminars/{seminar}/unregister', [SeminarsController::class, 'unregister'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.unregister');
-    Route::post('/seminars/{seminar}/join', [SeminarsController::class, 'join'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.join');
-    Route::post('/seminars/{seminar}/attendance/{person}', [SeminarsController::class, 'attendance'])->whereNumber(['seminar', 'person'])->middleware('throttle:60,1')->name('seminars.attendance');
-    Route::post('/seminars/{seminar}/refund/{person}', [SeminarsController::class, 'refund'])->whereNumber(['seminar', 'person'])->middleware('throttle:20,1')->name('seminars.refund');
-    Route::get('/seminars/{seminar}/receipt', [SeminarsController::class, 'receipt'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.receipt');
-    Route::get('/seminars/{seminar}/room', [SeminarRoomController::class, 'show'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.room');
-    Route::post('/seminars/{seminar}/room/token', [SeminarRoomController::class, 'token'])->whereNumber('seminar')->middleware('throttle:30,1')->name('seminars.room.token');
-    Route::post('/seminars/{seminar}/room/remove/{person}', [SeminarRoomController::class, 'remove'])->whereNumber(['seminar', 'person'])->middleware('throttle:30,1')->name('seminars.room.remove');
+    Route::put('/seminars/{seminar}', [SeminarsController::class, 'update'])->whereNumber('seminar')->middleware('throttle:20,1,seminars.update')->name('seminars.update');
+    Route::post('/seminars/{seminar}/cancel', [SeminarsController::class, 'cancel'])->whereNumber('seminar')->middleware('throttle:10,1,seminars.cancel')->name('seminars.cancel');
+    Route::post('/seminars/{seminar}/register', [SeminarsController::class, 'register'])->whereNumber('seminar')->middleware('throttle:30,1,seminars.register')->name('seminars.register');
+    Route::post('/seminars/{seminar}/unregister', [SeminarsController::class, 'unregister'])->whereNumber('seminar')->middleware('throttle:30,1,seminars.unregister')->name('seminars.unregister');
+    Route::post('/seminars/{seminar}/join', [SeminarsController::class, 'join'])->whereNumber('seminar')->middleware('throttle:30,1,seminars.join')->name('seminars.join');
+    Route::post('/seminars/{seminar}/attendance/{person}', [SeminarsController::class, 'attendance'])->whereNumber(['seminar', 'person'])->middleware('throttle:60,1,seminars.attendance')->name('seminars.attendance');
+    Route::post('/seminars/{seminar}/refund/{person}', [SeminarsController::class, 'refund'])->whereNumber(['seminar', 'person'])->middleware('throttle:20,1,seminars.refund')->name('seminars.refund');
+    Route::get('/seminars/{seminar}/receipt', [SeminarsController::class, 'receipt'])->whereNumber('seminar')->middleware('throttle:30,1,seminars.receipt')->name('seminars.receipt');
+    Route::get('/seminars/{seminar}/room', [SeminarRoomController::class, 'show'])->whereNumber('seminar')->middleware('throttle:30,1,seminars.room')->name('seminars.room');
+    Route::post('/seminars/{seminar}/room/token', [SeminarRoomController::class, 'token'])->whereNumber('seminar')->middleware('throttle:30,1,seminars.room.token')->name('seminars.room.token');
+    Route::post('/seminars/{seminar}/room/remove/{person}', [SeminarRoomController::class, 'remove'])->whereNumber(['seminar', 'person'])->middleware('throttle:30,1,seminars.room.remove')->name('seminars.room.remove');
     Route::post('/seminars/p2p/speedtest', [SeminarP2pController::class, 'speedtest'])->middleware('throttle:12,1,p2p-speedtest')->name('seminars.p2p.speedtest');
     Route::get('/seminars/p2p/plan', [SeminarP2pController::class, 'plan'])->middleware('throttle:30,1,p2p-plan')->name('seminars.p2p.plan');
     Route::get('/seminars/{seminar}/small-room', [SeminarP2pController::class, 'show'])->whereNumber('seminar')->middleware('throttle:30,1,p2p-show')->name('seminars.p2p');
@@ -168,37 +168,37 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/seminars/{seminar}/removal-appeal', [SeminarsController::class, 'appealRemoval'])->whereNumber('seminar')->middleware('throttle:5,1,seminar-appeal')->name('seminars.appeal');
     Route::post('/moderation/seminar-appeals/{appeal}', [SeminarModerationController::class, 'decideAppeal'])->whereNumber('appeal')->middleware(['moderator', 'throttle:30,1,mod-seminar-appeal'])->name('moderation.seminars.appeal');
     Route::post('/moderation/seminars/{seminar}/bar/{person}', [SeminarModerationController::class, 'bar'])->whereNumber(['seminar', 'person'])->middleware(['moderator', 'throttle:30,1,mod-seminar-bar'])->name('moderation.seminars.bar');
-    Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1')->name('seminars.feedback');
+    Route::post('/seminars/{seminar}/feedback', [SeminarsController::class, 'feedback'])->whereNumber('seminar')->middleware('throttle:20,1,seminars.feedback')->name('seminars.feedback');
 
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).
-    Route::get('/notifications', [NoticesController::class, 'index'])->middleware('throttle:60,1')->name('notices');
-    Route::get('/notifications/{id}/open', [NoticesController::class, 'open'])->whereNumber('id')->middleware('throttle:60,1')->name('notices.open');
-    Route::post('/notifications/read-all', [NoticesController::class, 'readAll'])->middleware('throttle:20,1')->name('notices.read-all');
-    Route::post('/notifications/preference', [NoticesController::class, 'preference'])->middleware('throttle:20,1')->name('notices.preference');
+    Route::get('/notifications', [NoticesController::class, 'index'])->middleware('throttle:60,1,notices')->name('notices');
+    Route::get('/notifications/{id}/open', [NoticesController::class, 'open'])->whereNumber('id')->middleware('throttle:60,1,notices.open')->name('notices.open');
+    Route::post('/notifications/read-all', [NoticesController::class, 'readAll'])->middleware('throttle:20,1,notices.read-all')->name('notices.read-all');
+    Route::post('/notifications/preference', [NoticesController::class, 'preference'])->middleware('throttle:20,1,notices.preference')->name('notices.preference');
 
     // -------------------------------------------------------
     // Dot Points: balance, rewards, redemptions. Server-to-server with the points service; always the signed-in person's own.
     // -------------------------------------------------------
-    Route::get('/points', [PointsController::class, 'index'])->middleware('throttle:60,1')->name('points');
-    Route::post('/points/redeem', [PointsController::class, 'redeem'])->middleware('throttle:10,1')->name('points.redeem');
-    Route::post('/points/expiry-emails', [PointsController::class, 'updateExpiryEmails'])->middleware('throttle:20,1')->name('points.expiry-emails');
+    Route::get('/points', [PointsController::class, 'index'])->middleware('throttle:60,1,points')->name('points');
+    Route::post('/points/redeem', [PointsController::class, 'redeem'])->middleware('throttle:10,1,points.redeem')->name('points.redeem');
+    Route::post('/points/expiry-emails', [PointsController::class, 'updateExpiryEmails'])->middleware('throttle:20,1,points.expiry-emails')->name('points.expiry-emails');
     // Opt-in summary emails of what the signed-in person earned (off unless they choose weekly or monthly).
-    Route::post('/points/digest-emails', [PointsController::class, 'updateDigestEmails'])->middleware('throttle:20,1')->name('points.digest-emails');
+    Route::post('/points/digest-emails', [PointsController::class, 'updateDigestEmails'])->middleware('throttle:20,1,points.digest-emails')->name('points.digest-emails');
     // Opt in to let Dot.Memory remember the topics the signed-in person helps with (default off; turning it off erases).
-    Route::post('/points/share-expertise', [ExpertiseSharingController::class, 'update'])->middleware('throttle:10,1')->name('points.share-expertise');
-    Route::post('/points/share-expertise/erase', [ExpertiseSharingController::class, 'erase'])->middleware('throttle:10,1')->name('points.share-expertise.erase');
+    Route::post('/points/share-expertise', [ExpertiseSharingController::class, 'update'])->middleware('throttle:10,1,points.share-expertise')->name('points.share-expertise');
+    Route::post('/points/share-expertise/erase', [ExpertiseSharingController::class, 'erase'])->middleware('throttle:10,1,points.share-expertise.erase')->name('points.share-expertise.erase');
     // Opt in to a list, for the signed-in person only, of open questions in the topics they have helped with.
-    Route::post('/points/topic-suggestions', [TopicSuggestionsController::class, 'update'])->middleware('throttle:20,1')->name('points.topic-suggestions');
+    Route::post('/points/topic-suggestions', [TopicSuggestionsController::class, 'update'])->middleware('throttle:20,1,points.topic-suggestions')->name('points.topic-suggestions');
 
     // -------------------------------------------------------
     // Moderation: reports, appeals and the audit trail. Moderators only.
     // -------------------------------------------------------
     Route::get('/moderation', ModerationQueue::class)->middleware('moderator')->name('moderation');
-    Route::get('/moderation/friction', [UxFrictionController::class, 'index'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.friction');
+    Route::get('/moderation/friction', [UxFrictionController::class, 'index'])->middleware(['moderator', 'throttle:30,1,moderation.friction'])->name('moderation.friction');
     Route::get('/moderation/topics', ModerationTopics::class)->middleware('moderator')->name('moderation.topics');
     // The Verified library desk: Dot.Brain's recommendations, the entries, and adding one by reference.
     Route::get('/moderation/library', ModerationLibrary::class)->middleware('moderator')->name('moderation.library');
-    Route::post('/moderation/library', [LibraryEntryController::class, 'store'])->middleware(['moderator', 'throttle:30,1'])->name('moderation.library.add');
+    Route::post('/moderation/library', [LibraryEntryController::class, 'store'])->middleware(['moderator', 'throttle:30,1,moderation.library.add'])->name('moderation.library.add');
 
     // -------------------------------------------------------
     // Sub Services
@@ -218,7 +218,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 Route::get('/home', 'App\Http\Controllers\HomeController@index')->name('dashboard');
 Route::get('/about', 'App\Http\Controllers\PagesController@about')->name('about');
 Route::get('/contact', 'App\Http\Controllers\PagesController@contact')->name('contact');
-Route::post('/contact-send', 'App\Http\Controllers\PagesController@contactSend')->middleware('throttle:5,10')->name('send-contact');
+Route::post('/contact-send', 'App\Http\Controllers\PagesController@contactSend')->middleware('throttle:5,10,send-contact')->name('send-contact');
 Route::get('/faqs', 'App\Http\Controllers\PagesController@faqs')->name('faqs');
 Route::get('/complains', 'App\Http\Controllers\PagesController@complains')->name('complains');
 Route::get('/features', 'App\Http\Controllers\PagesController@features')->name('features');
@@ -232,7 +232,7 @@ Route::get('/features', 'App\Http\Controllers\PagesController@features')->name('
 Route::get('/terms', 'App\Http\Controllers\PagesController@terms')->name('terms');
 Route::get('/policy', 'App\Http\Controllers\PagesController@policy')->name('policy');
 Route::get('/cookies', 'App\Http\Controllers\PagesController@cookies')->name('cookies');
-Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_search_results')->name('solution_search_results');
+Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_search_results')->middleware('throttle:30,1,solution-results')->name('solution_search_results');
 
 // ===============================================================
 

@@ -14,6 +14,14 @@ class EcosystemTokenController extends Controller
     {
         $user = $request->user();
 
+        // A handoff token cannot mint more handoff tokens: that would let whoever holds a 60-second launch token keep it alive for ever.
+        $current = $user->currentAccessToken();
+
+        // A session login has a transient token with no name; only a stored token can be a handoff token.
+        if (str_starts_with((string) data_get($current, 'name', ''), EcosystemHandoff::tokenName(null))) {
+            return response()->json(['message' => 'A handoff token cannot be used to make another.'], 403);
+        }
+
         // Optional audience: a platform key from the registry. Without it the token
         // can only be redeemed by an app that shares this database.
         $data = $request->validate(['platform' => ['nullable', 'string', 'in:'.implode(',', array_keys(config('ecosystem.platforms', [])))]]);

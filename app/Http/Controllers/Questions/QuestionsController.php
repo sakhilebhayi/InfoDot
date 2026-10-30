@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Questions;
 
 use App\Events\Knowledge\QuestionSubmitted;
-use App\Events\Questions\QuestionWasAsked;
 use App\Http\Controllers\Controller;
 use App\Models\Answer;
 use App\Models\Questions;
@@ -69,7 +68,7 @@ class QuestionsController extends Controller
         $request->validate(
             [ // 1st array is field rules
                 'question' => 'required|min:3|max:255',
-                'description' => 'required|min:3',
+                'description' => 'required|min:3|max:20000',
                 'publish' => 'nullable|boolean',
             ] + TopicService::rules(),
             [ // 2nd array is the rules custom message

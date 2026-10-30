@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\InAppNotices;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 use Livewire\Component;
 
@@ -21,7 +22,7 @@ class Comments extends Component
     public array $newCommentState = ['body' => ''];
 
     protected array $rules = [
-        'newCommentState.body' => 'required',
+        'newCommentState.body' => 'required|max:5000',
     ];
 
     protected array $validationAttributes = [
@@ -59,6 +60,17 @@ class Comments extends Component
     public function postComment(): void
     {
         $this->validate();
+
+        // A person cannot flood a thread (each comment also notifies the owner).
+        $limit = 'comment:'.auth()->id();
+
+        if (RateLimiter::tooManyAttempts($limit, 20)) {
+            $this->addError('newCommentState.body', 'You are posting too fast. Please wait a minute.');
+
+            return;
+        }
+
+        RateLimiter::hit($limit, 60);
 
         $comment = $this->model->comments()->make(['body' => $this->newCommentState['body']]);
         $comment->user()->associate(auth()->user());

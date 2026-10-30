@@ -52,15 +52,15 @@ class SolutionsController extends Controller
         $request->validate(
             [ // 1st array is field rules
                 'solution_title' => 'required|min:3|max:255',
-                'solution_description' => 'required|min:3',
-                'tags-input' => 'required|min:3',
+                'solution_description' => 'required|min:3|max:20000',
+                'tags-input' => 'required|min:3|max:255',
                 'publish' => 'nullable|boolean',
-                'duration' => 'required|integer|min:1',
+                'duration' => 'required|integer|min:1|max:10000',
                 'duration_type' => 'required|in:hours,days,weeks,months,years,infinite',
-                'solution_heading' => 'required|array|min:1',
+                'solution_heading' => 'required|array|min:1|max:50',
                 'solution_heading.*' => 'required|string|max:255',
-                'solution_body' => 'required|array',
-                'solution_body.*' => 'required|string',
+                'solution_body' => 'required|array|max:50',
+                'solution_body.*' => 'required|string|max:5000',
             ] + TopicService::rules(),
             [ // 2nd array is the rules custom message
                 'required' => 'The :attribute field is mandatory.',
