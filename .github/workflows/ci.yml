@@ -71,7 +71,8 @@ jobs:
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
       - name: API description parses (docs/api/openapi.yaml)
-        run: php -r 'require "vendor/autoload.php"; $y = Symfony\Component\Yaml\Yaml::parseFile("docs/api/openapi.yaml"); exit(isset($y["paths"]) ? 0 : 1);'
+        run: |
+          php -r 'require "vendor/autoload.php"; $y = Symfony\Component\Yaml\Yaml::parseFile("docs/api/openapi.yaml"); if (! isset($y["paths"])) { exit(1); }'
 
       - name: Code style (Pint, whole repository)
         run: vendor/bin/pint --test
