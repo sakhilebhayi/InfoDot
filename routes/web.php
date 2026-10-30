@@ -10,6 +10,7 @@ use App\Http\Controllers\NoticesController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
+use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\ReputationController;
 use App\Http\Controllers\ReputationRingsController;
 use App\Http\Controllers\ResourceOpenController;
@@ -42,6 +43,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/ready', ReadinessController::class)->middleware('throttle:60,1,ready')->name('ready');
 Route::get('/', function () {
     return view('welcome');
 });
