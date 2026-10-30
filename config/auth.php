@@ -42,6 +42,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // R-20: bearer access tokens issued by the identity provider (userinfo endpoint).
+        'oidc' => [
+            'driver' => 'passport',
+            'provider' => 'users',
+        ],
     ],
 
     /*

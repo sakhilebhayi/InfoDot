@@ -28,3 +28,4 @@ yarn-error.log
 
 # TNTSearch index files are runtime state the host owns; a tracked copy would be forced over the live index by deploy's git reset --hard.
 /storage/*.index
+/storage/oauth-*.key

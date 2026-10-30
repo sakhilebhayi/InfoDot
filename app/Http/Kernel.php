@@ -7,6 +7,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CanonicalRedirects;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureModerator;
+use App\Http\Middleware\Oidc\EnforceOidcRules;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RecordUxSignals;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -95,6 +96,7 @@ class Kernel extends HttpKernel
         'guest' => RedirectIfAuthenticated::class,
         'knowledge.signed' => VerifyKnowledgeSignature::class,
         'moderator' => EnsureModerator::class,
+        'oidc.enforce' => EnforceOidcRules::class,
         'password.confirm' => RequirePassword::class,
         'signed' => ValidateSignature::class,
         'throttle' => ThrottleRequests::class,

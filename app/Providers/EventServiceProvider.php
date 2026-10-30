@@ -4,7 +4,11 @@ namespace App\Providers;
 
 use App\Listeners\RecordSeatReleased;
 use App\Listeners\SendMembershipChange;
+use App\Listeners\Sso\PropagateCentralLogout;
+use App\Listeners\Sso\RecordPlatformSession;
 use App\Listeners\SyncCompanyToBilling;
+use Illuminate\Auth\Events\Logout;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -14,6 +18,7 @@ use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamMemberRemoved;
 use Laravel\Jetstream\Events\TeamMemberUpdated;
 use Laravel\Jetstream\Events\TeamUpdated;
+use Laravel\Passport\Events\AccessTokenCreated;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -32,6 +37,10 @@ class EventServiceProvider extends ServiceProvider
         TeamUpdated::class => [[SyncCompanyToBilling::class, 'updated']],
         TeamDeleted::class => [[SendMembershipChange::class, 'handleDeleted'], [SyncCompanyToBilling::class, 'deleted']],
         TeamCreated::class => [[SyncCompanyToBilling::class, 'created']],
+        // R-20: ecosystem single sign-on — session registry and central-logout propagation.
+        AccessTokenCreated::class => [RecordPlatformSession::class],
+        Logout::class => [[PropagateCentralLogout::class, 'handleLogout']],
+        PasswordReset::class => [[PropagateCentralLogout::class, 'handlePasswordReset']],
     ];
 
     /**

@@ -35,6 +35,9 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::namespace($this->namespace)
                 ->group(base_path('routes/jetstream.php'));
+
+            // R-20: the identity provider's OAuth/OIDC surface (Passport routes are ignored).
+            Route::group([], base_path('routes/oauth.php'));
         });
     }
 
