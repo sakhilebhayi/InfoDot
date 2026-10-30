@@ -1,2 +1,52 @@
+# InfoDot crawler policy (R-17). robots.txt is guidance for crawlers, never a security boundary:
+# everything private is behind sign-in and server-side authorisation regardless of what is listed here.
+
+# Search engines and AI answer/search crawlers: welcome on the public pages.
 User-agent: *
-Disallow:
+Disallow: /home
+Disallow: /questions
+Disallow: /question/
+Disallow: /solutions
+Disallow: /solution/
+Disallow: /library
+Disallow: /seminars
+Disallow: /moderation
+Disallow: /notifications
+Disallow: /attachments/
+Disallow: /mentions/
+Disallow: /knowledge/
+Disallow: /user/
+Disallow: /people
+Disallow: /platforms
+Disallow: /analytics
+Disallow: /go/
+Disallow: /j/
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /solution-results
+
+# Bulk AI-training crawlers: blocked by default until the owner decides otherwise
+# (they collect content for model training; they do not send visitors).
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+Sitemap: https://infodot.co.za/sitemap.xml

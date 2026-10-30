@@ -4,6 +4,7 @@ namespace App\Http;
 
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\CanonicalRedirects;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EnsureModerator;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -50,6 +51,7 @@ class Kernel extends HttpKernel
         ValidatePostSize::class,
         TrimStrings::class,
         ConvertEmptyStringsToNull::class,
+        CanonicalRedirects::class,
         SecurityHeaders::class,
         ThrottleAccountForms::class,
         RecordUxSignals::class, // R-12: counts only (also sees addresses no route answers); off unless UX_SIGNALS=true

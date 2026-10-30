@@ -24,6 +24,7 @@ use App\Http\Controllers\SeminarPaymentsModerationController;
 use App\Http\Controllers\SeminarPayoutsController;
 use App\Http\Controllers\SeminarRoomController;
 use App\Http\Controllers\SeminarsController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TopicAssignmentController;
 use App\Http\Controllers\TopicsController;
 use App\Http\Controllers\TopicSuggestionsController;
@@ -50,7 +51,10 @@ Route::post('/csp-report', CspReportController::class)->middleware('throttle:60,
 Route::get('/ready', ReadinessController::class)->middleware('throttle:60,1,ready')->name('ready');
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
+
+// The public pages a crawler may index (R-17 §13). Everything else is behind sign-in.
+Route::get('/sitemap.xml', SitemapController::class)->middleware('throttle:30,1,sitemap')->name('sitemap');
 
 Route::match(['get', 'post'], '/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
     ->withoutMiddleware(['Illuminate\Foundation\Http\Middleware\PreventRequestForgery', 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken', 'Illuminate\Foundation\Http\Middleware\ValidateCsrfToken'])
