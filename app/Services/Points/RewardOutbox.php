@@ -33,6 +33,7 @@ class RewardOutbox
             'event_id' => $envelope['event_id'],
             'type' => $envelope['type'],
             'payload' => json_encode($envelope, JSON_UNESCAPED_SLASHES),
+            'contribution_ref' => is_string($envelope['contribution_ref'] ?? null) ? mb_substr($envelope['contribution_ref'], 0, 191) : null,
             'next_attempt_at' => now(),
             'created_at' => now(),
             'updated_at' => now(),
@@ -54,6 +55,16 @@ class RewardOutbox
 
         foreach ($due as $row) {
             if ($this->waitsForEarlierEvent($row)) {
+                continue;
+            }
+
+            // Claim the row before sending. The scheduler and the after-response flushes can overlap; without a claim two of them could
+            // send the same event (the ledger de-duplicates by event id, but a duplicate should not be sent at all). A claim lasts five
+            // minutes: if this process dies mid-send the row comes back, which is the at-least-once guarantee.
+            $claimed = DB::table('reward_outbox')->where('id', $row->id)->whereNull('sent_at')->whereNull('failed_at')->where('next_attempt_at', '<=', now())
+                ->update(['next_attempt_at' => now()->addMinutes(5)]);
+
+            if ($claimed === 0) {
                 continue;
             }
 
@@ -88,16 +99,13 @@ class RewardOutbox
     /** True while an earlier event about the same contribution has neither been delivered nor been parked. */
     private function waitsForEarlierEvent(object $row): bool
     {
-        $ref = json_decode($row->payload, true)['contribution_ref'] ?? null;
+        $ref = $row->contribution_ref ?? json_decode($row->payload, true)['contribution_ref'] ?? null;
 
         if (! is_string($ref)) {
             return false;
         }
 
-        return DB::table('reward_outbox')->where('id', '<', $row->id)->whereNull('sent_at')->whereNull('failed_at')
-            // The payload is JSON text; refs hold only letters, digits and colons, and the closing quote stops id 1 matching id 12.
-            ->where('payload', 'like', '%"contribution_ref":'.json_encode($ref, JSON_UNESCAPED_SLASHES).'%')
-            ->exists();
+        return DB::table('reward_outbox')->where('contribution_ref', mb_substr($ref, 0, 191))->where('id', '<', $row->id)->whereNull('sent_at')->whereNull('failed_at')->exists();
     }
 
     private function retryLater(object $row, string $error, ?int $minimumDelay = null): void

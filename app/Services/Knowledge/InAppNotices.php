@@ -122,7 +122,7 @@ class InAppNotices
             UserNotice::ANSWER_ACCEPTED => 'Accepted',
             UserNotice::SOLUTION_VERIFIED => 'Verified',
             UserNotice::KNOWLEDGE_REUSED => 'Library',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED => 'Seminar',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED, UserNotice::SEMINAR_REPORT_DECIDED => 'Seminar',
             default => 'Update',
         };
     }
@@ -155,6 +155,7 @@ class InAppNotices
                 default => 'Anyone who paid is being refunded in full.',
             }.' If you think this was a mistake, you can appeal once on the seminar page.',
             UserNotice::SEMINAR_REINSTATED => "The seminar $title was removed but is back on. You are still registered if you were before. Tickets that were already refunded stay refunded.",
+            UserNotice::SEMINAR_REPORT_DECIDED => "A moderator looked at your report about the seminar $title. ".($seminar?->removed_at ? 'The seminar was removed.' : 'No action was taken.'),
             UserNotice::SEMINAR_APPEAL_DECIDED => "A different moderator looked at your appeal about the seminar $title. The answer and its reason are on the seminar page.",
             UserNotice::SEMINAR_LINK_BROKEN => "Someone could not open the meeting link for your seminar $title. Please check it and fix it before the start.",
             default => 'Something happened to your work.',
@@ -169,7 +170,7 @@ class InAppNotices
             UserNotice::SOLUTION_VERIFIED => 'A solution of yours was verified; it is no longer available.',
             UserNotice::KNOWLEDGE_REUSED => 'Some of your work was added to the knowledge library; it is no longer available.',
             UserNotice::COMMENT_RECEIVED => 'Someone commented on something of yours that is no longer available.',
-            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED => 'A seminar notice that is no longer available.',
+            UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED, UserNotice::SEMINAR_REPORT_DECIDED => 'A seminar notice that is no longer available.',
             default => 'Something happened to your work that is no longer available.',
         };
     }

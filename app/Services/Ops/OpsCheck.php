@@ -34,6 +34,10 @@ class OpsCheck
             $found["outbox_{$label}_backlog"] = (int) DB::table($table)->whereNull('sent_at')->whereNull('failed_at')->where('created_at', '<', now()->subHours(6))->count();
         }
 
+        // A person who appeals a score or a removal is owed an answer; nothing else puts a clock on a moderator's queue.
+        $found['score_appeals_open_14d'] = (int) (Schema::hasTable('reputation_appeals') ? DB::table('reputation_appeals')->where('status', 'open')->where('created_at', '<', now()->subDays(14))->count() : 0);
+        $found['removal_appeals_open_7d'] = (int) (Schema::hasTable('seminar_removal_appeals') ? DB::table('seminar_removal_appeals')->where('status', 'open')->where('created_at', '<', now()->subDays(7))->count() : 0);
+
         $found['refunds_unconfirmed_24h'] = (int) DB::table('seminar_registrations')->whereNotNull('refund_requested_at')->whereNull('refunded_at')
             ->where('refund_requested_at', '<', now()->subDay())->whereIn('payment_status', ['paid', 'partially_refunded'])->count();
         $found['holds_not_released_1h'] = (int) DB::table('seminar_registrations')->where('status', 'pending_payment')->where('hold_expires_at', '<', now()->subHour())->count();

@@ -114,7 +114,12 @@ class MeetingLinkCheck
             if ($code >= 300 && $code < 400 && $response->header('Location') !== '') {
                 $next = $this->absolute($current, $response->header('Location'));
 
-                if ($next === null || ! str_starts_with($next, 'https://')) {
+                // The first address passed shape(); a redirect target gets the same rules, so a redirect cannot lead to another port (curl would
+                // resolve that port itself, outside the pinned address), to an IP literal, or to an address with a name and password in it.
+                $q = $next === null ? false : parse_url($next);
+                $odd = $q === false || isset($q['user']) || isset($q['pass']) || (isset($q['port']) && (int) $q['port'] !== 443) || filter_var($q['host'] ?? '', FILTER_VALIDATE_IP);
+
+                if ($next === null || $odd || ! str_starts_with($next, 'https://')) {
                     return ['status' => 'warn', 'message' => "{$name} sent us somewhere we could not follow. If you are sure it is right you can continue.", 'service' => $service];
                 }
 

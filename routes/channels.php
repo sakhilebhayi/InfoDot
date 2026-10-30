@@ -17,6 +17,8 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
 
+// The `question` channel used to authorise every signed-in person. Its event is not dispatched today; if it ever is, it must be scoped to the
+// company and the item's visibility first. Until then nobody is authorised, so turning the event on cannot leak a private question.
 Broadcast::channel('question', function () {
-    return true;
+    return false;
 });

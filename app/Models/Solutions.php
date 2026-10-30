@@ -54,7 +54,8 @@ class Solutions extends Model
     /** Hidden content leaves the search index (and comes back when restored). */
     public function shouldBeSearchable(): bool
     {
-        return ! $this->isHidden();
+        // A company's private items are never indexed: the index has no notion of who may read what.
+        return ! $this->isHidden() && $this->isPublic();
     }
 
     /** A moderator other than the author has checked that the procedure works. */

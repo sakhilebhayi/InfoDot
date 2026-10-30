@@ -403,10 +403,16 @@ class SeminarService
             ? SeminarReport::where('seminar_id', $seminar->id)->whereNull('about_name')->pluck('reporter_id')->map(fn ($id) => (int) $id)->all()
             : [];
 
+        $reporters = SeminarReport::where('seminar_id', $seminar->id)->where('status', 'open')->whereNull('about_name')->get(['id', 'reporter_id']);
         $seminar->forceFill(['removed_at' => now(), 'removed_reason' => mb_substr($reason, 0, 500), 'removed_refunds' => $refunds])->save();
         $this->cancel($seminar->fresh(), $refunds, $complainants);
         $this->notices->record(UserNotice::SEMINAR_REMOVED, User::find($seminar->host_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':removed');
         ModerationAction::record($seminar, $moderator, ModerationAction::SEMINAR_REMOVED, $reason.' [refunds: '.$refunds.']');
+
+        // Whoever reported it hears that a moderator acted (never what the moderator wrote, and never who else reported).
+        foreach ($reporters as $r) {
+            $this->notices->record(UserNotice::SEMINAR_REPORT_DECIDED, User::find($r->reporter_id), 'seminar', $seminar->id, 'seminar:'.$seminar->id.':report:'.$r->id);
+        }
         SeminarReport::where('seminar_id', $seminar->id)->where('status', 'open')->update(['status' => 'actioned', 'resolved_by' => $moderator->id, 'resolution_note' => 'Seminar removed.', 'resolved_at' => now()]);
     }
 
@@ -509,6 +515,8 @@ class SeminarService
         }
 
         $report->forceFill(['status' => 'dismissed', 'resolved_by' => $moderator->id, 'resolution_note' => mb_substr($note, 0, 500), 'resolved_at' => now()])->save();
+
+        $this->notices->record(UserNotice::SEMINAR_REPORT_DECIDED, User::find($report->reporter_id), 'seminar', $report->seminar_id, 'seminar:'.$report->seminar_id.':report:'.$report->id);
     }
 
     public function linkReports(Seminar $seminar): int
@@ -599,6 +607,12 @@ class SeminarService
      */
     public function startCheckout(Seminar $seminar, User $user): string
     {
+        // The narrow switch: stops NEW ticket sales while refunds, Billing's callbacks and tickets already paid carry on. (SEMINARS_PAID_ENABLED=false
+        // stops all of those too, which strands payments already in flight.)
+        if (! config('seminars.paid.checkout_enabled', true)) {
+            throw ValidationException::withMessages(['seminar' => 'Ticket sales are paused for a short while. Please try again later. Tickets already bought are not affected.']);
+        }
+
         if ($seminar->host_id === $user->id) {
             throw ValidationException::withMessages(['seminar' => 'You are hosting this seminar.']);
         }
