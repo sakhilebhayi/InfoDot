@@ -2006,10 +2006,11 @@ button.ix-dir__item:hover:not([disabled]) {
     color: var(--ix-top-ink-2);
 }
 
+/* No width cap here: ≥1200px caps it at 640px below, and under 1200px the bar takes the room
+   the row gives it — on a phone it wraps to its own row and fills the whole width. */
 .ix-top__search {
     flex: 1 1 200px;
     min-width: 150px;
-    max-width: 260px;
     align-self: center;
 }
 
