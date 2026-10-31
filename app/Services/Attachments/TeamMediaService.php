@@ -143,13 +143,7 @@ class TeamMediaService
     /** @return array{0: \GdImage, 1: int, 2: int} */
     private function render(\GdImage $source, int $sw, int $sh, string $role, ?array $crop): array
     {
-        // The source window to read from: the given crop, else a centred window of the right shape.
-        [$targetW, $targetH] = match ($role) {
-            'logo' => [self::LOGO_SIZE, self::LOGO_SIZE],
-            'cover' => [self::COVER_W, self::COVER_H],
-            default => [0, 0], // gallery: keep the image's own shape
-        };
-
+        // A gallery photograph keeps its own shape, only bounded by the longest edge.
         if ($role === 'gallery') {
             $scale = min(1, self::GALLERY_MAX / max($sw, $sh));
             $w = max(1, (int) round($sw * $scale));
@@ -160,6 +154,11 @@ class TeamMediaService
 
             return [$out, $w, $h];
         }
+
+        // The source window to read from: the given crop, else a centred window of the right shape.
+        [$targetW, $targetH] = $role === 'logo'
+            ? [self::LOGO_SIZE, self::LOGO_SIZE]
+            : [self::COVER_W, self::COVER_H];
 
         $aspect = $targetW / $targetH;
 
