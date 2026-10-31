@@ -61,7 +61,7 @@
                                             @endif
                                         </span>
                                         <span class="ix-regrow__go" aria-hidden="true">
-                                            @if($isLive)Open signed in <span class="material-symbols-rounded">arrow_outward</span>@endif
+                                            @if($isLive)Open <span class="material-symbols-rounded">arrow_outward</span>@endif
                                         </span>
                                     </button>
                                 </li>
