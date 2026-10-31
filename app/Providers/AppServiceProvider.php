@@ -22,6 +22,7 @@ use App\Models\File;
 use App\Models\Folder;
 use App\Models\Questions;
 use App\Models\Solutions;
+use App\Models\Team;
 use App\Support\CanonicalUrl;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -137,6 +138,7 @@ class AppServiceProvider extends ServiceProvider
             'folder' => Folder::class,
             'solutions' => Solutions::class,
             'questions' => Questions::class,
+            'team' => Team::class,
         ]);
     }
 }

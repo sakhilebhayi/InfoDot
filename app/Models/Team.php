@@ -10,6 +10,9 @@ use Laravel\Jetstream\Events\TeamDeleted;
 use Laravel\Jetstream\Events\TeamUpdated;
 use Laravel\Jetstream\Team as JetstreamTeam;
 
+/**
+ * @property-read TeamProfile|null $profile
+ */
 class Team extends JetstreamTeam
 {
     use HasFactory;
@@ -61,6 +64,40 @@ class Team extends JetstreamTeam
             $object->objectable()->associate($team->folders()->create(['name' => $team->name]));
             $object->save();
         });
+    }
+
+    // ---------------------------------------------------------------- business identity (R-29)
+
+    public function profile()
+    {
+        return $this->hasOne(TeamProfile::class);
+    }
+
+    /** The profile row, saved on first use, so edit forms always have something to fill. */
+    public function profileOrNew(): TeamProfile
+    {
+        return $this->profile ?? $this->profile()->create([]);
+    }
+
+    /** Named for the scoped route binding (`/business/{team}/media/{attachment}`). */
+    public function attachments()
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
+    }
+
+    public function media()
+    {
+        return $this->attachments();
+    }
+
+    public function currentMedia(string $role)
+    {
+        return $this->media()->where('role', $role)->whereNull('superseded_at')->latest('id')->first();
+    }
+
+    public function gallery()
+    {
+        return $this->media()->where('role', 'gallery')->whereNull('superseded_at')->orderByDesc('id')->get();
     }
 
     public function objects()

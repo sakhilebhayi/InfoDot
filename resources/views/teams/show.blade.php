@@ -13,6 +13,11 @@
             <h1 class="ix-h1">Team settings</h1>
             <p class="ix-lede">{{ $team->name }}@if($team->code) &middot; owner code <span class="ix-ref">{{ $team->code }}</span>@endif</p>
         </div>
+        @if (! $team->personal_team)
+            <a href="{{ route('business.show', $team) }}" class="ix-btn ix-btn--ghost">
+                <span class="material-symbols-rounded" aria-hidden="true">storefront</span>Business profile
+            </a>
+        @endif
     </div>
 
     <div class="ix-settings">

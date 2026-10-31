@@ -7,6 +7,11 @@
             <h1 class="ix-h1">People</h1>
             <p class="ix-lede">Everyone working under <b>{{ $team->name ?? 'your workspace' }}</b>. Roles decide who can invite, change settings and see company-private knowledge.</p>
         </div>
+        @if ($team && ! $team->personal_team)
+            <a href="{{ route('business.show', $team) }}" class="ix-btn ix-btn--ghost">
+                <span class="material-symbols-rounded" aria-hidden="true">storefront</span>Business profile
+            </a>
+        @endif
         @if ($canManage && $team)
             <a href="{{ route('teams.show', $team->id) }}" class="ix-btn ix-btn--primary">
                 <span class="material-symbols-rounded" aria-hidden="true">person_add</span>Invite and manage
