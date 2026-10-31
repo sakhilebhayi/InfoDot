@@ -10,7 +10,7 @@
                     <span class="ix-door__label">{{ $label }}</span>
                     <span class="ix-logotile ix-logotile--sq"><img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/platforms/'.($platform === 'docs' ? 'docs' : 'files').'.png') }}" alt="Dot.{{ $platform === 'docs' ? 'docs' : 'Files' }}" width="72" height="72" loading="lazy"></span>
                 </span>
-                <span class="ix-door__go">Open signed in <span class="material-symbols-rounded" aria-hidden="true">arrow_outward</span></span>
+                <span class="ix-door__go">Open <span class="material-symbols-rounded" aria-hidden="true">arrow_outward</span></span>
             </button>
         @else
             <button type="button" class="ix-pop__item" wire:click="open" wire:loading.attr="disabled">
