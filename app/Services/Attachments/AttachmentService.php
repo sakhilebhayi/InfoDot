@@ -232,6 +232,20 @@ class AttachmentService
             return $attachment->user_id === $user->id;
         }
 
+        // Business media (R-29): current branding and gallery are the company's public face —
+        // any signed-in person may see them. Superseded history stays with the company's
+        // decision-makers and the moderators who may one day compare against it.
+        if ($attachment->attachable_type === 'team' && $attachment->role !== null) {
+            if ($attachment->superseded_at === null) {
+                return true;
+            }
+
+            $team = $attachment->attachable()->withoutGlobalScopes()->first();
+
+            return $team !== null
+                && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin') || $user->isModerator());
+        }
+
         $parent = $attachment->attachable()->withoutGlobalScopes()->first();
 
         if (! $parent) {

@@ -4,6 +4,7 @@ use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ExpertiseSharingController;
 use App\Http\Controllers\Knowledge\PickerController;
@@ -89,6 +90,15 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // People: the members of the company the person is acting for
     // -------------------------------------------------------
     Route::get('/people', [PeopleController::class, 'index'])->name('people');
+
+    // -------------------------------------------------------
+    // Business identity (R-29): a company's public page, and the owner/administrator editing behind it
+    // -------------------------------------------------------
+    Route::get('/business/{team:uuid}', [BusinessProfileController::class, 'show'])->name('business.show');
+    Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
+    Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
+    Route::post('/business/{team:uuid}/media', [BusinessProfileController::class, 'storeMedia'])->middleware('throttle:30,1,business.media')->name('business.media');
+    Route::delete('/business/{team:uuid}/media/{attachment:uuid}', [BusinessProfileController::class, 'removeMedia'])->middleware('throttle:30,1,business.media.remove')->name('business.media.remove');
 
     // -------------------------------------------------------
     // Composer lookups (R-16): @mention autocomplete and the recommend-a-solution picker

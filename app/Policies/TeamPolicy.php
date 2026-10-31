@@ -52,6 +52,16 @@ class TeamPolicy
     }
 
     /**
+     * The business profile (R-29): the owner and administrators shape the company's public
+     * identity. A personal workspace has no business profile at all.
+     */
+    public function updateProfile(User $user, Team $team)
+    {
+        return ! $team->personal_team
+            && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin'));
+    }
+
+    /**
      * Determine whether the user can add team members.
      *
      * @return mixed

@@ -7323,3 +7323,78 @@ body {
     .lp-ledger a,
     .lp-ledger .material-symbols-rounded { transition: none; }
 }
+
+/* ------------------------------------------------------------------ */
+/* R-29 Business identity: the company's public page and its editing. */
+/* ------------------------------------------------------------------ */
+
+.ix-biz { display: grid; gap: 28px; }
+
+/* The yard view: the company's own photograph with its plate riveted beneath it. */
+.ix-biz__yard { margin: 0; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); overflow: hidden; background: var(--ix-panel); }
+.ix-biz__cover { display: block; width: 100%; height: auto; aspect-ratio: 16 / 5; object-fit: cover; }
+.ix-biz__field { aspect-ratio: 16 / 5; display: grid; place-items: center; background: var(--ix-people); }
+.ix-biz__field span { font-family: var(--ix-stencil-font); font-weight: 900; font-size: clamp(48px, 9vw, 120px); letter-spacing: 0.08em; color: var(--ix-stencil); opacity: 0.85; }
+
+.ix-biz__plate { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-top: 1px solid var(--ix-rule); background: var(--ix-panel); }
+.ix-biz__plate .ix-h1 { margin: 0; font-size: clamp(22px, 3vw, 30px); line-height: 1.15; overflow-wrap: break-word; min-width: 0; }
+.ix-biz__who { min-width: 0; }
+.ix-biz__meta { margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--ix-text-3); font-size: 14px; }
+.ix-biz__editbtn { margin-left: auto; flex-shrink: 0; }
+
+.ix-biz__logo { flex-shrink: 0; display: grid; place-items: center; width: 72px; height: 72px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: #fff; overflow: hidden; font-family: var(--ix-stencil-font); font-weight: 800; font-size: 34px; color: var(--ix-text-3); }
+.ix-biz__logo img { width: 100%; height: 100%; object-fit: contain; }
+.ix-biz__logo--lg { width: 96px; height: 96px; }
+
+/* Body columns: the story on the left, the registry on the rail. */
+.ix-biz__cols { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; align-items: start; }
+.ix-biz__main { display: grid; gap: 24px; min-width: 0; }
+.ix-biz__prose { margin: 10px 0 0; max-width: 72ch; white-space: pre-line; color: var(--ix-text-2); }
+
+.ix-biz__rail { display: grid; gap: 16px; }
+.ix-biz__card { border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); padding: 16px 18px; }
+.ix-biz__card h2 { margin: 0 0 10px; font-size: 14px; color: var(--ix-text-3); font-weight: 600; }
+.ix-biz__facts { margin: 0; display: grid; gap: 8px; }
+.ix-biz__facts div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.ix-biz__facts dt { font-size: 13px; color: var(--ix-text-3); }
+.ix-biz__facts dd { margin: 0; font-size: 14px; color: var(--ix-text); overflow-wrap: break-word; }
+.ix-biz__note { margin: 0; font-size: 13px; color: var(--ix-text-3); border-left: 3px solid var(--ix-rule-strong); padding-left: 12px; }
+
+/* Gallery: the real thing, large, captioned. */
+.ix-biz__gallery { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.ix-biz__gallery figure { margin: 0; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); overflow: hidden; background: var(--ix-panel); }
+.ix-biz__gallery img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.ix-biz__gallery figcaption { padding: 8px 10px; font-size: 13px; color: var(--ix-text-2); }
+.ix-biz__gallery--manage li { display: grid; gap: 8px; }
+
+.ix-biz__activity { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.ix-biz__activity li { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.ix-biz__activity a { min-width: 0; overflow-wrap: break-word; }
+.ix-biz__activity time { margin-left: auto; flex-shrink: 0; font-size: 13px; color: var(--ix-text-3); }
+
+/* Editing: the current media beside its replacement form, and the crop frame. */
+.ix-biz__mediarow { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.ix-biz__coverprev { display: block; width: 100%; max-width: 560px; aspect-ratio: 16 / 5; object-fit: cover; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); margin-bottom: 12px; }
+
+.ix-crop { margin: 12px 0; display: grid; gap: 8px; max-width: 560px; }
+.ix-crop__window { position: relative; overflow: hidden; border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius-sm); background: var(--ix-sunken); cursor: grab; touch-action: none; }
+.ix-crop__window:active { cursor: grabbing; }
+.ix-crop__window img { position: absolute; left: 50%; top: 50%; max-width: none; user-select: none; -webkit-user-drag: none; }
+.ix-crop__zoom { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ix-text-3); }
+.ix-crop__zoom input { flex: 1; }
+
+@media (max-width: 980px) {
+    .ix-biz__cols { grid-template-columns: minmax(0, 1fr); }
+    .ix-biz__plate { flex-wrap: wrap; }
+    .ix-biz__editbtn { margin-left: 0; }
+}
+
+/* The business's own sections: quiet panels with the numbered-head anatomy; the knowledge
+   field (blue) is reserved for the "On InfoDot" activity block. */
+.ix-bizsec { border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); padding: 20px 24px; }
+.ix-bizsec__head { display: flex; align-items: baseline; gap: 14px; }
+.ix-bizsec__num { font-family: var(--ix-stencil-font); font-weight: 800; font-size: 28px; line-height: 1; color: var(--area); }
+.ix-bizsec__lbl { margin: 0; font-size: 15px; font-weight: 600; color: var(--ix-text-2); }
+
+/* The main column stacks its sections whatever grid-column a shared component carries. */
+.ix-biz__main > * { grid-column: 1 / -1; }

@@ -49,7 +49,13 @@ class Attachment extends Model
 
     protected function casts(): array
     {
-        return ['meta' => 'array', 'expires_at' => 'datetime'];
+        return ['meta' => 'array', 'expires_at' => 'datetime', 'superseded_at' => 'datetime'];
+    }
+
+    /** Business media (R-29): a logo, cover or gallery row that is currently on the profile. */
+    public function scopeCurrentMedia(Builder $query): Builder
+    {
+        return $query->whereNotNull('role')->whereNull('superseded_at');
     }
 
     protected static function booted(): void
