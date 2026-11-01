@@ -194,3 +194,31 @@ This also completes R-29 Part D (§20–23, scenarios 8–10). Phase 4 is split:
   Upheld: an investigation is cleared and the restriction lifted; a suspension is reinstated; after
   a rejection or revocation the business is told it may apply again.
 - **Reporters** learn only whether action was taken.
+
+## Phase 4b — discovery extras and insights (2026-11-02). R-33 complete.
+
+- **Collections** (§8): private lists per person (Suppliers, Potential partners, Service providers,
+  Contractors, To contact later suggested; any name allowed), a note per business, rename/delete.
+  A saved business that stops being visible to the person shows as "no longer available" — never
+  by name. Limits: 20 collections, 200 businesses each.
+- **Similar businesses** (§8): up to 4 on each business page, listed for the viewer, sharing a
+  category or service words, each saying what it shares ("Same category: …", "Also offers: …").
+- **Browse by place** (§8): towns and provinces from what listed businesses gave (structured
+  locations plus the town in the profile location), each a link to a location search. **No map:**
+  addresses are not verified and there is no geocoding, so drawing pins would invent precision.
+- **Featured placement** (§8): rules published at `/businesses/featured` (listed for anyone,
+  described, ≥1 service, a logo, not under review); a business's owner/admin asks; a reviewer
+  outside it grants up to 30 days or declines with a reason; at most 3 show, daily-rotating, under
+  the label "a placement … not a rating, a recommendation or a verification". It stops showing the
+  moment the business stops meeting the rules. **Not sold:** paid featuring waits for live billing
+  and an owner decision on price; the rules page says it will be labelled as paid if introduced.
+- **Insights** (§9) at `/business/{uuid}/insights` for owner/admins, 30 or 90 days: page views,
+  search appearances, contact actions (call, email, website, map), enquiries received and typical
+  first reply, day-by-day chart with a table view, searches that showed the business, and services
+  searches matched. **Recorded events only**, stored as daily totals with nothing about the
+  visitor; one view per visitor per day; the business's people, reviewers, previews and crawlers
+  are not counted; a search term shows only after it has been seen 3 times. Contact actions are
+  reported by the browser (sendBeacon) and the page says so. Counting starts at deploy; the page
+  states the date it started.
+- Fixes in passing: none of the earlier phases needed changes; one Phase 4b bug (desk link without
+  a uuid) was caught in the live round and is covered by a test.

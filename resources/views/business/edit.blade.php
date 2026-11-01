@@ -2,7 +2,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Business profile</h1>
-            <p class="ix-lede">How <b>{{ $team->name }}</b> shows up in the directory and on its own page. <a href="{{ route('business.show', $team) }}">Open the business page</a> or <a href="{{ route('business.show', [$team, 'as' => 'visitor']) }}">preview it as a visitor</a>.</p>
+            <p class="ix-lede">How <b>{{ $team->name }}</b> shows up in the directory and on its own page. <a href="{{ route('business.show', $team) }}">Open the business page</a>, <a href="{{ route('business.show', [$team, 'as' => 'visitor']) }}">preview it as a visitor</a>, or see <a href="{{ route('business.insights', $team) }}">what it is doing for you</a>.</p>
         </div>
     </div>
 
@@ -22,7 +22,7 @@
 
     <div class="ix-settings">
         <nav class="ix-settings__index" aria-label="Profile sections">
-            @foreach ([['directory', 'Directory listing'], ['logo', 'Logo'], ['cover', 'Cover photograph'], ['about', 'About the business'], ['facts', 'Registry facts'], ['contact', 'Contact and links'], ['services', 'Services and products'], ['portfolio', 'Portfolio'], ['locations', 'Locations'], ['announcements', 'Announcements'], ['gallery', 'Gallery'], ['brochures', 'Brochures'], ['managers', 'Who manages this'], ['changes', 'Recent changes'], ['standing', 'Standing and appeals']] as $i => [$id, $label])
+            @foreach ([['directory', 'Directory listing'], ['logo', 'Logo'], ['cover', 'Cover photograph'], ['about', 'About the business'], ['facts', 'Registry facts'], ['contact', 'Contact and links'], ['services', 'Services and products'], ['portfolio', 'Portfolio'], ['locations', 'Locations'], ['announcements', 'Announcements'], ['gallery', 'Gallery'], ['brochures', 'Brochures'], ['managers', 'Who manages this'], ['changes', 'Recent changes'], ['standing', 'Standing and appeals'], ['featured', 'Featured placement']] as $i => [$id, $label])
                 <a href="#{{ $id }}"><span class="ix-settings__no">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>{{ $label }}</a>
             @endforeach
         </nav>
@@ -375,6 +375,28 @@
                 <h2>Standing and appeals</h2>
                 <p class="ix-hint">If InfoDot reviews the business, its explanation and your right to appeal are on the standing page.</p>
                 <p><a class="ix-btn ix-btn--ghost" href="{{ route('business.standing', $team) }}"><span class="material-symbols-rounded" aria-hidden="true">gavel</span>Standing and appeals</a></p>
+            </section>
+
+            <section id="featured" class="ix-settings__sec">
+                <h2>Featured placement</h2>
+                <p class="ix-hint">A few businesses are shown at the top of the directory for up to {{ \App\Models\BusinessFeature::MAX_DAYS }} days. It is a placement, not a rating or a verification. <a href="{{ route('businesses.featured') }}">How featuring works</a>.</p>
+                @if ($feature && $feature->status === 'active')
+                    <p class="ix-alert" role="status">{{ $team->name }} is featured until {{ $feature->ends_at?->format('j M Y') }}.</p>
+                @elseif ($feature)
+                    <p class="ix-alert" role="status">You asked to be featured on {{ $feature->created_at->format('j M Y') }}. A reviewer will decide.</p>
+                @else
+                    @if ($lastFeature && $lastFeature->status === 'declined')<p class="ix-hint">Your last request was declined: {{ $lastFeature->decision_note }}</p>@endif
+                    @if ($featureUnmet)
+                        <p class="ix-hint">Before you can ask, the business needs to meet these:</p>
+                        <ul class="ix-trust__checks">@foreach ($featureUnmet as $k)<li>{{ \App\Services\Directory\FeaturedPlacement::RULES[$k] }}</li>@endforeach</ul>
+                    @else
+                        <form method="post" action="{{ route('business.feature', $team) }}" class="ix-form">
+                            @csrf
+                            <div class="ix-form__row"><label class="ix-label" for="feature_reason">Anything the reviewer should know <span class="ix-hint">optional</span></label><textarea class="ix-input" id="feature_reason" name="reason" rows="2" maxlength="600"></textarea></div>
+                            <button type="submit" class="ix-btn">Ask to be featured</button>
+                        </form>
+                    @endif
+                @endif
             </section>
 
             <section id="changes" class="ix-settings__sec">

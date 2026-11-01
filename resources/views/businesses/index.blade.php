@@ -111,6 +111,20 @@
             @endif
         </section>
     @else
+        @if ($featured->isNotEmpty())
+            <section class="ix-dir__browse ix-featured" aria-labelledby="feat-h">
+                <div class="ix-featured__head">
+                    <h2 id="feat-h" class="ix-dir__h2">Featured</h2>
+                    <p class="ix-hint">A placement InfoDot gave under <a href="{{ route('businesses.featured') }}">published rules</a> — not a rating, a recommendation or a verification.</p>
+                </div>
+                <ul class="ix-dir__results is-grid">
+                    @foreach ($featured as $team)
+                        @include('businesses._card', ['team' => $team, 'why' => []])
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
         <section class="ix-dir__browse" aria-labelledby="cat-h">
             <h2 id="cat-h" class="ix-dir__h2">Browse by category</h2>
             <ul class="ix-dir__cats">
@@ -124,6 +138,17 @@
                 @endforeach
             </ul>
         </section>
+
+        @if ($places && ($places['towns'] || $places['provinces']))
+            <section class="ix-dir__browse" aria-labelledby="place-h">
+                <h2 id="place-h" class="ix-dir__h2">Browse by place</h2>
+                <p class="ix-hint ix-dir__placehint">Towns and provinces as businesses gave them. InfoDot does not check addresses, so there is no map.</p>
+                <ul class="ix-dir__svcs">
+                    @foreach ($places['provinces'] as $p)<li><a href="{{ route('businesses.index', ['location' => $p['place']]) }}"><b>{{ $p['place'] }}</b> <span>{{ $p['businesses'] }}</span></a></li>@endforeach
+                    @foreach ($places['towns'] as $p)<li><a href="{{ route('businesses.index', ['location' => $p['place']]) }}">{{ $p['place'] }} <span>{{ $p['businesses'] }}</span></a></li>@endforeach
+                </ul>
+            </section>
+        @endif
 
         @if ($browse['services']->isNotEmpty())
             <section class="ix-dir__browse" aria-labelledby="svc-h">

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\BusinessCollection;
 use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\Solutions;
@@ -29,6 +30,7 @@ class NavSection
             request()->routeIs('points*') => 'Points',
             request()->routeIs('notices*') => 'Notifications',
             request()->routeIs('inbox*') => 'Inbox',
+            request()->routeIs('collections*') => 'Collections',
             request()->routeIs('reputation*', 'moderation.reputation*') => 'Progress',
             request()->routeIs('profile.*') => 'Account',
             request()->routeIs('teams.*', 'api-tokens.*') => 'Administration',
@@ -57,6 +59,7 @@ class NavSection
             request()->routeIs('reputation*', 'moderation.reputation*') => ['people', 'PROG'],
             request()->routeIs('notices*') => ['people', 'NOTE'],
             request()->routeIs('inbox*') => ['people', 'INBX'],
+            request()->routeIs('collections*') => ['people', 'SAVE'],
             request()->routeIs('profile.*') => ['people', 'ACCT'],
             request()->routeIs('teams.*', 'api-tokens.*') => ['people', 'ADMN'],
             default => ['home', 'GATE'],
@@ -105,6 +108,10 @@ class NavSection
             request()->routeIs('profile.edit') => [['Account', null], ['Settings', null]],
             request()->routeIs('businesses.index') => [['Businesses', null]],
             request()->routeIs('inbox') => [['Inbox', null]],
+            request()->routeIs('collections') => [['Account', null], ['Collections', null]],
+            request()->routeIs('collections.*') => [['Collections', route('collections')], [self::title(BusinessCollection::class, 'name', request()->route('collection')?->getKey()), null]],
+            request()->routeIs('businesses.featured') => [['Businesses', route('businesses.index')], ['How featuring works', null]],
+            request()->routeIs('business.insights') => [['Businesses', route('businesses.index')], [self::title(Team::class, 'name', request()->route('team')?->id), route('business.show', request()->route('team'))], ['Insights', null]],
             request()->routeIs('inbox.*') => [['Inbox', route('inbox')], ['Enquiry', null]],
             request()->routeIs('business.report*') => [['Businesses', route('businesses.index')], [self::title(Team::class, 'name', request()->route('team')?->id), route('business.show', request()->route('team'))], ['Report', null]],
             request()->routeIs('business.standing', 'business.appeal') => [['Businesses', route('businesses.index')], [self::title(Team::class, 'name', request()->route('team')?->id), route('business.show', request()->route('team'))], ['Standing and appeals', null]],

@@ -286,6 +286,17 @@
                     </section>
                 @endif
 
+                @if (! empty($similar))
+                    <section class="ix-similar" aria-labelledby="sim-h">
+                        <h2 id="sim-h" class="ix-dir__h2">Similar businesses</h2>
+                        <ul class="ix-dir__results is-grid">
+                            @foreach ($similar as $row)
+                                @include('businesses._card', ['team' => $row['team'], 'why' => $row['why']])
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
                 @if ($sectionNo === 0)
                     <div class="ix-empty">
                         <h2>{{ $team->name }} has not filled in its profile yet</h2>
@@ -311,10 +322,10 @@
                     <section class="ix-biz__card">
                         <h2>Reach them</h2>
                         <div class="ix-reach">
-                            @if ($tel)<a class="ix-btn ix-btn--primary" href="tel:{{ $tel }}"><span class="material-symbols-rounded" aria-hidden="true">call</span>Call</a>@endif
-                            @if ($email)<a class="ix-btn @unless($tel) ix-btn--primary @endunless" href="mailto:{{ $email }}"><span class="material-symbols-rounded" aria-hidden="true">mail</span>Email</a>@endif
-                            @if ($website)<a class="ix-btn" href="{{ $website }}" rel="noopener nofollow" target="_blank"><span class="material-symbols-rounded" aria-hidden="true">language</span>Website</a>@endif
-                            @if ($mapUrl)<a class="ix-btn" href="{{ $mapUrl }}" rel="noopener nofollow" target="_blank"><span class="material-symbols-rounded" aria-hidden="true">{{ $addressed ? 'directions' : 'map' }}</span>{{ $addressed ? 'Directions' : 'On the map' }}</a>@endif
+                            @if ($tel)<a class="ix-btn ix-btn--primary" href="tel:{{ $tel }}" data-track="{{ route('business.track', [$team, 'call']) }}"><span class="material-symbols-rounded" aria-hidden="true">call</span>Call</a>@endif
+                            @if ($email)<a class="ix-btn @unless($tel) ix-btn--primary @endunless" href="mailto:{{ $email }}" data-track="{{ route('business.track', [$team, 'email']) }}"><span class="material-symbols-rounded" aria-hidden="true">mail</span>Email</a>@endif
+                            @if ($website)<a class="ix-btn" href="{{ $website }}" rel="noopener nofollow" target="_blank" data-track="{{ route('business.track', [$team, 'website']) }}"><span class="material-symbols-rounded" aria-hidden="true">language</span>Website</a>@endif
+                            @if ($mapUrl)<a class="ix-btn" href="{{ $mapUrl }}" rel="noopener nofollow" target="_blank" data-track="{{ route('business.track', [$team, 'map']) }}"><span class="material-symbols-rounded" aria-hidden="true">{{ $addressed ? 'directions' : 'map' }}</span>{{ $addressed ? 'Directions' : 'On the map' }}</a>@endif
                         </div>
                         <dl class="ix-biz__facts">
                             @if ($website)<div><dt>Website</dt><dd><a href="{{ $website }}" rel="noopener nofollow">{{ \Illuminate\Support\Str::limit(preg_replace('#^https?://(www\.)?#', '', $website), 40) }}</a></dd></div>@endif
@@ -353,6 +364,27 @@
                 </section>
 
                 @if (! $isMember && ! $preview)
+                    <section class="ix-biz__card" aria-labelledby="save-h">
+                        <h2 id="save-h">Save</h2>
+                        @auth
+                            @if ($savedIn->isNotEmpty())<p class="ix-trust__line">In your {{ \Illuminate\Support\Str::plural('collection', $savedIn->count()) }}: {{ $savedIn->implode(', ') }}. <a href="{{ route('collections') }}">Your collections</a></p>@endif
+                            <form method="post" action="{{ route('business.save', $team) }}" class="ix-form ix-saveform">
+                                @csrf
+                                <label class="ix-label" for="collection_id">To a collection</label>
+                                <select class="ix-input" id="collection_id" name="collection_id">
+                                    @foreach ($collections as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach
+                                    <option value="">A new collection…</option>
+                                </select>
+                                <input class="ix-input" name="new_name" maxlength="80" list="collection-names" placeholder="New collection name" aria-label="New collection name">
+                                <datalist id="collection-names">@foreach (\App\Models\BusinessCollection::SUGGESTED as $name)<option value="{{ $name }}">@endforeach</datalist>
+                                <input class="ix-input" name="note" maxlength="300" placeholder="A note for yourself (optional)" aria-label="Note">
+                                <button type="submit" class="ix-btn"><span class="material-symbols-rounded" aria-hidden="true">bookmark_add</span>Save</button>
+                            </form>
+                            <p class="ix-hint">Only you see your collections.</p>
+                        @else
+                            <p class="ix-trust__line"><a href="{{ route('login') }}">Sign in</a> to save businesses to your own lists: suppliers, contractors, businesses to contact later.</p>
+                        @endauth
+                    </section>
                     <p class="ix-reportlink"><a href="{{ route('business.report', $team) }}"><span class="material-symbols-rounded" aria-hidden="true">flag</span>Report this business</a></p>
                 @endif
             </aside>

@@ -73,6 +73,47 @@
         @endif
     </section>
 
+    <section class="ix-panel ix-panel--clip" id="featured" aria-labelledby="feat-h">
+        <div class="ix-panel__head"><h2 id="feat-h">Featured placements</h2><span class="ix-hint"><a href="{{ route('businesses.featured') }}">The published rules</a></span></div>
+        @if ($featureRequests->isEmpty() && $featuresActive->isEmpty())
+            <p class="ix-hint ix-panel__body">No requests and no placements running.</p>
+        @else
+            <div class="ix-tablewrap"><table class="ix-table">
+                <thead><tr><th>Business</th><th>State</th><th>Decide</th></tr></thead>
+                <tbody>
+                    @foreach ($featureRequests as $req)
+                        <tr>
+                            <td><a class="title" href="{{ route('business.show', $req->team) }}">{{ $req->team?->name }}</a>@if ($req->reason)<span class="ix-standing__msg">{{ $req->reason }}</span>@endif</td>
+                            <td>Asked {{ $req->created_at->diffForHumans() }}</td>
+                            <td>
+                                <details><summary class="ix-btn ix-btn--sm ix-btn--primary">Grant</summary>
+                                    <form method="post" action="{{ route('moderation.trust.feature', [$req, 'grant']) }}" class="ix-form ix-vgap">@csrf
+                                        <div class="ix-field"><label class="ix-label" for="days-{{ $req->id }}">Days (up to {{ \App\Models\BusinessFeature::MAX_DAYS }})</label><input class="ix-input" type="number" id="days-{{ $req->id }}" name="days" min="1" max="{{ \App\Models\BusinessFeature::MAX_DAYS }}" value="14" required></div>
+                                        <div class="ix-field"><label class="ix-label" for="gn-{{ $req->id }}">Note to the business</label><input class="ix-input" id="gn-{{ $req->id }}" name="note" minlength="5" maxlength="600" required></div>
+                                        <button class="ix-btn ix-btn--primary ix-btn--sm">Grant</button>
+                                    </form>
+                                </details>
+                                <details><summary class="ix-btn ix-btn--sm">Decline</summary>
+                                    <form method="post" action="{{ route('moderation.trust.feature', [$req, 'decline']) }}" class="ix-form ix-vgap">@csrf
+                                        <div class="ix-field"><label class="ix-label" for="dn-{{ $req->id }}">Why (the business reads this)</label><input class="ix-input" id="dn-{{ $req->id }}" name="note" minlength="10" maxlength="600" required></div>
+                                        <button class="ix-btn ix-btn--sm">Decline</button>
+                                    </form>
+                                </details>
+                            </td>
+                        </tr>
+                    @endforeach
+                    @foreach ($featuresActive as $f)
+                        <tr>
+                            <td>{{ $f->team?->name }}</td>
+                            <td>Featured until {{ $f->ends_at?->format('j M Y') }}</td>
+                            <td><form method="post" action="{{ route('moderation.trust.feature', [$f, 'end']) }}">@csrf<button class="ix-btn ix-btn--sm">End now</button></form></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table></div>
+        @endif
+    </section>
+
     @if ($recent->isNotEmpty())
         <section class="ix-panel ix-panel--clip" aria-labelledby="done-h">
             <div class="ix-panel__head"><h2 id="done-h">Recently concluded</h2></div>

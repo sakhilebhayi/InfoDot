@@ -7761,3 +7761,39 @@ body {
 .ix-reportlink a:hover { color: var(--ix-text); }
 .ix-reportlink .material-symbols-rounded { font-size: 16px; }
 .ix-standing__msg { display: block; margin-top: 4px; padding: 8px 10px; border-left: 3px solid var(--ix-rule-strong); background: var(--ix-bg); white-space: pre-line; color: var(--ix-text); }
+
+/* R-33 Phase 4b — featured strip, places, collections, similar businesses, insights. */
+.ix-featured { padding: 16px; border: 1px solid var(--ix-rule); border-top: 4px solid var(--ix-stencil); border-radius: var(--ix-radius); background: var(--ix-panel); }
+.ix-featured__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin-bottom: 12px; }
+.ix-featured__head .ix-dir__h2 { margin: 0; }
+.ix-featured__head .ix-hint { margin: 0; }
+.ix-dir__placehint { margin: -6px 0 10px; }
+.ix-saveform { display: grid; gap: 8px; }
+.ix-similar { margin-top: 8px; }
+.ix-rules { display: grid; gap: 16px; max-width: 860px; }
+.ix-collection { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.ix-collection > li { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 12px 20px; align-items: start; }
+.ix-collection__card .ix-dir__results { margin: 0; }
+.ix-collection__gone { margin: 0; padding: 16px 18px; border: 1px dashed var(--ix-rule-strong); border-radius: var(--ix-radius); }
+.ix-collection__side { display: grid; gap: 6px; justify-items: start; }
+.ix-collection__side .ix-hint { margin: 0; }
+@media (max-width: 760px) { .ix-collection > li { grid-template-columns: minmax(0, 1fr); } }
+
+/* Insights: one series as bars (views), the other as a thin tick (search appearances). */
+.ix-trend { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); align-items: end; gap: 2px; height: 180px; padding: 0 0 2px; border-bottom: 1px solid var(--ix-rule-strong); }
+.ix-trend__day { position: relative; height: 100%; display: flex; align-items: flex-end; justify-content: center; outline-offset: 1px; }
+.ix-trend__bar { display: block; width: 100%; max-width: 18px; background: var(--area); border-radius: 4px 4px 0 0; }
+.ix-trend__tick { position: absolute; left: 15%; right: 15%; height: 2px; background: var(--ix-stencil); }
+.ix-trend__tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 5; white-space: nowrap; padding: 6px 8px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-panel); color: var(--ix-text); font-size: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); opacity: 0; pointer-events: none; transition: opacity 0.12s var(--ix-ease); }
+.ix-trend__day:hover .ix-trend__tip, .ix-trend__day:focus-visible .ix-trend__tip { opacity: 1; }
+.ix-trend__day:hover .ix-trend__bar { filter: brightness(1.2); }
+.ix-trend__axis { display: flex; justify-content: space-between; margin: 6px 0 0; font-size: 12px; color: var(--ix-text-3); font-variant-numeric: tabular-nums; }
+.ix-insightcols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.ix-meter { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.ix-meter li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(60px, 1fr) auto; gap: 10px; align-items: center; font-size: 14px; }
+.ix-meter li > span:first-child { overflow-wrap: anywhere; color: var(--ix-text); }
+.ix-meter__bar { display: block; height: 8px; border-radius: 4px; background: var(--ix-sunken); overflow: hidden; }
+.ix-meter__bar > span { display: block; height: 100%; background: var(--area); border-radius: 4px; }
+.ix-meter b { font-variant-numeric: tabular-nums; }
+.ix-inboxstats .ix-hint { margin: 6px 0 0; }
+@media (prefers-reduced-motion: reduce) { .ix-trend__tip { transition: none; } }

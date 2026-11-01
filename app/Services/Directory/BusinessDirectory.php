@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -41,7 +42,7 @@ final class BusinessDirectory
 
     /**
      * @param  array{q?: string|null, category?: string|null, location?: string|null, region?: string|null, size?: string|null, type?: string|null, verified?: bool|null, sort?: string|null, view?: string|null, page?: int|null, all?: bool|null}  $f
-     * @return array{results: LengthAwarePaginator<int, Team>, reasons: array<int, list<string>>, words: list<string>, location: ?string}
+     * @return array{results: LengthAwarePaginator<int, Team>, reasons: array<int, list<string>>, words: list<string>, location: ?string, service_hits: array<int, list<int>>}
      */
     public function search(array $f, ?User $viewer): array
     {
@@ -92,10 +93,15 @@ final class BusinessDirectory
 
         $reasons = [];
         $scores = [];
+        $serviceHits = [];
         foreach ($candidates as $team) {
             [$score, $why] = $this->score($team, $words);
             $scores[$team->id] = $score;
             $reasons[$team->id] = $why;
+            // Which of its services the words found, for the business's "popular services" insight.
+            $serviceHits[$team->id] = $words === [] ? [] : $team->services
+                ->filter(fn (BusinessService $s) => collect($words)->contains(fn ($w) => str_contains(mb_strtolower($s->name.' '.$s->description), $w)))
+                ->pluck('id')->all();
         }
 
         $sorted = match ($sort) {
@@ -111,7 +117,7 @@ final class BusinessDirectory
                 'size' => $f['size'] ?? null, 'type' => $f['type'] ?? null, 'verified' => ($f['verified'] ?? false) ? 1 : null, 'sort' => $f['sort'] ?? null, 'view' => $f['view'] ?? null, 'all' => ($f['all'] ?? false) ? 1 : null]),
         ]);
 
-        return ['results' => $results, 'reasons' => $reasons, 'words' => $words, 'location' => $location ?: null];
+        return ['results' => $results, 'reasons' => $reasons, 'words' => $words, 'location' => $location ?: null, 'service_hits' => $serviceHits];
     }
 
     /** What to show before anyone searches: categories with listed businesses, the newest, and services on offer. @return array{categories: Collection<int, BusinessCategory>, newest: Collection<int, Team>, services: Collection<int, object>} */
@@ -128,6 +134,80 @@ final class BusinessDirectory
                 ->selectRaw('lower(name) as name, count(distinct team_id) as businesses')->groupByRaw('lower(name)')
                 ->orderByDesc('businesses')->orderBy('name')->limit(18)->get(),
         ];
+    }
+
+    /**
+     * Businesses like this one (R-33 §8): listed for this viewer, sharing a category or the words of
+     * a service. Each comes with what it shares, so the suggestion explains itself.
+     *
+     * @return list<array{team: Team, why: list<string>}>
+     */
+    public function similar(Team $team, ?User $viewer, int $limit = 4): array
+    {
+        $categoryIds = $team->categories->pluck('id')->all();
+        $words = $team->services->flatMap(fn (BusinessService $s) => preg_split('/[^a-z0-9]+/', mb_strtolower($s->name)) ?: [])
+            ->filter(fn ($w) => strlen($w) >= 4 && ! in_array($w, self::NOISE, true))->unique()->values()->all();
+
+        if ($categoryIds === [] && $words === []) {
+            return [];
+        }
+
+        $candidates = Team::query()->listedFor($viewer)->whereKeyNot($team->id)
+            ->where(function (Builder $q) use ($categoryIds, $words) {
+                if ($categoryIds !== []) {
+                    $q->orWhereHas('categories', fn (Builder $c) => $c->whereIn('business_categories.id', $categoryIds));
+                }
+                foreach ($words as $w) {
+                    $q->orWhereHas('services', fn (Builder $s) => $s->where('name', 'like', '%'.$w.'%'));
+                }
+            })
+            ->with(['profile', 'categories', 'services', 'standing', 'logo'])->limit(200)->get();
+
+        return $candidates->map(function (Team $other) use ($categoryIds, $words) {
+            $sharedCats = $other->categories->whereIn('id', $categoryIds);
+            $sharedServices = $other->services->filter(fn (BusinessService $s) => collect($words)->contains(fn ($w) => str_contains(mb_strtolower($s->name), $w)));
+            $why = [];
+            if ($sharedCats->isNotEmpty()) {
+                $why[] = 'Same category: '.$sharedCats->pluck('name')->take(2)->implode(', ');
+            }
+            if ($sharedServices->isNotEmpty()) {
+                $why[] = 'Also offers: '.$sharedServices->pluck('name')->take(2)->implode(', ');
+            }
+
+            return ['team' => $other, 'why' => $why, 'score' => $sharedCats->count() * 3 + $sharedServices->count()];
+        })->sortByDesc('score')->take($limit)->map(fn ($r) => ['team' => $r['team'], 'why' => $r['why']])->values()->all();
+    }
+
+    /**
+     * Places listed businesses say they are in (R-33 §8 "explore geographically"), from what they
+     * typed: their locations' towns and provinces, and the town in their profile location. Without
+     * verified coordinates InfoDot does not draw a map; it lists places that lead to a search.
+     *
+     * @return array{towns: list<array{place: string, businesses: int}>, provinces: list<array{place: string, businesses: int}>}
+     */
+    public function places(?User $viewer): array
+    {
+        $listed = Team::query()->listedFor($viewer)->select('id');
+
+        $fromLocations = DB::table('business_locations')->whereIn('team_id', $listed)->get(['team_id', 'city', 'province']);
+        $fromProfiles = TeamProfile::query()->whereIn('team_id', Team::query()->listedFor($viewer)->select('id'))->whereNotNull('location')->get(['team_id', 'location']);
+
+        $towns = collect();
+        foreach ($fromLocations as $l) {
+            $towns->push(['place' => trim((string) $l->city), 'team' => $l->team_id]);
+        }
+        foreach ($fromProfiles as $p) {
+            $towns->push(['place' => trim(explode(',', (string) $p->location)[0]), 'team' => $p->team_id]);
+        }
+
+        $count = fn (Collection $rows) => $rows->filter(fn ($r) => mb_strlen($r['place']) >= 2)
+            ->groupBy(fn ($r) => mb_convert_case(mb_strtolower($r['place']), MB_CASE_TITLE))
+            ->map(fn ($g, $place) => ['place' => (string) $place, 'businesses' => $g->pluck('team')->unique()->count()])
+            ->sortByDesc('businesses')->values();
+
+        $provinces = $fromLocations->filter(fn ($l) => filled($l->province))->map(fn ($l) => ['place' => trim((string) $l->province), 'team' => $l->team_id]);
+
+        return ['towns' => $count($towns)->take(12)->values()->all(), 'provinces' => $count(collect($provinces->all()))->take(9)->values()->all()];
     }
 
     /** The sizes listed businesses actually gave, for the size filter. @return Collection<int, string> */

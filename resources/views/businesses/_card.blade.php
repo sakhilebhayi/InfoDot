@@ -33,7 +33,7 @@
             </ul>
         @endif
         @if ($why)
-            <p class="ix-bizcard__why"><span>Matched on</span> {{ implode(', ', $why) }}</p>
+            <p class="ix-bizcard__why">@if (str_contains($why[0], ':')){{ implode('. ', $why) }}@else<span>Matched on</span> {{ implode(', ', $why) }}@endif</p>
         @endif
     </div>
 </li>

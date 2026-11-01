@@ -4,8 +4,11 @@ use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Http\Controllers\BusinessCollectionController;
 use App\Http\Controllers\BusinessDirectoryController;
+use App\Http\Controllers\BusinessFeatureController;
 use App\Http\Controllers\BusinessInboxController;
+use App\Http\Controllers\BusinessInsightsController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessRelationshipController;
 use App\Http\Controllers\BusinessReportController;
@@ -69,6 +72,9 @@ Route::get('/', function () {
 // The business directory and business pages (R-33): open to visitors for businesses that chose
 // "anyone"; each page decides who may see it from the business's own setting.
 Route::get('/businesses', [BusinessDirectoryController::class, 'index'])->middleware('throttle:120,1,businesses')->name('businesses.index');
+Route::get('/businesses/featured', [BusinessFeatureController::class, 'rules'])->middleware('throttle:60,1,businesses.featured')->name('businesses.featured');
+// Contact actions on a business page are counted for the business's insights (R-33 §9): a count, nothing about the visitor.
+Route::post('/business/{team:uuid}/track/{action}', [BusinessInsightsController::class, 'track'])->whereIn('action', ['call', 'email', 'website', 'map'])->middleware('throttle:60,1,business.track')->name('business.track');
 Route::get('/business/{team:uuid}', [BusinessProfileController::class, 'show'])->middleware('throttle:120,1,business.show')->name('business.show');
 // Files stream from one door. Signed-out visitors may open only the current branding of a business
 // that chose "anyone"; for everything else they are sent to sign in, as before (R-15, R-33).
@@ -116,6 +122,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
     Route::post('/business/{team:uuid}/directory', [BusinessProfileController::class, 'updateDirectory'])->middleware('throttle:20,1,business.directory')->name('business.directory');
+    // Collections, featured requests and insights (R-33 Phase 4b).
+    Route::get('/collections', [BusinessCollectionController::class, 'index'])->name('collections');
+    Route::get('/collections/{collection}', [BusinessCollectionController::class, 'show'])->whereNumber('collection')->name('collections.show');
+    Route::post('/collections/{collection}', [BusinessCollectionController::class, 'update'])->whereNumber('collection')->middleware('throttle:30,1,collections.update')->name('collections.update');
+    Route::delete('/collections/{collection}', [BusinessCollectionController::class, 'destroy'])->whereNumber('collection')->middleware('throttle:30,1,collections.destroy')->name('collections.destroy');
+    Route::delete('/collections/{collection}/items/{item}', [BusinessCollectionController::class, 'remove'])->whereNumber(['collection', 'item'])->middleware('throttle:60,1,collections.remove')->name('collections.remove');
+    Route::post('/business/{team:uuid}/save', [BusinessCollectionController::class, 'save'])->middleware('throttle:60,1,collections.save')->name('business.save');
+    Route::post('/business/{team:uuid}/feature', [BusinessFeatureController::class, 'request'])->middleware('throttle:5,60,business.feature')->name('business.feature');
+    Route::get('/business/{team:uuid}/insights', [BusinessInsightsController::class, 'show'])->name('business.insights');
+    Route::post('/moderation/trust/features/{feature}/{decision}', [BusinessFeatureController::class, 'decide'])->whereNumber('feature')->whereIn('decision', ['grant', 'decline', 'end'])->middleware(['moderator', 'throttle:30,1,moderation.feature'])->name('moderation.trust.feature');
+
     // Reports about a business, and the business's own standing and appeals (R-33 Phase 4a).
     Route::get('/business/{team:uuid}/report', [BusinessReportController::class, 'create'])->name('business.report');
     Route::post('/business/{team:uuid}/report', [BusinessReportController::class, 'store'])->middleware('throttle:5,1,business.report')->name('business.report.store');
