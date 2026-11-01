@@ -55,7 +55,11 @@ final class BusinessDirectory
             $query->whereHas('categories', fn (Builder $c) => $c->where('slug', $f['category']));
         }
         if ($location) {
-            $query->whereHas('profile', fn (Builder $p) => $p->where(fn ($p) => $p->where('location', 'like', '%'.$location.'%')->orWhere('regions', 'like', '%'.$location.'%')));
+            // Where it says it is, where it says it works, or any location it lists (R-33 Phase 2).
+            $like = '%'.$location.'%';
+            $query->where(fn (Builder $w) => $w
+                ->whereHas('profile', fn (Builder $p) => $p->where(fn ($p) => $p->where('location', 'like', $like)->orWhere('regions', 'like', $like)))
+                ->orWhereHas('locations', fn (Builder $l) => $l->where('city', 'like', $like)->orWhere('province', 'like', $like)));
         }
         if ($f['region'] ?? null) {
             $query->whereHas('profile', fn (Builder $p) => $p->where('regions', 'like', '%'.$f['region'].'%'));

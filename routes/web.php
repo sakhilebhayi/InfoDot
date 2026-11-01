@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\BusinessDirectoryController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessRelationshipController;
+use App\Http\Controllers\BusinessShowcaseController;
 use App\Http\Controllers\BusinessVerificationController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ExpertiseSharingController;
@@ -110,8 +111,22 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
     Route::post('/business/{team:uuid}/directory', [BusinessProfileController::class, 'updateDirectory'])->middleware('throttle:20,1,business.directory')->name('business.directory');
-    Route::post('/business/{team:uuid}/services', [BusinessProfileController::class, 'storeService'])->middleware('throttle:30,1,business.services')->name('business.services.store');
-    Route::delete('/business/{team:uuid}/services/{service}', [BusinessProfileController::class, 'destroyService'])->whereNumber('service')->middleware('throttle:30,1,business.services.destroy')->name('business.services.destroy');
+    // What the business shows on its page (R-33 Phase 2): offerings, portfolio, locations, announcements, brochures.
+    Route::prefix('/business/{team:uuid}')->name('business.')->controller(BusinessShowcaseController::class)->middleware('throttle:60,1,business.showcase')->group(function () {
+        Route::post('/services', 'storeService')->name('services.store');
+        Route::post('/services/{service}', 'updateService')->whereNumber('service')->name('services.update');
+        Route::delete('/services/{service}', 'destroyService')->whereNumber('service')->name('services.destroy');
+        Route::post('/projects', 'storeProject')->name('projects.store');
+        Route::post('/projects/{project}', 'updateProject')->whereNumber('project')->name('projects.update');
+        Route::delete('/projects/{project}', 'destroyProject')->whereNumber('project')->name('projects.destroy');
+        Route::post('/locations', 'storeLocation')->name('locations.store');
+        Route::post('/locations/{location}', 'updateLocation')->whereNumber('location')->name('locations.update');
+        Route::delete('/locations/{location}', 'destroyLocation')->whereNumber('location')->name('locations.destroy');
+        Route::post('/announcements', 'storeAnnouncement')->name('announcements.store');
+        Route::post('/announcements/{announcement}/withdraw', 'withdrawAnnouncement')->whereNumber('announcement')->name('announcements.withdraw');
+        Route::post('/brochures', 'storeBrochure')->name('brochures.store');
+        Route::delete('/pictures/{attachment:uuid}', 'removePicture')->name('pictures.remove');
+    });
     Route::post('/business/{team:uuid}/media', [BusinessProfileController::class, 'storeMedia'])->middleware('throttle:30,1,business.media')->name('business.media');
     Route::delete('/business/{team:uuid}/media/{attachment:uuid}', [BusinessProfileController::class, 'removeMedia'])->middleware('throttle:30,1,business.media.remove')->name('business.media.remove');
 

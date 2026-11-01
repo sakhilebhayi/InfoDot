@@ -22,7 +22,16 @@ use Illuminate\Validation\ValidationException;
  */
 class TeamMediaService
 {
-    public const ROLES = ['logo', 'cover', 'gallery'];
+    public const ROLES = ['logo', 'cover', 'gallery', 'offering', 'project'];
+
+    /** Roles that keep the photograph's own shape (bounded), rather than a fixed crop. */
+    private const FREE_SHAPE = ['gallery', 'offering', 'project'];
+
+    /** Roles that belong to one item (a service, a project) through `meta.ref`. */
+    private const REF_ROLES = ['offering', 'project'];
+
+    /** Brochures (R-33 §4): PDFs the business publishes, kept as uploaded. */
+    public const BROCHURE = 'brochure';
 
     /** Output geometry per role: logo square, cover wide, gallery bounded by longest edge. */
     private const LOGO_SIZE = 512;
@@ -38,10 +47,14 @@ class TeamMediaService
      * ['x' => 0..1, 'y' => 0..1, 'w' => 0..1, 'h' => 0..1] of the source image; without it the
      * image is centre-cropped to the role's shape.
      */
-    public function put(User $user, Team $team, string $role, UploadedFile $file, ?array $crop = null, ?string $caption = null): Attachment
+    public function put(User $user, Team $team, string $role, UploadedFile $file, ?array $crop = null, ?string $caption = null, ?int $ref = null): Attachment
     {
         if (! in_array($role, self::ROLES, true)) {
             throw ValidationException::withMessages(['role' => 'Unknown image role.']);
+        }
+
+        if (in_array($role, self::REF_ROLES, true) !== ($ref !== null)) {
+            throw ValidationException::withMessages(['file' => 'That picture has nothing to belong to.']);
         }
 
         if (! function_exists('imagecreatefromstring')) {
@@ -111,23 +124,29 @@ class TeamMediaService
         $attachment->name = Str::limit($team->name, 120, '').' '.$role.($asPng ? '.png' : '.jpg');
         $attachment->mime = $asPng ? 'image/png' : 'image/jpeg';
         $attachment->size = strlen($bytes);
-        $attachment->caption = $role === 'gallery' ? ($caption !== null ? Str::limit(trim($caption), 500, '') : null) : null;
+        $branding = in_array($role, ['logo', 'cover'], true);
+        $attachment->caption = in_array($role, ['gallery', 'project'], true) && $caption !== null ? Str::limit(trim($caption), 500, '') : null;
         // Logo and cover carry a fingerprint for impersonation matching (R-29 §17).
-        $attachment->meta = ['width' => $outW, 'height' => $outH] + ($role !== 'gallery' && ($hash = ImageFingerprint::of($bytes)) ? ['dhash' => $hash] : []);
+        $attachment->meta = ['width' => $outW, 'height' => $outH]
+            + ($ref !== null ? ['ref' => $ref] : [])
+            + ($branding && ($hash = ImageFingerprint::of($bytes)) ? ['dhash' => $hash] : []);
         $attachment->attachable()->associate($team);
 
-        // One current logo and one current cover; the gallery accumulates. History stays.
-        if ($role !== 'gallery') {
+        // One current logo, one current cover and one picture per offering; the gallery and
+        // project pictures accumulate. History stays.
+        if ($branding) {
             Attachment::query()
                 ->where('attachable_type', 'team')->where('attachable_id', $team->id)
                 ->where('role', $role)->whereNull('superseded_at')
                 ->update(['superseded_at' => now()]);
+        } elseif ($role === 'offering') {
+            $this->retire($team, 'offering', $ref);
         }
 
         $attachment->save();
 
         // A verified business's new branding becomes protected; anyone else's is compared with it.
-        if ($role !== 'gallery') {
+        if ($branding) {
             $identity = app(IdentityProtection::class);
             if (! $identity->refreshBranding($team)) {
                 $identity->evaluate($team, 'media_uploaded');
@@ -135,6 +154,60 @@ class TeamMediaService
         }
 
         return $attachment;
+    }
+
+    /**
+     * Store a brochure: a PDF the business publishes on its page. It is checked to be a real PDF
+     * within the size limit and stored as uploaded — a PDF cannot be re-encoded like an image.
+     */
+    public function putBrochure(User $user, Team $team, UploadedFile $file, string $title): Attachment
+    {
+        if (! $file->isValid() || $file->getSize() <= 0) {
+            throw ValidationException::withMessages(['file' => 'The upload did not arrive intact. Try again.']);
+        }
+
+        $max = (int) config('attachments.kinds.pdf.max_bytes');
+        if ($file->getSize() > $max) {
+            throw ValidationException::withMessages(['file' => 'A brochure may be at most '.round($max / 1048576).' MB.']);
+        }
+
+        $mime = strtolower((string) (new \finfo(FILEINFO_MIME_TYPE))->file($file->getRealPath()));
+        $head = (string) file_get_contents($file->getRealPath(), false, null, 0, 5);
+        if ($mime !== 'application/pdf' || $head !== '%PDF-') {
+            throw ValidationException::withMessages(['file' => 'A brochure must be a PDF.']);
+        }
+
+        $uuid = (string) Str::uuid();
+        $path = 'attachments/branding/'.now()->format('Y/m').'/'.$uuid.'.pdf';
+        if (! Storage::disk(Attachment::DISK)->putFileAs(dirname($path), $file, basename($path))) {
+            throw ValidationException::withMessages(['file' => 'The brochure could not be stored. Try again.']);
+        }
+
+        $attachment = new Attachment;
+        $attachment->uuid = $uuid;
+        $attachment->user_id = $user->id;
+        $attachment->team_id = $team->id;
+        $attachment->kind = Attachment::PDF;
+        $attachment->role = self::BROCHURE;
+        $attachment->path = $path;
+        $attachment->thumb_path = null;
+        $attachment->name = Str::limit(Str::slug($title) ?: 'brochure', 100, '').'.pdf';
+        $attachment->mime = 'application/pdf';
+        $attachment->size = (int) $file->getSize();
+        $attachment->caption = Str::limit(trim($title), 140, '');
+        $attachment->meta = [];
+        $attachment->attachable()->associate($team);
+        $attachment->save();
+
+        return $attachment;
+    }
+
+    /** Take every current picture of one item off the profile (its row stays, as history). */
+    public function retire(Team $team, string $role, ?int $ref): void
+    {
+        $team->media()->where('role', $role)->whereNull('superseded_at')->get()
+            ->filter(fn (Attachment $a) => (int) ($a->meta['ref'] ?? 0) === (int) $ref)
+            ->each(fn (Attachment $a) => $a->forceFill(['superseded_at' => now()])->save());
     }
 
     /** Take one piece of media off the profile. The row and file stay, as history. */
@@ -154,8 +227,8 @@ class TeamMediaService
     /** @return array{0: \GdImage, 1: int, 2: int} */
     private function render(\GdImage $source, int $sw, int $sh, string $role, ?array $crop): array
     {
-        // A gallery photograph keeps its own shape, only bounded by the longest edge.
-        if ($role === 'gallery') {
+        // A gallery, offering or project photograph keeps its own shape, only bounded by the longest edge.
+        if (in_array($role, self::FREE_SHAPE, true)) {
             $scale = min(1, self::GALLERY_MAX / max($sw, $sh));
             $w = max(1, (int) round($sw * $scale));
             $h = max(1, (int) round($sh * $scale));
