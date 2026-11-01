@@ -7482,3 +7482,23 @@ body {
 .ix-vdeclare input { margin-top: 4px; accent-color: var(--ix-ok); }
 .ix-biz__name { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; min-width: 0; }
 .ix-vstate + .ix-settings { margin-top: 28px; }
+.ix-vbtns--flush { margin: 0; }
+.ix-vstate__h { margin: 0; font-size: 16px; overflow-wrap: break-word; }
+
+/* R-29 Phase 3 — identity conflicts: the two businesses side by side, signals as a ledger. */
+.ix-idpair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.ix-idpair__media { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; margin-bottom: 12px; }
+.ix-idpair__media .ix-biz__logo { width: 72px; height: 72px; }
+.ix-idpair__cover { display: block; width: 100%; aspect-ratio: 16 / 5; object-fit: cover; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-sunken); }
+.ix-idsignals { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
+.ix-idsignals li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 9px 0; border-top: 1px solid var(--ix-rule); font-size: 14px; }
+.ix-idsignals li:first-child { border-top: 0; }
+.ix-idsignals .w { font-variant-numeric: tabular-nums; color: var(--ix-text-3); }
+.ix-idsignals .total { font-weight: 700; color: var(--ix-text); }
+.ix-idlevel { font-family: var(--ix-stencil-font); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; font-size: 22px; line-height: 1; }
+.ix-idlevel--low { color: var(--ix-text-3); }
+.ix-idlevel--medium { color: var(--ix-warn); }
+.ix-idlevel--high, .ix-idlevel--critical { color: var(--ix-danger); }
+@media (max-width: 899px) { .ix-idpair { grid-template-columns: minmax(0, 1fr); } }
+.ix-panel + .ix-idpair,
+.ix-idpair + .ix-panel { margin-top: 16px; }

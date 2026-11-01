@@ -20,6 +20,8 @@
             $open ? ['email', 'Official email'] : null,
             $canApply ? ['meaning', 'What verification means'] : null,
             $canApply ? ['apply', ($standing ? 'Apply again' : 'Apply')] : null,
+            ['linked', 'Linked businesses'],
+            ($alerts->isNotEmpty() || $standing?->isCurrent()) ? ['identity', 'Identity alerts'] : null,
             ['history', 'History'],
         ]));
     @endphp
@@ -44,6 +46,9 @@
             <h2 id="vstate-h">{{ $headline }}</h2>
             <p>{{ $explain }}</p>
         </div>
+        @if ($extraCheck)
+            <p class="ix-vstate__msg"><b>An extra check applies</b>Details on this account match another business that InfoDot has verified. That is often innocent — a branch, a franchise, a shared group brand. If you are related, ask that business to confirm the link under Linked businesses; otherwise a reviewer looks at both before this business can be verified.</p>
+        @endif
         @if ($focus?->message_to_applicant && in_array($state, [\App\Models\BusinessVerification::INFO_REQUIRED, \App\Models\BusinessVerification::REJECTED, \App\Models\BusinessVerification::SUSPENDED, \App\Models\BusinessVerification::REVOKED], true))
             <p class="ix-vstate__msg"><b>From the InfoDot reviewer</b>{{ $focus->message_to_applicant }}</p>
         @endif
@@ -221,6 +226,80 @@
 
                         <div><button type="submit" class="ix-btn ix-btn--primary">Send the application</button></div>
                     </form>
+                </section>
+            @endif
+
+            <section id="linked" class="ix-settings__sec">
+                <h2>Linked businesses</h2>
+                <p class="ix-hint">Branches, subsidiaries, franchises, distributors and staff accounts of a verified business share its name or branding legitimately. A link is confirmed by the verified business — then sharing is expected, not suspicious.</p>
+                @if ($outgoing->isEmpty() && $incoming->isEmpty())
+                    <p class="ix-hint">No links yet.</p>
+                @else
+                    <ul class="ix-evidence">
+                        @foreach ($outgoing as $link)
+                            <li>
+                                <span class="material-symbols-rounded" aria-hidden="true">north_east</span>
+                                <span class="ix-evidence__name">{{ $team->name }} is a {{ strtolower($kinds[$link->kind] ?? $link->kind) }} of <a href="{{ route('business.show', $link->parent) }}">{{ $link->parent->name }}</a><small>{{ $link->status === 'confirmed' ? 'Confirmed by '.$link->parent->name.' on '.$link->decided_at?->format('j M Y') : 'Waiting for '.$link->parent->name.' to confirm' }}</small></span>
+                                <form method="post" action="{{ route('business.relationships.end', [$team, $link]) }}">@csrf @method('DELETE')<button type="submit" class="ix-btn ix-btn--ghost ix-btn--sm">{{ $link->status === 'pending' ? 'Withdraw' : 'End link' }}</button></form>
+                            </li>
+                        @endforeach
+                        @foreach ($incoming as $link)
+                            <li>
+                                <span class="material-symbols-rounded" aria-hidden="true">south_west</span>
+                                <span class="ix-evidence__name"><a href="{{ route('business.show', $link->team) }}">{{ $link->team->name }}</a> says it is a {{ strtolower($kinds[$link->kind] ?? $link->kind) }} of {{ $team->name }}<small>{{ $link->status === 'confirmed' ? 'You confirmed this on '.$link->decided_at?->format('j M Y') : 'Asks you to confirm'.($link->note ? ': “'.$link->note.'”' : '') }}</small></span>
+                                @if ($link->status === 'pending')
+                                    <span class="ix-vbtns ix-vbtns--flush">
+                                        <form method="post" action="{{ route('business.relationships.decide', [$team, $link, 'confirm']) }}">@csrf<button type="submit" class="ix-btn ix-btn--primary ix-btn--sm">Confirm</button></form>
+                                        <form method="post" action="{{ route('business.relationships.decide', [$team, $link, 'decline']) }}">@csrf<button type="submit" class="ix-btn ix-btn--ghost ix-btn--sm">Decline</button></form>
+                                    </span>
+                                @else
+                                    <form method="post" action="{{ route('business.relationships.end', [$team, $link]) }}">@csrf @method('DELETE')<button type="submit" class="ix-btn ix-btn--ghost ix-btn--sm">End link</button></form>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                <h3 class="ix-vsub">Link this business to a verified one</h3>
+                <form method="post" action="{{ route('business.relationships.claim', $team) }}" class="ix-form ix-vgap">
+                    @csrf
+                    <div class="ix-form__row">
+                        <div class="ix-field">
+                            <label class="ix-label" for="link-code">Its owner code</label>
+                            <input id="link-code" name="code" class="ix-input ix-vcode__digits" maxlength="4" required value="{{ old('code') }}" placeholder="ACME" autocapitalize="characters">
+                            <p class="ix-hint">The four letters on its business page.</p>
+                        </div>
+                        <div class="ix-field">
+                            <label class="ix-label" for="link-kind">{{ $team->name }} is its…</label>
+                            <select id="link-kind" name="kind" class="ix-input">
+                                @foreach ($kinds as $key => $label)<option value="{{ $key }}" @selected(old('kind') === $key)>{{ $label }}</option>@endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ix-field">
+                        <label class="ix-label" for="link-note">A note for them (optional)</label>
+                        <input id="link-note" name="note" class="ix-input" maxlength="500" value="{{ old('note') }}" placeholder="e.g. Our Rustenburg branch, opened 2024">
+                    </div>
+                    <div><button type="submit" class="ix-btn">Ask them to confirm</button></div>
+                </form>
+            </section>
+
+            @if ($alerts->isNotEmpty() || $standing?->isCurrent())
+                <section id="identity" class="ix-settings__sec">
+                    <h2>Identity alerts</h2>
+                    <p class="ix-hint">Because {{ $team->name }} is verified, InfoDot compares every new or changed business account with it — names, registration number, website and branding. When an account matches closely, a reviewer looks at it, and you hear about it here. A match is not proof of anything: it is often a branch or a business with a similar name.</p>
+                    @forelse ($alerts as $alert)
+                        <div class="ix-vstate ix-vgap">
+                            <span class="ix-vstate__mark {{ in_array($alert->level, ['high', 'critical'], true) ? 'ix-vstate__mark--stop' : 'ix-vstate__mark--wait' }}" aria-hidden="true">{{ $alert->level }}</span>
+                            <div>
+                                <h3 class="ix-vstate__h">“{{ $alert->subject->name }}” shares details with {{ $team->name }}</h3>
+                                <p>Matching: {{ collect($alert->signals)->pluck('type')->map(fn ($t) => ['registration_number' => 'registration number', 'name_exact' => 'name', 'name_lookalike' => 'a look-alike name', 'name_similar' => 'a similar name', 'website' => 'website', 'contact_domain' => 'email domain', 'logo' => 'logo', 'cover' => 'cover photograph', 'same_country' => 'country'][$t] ?? $t)->implode(', ') }}. Found {{ $alert->created_at->format('j M Y') }}. {{ $alert->status === 'escalated' ? 'InfoDot is investigating.' : 'A reviewer is looking at it.' }}</p>
+                                <p class="ix-hint">If it is your branch, franchise or staff account, ask it to send you a link request and confirm it above.</p>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="ix-hint">No account matches {{ $team->name }} closely right now.</p>
+                    @endforelse
                 </section>
             @endif
 

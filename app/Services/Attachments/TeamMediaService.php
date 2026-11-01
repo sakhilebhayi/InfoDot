@@ -5,6 +5,8 @@ namespace App\Services\Attachments;
 use App\Models\Attachment;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Identity\IdentityProtection;
+use App\Services\Identity\ImageFingerprint;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -110,7 +112,8 @@ class TeamMediaService
         $attachment->mime = $asPng ? 'image/png' : 'image/jpeg';
         $attachment->size = strlen($bytes);
         $attachment->caption = $role === 'gallery' ? ($caption !== null ? Str::limit(trim($caption), 500, '') : null) : null;
-        $attachment->meta = ['width' => $outW, 'height' => $outH];
+        // Logo and cover carry a fingerprint for impersonation matching (R-29 §17).
+        $attachment->meta = ['width' => $outW, 'height' => $outH] + ($role !== 'gallery' && ($hash = ImageFingerprint::of($bytes)) ? ['dhash' => $hash] : []);
         $attachment->attachable()->associate($team);
 
         // One current logo and one current cover; the gallery accumulates. History stays.
@@ -122,6 +125,14 @@ class TeamMediaService
         }
 
         $attachment->save();
+
+        // A verified business's new branding becomes protected; anyone else's is compared with it.
+        if ($role !== 'gallery') {
+            $identity = app(IdentityProtection::class);
+            if (! $identity->refreshBranding($team)) {
+                $identity->evaluate($team, 'media_uploaded');
+            }
+        }
 
         return $attachment;
     }

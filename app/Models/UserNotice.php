@@ -70,6 +70,16 @@ class UserNotice extends Model
     /** R-29: for reviewers — an application arrived, came back, or a verified identity changed. */
     public const VERIFICATION_QUEUE = 'verification_queue';
 
+    /** R-29 Part C: reviewers — an account's details match a verified business. */
+    public const IDENTITY_CONFLICT = 'identity_conflict';
+
+    /** R-29 Part C: the verified business — another account shares its identity details. */
+    public const IDENTITY_ALERT = 'identity_alert';
+
+    public const RELATIONSHIP_REQUEST = 'relationship_request';
+
+    public const RELATIONSHIP_DECIDED = 'relationship_decided';
+
     /**
      * Notices that are about something the person has booked, paid for or is owed, not about their contributions. The notifications switch
      * silences the second kind only: nobody should miss a cancelled seminar, a changed time, a refund, a dispute or a debt because they
@@ -79,6 +89,7 @@ class UserNotice extends Model
         self::SEMINAR_CANCELLED, self::SEMINAR_CHANGED, self::SEMINAR_SPOT_OPEN, self::SEMINAR_REFUNDED, self::SEMINAR_DISPUTE, self::SEMINAR_LINK_BROKEN,
         self::SEMINAR_DEBT_OPENED, self::SEMINAR_DEBT_CLEARED, self::SEMINAR_DEBT_REOPENED, self::SEMINAR_DEBT_WRITTEN_OFF, self::SEMINAR_REMOVED, self::SEMINAR_REINSTATED, self::SEMINAR_APPEAL_DECIDED,
         self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
+        self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
     ];
 
     public const KINDS = [
@@ -89,6 +100,7 @@ class UserNotice extends Model
         self::SEMINAR_DEBT_OPENED, self::SEMINAR_DEBT_CLEARED, self::SEMINAR_DEBT_REOPENED, self::SEMINAR_DEBT_WRITTEN_OFF, self::SEMINAR_REMOVED, self::SEMINAR_REINSTATED, self::SEMINAR_APPEAL_DECIDED,
         self::SEMINAR_REPORT_DECIDED,
         self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
+        self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
     ];
 
     public $timestamps = false;
