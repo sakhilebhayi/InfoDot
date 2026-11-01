@@ -8,7 +8,10 @@ use App\Http\Controllers\BusinessDirectoryController;
 use App\Http\Controllers\BusinessInboxController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessRelationshipController;
+use App\Http\Controllers\BusinessReportController;
 use App\Http\Controllers\BusinessShowcaseController;
+use App\Http\Controllers\BusinessStandingController;
+use App\Http\Controllers\BusinessTrustDeskController;
 use App\Http\Controllers\BusinessVerificationController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\EnquiryController;
@@ -113,6 +116,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
     Route::post('/business/{team:uuid}/directory', [BusinessProfileController::class, 'updateDirectory'])->middleware('throttle:20,1,business.directory')->name('business.directory');
+    // Reports about a business, and the business's own standing and appeals (R-33 Phase 4a).
+    Route::get('/business/{team:uuid}/report', [BusinessReportController::class, 'create'])->name('business.report');
+    Route::post('/business/{team:uuid}/report', [BusinessReportController::class, 'store'])->middleware('throttle:5,1,business.report')->name('business.report.store');
+    Route::get('/business/{team:uuid}/standing', [BusinessStandingController::class, 'show'])->name('business.standing');
+    Route::post('/business/{team:uuid}/appeals', [BusinessStandingController::class, 'appeal'])->middleware('throttle:5,60,business.appeal')->name('business.appeal');
+
     // The InfoDot Inbox (R-33 Phase 3): the customer's enquiries, and each business's inbox.
     Route::get('/business/{team:uuid}/message', [EnquiryController::class, 'create'])->name('business.message');
     Route::post('/business/{team:uuid}/message', [EnquiryController::class, 'store'])->middleware('throttle:6,1,enquiry.start')->name('business.message.store');
@@ -159,6 +168,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/business/{team:uuid}/relationships', [BusinessRelationshipController::class, 'claim'])->middleware('throttle:10,60,business.relationship.claim')->name('business.relationships.claim');
     Route::post('/business/{team:uuid}/relationships/{relationship}/{decision}', [BusinessRelationshipController::class, 'decide'])->whereNumber('relationship')->whereIn('decision', ['confirm', 'decline'])->middleware('throttle:30,1,business.relationship.decide')->name('business.relationships.decide');
     Route::delete('/business/{team:uuid}/relationships/{relationship}', [BusinessRelationshipController::class, 'end'])->whereNumber('relationship')->middleware('throttle:30,1,business.relationship.end')->name('business.relationships.end');
+    // Business trust (R-33 Phase 4a / R-29 Part D): reports, investigations, appeals.
+    Route::prefix('/moderation/trust')->name('moderation.trust')->middleware('moderator')->controller(BusinessTrustDeskController::class)->group(function () {
+        Route::get('/', 'index')->middleware('throttle:60,1,moderation.trust');
+        Route::get('/reports/{report}', 'report')->whereNumber('report')->middleware('throttle:60,1,moderation.trust.view')->name('.report');
+        Route::post('/reports/{report}/{outcome}', 'resolveReport')->whereNumber('report')->whereIn('outcome', ['dismiss', 'action', 'link'])->middleware('throttle:30,1,moderation.trust.act')->name('.report.resolve');
+        Route::post('/investigations', 'openInvestigation')->middleware('throttle:30,1,moderation.trust.act')->name('.open');
+        Route::get('/investigations/{investigation}', 'investigation')->whereNumber('investigation')->middleware('throttle:60,1,moderation.trust.view')->name('.investigation');
+        Route::post('/investigations/{investigation}/{action}', 'act')->whereNumber('investigation')->whereIn('action', ['note', 'message', 'restrict', 'lift', 'conclude'])->middleware('throttle:30,1,moderation.trust.act')->name('.act');
+        Route::get('/appeals/{appeal}', 'appeal')->whereNumber('appeal')->middleware('throttle:60,1,moderation.trust.view')->name('.appeal');
+        Route::post('/appeals/{appeal}/{decision}', 'decideAppeal')->whereNumber('appeal')->whereIn('decision', ['uphold', 'deny'])->middleware('throttle:30,1,moderation.trust.act')->name('.appeal.decide');
+    });
     Route::get('/moderation/identity', [IdentityDeskController::class, 'index'])->middleware(['moderator', 'throttle:60,1,moderation.identity'])->name('moderation.identity');
     Route::get('/moderation/identity/{conflict}', [IdentityDeskController::class, 'show'])->whereNumber('conflict')->middleware(['moderator', 'throttle:60,1,moderation.identity.show'])->name('moderation.identity.show');
     Route::post('/moderation/identity/{conflict}/{action}', [IdentityDeskController::class, 'resolve'])->whereNumber('conflict')->whereIn('action', ['dismiss', 'relate', 'escalate'])->middleware(['moderator', 'throttle:60,1,moderation.identity.resolve'])->name('moderation.identity.resolve');

@@ -4,6 +4,8 @@ namespace App\Services\Attachments;
 
 use App\Models\Answer;
 use App\Models\Attachment;
+use App\Models\BusinessAppeal;
+use App\Models\BusinessReport;
 use App\Models\BusinessVerification;
 use App\Models\Comment;
 use App\Models\EnquiryMessage;
@@ -263,6 +265,22 @@ class AttachmentService
 
             return $enquiry !== null
                 && ($enquiry->isHandler($user) || ($message->isPublic() && $enquiry->isCustomer($user)));
+        }
+
+        // Reports and appeals about businesses (R-33 Phase 4a): reviewers, plus the person who reported,
+        // or the business's owner and administrators for their own appeal.
+        if ($attachment->attachable_type === 'business_report') {
+            $report = $attachment->attachable()->with('team')->first();
+
+            return $report instanceof BusinessReport && $report->team !== null
+                && ($report->reporter_id === $user->id || ($user->isModerator() && ! $user->belongsToTeam($report->team)));
+        }
+
+        if ($attachment->attachable_type === 'business_appeal') {
+            $appeal = $attachment->attachable()->with('team')->first();
+
+            return $appeal instanceof BusinessAppeal && $appeal->team !== null
+                && ($user->ownsTeam($appeal->team) || $user->hasTeamRole($appeal->team, 'admin') || ($user->isModerator() && ! $user->belongsToTeam($appeal->team)));
         }
 
         // Verification evidence (R-29 §25): the business's owner and administrators, and InfoDot

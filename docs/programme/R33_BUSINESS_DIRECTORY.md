@@ -162,3 +162,35 @@ The InfoDot Inbox, built new (InfoDot had no messaging), as the one conversation
 
 Also fixed: two live pages printed raw Blade (`here@if (...)`, `businesses@if (...)`) because a
 directive glued to a word is not compiled; a unit test now fails if any view does that.
+
+## Phase 4a — trust: reports, investigations, appeals (2026-11-02)
+
+This also completes R-29 Part D (§20–23, scenarios 8–10). Phase 4 is split: 4a (trust) here, 4b
+(collections, similar businesses, places, featured rules, analytics) next.
+
+- **Decision: own tables, not `content_reports`.** Knowledge reports carry their own reason set and
+  feed the Dot Points events; business reports need R-33/R-29 categories, priority, evidence and
+  investigation links. `business_reports`, `business_investigations` (+ append-only
+  `business_investigation_events`) and `business_appeals` keep them apart.
+- **Reports**: signed-in people report a business they can see, in 10 categories (R-33 §7 and
+  R-29 §21 merged), with detail and up to 3 files that only outside reviewers and the reporter can
+  open. One open report per person per business, 5 a day, never about one's own business. Serious
+  categories are high priority; urgent when the business holds a badge or several people have
+  reported it. A report changes nothing about the business by itself.
+- **Investigations** (moderators outside the business): open from reports or from an identity
+  conflict; link more reports; notes; write to the business; take it out of discovery (requires a
+  written message) or return it; conclude as cleared, corrected, confirmed impersonation or
+  confirmed misconduct. Confirmed outcomes keep it out of discovery and revoke any verification.
+  Every step is on the trail with who took it.
+- **Restriction** = `team_profiles.restricted_at`. A restricted business is not listed, not in the
+  sitemap, takes no enquiries, and its page is a plain 404 to everyone but its own people and
+  reviewers. There is no public label anywhere.
+- **The business** gets a notice and a *Standing and appeals* page (owner and administrators) with
+  InfoDot's explanation — never the reporter or the internal summary — and a banner on its page
+  and edit page while restricted.
+- **Appeals**: one per decision (restriction, confirmed outcome, or a verification rejection,
+  suspension or revocation within 90 days), with evidence. Decided by a moderator outside the
+  business who did not make the original decision (separation of duties, enforced server-side).
+  Upheld: an investigation is cleared and the restriction lifted; a suspension is reinstated; after
+  a rejection or revocation the business is told it may apply again.
+- **Reporters** learn only whether action was taken.

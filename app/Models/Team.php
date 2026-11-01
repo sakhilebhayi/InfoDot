@@ -163,10 +163,16 @@ class Team extends JetstreamTeam
         return $this->hasMany(Enquiry::class);
     }
 
+    /** Whether an investigation has taken the business out of discovery. */
+    public function isRestricted(): bool
+    {
+        return $this->profile?->restricted_at !== null;
+    }
+
     /** Whether people may message this business through the InfoDot Inbox (R-33 §5A). */
     public function acceptsEnquiries(): bool
     {
-        return ! $this->personal_team && ($this->profile === null || $this->profile->accepts_enquiries !== false);
+        return ! $this->personal_team && ! $this->isRestricted() && ($this->profile === null || $this->profile->accepts_enquiries !== false);
     }
 
     /** @return HasMany<BusinessProfileEvent, $this> */
@@ -210,6 +216,12 @@ class Team extends JetstreamTeam
             return false;
         }
 
+        // A business an investigation has taken out of discovery (R-33 Phase 4) is, to everyone
+        // outside it, simply not there — never labelled.
+        if ($this->isRestricted()) {
+            return $user !== null && ($user->belongsToTeam($this) || $user->isModerator());
+        }
+
         return match ($this->visibility()) {
             TeamProfile::PUBLIC => true,
             TeamProfile::MEMBERS => $user !== null,
@@ -223,7 +235,8 @@ class Team extends JetstreamTeam
         $query->where('personal_team', false)
             ->whereHas('profile', fn ($p) => $p->whereIn('visibility', $user ? [TeamProfile::PUBLIC, TeamProfile::MEMBERS] : [TeamProfile::PUBLIC])
                 // A listing with nothing in it helps no one: a business is listed once it says what it does.
-                ->whereNotNull('description')->where('description', '!=', ''));
+                ->whereNotNull('description')->where('description', '!=', '')
+                ->whereNull('restricted_at'));
     }
 
     /** The profile row, saved on first use, so edit forms always have something to fill. */

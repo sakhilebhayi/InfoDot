@@ -183,6 +183,35 @@ class InAppNotices
         [, $id, $status] = array_pad(explode(':', $notice->ref), 3, null);
         $name = '“'.Str::limit($team->name, 60, '…', true).'”';
 
+        // R-33 Phase 4a. Reviewers see what is waiting; the reporter learns only whether action was
+        // taken; the business is pointed at its standing page, where the explanation is.
+        if ($notice->kind === UserNotice::BUSINESS_TRUST_QUEUE) {
+            [, $what, $itemId] = array_pad(explode(':', $notice->ref), 3, null);
+
+            return $what === 'appeal'
+                ? ['text' => "$name appealed a decision about it. It needs a reviewer who did not make that decision.", 'url' => route('moderation.trust.appeal', ['appeal' => (int) $itemId])]
+                : ['text' => "Someone reported $name. It needs a reviewer.", 'url' => route('moderation.trust.report', ['report' => (int) $itemId])];
+        }
+
+        if ($notice->kind === UserNotice::BUSINESS_REPORT_DECIDED) {
+            [, , $outcome] = array_pad(explode(':', $notice->ref), 3, null);
+
+            return ['text' => "Your report about $name was reviewed. ".($outcome === 'actioned' ? 'InfoDot acted on it.' : 'InfoDot found no problem it could act on.').' Thank you for raising it.', 'url' => null];
+        }
+
+        if ($notice->kind === UserNotice::BUSINESS_STANDING) {
+            $parts = explode(':', $notice->ref);
+            $text = match (true) {
+                ($parts[1] ?? '') === 'appeal' => 'A reviewer decided the appeal for '.$name.': '.(($parts[3] ?? '') === 'upheld' ? 'upheld.' : 'not upheld.'),
+                ($parts[3] ?? '') === 'restricted' => "InfoDot is reviewing $name and has taken it out of the directory meanwhile. The reason, and how to respond, are on its standing page.",
+                ($parts[3] ?? '') === 'concluded' => "InfoDot finished reviewing $name. The outcome is on its standing page.",
+                ($parts[3] ?? '') === 'lifted' => "$name is back in the directory.",
+                default => "InfoDot wrote to $name about a review. Read it on its standing page.",
+            };
+
+            return ['text' => $text, 'url' => route('business.standing', $team)];
+        }
+
         // R-29 Part C. The other account is never named in the verified business's notice.
         if ($notice->kind === UserNotice::IDENTITY_CONFLICT) {
             return [
@@ -287,6 +316,7 @@ class InAppNotices
             UserNotice::IDENTITY_CONFLICT, UserNotice::IDENTITY_ALERT => 'Identity',
             UserNotice::RELATIONSHIP_REQUEST, UserNotice::RELATIONSHIP_DECIDED => 'Linked business',
             UserNotice::ENQUIRY_RECEIVED, UserNotice::ENQUIRY_REPLY, UserNotice::ENQUIRY_ASSIGNED, UserNotice::ENQUIRY_FOLLOW_UP => 'Inbox',
+            UserNotice::BUSINESS_TRUST_QUEUE, UserNotice::BUSINESS_REPORT_DECIDED, UserNotice::BUSINESS_STANDING => 'Business review',
             default => 'Update',
         };
     }

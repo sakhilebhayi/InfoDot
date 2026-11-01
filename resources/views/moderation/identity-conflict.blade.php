@@ -84,6 +84,12 @@
                         <div><button type="submit" class="ix-btn ix-btn--primary">Record as related</button></div>
                     </form>
                 </details>
+                @if ($c->subject)
+                    <details>
+                        <summary class="ix-btn ix-btn--danger">Open an investigation</summary>
+                        @include('moderation._trust-open', ['team' => $c->subject, 'conflictId' => $c->id, 'concern' => 'identity_conflict'])
+                    </details>
+                @endif
                 @if ($c->status === 'open')
                     <details>
                         <summary class="ix-btn ix-btn--danger">Escalate for investigation</summary>

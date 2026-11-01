@@ -55,6 +55,13 @@
         </div>
     @endif
 
+    @if ($isMember && $team->isRestricted())
+        <div class="ix-previewbar" role="status">
+            <p><b>{{ $team->name }} is out of the directory while InfoDot reviews it.</b> Only your team can open this page for now.</p>
+            @if ($canEdit)<a class="ix-btn ix-btn--sm" href="{{ route('business.standing', $team) }}">Why, and how to respond</a>@endif
+        </div>
+    @endif
+
     <div class="ix-biz">
         <figure class="ix-biz__yard">
             @if ($cover)
@@ -341,8 +348,13 @@
                     @endif
                     @if ($canEdit)
                         <p class="ix-trust__line"><a href="{{ route('business.verification', $team) }}">{{ $standing?->isCurrent() ? 'Verification details' : 'Verify this business' }}</a></p>
+                        <p class="ix-trust__line"><a href="{{ route('business.standing', $team) }}">Standing and appeals</a></p>
                     @endif
                 </section>
+
+                @if (! $isMember && ! $preview)
+                    <p class="ix-reportlink"><a href="{{ route('business.report', $team) }}"><span class="material-symbols-rounded" aria-hidden="true">flag</span>Report this business</a></p>
+                @endif
             </aside>
         </div>
     </div>

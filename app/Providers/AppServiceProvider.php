@@ -18,6 +18,8 @@ use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Listeners\RecordInAppNotice;
 use App\Listeners\RefreshAchievements;
 use App\Livewire\Teams\TeamMemberManager;
+use App\Models\BusinessAppeal;
+use App\Models\BusinessReport;
 use App\Models\BusinessVerification;
 use App\Models\EnquiryMessage;
 use App\Models\File;
@@ -143,6 +145,8 @@ class AppServiceProvider extends ServiceProvider
             'team' => Team::class,
             'business_verification' => BusinessVerification::class,
             'enquiry_message' => EnquiryMessage::class,
+            'business_report' => BusinessReport::class,
+            'business_appeal' => BusinessAppeal::class,
         ]);
     }
 }

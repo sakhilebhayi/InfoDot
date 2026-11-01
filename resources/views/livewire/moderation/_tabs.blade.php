@@ -6,6 +6,7 @@
     <a href="{{ route('moderation.library') }}" @if ($current === 'library') aria-current="page" @endif>Recommended</a>
     <a href="{{ route('moderation.topics') }}" @if ($current === 'topics') aria-current="page" @endif>Topics</a>
     <a href="{{ route('moderation.verifications') }}" @if (($current ?? null) === 'verifications') aria-current="page" @endif>Business verification</a>
+    <a href="{{ route('moderation.trust') }}" @if (($current ?? null) === 'trust') aria-current="page" @endif>Business trust</a>
     <a href="{{ route('moderation.identity') }}" @if (($current ?? null) === 'identity') aria-current="page" @endif>Identity conflicts</a>
     <a href="{{ route('moderation.seminars') }}" @if (($current ?? null) === 'seminars') aria-current="page" @endif>Seminars</a>
     <a href="{{ route('moderation.friction') }}" @if ($current === 'friction') aria-current="page" @endif>Where people struggle</a>

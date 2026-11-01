@@ -35,6 +35,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, bool>|null $public_contact
  * @property string|null $industries_served
  * @property bool $accepts_enquiries
+ * @property Carbon|null $restricted_at
  */
 class TeamProfile extends Model
 {
@@ -97,6 +98,7 @@ class TeamProfile extends Model
             'links' => 'array',
             'public_contact' => 'array',
             'accepts_enquiries' => 'boolean',
+            'restricted_at' => 'datetime',
         ];
     }
 
