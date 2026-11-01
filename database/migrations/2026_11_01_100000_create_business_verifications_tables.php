@@ -17,7 +17,8 @@ return new class extends Migration
         Schema::create('business_verifications', function (Blueprint $table) {
             $table->id();
             $table->foreignId('team_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('applicant_id')->nullable()->constrained('users')->nullOnDelete();
+            // users.id is INT UNSIGNED (`increments`), so user references are too.
+            $table->unsignedInteger('applicant_id')->nullable();
             // pending | under_review | info_required | verified | rejected | suspended | revoked | expired | withdrawn
             $table->string('status', 16)->default('pending');
             // registered_company | sole_proprietor | other_entity
@@ -39,7 +40,7 @@ return new class extends Migration
             // What the reviewer actually confirmed — the badge panel lists exactly these.
             $table->json('checks')->nullable();
             $table->text('message_to_applicant')->nullable();
-            $table->foreignId('decided_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedInteger('decided_by')->nullable();
             $table->timestamp('decided_at')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->timestamp('expires_at')->nullable();
@@ -50,13 +51,15 @@ return new class extends Migration
             $table->timestamps();
             $table->index(['team_id', 'status']);
             $table->index(['status', 'expires_at']);
+            $table->foreign('applicant_id')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('decided_by')->references('id')->on('users')->nullOnDelete();
         });
 
         Schema::create('verification_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('business_verification_id')->constrained()->cascadeOnDelete();
             $table->foreignId('team_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('actor_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedInteger('actor_id')->nullable();
             $table->string('event', 32);
             $table->string('from_status', 16)->nullable();
             $table->string('to_status', 16)->nullable();
@@ -64,6 +67,7 @@ return new class extends Migration
             $table->text('note')->nullable();
             $table->timestamp('created_at');
             $table->index(['business_verification_id', 'created_at']);
+            $table->foreign('actor_id')->references('id')->on('users')->nullOnDelete();
         });
     }
 
