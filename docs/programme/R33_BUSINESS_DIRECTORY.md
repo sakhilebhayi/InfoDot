@@ -1,0 +1,97 @@
+# R-33 — Business directory and discovery: audit and phased plan
+
+Brief: `requirements/infodot-business-directory.md` (verbatim, 2026-11-01). Inspected before
+any code, per brief §12 and §14.
+
+## What exists (build on this, not beside it)
+
+| Need | Existing foundation | State |
+|---|---|---|
+| The business | Jetstream **Team** (uuid, 4-letter owner code) + R-29 `team_profiles` (trading name, description, industry, category *free text*, products/services *free text*, location, regions, website, contact email/phone, registration no./country, established, size, links) | Profile exists; categories and services are unstructured text |
+| Public page | `/business/{uuid}` (R-29 Phase 1) — Yard design, logo/cover/gallery, registry and contact rail | **Signed-in users only** — the whole app sits behind `auth:sanctum` |
+| Branding media | R-15 attachments + `TeamMediaService` (GD crop, history, fingerprints) | Reusable for service images and portfolio |
+| Trust | R-29 Phase 2 verification + approval plate + trust card; Phase 3 protected identities, conflicts, linked businesses | Reusable as-is: directory filters on it, badge appears on listings |
+| Identity vs marketing | Phase 2/3: name, trading name, registration no./country and website changes send a verified business back for review | Already enforces §6 "registered identity is not editable marketing" |
+| Search | Scout + **TNTSearch** on Questions/Solutions/User/Comment/Obj; index files live on the host and need a manual `scout:import` | Not used for businesses (see below) |
+| Messaging | **None.** No inbox, conversation or message model exists anywhere in InfoDot (a code comment says so); Dot.Engage is a campaigns platform, not messaging | The brief's "existing InfoDot Inbox" has to be **built** — the first and only conversation system, so nothing competes |
+| Notifications | `user_notices` + `InAppNotices` (kinds, service kinds, unread bell) | Reused for enquiries |
+| Reports / moderation | `content_reports` (questions/solutions), `/moderation` desks, appeals models | Extended for business reports in Phase 4 |
+| Layout | `layouts/app.blade.php` + `navigation-menu` assume a signed-in user | Needs a guest top bar for public business pages |
+
+## Decisions
+
+1. **Visibility** (§11) is one setting on the profile: `public` (listed; guests can open the
+   page), `members` (listed for signed-in InfoDot users only), `private` (not listed; the page is
+   for the business's own members). New businesses start **private** — discovery is opted into.
+   Businesses that already filled in a profile were told "everyone on InfoDot sees" it (R-29
+   Phase 1), so the migration keeps them visible as `members`.
+2. **Search** is explainable SQL scoring over real profile data (name, trading name,
+   description, industry, categories, services, location, regions): every result says what it
+   matched. "in X" / "near X" in a query becomes a location filter. No AI and no index to
+   rebuild by hand; the query layer is isolated so a full-text engine can replace it as the
+   directory grows.
+3. **Categories** are a central table (the brief's 19), chosen many-to-many; moderators manage
+   them. The old free-text `category` stays as the business's own wording.
+4. **Services** become structured rows (name, description; images, pricing notes and
+   documents in Phase 2), searchable on their own.
+5. **Inbox** (Phase 3) is business-to-person conversations owned by the business (Team), not an
+   employee: any owner/admin — or the member a conversation is assigned to — answers; customers
+   never see internal notes or other conversations.
+6. **Featured placement** has transparent rules shown on the page and is never confused with
+   verification; it ships only when its rules are agreed (Phase 4). Nothing is ranked by payment
+   before then.
+
+## Phases (one PR each; owner approval per merge/deploy)
+
+1. **Directory and discovery** — visibility setting + migration, central categories, structured
+   services, business type, `/businesses` directory (natural search with explanations, filters:
+   category, location, region, size, type, verified; grid/list; browse popular categories,
+   recently listed, by service; pagination), guest-safe public pages for `public` businesses,
+   contact actions from the business's own public fields (call, email, website, directions),
+   `Businesses` navigation, sitemap entries for public businesses, tests.
+2. **Profile showcase** — products/services with images and published pricing notes,
+   portfolio/projects, operating locations and service areas, announcements, brochures (PDF),
+   per-field control of public contact details and address, "preview as a visitor".
+3. **InfoDot Inbox and enquiries** — Message Business, structured enquiries, business inbox
+   (statuses New → Closed, assignment, internal notes, attachments, unread, notices, follow-up
+   reminders, response times), customer inbox, rate limits and spam protection.
+4. **Trust, reports and discovery extras** — business reports (impersonation, incorrect
+   information, suspicious, misleading, fraud, inappropriate) into a review workflow with appeals
+   (this absorbs R-29 Phase 4), collections, similar businesses, featured placement with
+   published rules, map view where locations are reliable, analytics from recorded events only
+   (views, search appearances, contact actions, enquiries, response times).
+
+## Phase 1 — shipped in this PR (2026-11-01)
+
+- **Visibility** on `team_profiles` (`public` / `members` / `private`, default `private`). The
+  migration moved every profile that already had content to `members`, which is what those
+  businesses were promised under R-29. Owners and administrators choose it on the edit page
+  (*Directory listing*); editors and outsiders cannot.
+- **Listed** means: not a personal workspace, visibility the viewer may see, and a description.
+  An empty profile is never listed, and the edit page says so.
+- **Business page** `/business/{uuid}` is outside sign-in. Who may open it: public → anyone;
+  members → signed-in people; private → the business's own people and moderators. Everyone else
+  gets 404, so a hidden business cannot be confirmed by guessing.
+- **Branding files** (`/attachments/{uuid}`) are outside sign-in too. Current logo, cover and
+  gallery of a business follow the page's rule; replaced branding stays with owners/admins and
+  moderators. Every other file still sends a signed-out visitor to sign in, exactly as before.
+- **Directory** `/businesses`: one search box that reads plain questions ("accounting firms in
+  Johannesburg" → `accounting` located in/serving Johannesburg), filters (category, location,
+  type, size, verified, order), grid/list, 24 per page, browse panels (categories with counts,
+  services on offer, recently listed). Each result says what it matched on. Visitors see a note
+  that signed-in people see more.
+- **Categories** (the brief's 19, up to three per business) and **services** (name +
+  description, up to 30) are structured and searchable on their own.
+- **Contact actions** on the business page use only what the business published: Call
+  (`tel:`), Email (`mailto:`), Website, and "On the map" (a Google Maps search for the business
+  name and its stated location — not a pinned address). No team member's account details appear.
+- **SEO**: public business pages and `/businesses` are in `sitemap.xml`; members-only and private
+  pages carry `noindex`; business pages carry the business's name as their title.
+- **Fixes found on the way**: `Team::profileOrNew()` did not remember the row it created, so a
+  second call on the same model tried to insert another; the icon font now uses
+  `display=block`, so icon names no longer flash as words while it loads.
+
+Not in Phase 1 (by plan): Message Business / Inbox (Phase 3), per-field contact controls and
+preview-as-visitor (Phase 2), reports, featured placement, collections, similar businesses and
+analytics (Phase 4). A moderator page for managing categories is not built; the 19 are seeded and
+can be changed in the database until it is.

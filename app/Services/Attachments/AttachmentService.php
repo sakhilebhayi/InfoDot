@@ -9,6 +9,7 @@ use App\Models\Comment;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Steps;
+use App\Models\Team;
 use App\Models\User;
 use App\Services\Knowledge\AnswerService;
 use Illuminate\Database\Eloquent\Model;
@@ -225,26 +226,32 @@ class AttachmentService
      */
     public function canView(?User $user, Attachment $attachment): bool
     {
+        // Business media (R-29, R-33 §11): current branding and gallery are seen by whoever may
+        // open the business's page — anyone for a public business, signed-in people for a
+        // members-only one, the business's own people for a private one. Superseded history
+        // stays with the company's decision-makers and the moderators who may compare against it.
+        if ($attachment->isBound() && $attachment->attachable_type === 'team' && $attachment->role !== null) {
+            $team = $attachment->attachable()->withoutGlobalScopes()->first();
+
+            if (! $team instanceof Team) {
+                return false;
+            }
+
+            if ($attachment->superseded_at === null) {
+                return $team->isVisibleTo($user) || ($user !== null && $user->belongsToTeam($team));
+            }
+
+            return $user !== null
+                && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin') || $user->isModerator());
+        }
+
+        // Everything else is for signed-in people only.
         if (! $user) {
             return false;
         }
 
         if (! $attachment->isBound()) {
             return $attachment->user_id === $user->id;
-        }
-
-        // Business media (R-29): current branding and gallery are the company's public face —
-        // any signed-in person may see them. Superseded history stays with the company's
-        // decision-makers and the moderators who may one day compare against it.
-        if ($attachment->attachable_type === 'team' && $attachment->role !== null) {
-            if ($attachment->superseded_at === null) {
-                return true;
-            }
-
-            $team = $attachment->attachable()->withoutGlobalScopes()->first();
-
-            return $team !== null
-                && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin') || $user->isModerator());
         }
 
         // Verification evidence (R-29 §25): the business's owner and administrators, and InfoDot

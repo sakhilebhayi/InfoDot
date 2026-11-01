@@ -35,8 +35,31 @@ class TeamProfile extends Model
     /** The social/professional link slots the profile form offers. */
     public const LINK_KEYS = ['linkedin', 'facebook', 'instagram', 'x', 'youtube'];
 
+    /** Who can find and open the business (R-33 §11). */
+    public const PUBLIC = 'public';
+
+    public const MEMBERS = 'members';
+
+    public const PRIVATE = 'private';
+
+    public const VISIBILITY = [
+        self::PUBLIC => 'Anyone — listed in the directory, and the page opens without signing in',
+        self::MEMBERS => 'InfoDot users — listed for people signed in to InfoDot',
+        self::PRIVATE => 'Only this business — not listed; the page is for your own team',
+    ];
+
+    public const BUSINESS_TYPES = [
+        'company' => 'Registered company',
+        'sole_proprietor' => 'Sole proprietor',
+        'partnership' => 'Partnership',
+        'cooperative' => 'Cooperative',
+        'non_profit' => 'Non-profit organisation',
+        'public_entity' => 'Public entity',
+        'informal' => 'Informal business',
+    ];
+
     protected $fillable = [
-        'trading_name', 'description', 'industry', 'category', 'products_services',
+        'trading_name', 'description', 'industry', 'category', 'business_type', 'visibility', 'products_services',
         'location', 'regions', 'website', 'contact_email', 'contact_phone',
         'registration_number', 'registration_country', 'established_on', 'size', 'links',
     ];
@@ -75,7 +98,7 @@ class TeamProfile extends Model
     /** True once the profile says anything at all — the public page hides empty sections. */
     public function hasContent(): bool
     {
-        return collect($this->only(array_diff($this->fillable, ['links'])))->filter()->isNotEmpty()
+        return collect($this->only(array_diff($this->fillable, ['links', 'visibility'])))->filter()->isNotEmpty()
             || ! empty(array_filter($this->links ?? []));
     }
 }

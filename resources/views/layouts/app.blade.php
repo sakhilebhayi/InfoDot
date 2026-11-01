@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="color-scheme" content="light dark">
-    <title>{{ \App\Support\NavSection::current() }} · InfoDot</title>
+    <title>{{ $title ?? \App\Support\NavSection::current() }} · InfoDot</title>
+    @stack('meta')
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Big+Shoulders+Stencil+Display:wght@700;800;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     {{-- No stand-alone Alpine here: Livewire 3 bundles and starts its own (@livewireScripts below). A second copy fights it. --}}
@@ -22,7 +23,12 @@
     <x-jet-banner />
 
     <div class="ix-shell">
-        @livewire('navigation-menu')
+        @auth
+            @livewire('navigation-menu')
+        @else
+            {{-- Public business pages and the directory open without signing in (R-33). --}}
+            @include('layouts.guest-top')
+        @endauth
 
         @unless ($area === 'home')
             <div class="ix-band">

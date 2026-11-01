@@ -1,8 +1,9 @@
-<x-app-layout>
+<x-app-layout :title="$team->name">
     @php
         $profile ??= null;
         $links = array_filter($profile?->links ?? []);
         $facts = array_filter([
+            'Type' => \App\Models\TeamProfile::BUSINESS_TYPES[$profile?->business_type] ?? null,
             'Industry' => $profile?->industry,
             'Category' => $profile?->category,
             'Location' => $profile?->location,
@@ -15,7 +16,21 @@
                 : null,
             'Registered in' => $profile?->registration_country,
         ]);
+        // Contact actions use only what the business itself published on its profile (R-33 §5, §11).
+        $phone = $profile?->contact_phone ? preg_replace('/[^0-9+]/', '', $profile->contact_phone) : null;
+        $where = $profile?->location;
+        $public = $profile?->visibility === \App\Models\TeamProfile::PUBLIC;
     @endphp
+
+    @push('meta')
+        @if ($profile?->description)<meta name="description" content="{{ \Illuminate\Support\Str::limit($profile->description, 155) }}">@endif
+        @if ($public)
+            <link rel="canonical" href="{{ route('business.show', $team) }}">
+        @else
+            {{-- Only businesses listed for everyone may be indexed. --}}
+            <meta name="robots" content="noindex">
+        @endif
+    @endpush
 
     <div class="ix-biz">
         <figure class="ix-biz__yard">
@@ -41,7 +56,13 @@
                         @if ($team->code)<span class="ix-ref">{{ $team->code }}</span>@endif
                         @if ($profile?->trading_name && $profile->trading_name !== $team->name)<span>trading as {{ $profile->trading_name }}</span>@endif
                         @if ($profile?->industry)<span>{{ $profile->industry }}</span>@endif
+                        @if ($where)<span>{{ $where }}</span>@endif
                     </p>
+                    @if ($team->categories->isNotEmpty())
+                        <ul class="ix-bizcard__tags" aria-label="Categories">
+                            @foreach ($team->categories as $c)<li class="is-cat"><a href="{{ route('businesses.index', ['category' => $c->slug]) }}">{{ $c->name }}</a></li>@endforeach
+                        </ul>
+                    @endif
                 </div>
                 @if ($canEdit)
                     <a href="{{ route('business.edit', $team) }}" class="ix-btn ix-btn--ghost ix-biz__editbtn">
@@ -58,6 +79,17 @@
                     <section class="ix-bizsec">
                         <div class="ix-bizsec__head"><span class="ix-bizsec__num">{{ str_pad((string) ++$sectionNo, 2, '0', STR_PAD_LEFT) }}</span><h2 class="ix-bizsec__lbl">What this business does</h2></div>
                         <p class="ix-biz__prose">{{ $profile->description }}</p>
+                    </section>
+                @endif
+
+                @if ($team->services->isNotEmpty())
+                    <section class="ix-bizsec">
+                        <div class="ix-bizsec__head"><span class="ix-bizsec__num">{{ str_pad((string) ++$sectionNo, 2, '0', STR_PAD_LEFT) }}</span><h2 class="ix-bizsec__lbl">Services</h2></div>
+                        <ul class="ix-svcshow">
+                            @foreach ($team->services as $service)
+                                <li><b>{{ $service->name }}</b>@if ($service->description)<p>{{ $service->description }}</p>@endif</li>
+                            @endforeach
+                        </ul>
                     </section>
                 @endif
 
@@ -109,7 +141,7 @@
                     </section>
                 @endif
 
-                @if (! $profile?->hasContent() && $gallery->isEmpty() && $questions->isEmpty() && $solutions->isEmpty())
+                @if (! $profile?->hasContent() && $team->services->isEmpty() && $gallery->isEmpty() && $questions->isEmpty() && $solutions->isEmpty())
                     <div class="ix-empty">
                         <h2>{{ $team->name }} has not filled in its profile yet</h2>
                         <p>@if ($canEdit)Say what the business does, where it operates and what it looks like — that is what people here see first.@else This business has not said anything about itself yet.@endif</p>
@@ -130,9 +162,15 @@
                     </section>
                 @endif
 
-                @if ($profile?->website || $profile?->contact_email || $profile?->contact_phone || $links)
+                @if ($profile?->website || $profile?->contact_email || $profile?->contact_phone || $links || $where)
                     <section class="ix-biz__card">
                         <h2>Reach them</h2>
+                        <div class="ix-reach">
+                            @if ($phone)<a class="ix-btn ix-btn--primary" href="tel:{{ $phone }}"><span class="material-symbols-rounded" aria-hidden="true">call</span>Call</a>@endif
+                            @if ($profile?->contact_email)<a class="ix-btn @unless($phone) ix-btn--primary @endunless" href="mailto:{{ $profile->contact_email }}"><span class="material-symbols-rounded" aria-hidden="true">mail</span>Email</a>@endif
+                            @if ($profile?->website)<a class="ix-btn" href="{{ $profile->website }}" rel="noopener nofollow" target="_blank"><span class="material-symbols-rounded" aria-hidden="true">language</span>Website</a>@endif
+                            @if ($where)<a class="ix-btn" href="https://www.google.com/maps/search/?api=1&amp;query={{ rawurlencode($team->name.', '.$where) }}" rel="noopener nofollow" target="_blank"><span class="material-symbols-rounded" aria-hidden="true">map</span>On the map</a>@endif
+                        </div>
                         <dl class="ix-biz__facts">
                             @if ($profile?->website)<div><dt>Website</dt><dd><a href="{{ $profile->website }}" rel="noopener nofollow">{{ \Illuminate\Support\Str::limit(preg_replace('#^https?://(www\.)?#', '', $profile->website), 40) }}</a></dd></div>@endif
                             @if ($profile?->contact_email)<div><dt>Email</dt><dd><a href="mailto:{{ $profile->contact_email }}">{{ $profile->contact_email }}</a></dd></div>@endif

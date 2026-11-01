@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Services\Identity\IdentityProtection;
 use App\Services\Verification\VerificationService;
 use App\Support\OwnerCode;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
@@ -115,15 +118,74 @@ class Team extends JetstreamTeam
         return (bool) $this->standing?->isCurrent();
     }
 
-    public function profile()
+    /** @return HasOne<TeamProfile, $this> */
+    public function profile(): HasOne
     {
         return $this->hasOne(TeamProfile::class);
+    }
+
+    // ---------------------------------------------------------------- directory (R-33)
+
+    /** @return BelongsToMany<BusinessCategory, $this> */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(BusinessCategory::class)->orderBy('sort');
+    }
+
+    /** @return HasMany<BusinessService, $this> */
+    public function services(): HasMany
+    {
+        return $this->hasMany(BusinessService::class)->orderBy('sort')->orderBy('id');
+    }
+
+    /** The current logo, as one eager-loadable relation for directory listings. */
+    public function logo(): MorphOne
+    {
+        // The constraint goes inside ofMany: filtering outside it would pick the newest file of any kind.
+        return $this->morphOne(Attachment::class, 'attachable')->ofMany(['id' => 'max'], fn ($q) => $q->where('role', 'logo')->whereNull('superseded_at'));
+    }
+
+    public function visibility(): string
+    {
+        return $this->profile->visibility ?? TeamProfile::PRIVATE;
+    }
+
+    /**
+     * Who may open this business's page (R-33 §11): anyone when public, any signed-in person
+     * when members-only, and only the business's own people when private. Moderators may always
+     * look — reports and identity reviews depend on it. Personal workspaces have no page.
+     */
+    public function isVisibleTo(?User $user): bool
+    {
+        if ($this->personal_team) {
+            return false;
+        }
+
+        return match ($this->visibility()) {
+            TeamProfile::PUBLIC => true,
+            TeamProfile::MEMBERS => $user !== null,
+            default => $user !== null && ($user->belongsToTeam($this) || $user->isModerator()),
+        };
+    }
+
+    /** Businesses this person may find in the directory: visible to them, and described. @param \Illuminate\Database\Eloquent\Builder<Team> $query */
+    public function scopeListedFor(Builder $query, ?User $user): void
+    {
+        $query->where('personal_team', false)
+            ->whereHas('profile', fn ($p) => $p->whereIn('visibility', $user ? [TeamProfile::PUBLIC, TeamProfile::MEMBERS] : [TeamProfile::PUBLIC])
+                // A listing with nothing in it helps no one: a business is listed once it says what it does.
+                ->whereNotNull('description')->where('description', '!=', ''));
     }
 
     /** The profile row, saved on first use, so edit forms always have something to fill. */
     public function profileOrNew(): TeamProfile
     {
-        return $this->profile ?? $this->profile()->create([]);
+        // Remember the new row, so a second call on the same model does not try to create another.
+        if ($this->profile === null) {
+            $this->setRelation('profile', $this->profile()->create(['visibility' => TeamProfile::PRIVATE]));
+        }
+
+        return $this->profile;
     }
 
     /** Named for the scoped route binding (`/business/{team}/media/{attachment}`). */

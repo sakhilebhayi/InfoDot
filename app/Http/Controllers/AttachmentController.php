@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attachment;
 use App\Services\Attachments\AttachmentService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -48,7 +49,7 @@ class AttachmentController extends Controller
 
     public function show(Request $request, Attachment $attachment): Response
     {
-        abort_unless($this->service->canView($request->user(), $attachment), 404);
+        $this->authorizeView($request, $attachment);
 
         // Images and PDFs preview inline; everything may also be fetched as a download.
         $inline = ! $request->boolean('download') && in_array($attachment->kind, [Attachment::IMAGE, Attachment::PDF, Attachment::VIDEO], true);
@@ -58,10 +59,27 @@ class AttachmentController extends Controller
 
     public function thumb(Request $request, Attachment $attachment): Response
     {
-        abort_unless($this->service->canView($request->user(), $attachment), 404);
+        $this->authorizeView($request, $attachment);
         abort_if($attachment->thumb_path === null, 404);
 
         return $this->stream($request, $attachment->thumb_path, 'image/jpeg', 'thumb.jpg', true);
+    }
+
+    /**
+     * Hidden files answer 404 so their existence is not confirmed. A signed-out visitor is sent to
+     * sign in instead, exactly as before the door opened for public business branding.
+     */
+    private function authorizeView(Request $request, Attachment $attachment): void
+    {
+        if ($this->service->canView($request->user(), $attachment)) {
+            return;
+        }
+
+        if ($request->user() === null) {
+            throw new HttpResponseException(redirect()->guest(route('login')));
+        }
+
+        abort(404);
     }
 
     /**

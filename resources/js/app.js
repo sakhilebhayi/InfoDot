@@ -70,3 +70,9 @@ document.addEventListener('livewire:init', () => {
         }
     });
 });
+
+// The directory's filters (R-33) fold away on a phone unless one is in use. They are open in the
+// markup, so without scripting every filter stays reachable.
+document.querySelectorAll('details[data-fold-on-phone]:not([data-active])').forEach((d) => {
+    if (window.matchMedia('(max-width: 640px)').matches) d.open = false;
+});
