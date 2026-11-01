@@ -89,6 +89,15 @@ class UserNotice extends Model
 
     public const ENQUIRY_FOLLOW_UP = 'enquiry_follow_up';
 
+    /** R-33 Phase 4a: reviewers — a business report or appeal is waiting. */
+    public const BUSINESS_TRUST_QUEUE = 'business_trust_queue';
+
+    /** The person who reported a business — their report was reviewed. */
+    public const BUSINESS_REPORT_DECIDED = 'business_report_decided';
+
+    /** The business — an investigation was opened, changed or concluded, or an appeal decided. */
+    public const BUSINESS_STANDING = 'business_standing';
+
     /**
      * Notices that are about something the person has booked, paid for or is owed, not about their contributions. The notifications switch
      * silences the second kind only: nobody should miss a cancelled seminar, a changed time, a refund, a dispute or a debt because they
@@ -100,6 +109,7 @@ class UserNotice extends Model
         self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
+        self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING,
     ];
 
     public const KINDS = [
@@ -112,6 +122,7 @@ class UserNotice extends Model
         self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
+        self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING,
     ];
 
     public $timestamps = false;

@@ -6,6 +6,10 @@
         </div>
     </div>
 
+    @if ($team->isRestricted())
+        <div class="ix-previewbar" role="status"><p><b>{{ $team->name }} is out of the directory while InfoDot reviews it.</b> Your changes are saved as usual.</p><a class="ix-btn ix-btn--sm" href="{{ route('business.standing', $team) }}">Why, and how to respond</a></div>
+    @endif
+
     @if (session('status'))
         <p class="ix-alert" role="status">{{ session('status') }}</p>
     @endif
@@ -18,7 +22,7 @@
 
     <div class="ix-settings">
         <nav class="ix-settings__index" aria-label="Profile sections">
-            @foreach ([['directory', 'Directory listing'], ['logo', 'Logo'], ['cover', 'Cover photograph'], ['about', 'About the business'], ['facts', 'Registry facts'], ['contact', 'Contact and links'], ['services', 'Services and products'], ['portfolio', 'Portfolio'], ['locations', 'Locations'], ['announcements', 'Announcements'], ['gallery', 'Gallery'], ['brochures', 'Brochures'], ['managers', 'Who manages this'], ['changes', 'Recent changes']] as $i => [$id, $label])
+            @foreach ([['directory', 'Directory listing'], ['logo', 'Logo'], ['cover', 'Cover photograph'], ['about', 'About the business'], ['facts', 'Registry facts'], ['contact', 'Contact and links'], ['services', 'Services and products'], ['portfolio', 'Portfolio'], ['locations', 'Locations'], ['announcements', 'Announcements'], ['gallery', 'Gallery'], ['brochures', 'Brochures'], ['managers', 'Who manages this'], ['changes', 'Recent changes'], ['standing', 'Standing and appeals']] as $i => [$id, $label])
                 <a href="#{{ $id }}"><span class="ix-settings__no">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>{{ $label }}</a>
             @endforeach
         </nav>
@@ -365,6 +369,12 @@
                 <h2>Who manages this profile</h2>
                 <p class="ix-hint">The owner and the business’s administrators can change everything on this page. Editors and other members cannot. Roles are set in the team settings.</p>
                 <p><a class="ix-btn ix-btn--ghost" href="{{ route('teams.show', $team->id) }}"><span class="material-symbols-rounded" aria-hidden="true">group</span>Team members and roles</a></p>
+            </section>
+
+            <section id="standing" class="ix-settings__sec">
+                <h2>Standing and appeals</h2>
+                <p class="ix-hint">If InfoDot reviews the business, its explanation and your right to appeal are on the standing page.</p>
+                <p><a class="ix-btn ix-btn--ghost" href="{{ route('business.standing', $team) }}"><span class="material-symbols-rounded" aria-hidden="true">gavel</span>Standing and appeals</a></p>
             </section>
 
             <section id="changes" class="ix-settings__sec">

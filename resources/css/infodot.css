@@ -7754,3 +7754,10 @@ body {
 .ix-thread__event { text-align: center; font-size: 13px; color: var(--ix-text-2); padding: 2px 0; }
 .ix-thread__event .ix-hint { margin: 0; }
 @media (max-width: 640px) { .ix-msg, .ix-msg.is-mine, .ix-msg.is-note { margin-left: 0; margin-right: 0; } }
+
+/* R-33 Phase 4a — reports, standing and appeals. */
+.ix-reportlink { margin: 0; font-size: 13px; }
+.ix-reportlink a { display: inline-flex; align-items: center; gap: 6px; color: var(--ix-text-3); }
+.ix-reportlink a:hover { color: var(--ix-text); }
+.ix-reportlink .material-symbols-rounded { font-size: 16px; }
+.ix-standing__msg { display: block; margin-top: 4px; padding: 8px 10px; border-left: 3px solid var(--ix-rule-strong); background: var(--ix-bg); white-space: pre-line; color: var(--ix-text); }
