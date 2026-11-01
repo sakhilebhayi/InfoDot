@@ -61,7 +61,11 @@ class PublicPagesTest extends TestCase
     public function test_no_public_page_names_a_person(): void
     {
         foreach (['/', '/about', '/features', '/faqs', '/complains', '/contact'] as $path) {
-            $this->assertDoesNotMatchRegularExpression('/sakhile|bhayi/i', $this->get($path)->getContent(), $path);
+            // Random per-request tokens (CSP nonce, CSRF token, asset ids) are taken out first: a
+            // random "…ZNbhAyi…" once failed a deploy without any page naming anyone.
+            $text = preg_replace('/(nonce|data-csrf|content|value|id)="[A-Za-z0-9+\/=_-]{16,}"|\?id=[a-f0-9]+/', '', $this->get($path)->getContent());
+
+            $this->assertDoesNotMatchRegularExpression('/\b(sakhile|bhayi)/i', (string) $text, $path);
         }
     }
 
