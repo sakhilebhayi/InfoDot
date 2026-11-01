@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Services\Enquiries\EnquiryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -58,7 +59,7 @@ class EnquiryController extends Controller
             'reads' => $this->enquiries->readTimes($mine, $user),
             // Businesses whose inbox this person works in, with how many conversations wait for them.
             'businesses' => $this->enquiries->handledQuery($user)->with('team')->get()->groupBy('team_id')
-                ->map(fn (\Illuminate\Support\Collection $group) => ['team' => $group->first()?->team, 'active' => $group->whereNotIn('status', [Enquiry::RESOLVED, Enquiry::CLOSED])->count()])
+                ->map(fn (Collection $group) => ['team' => $group->first()?->team, 'active' => $group->whereNotIn('status', [Enquiry::RESOLVED, Enquiry::CLOSED])->count()])
                 ->filter(fn ($row) => $row['team'] !== null)->values(),
         ]);
     }
