@@ -47,7 +47,7 @@ class BusinessVerificationTest extends TestCase
         $this->owner = User::factory()->withPersonalTeam()->create();
         $this->acme = Team::forceCreate(['user_id' => $this->owner->id, 'name' => 'Acme Boreholes', 'personal_team' => false]);
         $this->owner->switchTeam($this->acme);
-        $this->acme->profileOrNew()->fill(['website' => 'https://www.acmeboreholes.co.za', 'registration_number' => '2019/123456/07', 'registration_country' => 'South Africa'])->save();
+        $this->acme->profileOrNew()->fill(['website' => 'https://www.acmeboreholes.co.za', 'registration_number' => '2019/123456/07', 'registration_country' => 'South Africa', 'visibility' => 'members'])->save();
 
         $this->admin = User::factory()->withPersonalTeam()->create();
         $this->acme->users()->attach($this->admin, ['role' => 'admin']);

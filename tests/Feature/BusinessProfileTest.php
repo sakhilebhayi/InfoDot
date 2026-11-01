@@ -47,6 +47,9 @@ class BusinessProfileTest extends TestCase
         $this->acme->users()->attach($this->editor, ['role' => 'editor']);
 
         $this->outsider = User::factory()->withPersonalTeam()->create();
+
+        // Listed for InfoDot users, as businesses with a profile were when the directory arrived (R-33).
+        $this->acme->profileOrNew()->forceFill(['visibility' => 'members'])->save();
     }
 
     public function test_owner_and_admin_shape_the_profile_and_members_and_outsiders_do_not(): void

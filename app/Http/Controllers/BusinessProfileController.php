@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attachment;
+use App\Models\BusinessCategory;
+use App\Models\BusinessService;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
@@ -10,6 +12,7 @@ use App\Models\TeamProfile;
 use App\Services\Attachments\TeamMediaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 /**
  * A company's public identity inside InfoDot (R-29 Part A): the business page every signed-in
@@ -18,14 +21,21 @@ use Illuminate\Support\Facades\Gate;
  */
 class BusinessProfileController extends Controller
 {
+    private const MAX_CATEGORIES = 3;
+
+    private const MAX_SERVICES = 30;
+
     /** The public business page. Personal workspaces have none. */
     public function show(Request $request, Team $team)
     {
-        abort_if($team->personal_team, 404);
-        $team->loadMissing('standing');
-
         $user = $request->user();
-        $isMember = $user->belongsToTeam($team);
+
+        // Private and members-only businesses answer 404 to those who may not see them, so a
+        // hidden business cannot be discovered by guessing its address (R-33 §11).
+        abort_unless($team->isVisibleTo($user), 404);
+        $team->loadMissing(['standing', 'categories', 'services']);
+
+        $isMember = $user !== null && $user->belongsToTeam($team);
 
         // Outsiders see the company's public contributions only; members see the company's own.
         $questions = Questions::query()
@@ -61,7 +71,61 @@ class BusinessProfileController extends Controller
             'logo' => $team->currentMedia('logo'),
             'cover' => $team->currentMedia('cover'),
             'gallery' => $team->gallery(),
+            'categories' => BusinessCategory::where('active', true)->orderBy('sort')->get(),
+            'chosen' => $team->categories()->pluck('business_categories.id')->all(),
+            'services' => $team->services()->get(),
         ]);
+    }
+
+    /** Who can find the business, what kind of business it is, and where the directory files it (R-33 §2, §11). */
+    public function updateDirectory(Request $request, Team $team)
+    {
+        Gate::authorize('updateProfile', $team);
+
+        $data = $request->validate([
+            'visibility' => ['required', Rule::in(array_keys(TeamProfile::VISIBILITY))],
+            'business_type' => ['nullable', Rule::in(array_keys(TeamProfile::BUSINESS_TYPES))],
+            'categories' => ['nullable', 'array', 'max:'.self::MAX_CATEGORIES],
+            'categories.*' => ['integer', Rule::exists('business_categories', 'id')->where('active', true)],
+        ], ['categories.max' => 'Choose up to '.self::MAX_CATEGORIES.' categories — the ones a customer would look under first.']);
+
+        $profile = $team->profileOrNew();
+        $profile->fill(['visibility' => $data['visibility'], 'business_type' => $data['business_type'] ?? null])->save();
+        $team->categories()->sync($data['categories'] ?? []);
+
+        return redirect()->route('business.edit', $team)->withFragment('directory')->with('status', match ($data['visibility']) {
+            TeamProfile::PUBLIC => 'Saved. The business is listed for anyone, and its page opens without signing in.',
+            TeamProfile::MEMBERS => 'Saved. The business is listed for people signed in to InfoDot.',
+            default => 'Saved. The business is not listed; its page is for your own team.',
+        });
+    }
+
+    public function storeService(Request $request, Team $team)
+    {
+        Gate::authorize('updateProfile', $team);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'min:2', 'max:120'],
+            'description' => ['nullable', 'string', 'max:600'],
+        ]);
+
+        abort_if($team->services()->count() >= self::MAX_SERVICES, 422, 'A business can list up to '.self::MAX_SERVICES.' services.');
+
+        $service = new BusinessService($data);
+        $service->sort = (int) $team->services()->max('sort') + 1;
+        $team->services()->save($service);
+
+        return redirect()->route('business.edit', $team)->withFragment('services')->with('status', '“'.$service->name.'” is on the profile.');
+    }
+
+    public function destroyService(Request $request, Team $team, BusinessService $service)
+    {
+        Gate::authorize('updateProfile', $team);
+        abort_unless($service->team_id === $team->id, 404);
+
+        $service->delete();
+
+        return redirect()->route('business.edit', $team)->withFragment('services')->with('status', '“'.$service->name.'” was taken off the profile.');
     }
 
     public function update(Request $request, Team $team)

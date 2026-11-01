@@ -4,6 +4,7 @@ use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
+use App\Http\Controllers\BusinessDirectoryController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessRelationshipController;
 use App\Http\Controllers\BusinessVerificationController;
@@ -59,6 +60,14 @@ Route::get('/', function () {
 })->name('welcome');
 
 // The public pages a crawler may index (R-17 §13). Everything else is behind sign-in.
+// The business directory and business pages (R-33): open to visitors for businesses that chose
+// "anyone"; each page decides who may see it from the business's own setting.
+Route::get('/businesses', [BusinessDirectoryController::class, 'index'])->middleware('throttle:120,1,businesses')->name('businesses.index');
+Route::get('/business/{team:uuid}', [BusinessProfileController::class, 'show'])->middleware('throttle:120,1,business.show')->name('business.show');
+// Files stream from one door. Signed-out visitors may open only the current branding of a business
+// that chose "anyone"; for everything else they are sent to sign in, as before (R-15, R-33).
+Route::get('/attachments/{attachment:uuid}/thumb', [AttachmentController::class, 'thumb'])->middleware('throttle:240,1,attachments-view')->name('attachments.thumb');
+Route::get('/attachments/{attachment:uuid}', [AttachmentController::class, 'show'])->middleware('throttle:240,1,attachments-view')->name('attachments.show');
 Route::get('/sitemap.xml', SitemapController::class)->middleware('throttle:30,1,sitemap')->name('sitemap');
 
 // RFC 9116 disclosure file (R-19). The web server serves the physical copy first; this route is the
@@ -98,9 +107,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     // Business identity (R-29): a company's public page, and the owner/administrator editing behind it
     // -------------------------------------------------------
-    Route::get('/business/{team:uuid}', [BusinessProfileController::class, 'show'])->name('business.show');
     Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
+    Route::post('/business/{team:uuid}/directory', [BusinessProfileController::class, 'updateDirectory'])->middleware('throttle:20,1,business.directory')->name('business.directory');
+    Route::post('/business/{team:uuid}/services', [BusinessProfileController::class, 'storeService'])->middleware('throttle:30,1,business.services')->name('business.services.store');
+    Route::delete('/business/{team:uuid}/services/{service}', [BusinessProfileController::class, 'destroyService'])->whereNumber('service')->middleware('throttle:30,1,business.services.destroy')->name('business.services.destroy');
     Route::post('/business/{team:uuid}/media', [BusinessProfileController::class, 'storeMedia'])->middleware('throttle:30,1,business.media')->name('business.media');
     Route::delete('/business/{team:uuid}/media/{attachment:uuid}', [BusinessProfileController::class, 'removeMedia'])->middleware('throttle:30,1,business.media.remove')->name('business.media.remove');
 
@@ -138,8 +149,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     Route::post('/attachments', [AttachmentController::class, 'store'])->middleware('throttle:30,1,attachments-upload')->name('attachments.store');
     Route::delete('/attachments/{attachment:uuid}', [AttachmentController::class, 'destroy'])->middleware('throttle:60,1,attachments-destroy')->name('attachments.destroy');
-    Route::get('/attachments/{attachment:uuid}/thumb', [AttachmentController::class, 'thumb'])->name('attachments.thumb');
-    Route::get('/attachments/{attachment:uuid}', [AttachmentController::class, 'show'])->name('attachments.show');
 
     // // -------------------------------------------------------
     // Solutions Controller

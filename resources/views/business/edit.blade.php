@@ -2,7 +2,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Business profile</h1>
-            <p class="ix-lede">What everyone on InfoDot sees when they look at <b>{{ $team->name }}</b>. <a href="{{ route('business.show', $team) }}">Open the public page</a>.</p>
+            <p class="ix-lede">How <b>{{ $team->name }}</b> shows up in the directory and on its own page. <a href="{{ route('business.show', $team) }}">Open the business page</a>.</p>
         </div>
     </div>
 
@@ -18,12 +18,54 @@
 
     <div class="ix-settings">
         <nav class="ix-settings__index" aria-label="Profile sections">
-            @foreach ([['logo', 'Logo'], ['cover', 'Cover photograph'], ['about', 'About the business'], ['facts', 'Registry facts'], ['contact', 'Contact and links'], ['gallery', 'Gallery']] as $i => [$id, $label])
+            @foreach ([['directory', 'Directory listing'], ['logo', 'Logo'], ['cover', 'Cover photograph'], ['about', 'About the business'], ['facts', 'Registry facts'], ['contact', 'Contact and links'], ['services', 'Services'], ['gallery', 'Gallery']] as $i => [$id, $label])
                 <a href="#{{ $id }}"><span class="ix-settings__no">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>{{ $label }}</a>
             @endforeach
         </nav>
 
         <div class="ix-settings__body">
+            <section id="directory" class="ix-settings__sec">
+                <h2>Directory listing</h2>
+                <p class="ix-hint">Who can find {{ $team->name }} in <a href="{{ route('businesses.index') }}">Businesses</a> and open its page. Your team always can.</p>
+                @if (! filled($profile->description) && $profile->visibility !== \App\Models\TeamProfile::PRIVATE)
+                    <p class="ix-alert" role="note">Not listed yet: the directory lists a business once it says what it does. Fill in <a href="#about">what the business does</a>.</p>
+                @endif
+                <form method="post" action="{{ route('business.directory', $team) }}" class="ix-form">
+                    @csrf
+                    <fieldset class="ix-choice">
+                        <legend class="ix-label">Who can see the business</legend>
+                        @foreach (\App\Models\TeamProfile::VISIBILITY as $value => $label)
+                            <label class="ix-choice__opt">
+                                <input type="radio" name="visibility" value="{{ $value }}" @checked(old('visibility', $profile->visibility ?? \App\Models\TeamProfile::PRIVATE) === $value)>
+                                <span><b>{{ \Illuminate\Support\Str::before($label, ' — ') }}</b><span class="ix-hint">{{ \Illuminate\Support\Str::ucfirst(\Illuminate\Support\Str::after($label, ' — ')) }}</span></span>
+                            </label>
+                        @endforeach
+                    </fieldset>
+                    <p class="ix-hint">Whatever you choose, InfoDot never shows your team’s own accounts, personal numbers or staff contact details. People reach the business through the details you publish below.</p>
+
+                    <div class="ix-form__row">
+                        <label class="ix-label" for="business_type">Type of business</label>
+                        <select class="ix-input" id="business_type" name="business_type">
+                            <option value="">Not stated</option>
+                            @foreach (\App\Models\TeamProfile::BUSINESS_TYPES as $value => $label)
+                                <option value="{{ $value }}" @selected(old('business_type', $profile->business_type) === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <fieldset class="ix-choice">
+                        <legend class="ix-label">Categories <span class="ix-hint">up to three — where a customer would look first</span></legend>
+                        <div class="ix-choice__grid">
+                            @foreach ($categories as $c)
+                                <label class="ix-choice__chk"><input type="checkbox" name="categories[]" value="{{ $c->id }}" @checked(in_array($c->id, old('categories', $chosen)))> {{ $c->name }}</label>
+                            @endforeach
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" class="ix-btn ix-btn--primary">Save the listing</button>
+                </form>
+            </section>
+
             <section id="logo" class="ix-settings__sec">
                 <h2>Logo</h2>
                 <p class="ix-hint">Square, at least 128×128. It stands for the business everywhere its name shows. Replacing it keeps the old one on the record.</p>
@@ -91,6 +133,30 @@
                     @endforeach
 
                     <button type="submit" class="ix-btn ix-btn--primary">Save the profile</button>
+                </form>
+            </section>
+
+            <section id="services" class="ix-settings__sec">
+                <h2>Services</h2>
+                <p class="ix-hint">One line each for what a customer can come to you for. The directory searches them on their own, so “Borehole drilling” finds you even when the description does not say it.</p>
+                @if ($services->isNotEmpty())
+                    <ul class="ix-svclist">
+                        @foreach ($services as $service)
+                            <li>
+                                <div><b>{{ $service->name }}</b>@if ($service->description)<p class="ix-hint">{{ $service->description }}</p>@endif</div>
+                                <form method="post" action="{{ route('business.services.destroy', [$team, $service]) }}">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="ix-btn ix-btn--ghost ix-btn--sm" aria-label="Remove {{ $service->name }}">Remove</button>
+                                </form>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+                <form method="post" action="{{ route('business.services.store', $team) }}" class="ix-form">
+                    @csrf
+                    <div class="ix-form__row"><label class="ix-label" for="service_name">Service</label><input class="ix-input" id="service_name" name="name" minlength="2" maxlength="120" required placeholder="For example: Monthly bookkeeping"></div>
+                    <div class="ix-form__row"><label class="ix-label" for="service_description">In a sentence or two <span class="ix-hint">optional</span></label><textarea class="ix-input" id="service_description" name="description" rows="2" maxlength="600"></textarea></div>
+                    <button type="submit" class="ix-btn">Add the service</button>
                 </form>
             </section>
 
