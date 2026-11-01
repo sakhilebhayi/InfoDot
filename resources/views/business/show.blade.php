@@ -9,7 +9,10 @@
             'Operates in' => $profile?->regions,
             'Established' => $profile?->established_on?->format('Y'),
             'Size' => $profile?->size,
-            'Registration no.' => $profile?->registration_number,
+            // Members see it whole; everyone else sees enough to recognise it, not to reuse it (R-29 §26).
+            'Registration no.' => $profile?->registration_number
+                ? ($isMember ? $profile->registration_number : str_repeat('•', max(0, mb_strlen($profile->registration_number) - 3)).mb_substr($profile->registration_number, -3))
+                : null,
             'Registered in' => $profile?->registration_country,
         ]);
     @endphp
@@ -30,7 +33,10 @@
                     @endif
                 </span>
                 <div class="ix-biz__who">
-                    <h1 class="ix-h1">{{ $team->name }}</h1>
+                    <div class="ix-biz__name">
+                        <h1 class="ix-h1">{{ $team->name }}</h1>
+                        <x-business-badge :team="$team" />
+                    </div>
                     <p class="ix-biz__meta">
                         @if ($team->code)<span class="ix-ref">{{ $team->code }}</span>@endif
                         @if ($profile?->trading_name && $profile->trading_name !== $team->name)<span>trading as {{ $profile->trading_name }}</span>@endif
@@ -138,7 +144,26 @@
                     </section>
                 @endif
 
-                <p class="ix-biz__note">This page is the business's own description of itself. InfoDot business verification arrives as a separate, evidence-based step — nothing here is a verified claim yet.</p>
+                @php($standing = $team->standing)
+                <section class="ix-biz__card" aria-labelledby="trust-h">
+                    <h2 id="trust-h">InfoDot verification</h2>
+                    @if ($standing?->isCurrent())
+                        <div class="ix-trust__state"><span class="ix-chip ix-chip--done">Verified</span><span class="ix-hint">since {{ $standing->verified_at?->format('j M Y') }}, review due {{ $standing->expires_at?->format('M Y') }}</span></div>
+                        <ul class="ix-trust__checks">
+                            @foreach ($standing->checks ?? [] as $check)<li>{{ \App\Models\BusinessVerification::CHECKS[$check] ?? $check }}</li>@endforeach
+                        </ul>
+                        <p class="ix-trust__line">Everything else on this page is the business’s own description of itself.</p>
+                    @elseif (in_array($standing?->status, [\App\Models\BusinessVerification::UNDER_REVIEW, \App\Models\BusinessVerification::SUSPENDED], true))
+                        <div class="ix-trust__state"><span class="ix-chip ix-chip--open">Under review</span></div>
+                        <p class="ix-trust__line">InfoDot is reviewing this business’s verification. Until that is done it is not shown as verified.</p>
+                    @else
+                        <div class="ix-trust__state"><span class="ix-chip">Not verified</span></div>
+                        <p class="ix-trust__line">InfoDot has not verified this business. What it says here is its own description of itself.</p>
+                    @endif
+                    @if ($canEdit)
+                        <p class="ix-trust__line"><a href="{{ route('business.verification', $team) }}">{{ $standing?->isCurrent() ? 'Verification details' : 'Verify this business' }}</a></p>
+                    @endif
+                </section>
             </aside>
         </div>
     </div>

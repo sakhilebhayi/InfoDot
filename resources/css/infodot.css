@@ -7399,3 +7399,86 @@ body {
 
 /* The main column stacks its sections whatever grid-column a shared component carries. */
 .ix-biz__main > * { grid-column: 1 / -1; }
+
+/* ------------------------------------------------------------------------------------------------
+   R-29 Phase 2 — business verification. The badge is the business's approval plate: on a real
+   container the riveted CSC plate says it was inspected and is fit to travel; here it says InfoDot
+   checked who the business is. Stencil for the plate's one word, Archivo for everything read.
+   ------------------------------------------------------------------------------------------------ */
+.ix-vplate { position: relative; display: inline-block; vertical-align: middle; }
+.ix-vplate > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; padding: 4px 9px 3px; border: 2px solid var(--ix-ok); border-radius: var(--ix-radius-sm); background: var(--ix-ok-wash); color: var(--ix-ok); font-family: var(--ix-stencil-font); font-weight: 800; font-size: 15px; line-height: 1; letter-spacing: 0.14em; text-transform: uppercase; user-select: none; transition: background-color 0.15s var(--ix-ease); }
+.ix-vplate > summary::-webkit-details-marker { display: none; }
+.ix-vplate > summary::before,
+.ix-vplate > summary::after { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+.ix-vplate > summary:hover { background: color-mix(in srgb, var(--ix-ok) 20%, transparent); }
+.ix-vplate > summary:focus-visible { outline: 2px solid var(--ix-focus); outline-offset: 2px; }
+.ix-vplate__panel { position: absolute; z-index: 40; top: calc(100% + 8px); left: 0; width: min(380px, 86vw); padding: 16px 18px; border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius); background: var(--ix-panel); box-shadow: 0 12px 30px -8px rgba(10, 14, 16, 0.28); color: var(--ix-text); font-family: var(--ix-font); font-size: 14px; letter-spacing: 0; text-transform: none; }
+.ix-vplate__title { margin: 0 0 10px; font-weight: 700; font-size: 15px; overflow-wrap: break-word; }
+.ix-vplate__facts { margin: 0; display: grid; gap: 6px; }
+.ix-vplate__facts div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; }
+.ix-vplate__facts dt { color: var(--ix-text-3); font-size: 13px; }
+.ix-vplate__facts dd { margin: 0; }
+.ix-vplate__sub { margin: 14px 0 6px; font-weight: 600; font-size: 13px; color: var(--ix-text-2); }
+.ix-vplate__checks { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--ix-text-2); }
+.ix-vplate__fine { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--ix-rule); font-size: 13px; line-height: 1.5; color: var(--ix-text-3); }
+@media (max-width: 599px) {
+    .ix-vplate__panel { position: fixed; left: 12px; right: 12px; top: auto; bottom: 12px; width: auto; max-height: 70vh; overflow: auto; }
+}
+
+/* Trust card on the business page rail: what is and is not verified, in words. */
+.ix-trust__state { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ix-trust__line { margin: 8px 0 0; font-size: 14px; color: var(--ix-text-2); }
+.ix-trust__checks { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; color: var(--ix-text-2); }
+
+/* Applicant page: the application's state as a ledger line, then the work to do. */
+.ix-vstate { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px 22px; align-items: center; padding: 20px 24px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); }
+.ix-vstate__mark { font-family: var(--ix-stencil-font); font-weight: 900; font-size: clamp(28px, 4vw, 40px); line-height: 1; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ix-text-3); }
+.ix-vstate__mark--ok { color: var(--ix-ok); }
+.ix-vstate__mark--wait { color: var(--ix-warn); }
+.ix-vstate__mark--stop { color: var(--ix-danger); }
+.ix-vstate h2 { margin: 0; font-size: 18px; }
+.ix-vstate p { margin: 6px 0 0; max-width: 70ch; color: var(--ix-text-2); }
+.ix-vstate__msg { grid-column: 1 / -1; margin: 0; padding: 12px 14px; border-radius: var(--ix-radius-sm); background: var(--ix-sunken); color: var(--ix-text); white-space: pre-line; }
+.ix-vstate__msg b { display: block; margin-bottom: 4px; font-size: 13px; color: var(--ix-text-3); font-weight: 600; }
+@media (max-width: 599px) { .ix-vstate { grid-template-columns: minmax(0, 1fr); } }
+
+.ix-evidence { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.ix-evidence li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-panel); }
+.ix-evidence .material-symbols-rounded { color: var(--ix-text-3); }
+.ix-evidence__name { min-width: 0; overflow-wrap: anywhere; }
+.ix-evidence__name small { display: block; color: var(--ix-text-3); font-size: 13px; }
+.ix-evrows { display: grid; gap: 10px; }
+.ix-evrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 10px; }
+@media (max-width: 599px) { .ix-evrow { grid-template-columns: minmax(0, 1fr); } }
+
+.ix-vcode { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.ix-vcode .ix-input { max-width: 320px; }
+.ix-vcode__digits { max-width: 9ch !important; font-variant-numeric: tabular-nums; letter-spacing: 0.2em; text-align: center; }
+
+.ix-vhist { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 0; }
+.ix-vhist li { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 14px; padding: 9px 0; border-top: 1px solid var(--ix-rule); font-size: 14px; }
+.ix-vhist li:first-child { border-top: 0; }
+.ix-vhist time { color: var(--ix-text-3); font-variant-numeric: tabular-nums; }
+.ix-vhist__note { display: block; margin-top: 3px; color: var(--ix-text-3); font-size: 13px; white-space: pre-line; }
+
+/* Reviewer desk: the application beside what the business shows the world. */
+.ix-vdesk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.ix-vdesk__col { border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); padding: 16px 18px; min-width: 0; }
+.ix-vdesk__col h2 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--ix-text-3); }
+.ix-vdesk__diff { color: var(--ix-warn); font-weight: 600; }
+.ix-vchecks { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+.ix-vchecks label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14px; }
+.ix-vchecks label[aria-disabled='true'] { color: var(--ix-text-3); }
+.ix-vactions { display: grid; gap: 14px; }
+@media (max-width: 899px) { .ix-vdesk { grid-template-columns: minmax(0, 1fr); } }
+
+.ix-vsub { margin: 22px 0 0; font-size: 15px; font-weight: 600; }
+.ix-vgap { margin-top: 16px; }
+.ix-vflush { margin-top: 0; }
+.ix-vbtns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.ix-vbtns form { margin: 0; }
+.ix-vfieldset { border: 0; padding: 0; margin: 0; }
+.ix-vdeclare { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; max-width: 68ch; }
+.ix-vdeclare input { margin-top: 4px; accent-color: var(--ix-ok); }
+.ix-biz__name { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; min-width: 0; }
+.ix-vstate + .ix-settings { margin-top: 28px; }

@@ -62,6 +62,14 @@ class UserNotice extends Model
 
     public const SEMINAR_REPORT_DECIDED = 'seminar_report_decided';
 
+    /** R-29: a decision or change on the business's verification; the status is carried in `ref`. */
+    public const BUSINESS_VERIFICATION = 'business_verification';
+
+    public const BUSINESS_VERIFICATION_RENEWAL = 'business_verification_renewal';
+
+    /** R-29: for reviewers — an application arrived, came back, or a verified identity changed. */
+    public const VERIFICATION_QUEUE = 'verification_queue';
+
     /**
      * Notices that are about something the person has booked, paid for or is owed, not about their contributions. The notifications switch
      * silences the second kind only: nobody should miss a cancelled seminar, a changed time, a refund, a dispute or a debt because they
@@ -70,6 +78,7 @@ class UserNotice extends Model
     public const SERVICE_KINDS = [
         self::SEMINAR_CANCELLED, self::SEMINAR_CHANGED, self::SEMINAR_SPOT_OPEN, self::SEMINAR_REFUNDED, self::SEMINAR_DISPUTE, self::SEMINAR_LINK_BROKEN,
         self::SEMINAR_DEBT_OPENED, self::SEMINAR_DEBT_CLEARED, self::SEMINAR_DEBT_REOPENED, self::SEMINAR_DEBT_WRITTEN_OFF, self::SEMINAR_REMOVED, self::SEMINAR_REINSTATED, self::SEMINAR_APPEAL_DECIDED,
+        self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
     ];
 
     public const KINDS = [
@@ -79,6 +88,7 @@ class UserNotice extends Model
         self::SEMINAR_REMINDER, self::SEMINAR_CANCELLED, self::SEMINAR_CHANGED, self::SEMINAR_SPOT_OPEN, self::SEMINAR_REFUNDED, self::SEMINAR_DISPUTE, self::SEMINAR_LINK_BROKEN,
         self::SEMINAR_DEBT_OPENED, self::SEMINAR_DEBT_CLEARED, self::SEMINAR_DEBT_REOPENED, self::SEMINAR_DEBT_WRITTEN_OFF, self::SEMINAR_REMOVED, self::SEMINAR_REINSTATED, self::SEMINAR_APPEAL_DECIDED,
         self::SEMINAR_REPORT_DECIDED,
+        self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
     ];
 
     public $timestamps = false;

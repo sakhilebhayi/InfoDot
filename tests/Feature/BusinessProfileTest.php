@@ -76,7 +76,9 @@ class BusinessProfileTest extends TestCase
             ->assertOk()
             ->assertSee('Acme Boreholes')
             ->assertSee('We drill and equip boreholes.')
-            ->assertSee('2019/123456/07');
+            // Outsiders see enough of the registration number to recognise it, not to reuse it (R-29 §26).
+            ->assertDontSee('2019/123456/07')
+            ->assertSee('/07');
     }
 
     public function test_a_personal_workspace_has_no_business_page(): void
