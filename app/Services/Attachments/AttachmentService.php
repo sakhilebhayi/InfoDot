@@ -4,6 +4,7 @@ namespace App\Services\Attachments;
 
 use App\Models\Answer;
 use App\Models\Attachment;
+use App\Models\BusinessVerification;
 use App\Models\Comment;
 use App\Models\Questions;
 use App\Models\Solutions;
@@ -241,6 +242,16 @@ class AttachmentService
             }
 
             $team = $attachment->attachable()->withoutGlobalScopes()->first();
+
+            return $team !== null
+                && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin') || $user->isModerator());
+        }
+
+        // Verification evidence (R-29 §25): the business's owner and administrators, and InfoDot
+        // reviewers — never the public, never other members, never a search result.
+        if ($attachment->attachable_type === 'business_verification') {
+            $verification = $attachment->attachable()->first();
+            $team = $verification instanceof BusinessVerification ? $verification->team : null;
 
             return $team !== null
                 && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin') || $user->isModerator());

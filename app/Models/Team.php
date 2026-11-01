@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Services\Verification\VerificationService;
 use App\Support\OwnerCode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
@@ -64,9 +67,49 @@ class Team extends JetstreamTeam
             $object->objectable()->associate($team->folders()->create(['name' => $team->name]));
             $object->save();
         });
+
+        // A verified business that renames itself goes back for a reviewer's look (R-29 §13).
+        static::updated(function (self $team) {
+            if ($team->wasChanged('name')) {
+                app(VerificationService::class)->identityChanged($team);
+            }
+        });
     }
 
     // ---------------------------------------------------------------- business identity (R-29)
+
+    /**
+     * Every verification application this business made, newest first.
+     *
+     * @return HasMany<BusinessVerification, $this>
+     */
+    public function verifications(): HasMany
+    {
+        return $this->hasMany(BusinessVerification::class)->orderByDesc('id');
+    }
+
+    /**
+     * The business's verification standing: the newest application that was ever approved.
+     * A renewal that is still being reviewed does not replace it until it is approved.
+     *
+     * @return HasOne<BusinessVerification, $this>
+     */
+    public function standing(): HasOne
+    {
+        return $this->hasOne(BusinessVerification::class)->ofMany(['id' => 'max'], fn ($q) => $q->whereNotNull('verified_at'));
+    }
+
+    /** The application being worked on now, if any. */
+    public function openVerification(): ?BusinessVerification
+    {
+        return $this->verifications()->whereIn('status', BusinessVerification::OPEN)->whereNull('verified_at')->first();
+    }
+
+    /** True only while InfoDot's verification is current — the one state that shows the badge. */
+    public function isVerified(): bool
+    {
+        return (bool) $this->standing?->isCurrent();
+    }
 
     public function profile()
     {

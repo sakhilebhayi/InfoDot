@@ -18,6 +18,7 @@ use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Listeners\RecordInAppNotice;
 use App\Listeners\RefreshAchievements;
 use App\Livewire\Teams\TeamMemberManager;
+use App\Models\BusinessVerification;
 use App\Models\File;
 use App\Models\Folder;
 use App\Models\Questions;
@@ -139,6 +140,7 @@ class AppServiceProvider extends ServiceProvider
             'solutions' => Solutions::class,
             'questions' => Questions::class,
             'team' => Team::class,
+            'business_verification' => BusinessVerification::class,
         ]);
     }
 }

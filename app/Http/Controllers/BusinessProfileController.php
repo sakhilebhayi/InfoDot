@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Gate;
 /**
  * A company's public identity inside InfoDot (R-29 Part A): the business page every signed-in
  * person may read, and the editing surfaces its owner and administrators use to shape it.
- * Verification and the badge arrive in the next phase — nothing here claims either.
+ * The verification badge and trust card show only what InfoDot actually verified (Phase 2).
  */
 class BusinessProfileController extends Controller
 {
@@ -22,6 +22,7 @@ class BusinessProfileController extends Controller
     public function show(Request $request, Team $team)
     {
         abort_if($team->personal_team, 404);
+        $team->loadMissing('standing');
 
         $user = $request->user();
         $isMember = $user->belongsToTeam($team);

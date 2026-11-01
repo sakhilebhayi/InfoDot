@@ -14,9 +14,16 @@
             <p class="ix-lede">{{ $team->name }}@if($team->code) &middot; owner code <span class="ix-ref">{{ $team->code }}</span>@endif</p>
         </div>
         @if (! $team->personal_team)
-            <a href="{{ route('business.show', $team) }}" class="ix-btn ix-btn--ghost">
-                <span class="material-symbols-rounded" aria-hidden="true">storefront</span>Business profile
-            </a>
+            <div class="ix-vbtns">
+                <a href="{{ route('business.show', $team) }}" class="ix-btn ix-btn--ghost">
+                    <span class="material-symbols-rounded" aria-hidden="true">storefront</span>Business profile
+                </a>
+                @can('updateProfile', $team)
+                    <a href="{{ route('business.verification', $team) }}" class="ix-btn ix-btn--ghost">
+                        <span class="material-symbols-rounded" aria-hidden="true">verified</span>{{ $team->isVerified() ? 'Verified' : 'Verification' }}
+                    </a>
+                @endcan
+            </div>
         @endif
     </div>
 

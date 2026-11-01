@@ -5,6 +5,7 @@ namespace App\Services\Knowledge;
 use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\Solutions;
+use App\Models\Team;
 use App\Models\User;
 use App\Models\UserNotice;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -157,7 +158,49 @@ class InAppNotices
             return ['text' => $this->words($notice->kind, (string) $sem->title, $sem).($notice->kind === UserNotice::SEMINAR_REMINDER ? ' Starts '.$sem->starts_at->timezone(config('app.timezone'))->format('j M, H:i').'.' : ''), 'url' => route('seminars.show', ['seminar' => $sem->id])];
         }
 
+        if ($notice->subject_type === 'business') {
+            $team = Team::find($notice->subject_id);
+
+            return $team === null ? $gone : $this->business($notice, $team);
+        }
+
         return $gone;
+    }
+
+    /**
+     * Verification notices (R-29). The status at the time is carried in the reference
+     * ("bv:{id}:{status}:…"), so an old notice keeps saying what happened then.
+     *
+     * @return array{text: string, url: ?string}
+     */
+    private function business(UserNotice $notice, Team $team): array
+    {
+        [, $id, $status] = array_pad(explode(':', $notice->ref), 3, null);
+        $name = '“'.Str::limit($team->name, 60, '…', true).'”';
+
+        if ($notice->kind === UserNotice::VERIFICATION_QUEUE) {
+            return [
+                'text' => $status === 'under_review'
+                    ? "$name changed identity details it was verified with. Its badge is off until a reviewer confirms the new details."
+                    : "$name is waiting for a business verification review.",
+                'url' => route('moderation.verifications.show', ['verification' => (int) $id]),
+            ];
+        }
+
+        $text = $notice->kind === UserNotice::BUSINESS_VERIFICATION_RENEWAL
+            ? "InfoDot verification of $name lapses soon. Renew it from the verification page so the badge stays."
+            : match ($status) {
+                'verified' => "InfoDot verified $name. The badge is on the business page.",
+                'info_required' => "InfoDot needs more information to verify $name. What is needed is on the verification page.",
+                'rejected' => "The verification application for $name was not approved. The reason is on the verification page.",
+                'under_review' => "$name changed details it was verified with, so its badge is off until InfoDot confirms them.",
+                'suspended' => "InfoDot suspended the verification of $name. The reason is on the verification page.",
+                'revoked' => "InfoDot withdrew the verification of $name. The reason is on the verification page.",
+                'expired' => "InfoDot verification of $name has lapsed. Apply again to renew it.",
+                default => "There is news about the verification of $name.",
+            };
+
+        return ['text' => $text, 'url' => route('business.verification', $team)];
     }
 
     /** The short plate shown beside a notice: what kind of thing happened. */
@@ -174,6 +217,7 @@ class InAppNotices
             UserNotice::SOLUTION_RECOMMENDED => 'Recommended',
             UserNotice::IMPROVEMENT_PROPOSED, UserNotice::IMPROVEMENT_APPROVED, UserNotice::IMPROVEMENT_REJECTED, UserNotice::IMPROVEMENT_CLARIFY => 'Improvement',
             UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED, UserNotice::SEMINAR_REPORT_DECIDED => 'Seminar',
+            UserNotice::BUSINESS_VERIFICATION, UserNotice::BUSINESS_VERIFICATION_RENEWAL, UserNotice::VERIFICATION_QUEUE => 'Verification',
             default => 'Update',
         };
     }

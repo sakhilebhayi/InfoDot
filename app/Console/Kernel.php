@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(fn () => app(OpsCheck::class)->beat())->name('ops-heartbeat')->everyMinute();
         $schedule->command('ops:check')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('attachments:prune')->dailyAt('03:35')->withoutOverlapping(30)->onOneServer();
+        $schedule->command('business:verifications')->dailyAt('03:45')->withoutOverlapping(30)->onOneServer();
         $schedule->command('points:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
 
         // Emails people before some of their points lapse (the points service pulls no addresses; see the command).

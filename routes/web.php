@@ -5,6 +5,7 @@ use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\BusinessProfileController;
+use App\Http\Controllers\BusinessVerificationController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ExpertiseSharingController;
 use App\Http\Controllers\Knowledge\PickerController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\TopicAssignmentController;
 use App\Http\Controllers\TopicsController;
 use App\Http\Controllers\TopicSuggestionsController;
 use App\Http\Controllers\UxFrictionController;
+use App\Http\Controllers\VerificationDeskController;
 use App\Livewire\EcosystemWidget;
 use App\Livewire\Moderation\Library as ModerationLibrary;
 use App\Livewire\Moderation\Queue as ModerationQueue;
@@ -99,6 +101,22 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
     Route::post('/business/{team:uuid}/media', [BusinessProfileController::class, 'storeMedia'])->middleware('throttle:30,1,business.media')->name('business.media');
     Route::delete('/business/{team:uuid}/media/{attachment:uuid}', [BusinessProfileController::class, 'removeMedia'])->middleware('throttle:30,1,business.media.remove')->name('business.media.remove');
+
+    // Business verification (R-29 Part B): the business's side, then the reviewer desk.
+    Route::prefix('/business/{team:uuid}/verification')->name('business.verification')->controller(BusinessVerificationController::class)->group(function () {
+        Route::get('/', 'show');
+        Route::post('/', 'store')->middleware('throttle:5,60,business.verify.apply')->name('.store');
+        Route::post('/evidence', 'addEvidence')->middleware('throttle:20,60,business.verify.evidence')->name('.evidence');
+        Route::post('/resubmit', 'resubmit')->middleware('throttle:10,60,business.verify.resubmit')->name('.resubmit');
+        Route::post('/withdraw', 'withdraw')->middleware('throttle:10,60,business.verify.withdraw')->name('.withdraw');
+        Route::post('/email', 'sendCode')->middleware('throttle:5,60,business.verify.code')->name('.code');
+        Route::post('/email/confirm', 'confirmCode')->middleware('throttle:10,15,business.verify.confirm')->name('.confirm');
+    });
+    Route::get('/moderation/verifications', [VerificationDeskController::class, 'index'])->middleware(['moderator', 'throttle:60,1,moderation.verifications'])->name('moderation.verifications');
+    Route::get('/moderation/verifications/{verification}', [VerificationDeskController::class, 'show'])->whereNumber('verification')->middleware(['moderator', 'throttle:60,1,moderation.verification'])->name('moderation.verifications.show');
+    Route::post('/moderation/verifications/{verification}/{action}', [VerificationDeskController::class, 'decide'])->whereNumber('verification')
+        ->whereIn('action', ['review', 'info', 'approve', 'reject', 'reconfirm', 'suspend', 'reinstate', 'revoke'])
+        ->middleware(['moderator', 'throttle:60,1,moderation.verification.decide'])->name('moderation.verifications.decide');
 
     // -------------------------------------------------------
     // Composer lookups (R-16): @mention autocomplete and the recommend-a-solution picker

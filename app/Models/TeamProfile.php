@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Verification\VerificationService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -39,6 +40,18 @@ class TeamProfile extends Model
         'registration_number', 'registration_country', 'established_on', 'size', 'links',
     ];
 
+    /** Fields a verification vouched for: changing one sends a verified business back for review (R-29 §13). */
+    public const IDENTITY_FIELDS = ['trading_name', 'registration_number', 'registration_country', 'website'];
+
+    protected static function booted(): void
+    {
+        static::saved(function (self $profile) {
+            if ($profile->wasChanged(self::IDENTITY_FIELDS) && $profile->team) {
+                app(VerificationService::class)->identityChanged($profile->team);
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -47,6 +60,7 @@ class TeamProfile extends Model
         ];
     }
 
+    /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
