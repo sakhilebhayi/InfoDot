@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attachment;
 use App\Models\BusinessCategory;
-use App\Models\BusinessService;
+use App\Models\BusinessProfileEvent;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
@@ -23,8 +23,6 @@ class BusinessProfileController extends Controller
 {
     private const MAX_CATEGORIES = 3;
 
-    private const MAX_SERVICES = 30;
-
     /** The public business page. Personal workspaces have none. */
     public function show(Request $request, Team $team)
     {
@@ -33,9 +31,13 @@ class BusinessProfileController extends Controller
         // Private and members-only businesses answer 404 to those who may not see them, so a
         // hidden business cannot be discovered by guessing its address (R-33 §11).
         abort_unless($team->isVisibleTo($user), 404);
-        $team->loadMissing(['standing', 'categories', 'services']);
+        $team->loadMissing(['standing', 'categories', 'services', 'projects', 'locations']);
 
-        $isMember = $user !== null && $user->belongsToTeam($team);
+        // "Preview as a visitor" (R-33 §6): the business's managers see the page exactly as
+        // someone outside the business would — no member-only activity, no edit controls.
+        $canEdit = Gate::allows('updateProfile', $team);
+        $preview = $canEdit && $request->query('as') === 'visitor';
+        $isMember = ! $preview && $user !== null && $user->belongsToTeam($team);
 
         // Outsiders see the company's public contributions only; members see the company's own.
         $questions = Questions::query()
@@ -57,7 +59,12 @@ class BusinessProfileController extends Controller
             'questions' => $questions,
             'solutions' => $solutions,
             'isMember' => $isMember,
-            'canEdit' => Gate::allows('updateProfile', $team),
+            'canEdit' => $canEdit && ! $preview,
+            'preview' => $preview,
+            'announcements' => $team->announcements()->showing()->limit(5)->get(),
+            'offeringPictures' => $team->mediaByRef('offering'),
+            'projectPictures' => $team->mediaByRef('project'),
+            'brochures' => $team->media()->where('role', TeamMediaService::BROCHURE)->whereNull('superseded_at')->orderBy('id')->get(),
         ]);
     }
 
@@ -74,6 +81,13 @@ class BusinessProfileController extends Controller
             'categories' => BusinessCategory::where('active', true)->orderBy('sort')->get(),
             'chosen' => $team->categories()->pluck('business_categories.id')->all(),
             'services' => $team->services()->get(),
+            'projects' => $team->projects()->get(),
+            'locations' => $team->locations()->get(),
+            'announcements' => $team->announcements()->limit(20)->get(),
+            'offeringPictures' => $team->mediaByRef('offering'),
+            'projectPictures' => $team->mediaByRef('project'),
+            'brochures' => $team->media()->where('role', TeamMediaService::BROCHURE)->whereNull('superseded_at')->orderBy('id')->get(),
+            'events' => $team->profileEvents()->with('user:id,name')->limit(15)->get(),
         ]);
     }
 
@@ -90,42 +104,16 @@ class BusinessProfileController extends Controller
         ], ['categories.max' => 'Choose up to '.self::MAX_CATEGORIES.' categories — the ones a customer would look under first.']);
 
         $profile = $team->profileOrNew();
+        $before = $profile->visibility;
         $profile->fill(['visibility' => $data['visibility'], 'business_type' => $data['business_type'] ?? null])->save();
         $team->categories()->sync($data['categories'] ?? []);
+        BusinessProfileEvent::record($team, $request->user(), 'listing_changed', $before !== $data['visibility'] ? $before.' → '.$data['visibility'] : 'type and categories');
 
         return redirect()->route('business.edit', $team)->withFragment('directory')->with('status', match ($data['visibility']) {
             TeamProfile::PUBLIC => 'Saved. The business is listed for anyone, and its page opens without signing in.',
             TeamProfile::MEMBERS => 'Saved. The business is listed for people signed in to InfoDot.',
             default => 'Saved. The business is not listed; its page is for your own team.',
         });
-    }
-
-    public function storeService(Request $request, Team $team)
-    {
-        Gate::authorize('updateProfile', $team);
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:120'],
-            'description' => ['nullable', 'string', 'max:600'],
-        ]);
-
-        abort_if($team->services()->count() >= self::MAX_SERVICES, 422, 'A business can list up to '.self::MAX_SERVICES.' services.');
-
-        $service = new BusinessService($data);
-        $service->sort = (int) $team->services()->max('sort') + 1;
-        $team->services()->save($service);
-
-        return redirect()->route('business.edit', $team)->withFragment('services')->with('status', '“'.$service->name.'” is on the profile.');
-    }
-
-    public function destroyService(Request $request, Team $team, BusinessService $service)
-    {
-        Gate::authorize('updateProfile', $team);
-        abort_unless($service->team_id === $team->id, 404);
-
-        $service->delete();
-
-        return redirect()->route('business.edit', $team)->withFragment('services')->with('status', '“'.$service->name.'” was taken off the profile.');
     }
 
     public function update(Request $request, Team $team)
@@ -149,12 +137,30 @@ class BusinessProfileController extends Controller
             'size' => ['nullable', 'string', 'max:40'],
             'links' => ['nullable', 'array'],
             'links.*' => ['nullable', 'url:http,https', 'max:255'],
+            'industries_served' => ['nullable', 'string', 'max:300'],
+            'public_contact' => ['nullable', 'array'],
+            'public_contact.*' => ['boolean'],
         ]);
 
         // Only the link slots the form offers are stored, and empty ones fall away.
         $data['links'] = array_filter(array_intersect_key($data['links'] ?? [], array_flip(TeamProfile::LINK_KEYS)));
 
-        $team->profileOrNew()->fill($data)->save();
+        // Which contact details show is the business's choice (R-33 §5B); the form sends every field.
+        $public = array_map(fn ($key) => (bool) ($data['public_contact'][$key] ?? false), array_combine(array_keys(TeamProfile::CONTACT_FIELDS), array_keys(TeamProfile::CONTACT_FIELDS)));
+        unset($data['public_contact']);
+
+        $profile = $team->profileOrNew();
+        $contactChanged = $request->has('public_contact') && $public !== array_map(fn ($k) => $profile->shows($k), array_combine(array_keys($public), array_keys($public)));
+        $profile->fill($data);
+        if ($request->has('public_contact')) {
+            $profile->public_contact = $public;
+        }
+        $profile->save();
+
+        BusinessProfileEvent::record($team, $request->user(), 'profile_saved');
+        if ($contactChanged) {
+            BusinessProfileEvent::record($team, $request->user(), 'contact_changed', collect($public)->filter()->keys()->implode(', ') ?: 'none public');
+        }
 
         return redirect()->route('business.edit', $team)
             ->with('status', 'The business profile was saved.');
@@ -183,6 +189,7 @@ class BusinessProfileController extends Controller
             $data['crop'] ?? null,
             $data['caption'] ?? null,
         );
+        BusinessProfileEvent::record($team, $request->user(), 'media_added', $data['role']);
 
         return redirect()->route('business.edit', $team)->with('status', match ($data['role']) {
             'logo' => 'The logo is on the profile. The one it replaced stays on the record.',
@@ -196,6 +203,7 @@ class BusinessProfileController extends Controller
         Gate::authorize('updateProfile', $team);
 
         $media->remove($team, $attachment);
+        BusinessProfileEvent::record($team, $request->user(), 'media_removed', $attachment->role);
 
         return redirect()->route('business.edit', $team)
             ->with('status', 'Taken off the profile. The image stays on the record.');

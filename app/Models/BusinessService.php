@@ -11,12 +11,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $team_id
  * @property string $name
+ * @property string $kind
  * @property string|null $description
+ * @property string|null $price_note
  * @property int $sort
  */
 class BusinessService extends Model
 {
-    protected $fillable = ['name', 'description'];
+    /** A service is work done for the customer; a product is a thing they buy. */
+    public const KINDS = ['service' => 'Service', 'product' => 'Product'];
+
+    protected $fillable = ['name', 'kind', 'description', 'price_note'];
 
     /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo

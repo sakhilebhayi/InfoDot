@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Events\TeamCreated;
 use Laravel\Jetstream\Events\TeamDeleted;
@@ -136,6 +137,42 @@ class Team extends JetstreamTeam
     public function services(): HasMany
     {
         return $this->hasMany(BusinessService::class)->orderBy('sort')->orderBy('id');
+    }
+
+    /** @return HasMany<BusinessProject, $this> */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(BusinessProject::class)->orderBy('sort')->orderBy('id');
+    }
+
+    /** @return HasMany<BusinessLocation, $this> */
+    public function locations(): HasMany
+    {
+        return $this->hasMany(BusinessLocation::class)->orderBy('sort')->orderBy('id');
+    }
+
+    /** @return HasMany<BusinessAnnouncement, $this> */
+    public function announcements(): HasMany
+    {
+        return $this->hasMany(BusinessAnnouncement::class)->latest('published_at')->latest('id');
+    }
+
+    /** @return HasMany<BusinessProfileEvent, $this> */
+    public function profileEvents(): HasMany
+    {
+        return $this->hasMany(BusinessProfileEvent::class)->latest('id');
+    }
+
+    /**
+     * Current pictures or brochures of one role, grouped by the item they belong to (`meta.ref`):
+     * service and project pictures, so a page loads them in one query.
+     *
+     * @return Collection<int, Collection<int, Attachment>>
+     */
+    public function mediaByRef(string $role): Collection
+    {
+        return $this->media()->where('role', $role)->whereNull('superseded_at')->orderBy('id')->get()
+            ->groupBy(fn (Attachment $a) => (int) ($a->meta['ref'] ?? 0));
     }
 
     /** The current logo, as one eager-loadable relation for directory listings. */

@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * The public business profile of a company (R-29 Part A). Everything here may be shown to any
- * signed-in person — sensitive verification material never enters this table.
+ * The public business profile of a company (R-29 Part A). Who may see it is the business's
+ * choice (`visibility`, R-33); which contact details show is too (`public_contact`). Sensitive
+ * verification material never enters this table.
  *
  * @property int $id
  * @property int $team_id
@@ -29,11 +30,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $established_on
  * @property string|null $size
  * @property array|null $links
+ * @property string $visibility
+ * @property string|null $business_type
+ * @property array<string, bool>|null $public_contact
+ * @property string|null $industries_served
  */
 class TeamProfile extends Model
 {
     /** The social/professional link slots the profile form offers. */
     public const LINK_KEYS = ['linkedin', 'facebook', 'instagram', 'x', 'youtube'];
+
+    /** The contact details a business may show or keep off its page. */
+    public const CONTACT_FIELDS = ['phone' => 'Business phone', 'email' => 'Business email', 'website' => 'Website', 'links' => 'Social and professional links'];
 
     /** Who can find and open the business (R-33 §11). */
     public const PUBLIC = 'public';
@@ -59,7 +67,7 @@ class TeamProfile extends Model
     ];
 
     protected $fillable = [
-        'trading_name', 'description', 'industry', 'category', 'business_type', 'visibility', 'products_services',
+        'trading_name', 'description', 'industry', 'category', 'business_type', 'visibility', 'products_services', 'industries_served',
         'location', 'regions', 'website', 'contact_email', 'contact_phone',
         'registration_number', 'registration_country', 'established_on', 'size', 'links',
     ];
@@ -86,6 +94,7 @@ class TeamProfile extends Model
         return [
             'established_on' => 'date',
             'links' => 'array',
+            'public_contact' => 'array',
         ];
     }
 
@@ -93,6 +102,15 @@ class TeamProfile extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    /**
+     * Whether a contact detail shows on the business page (R-33 §5B). The business decides; a
+     * profile that never chose shows everything it filled in, as it did before the choice existed.
+     */
+    public function shows(string $field): bool
+    {
+        return (bool) ($this->public_contact[$field] ?? true);
     }
 
     /** True once the profile says anything at all — the public page hides empty sections. */

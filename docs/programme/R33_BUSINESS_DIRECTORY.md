@@ -95,3 +95,36 @@ Not in Phase 1 (by plan): Message Business / Inbox (Phase 3), per-field contact 
 preview-as-visitor (Phase 2), reports, featured placement, collections, similar businesses and
 analytics (Phase 4). A moderator page for managing categories is not built; the 19 are seeded and
 can be changed in the database until it is.
+
+## Phase 2 — shipped in this PR (2026-11-01)
+
+- **Services and products**: each entry is a service or a product, with an optional picture
+  (one current; a replacement keeps the old one on the record) and an optional price written by
+  the business and shown exactly as written. Nothing about price is inferred.
+- **Portfolio**: up to 12 projects (title, what was done, year, where), up to 6 captioned
+  photographs each. Removing a project takes its pictures off the page; they stay on the record.
+- **Locations**: up to 10 (office, branch, workshop, store). The street address shows only when
+  the business ticks it; otherwise town and province. A published address drives the
+  **Directions** button; otherwise "On the map" searches the town. Directory location search now
+  also matches these towns and provinces.
+- **Announcements**: up to 5 showing at once, with an optional end date. Withdrawing ends one
+  now; the row stays as the business's history.
+- **Brochures**: up to 5 PDFs, checked to be real PDFs within the attachment size limit, stored as
+  uploaded (a PDF cannot be re-encoded like an image) and streamed under the same visibility rule
+  as the page. *No malware scanning exists on the host yet; that owner decision from R-15 applies
+  here too.*
+- **Public contact details** (§5B): phone, email, website and social links each have "Show on the
+  page". Hidden details stay on record and never reach the page; the business's managers see a
+  line naming what is kept off. Profiles that never chose show what they filled in, as before.
+- **Industries served** on the profile; "Operating regions" is now labelled **Service areas**.
+- **Preview as a visitor** (`?as=visitor`, managers only): the page exactly as an outsider sees
+  it, with a banner saying who can open it right now. Anyone else's `?as=visitor` is ignored.
+- **Audit trail** (§11): every change to the public presence (details, listing, contact choices,
+  pictures, offerings, projects, locations, announcements, brochures) is written to
+  `business_profile_events` with who made it, and the latest 15 show on the edit page. It is
+  append-only; there is no route that edits or deletes it.
+- **Who manages this profile**: the edit page says plainly that the owner and administrators do,
+  and links to team roles.
+
+Still to come: Phase 3 (InfoDot Inbox and enquiries), Phase 4 (reports, featured placement,
+collections, similar businesses, analytics).
