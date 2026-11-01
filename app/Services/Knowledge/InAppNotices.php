@@ -188,9 +188,11 @@ class InAppNotices
         if ($notice->kind === UserNotice::BUSINESS_TRUST_QUEUE) {
             [, $what, $itemId] = array_pad(explode(':', $notice->ref), 3, null);
 
-            return $what === 'appeal'
-                ? ['text' => "$name appealed a decision about it. It needs a reviewer who did not make that decision.", 'url' => route('moderation.trust.appeal', ['appeal' => (int) $itemId])]
-                : ['text' => "Someone reported $name. It needs a reviewer.", 'url' => route('moderation.trust.report', ['report' => (int) $itemId])];
+            return match ($what) {
+                'appeal' => ['text' => "$name appealed a decision about it. It needs a reviewer who did not make that decision.", 'url' => route('moderation.trust.appeal', ['appeal' => (int) $itemId])],
+                'feature' => ['text' => "$name asked to be featured in the directory.", 'url' => route('moderation.trust').'#featured'],
+                default => ['text' => "Someone reported $name. It needs a reviewer.", 'url' => route('moderation.trust.report', ['report' => (int) $itemId])],
+            };
         }
 
         if ($notice->kind === UserNotice::BUSINESS_REPORT_DECIDED) {
@@ -201,6 +203,16 @@ class InAppNotices
 
         if ($notice->kind === UserNotice::BUSINESS_STANDING) {
             $parts = explode(':', $notice->ref);
+            if (($parts[1] ?? '') === 'feature') {
+                $text = match ($parts[3] ?? '') {
+                    'active' => "$name is featured in the directory. The dates are on its profile page.",
+                    'declined' => "The request to feature $name was declined. The reason is on its profile page.",
+                    default => "{$name}’s featured placement has ended.",
+                };
+
+                return ['text' => $text, 'url' => route('business.edit', $team).'#featured'];
+            }
+
             $text = match (true) {
                 ($parts[1] ?? '') === 'appeal' => 'A reviewer decided the appeal for '.$name.': '.(($parts[3] ?? '') === 'upheld' ? 'upheld.' : 'not upheld.'),
                 ($parts[3] ?? '') === 'restricted' => "InfoDot is reviewing $name and has taken it out of the directory meanwhile. The reason, and how to respond, are on its standing page.",

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessAppeal;
+use App\Models\BusinessFeature;
 use App\Models\BusinessInvestigation;
 use App\Models\BusinessReport;
 use App\Models\IdentityConflict;
@@ -32,6 +33,8 @@ class BusinessTrustDeskController extends Controller
             'investigations' => BusinessInvestigation::where('status', BusinessInvestigation::OPEN)->with('team:id,name,code')->withCount('reports')->oldest()->get(),
             'appeals' => BusinessAppeal::where('status', BusinessAppeal::OPEN)->with('team:id,name,code')->oldest()->get(),
             'recent' => BusinessInvestigation::where('status', '!=', BusinessInvestigation::OPEN)->with('team:id,name')->latest('decided_at')->limit(15)->get(),
+            'featureRequests' => BusinessFeature::where('status', BusinessFeature::REQUESTED)->with('team:id,uuid,name,code')->oldest()->get(),
+            'featuresActive' => BusinessFeature::query()->showing()->with('team:id,name,code')->orderBy('ends_at')->get(),
         ]);
     }
 

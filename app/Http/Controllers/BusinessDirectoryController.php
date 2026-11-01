@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessCategory;
+use App\Models\Team;
 use App\Models\TeamProfile;
 use App\Services\Directory\BusinessDirectory;
+use App\Services\Directory\FeaturedPlacement;
+use App\Services\Insights\BusinessInsights;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -16,7 +19,7 @@ use Illuminate\View\View;
  */
 class BusinessDirectoryController extends Controller
 {
-    public function index(Request $request, BusinessDirectory $directory): View
+    public function index(Request $request, BusinessDirectory $directory, BusinessInsights $insights, FeaturedPlacement $featured): View
     {
         $f = $request->validate([
             'q' => ['nullable', 'string', 'max:120'],
@@ -36,13 +39,22 @@ class BusinessDirectoryController extends Controller
         // Results show once someone searches, filters, sorts, pages or asks for everything; before that, browsing.
         $searching = collect($f)->except(['view', 'verified'])->filter()->isNotEmpty() || $f['verified'];
         $viewer = $request->user();
+        $search = $directory->search($f, $viewer);
+
+        // Each business on this page of results appeared in a search (R-33 §9), counted for it.
+        if ($searching && $search['results']->isNotEmpty()) {
+            $shown = collect($search['results']->items())->filter(fn (Team $t) => $insights->counts($t, $viewer, $request->userAgent()));
+            $insights->searched($shown, $search['words'], $search['service_hits']);
+        }
 
         return view('businesses.index', [
             'f' => $f,
             'searching' => $searching,
             'view' => $f['view'] ?? 'grid',
-            'search' => $directory->search($f, $viewer),
+            'search' => $search,
             'browse' => $searching ? null : $directory->browse($viewer),
+            'featured' => $searching ? collect() : $featured->showing($viewer),
+            'places' => $searching ? null : $directory->places($viewer),
             'categories' => BusinessCategory::where('active', true)->orderBy('sort')->get(),
             'types' => TeamProfile::BUSINESS_TYPES,
             'sizes' => $directory->sizes($viewer),

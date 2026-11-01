@@ -4,12 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Attachment;
 use App\Models\BusinessCategory;
+use App\Models\BusinessCollection;
+use App\Models\BusinessFeature;
 use App\Models\BusinessProfileEvent;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\TeamProfile;
 use App\Services\Attachments\TeamMediaService;
+use App\Services\Directory\BusinessDirectory;
+use App\Services\Directory\FeaturedPlacement;
+use App\Services\Insights\BusinessInsights;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -24,7 +29,7 @@ class BusinessProfileController extends Controller
     private const MAX_CATEGORIES = 3;
 
     /** The public business page. Personal workspaces have none. */
-    public function show(Request $request, Team $team)
+    public function show(Request $request, Team $team, BusinessDirectory $directory, BusinessInsights $insights)
     {
         $user = $request->user();
 
@@ -38,6 +43,11 @@ class BusinessProfileController extends Controller
         $canEdit = Gate::allows('updateProfile', $team);
         $preview = $canEdit && $request->query('as') === 'visitor';
         $isMember = ! $preview && $user !== null && $user->belongsToTeam($team);
+
+        // One view per visitor per day, never the business's own people, reviewers or previews (R-33 §9).
+        if (! $preview && $insights->counts($team, $user, $request->userAgent())) {
+            $insights->bump($team, 'view', true);
+        }
 
         // Outsiders see the company's public contributions only; members see the company's own.
         $questions = Questions::query()
@@ -65,6 +75,9 @@ class BusinessProfileController extends Controller
             'offeringPictures' => $team->mediaByRef('offering'),
             'projectPictures' => $team->mediaByRef('project'),
             'brochures' => $team->media()->where('role', TeamMediaService::BROCHURE)->whereNull('superseded_at')->orderBy('id')->get(),
+            'similar' => $directory->similar($team, $preview ? null : $user),
+            'collections' => $user && ! $isMember ? BusinessCollection::where('user_id', $user->id)->orderBy('name')->get() : collect(),
+            'savedIn' => $user ? BusinessCollection::where('user_id', $user->id)->whereHas('items', fn ($q) => $q->where('team_id', $team->id))->pluck('name') : collect(),
         ]);
     }
 
@@ -88,6 +101,9 @@ class BusinessProfileController extends Controller
             'projectPictures' => $team->mediaByRef('project'),
             'brochures' => $team->media()->where('role', TeamMediaService::BROCHURE)->whereNull('superseded_at')->orderBy('id')->get(),
             'events' => $team->profileEvents()->with('user:id,name')->limit(15)->get(),
+            'featureUnmet' => app(FeaturedPlacement::class)->unmet($team),
+            'feature' => app(FeaturedPlacement::class)->current($team),
+            'lastFeature' => BusinessFeature::where('team_id', $team->id)->latest('id')->first(),
         ]);
     }
 

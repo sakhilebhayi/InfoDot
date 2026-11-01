@@ -102,6 +102,9 @@
                     <a class="ix-pop__item" href="{{ route('notices') }}">
                         <span class="material-symbols-rounded" aria-hidden="true">notifications</span>{{ __('Notifications') }}@if ($unreadNotices > 0) <span class="ix-pop__count" aria-label="{{ $unreadNotices }} unread">{{ $unreadNotices > 99 ? '99+' : $unreadNotices }}</span>@endif
                     </a>
+                    <a class="ix-pop__item" href="{{ route('collections') }}">
+                        <span class="material-symbols-rounded" aria-hidden="true">bookmarks</span>{{ __('Collections') }}
+                    </a>
                     <a class="ix-pop__item" href="{{ route('points') }}">
                         <span class="material-symbols-rounded" aria-hidden="true">redeem</span>{{ __('Points') }}
                     </a>

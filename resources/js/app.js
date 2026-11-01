@@ -76,3 +76,15 @@ document.addEventListener('livewire:init', () => {
 document.querySelectorAll('details[data-fold-on-phone]:not([data-active])').forEach((d) => {
     if (window.matchMedia('(max-width: 640px)').matches) d.open = false;
 });
+
+// Contact actions on a business page (R-33 §9) report themselves so the business can see how often
+// people call, email, visit its website or look for it on a map. A count only: nothing about the
+// visitor goes with it, and the link works the same whether or not the report arrives.
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('a[data-track]');
+    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (!link || !token || !navigator.sendBeacon) return;
+    const body = new FormData();
+    body.append('_token', token);
+    navigator.sendBeacon(link.dataset.track, body);
+});
