@@ -7697,3 +7697,60 @@ body {
 .ix-ledger time { color: var(--ix-text-3); font-variant-numeric: tabular-nums; }
 .ix-ledger span { overflow-wrap: break-word; min-width: 0; }
 @media (max-width: 599px) { .ix-ledger li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
+/* ------------------------------------------------------------------ */
+/* R-33 Phase 3 — the InfoDot Inbox.                                    */
+/* ------------------------------------------------------------------ */
+.ix-biz__editbtn + .ix-biz__editbtn { margin-left: 0; }
+.ix-compose { max-width: 820px; }
+.ix-compose__send { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Conversation lists: one line per conversation, unread ones carry a bar and bold subject. */
+.ix-threads { margin: 0; padding: 0; list-style: none; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); }
+.ix-threads li { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 6px 14px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--ix-rule); }
+.ix-threads li:first-child { border-top: 0; }
+.ix-threads li:not(:has(.ix-threads__logo)) { grid-template-columns: minmax(0, 1fr) auto auto; }
+.ix-threads li.is-unread { box-shadow: inset 3px 0 0 var(--area); }
+.ix-threads__logo.ix-biz__logo { width: 40px; height: 40px; font-size: 20px; }
+.ix-threads__main { display: grid; gap: 2px; min-width: 0; }
+.ix-threads__subject { color: var(--ix-text); font-weight: 600; text-decoration: none; overflow-wrap: break-word; }
+.ix-threads__subject::after { content: ''; position: absolute; inset: 0; }
+.ix-threads__subject:hover { text-decoration: underline; }
+.ix-threads li.is-unread .ix-threads__subject { font-weight: 800; }
+.ix-threads__who { font-size: 13px; color: var(--ix-text-3); overflow-wrap: break-word; }
+.ix-threads__state { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.ix-threads__when { font-size: 13px; color: var(--ix-text-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+    .ix-threads li, .ix-threads li:not(:has(.ix-threads__logo)) { grid-template-columns: minmax(0, 1fr) auto; }
+    .ix-threads__logo { display: none; }
+    .ix-threads__state { grid-column: 1; justify-content: flex-start; }
+}
+
+.ix-inboxlinks { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.ix-inboxlinks a { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding: 10px 12px; border: 1px solid var(--ix-rule); border-left: 4px solid var(--area); border-radius: var(--ix-radius); color: var(--ix-text); text-decoration: none; }
+.ix-inboxlinks a:hover { background: var(--ix-hover); }
+.ix-inboxlinks span { color: var(--ix-text-3); font-size: 14px; }
+
+/* The inbox in numbers: stencil figures, each with its plain label. */
+.ix-inboxstats { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 8px; }
+.ix-inboxstats div { padding: 12px 14px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); }
+.ix-inboxstats dt { font-size: 13px; color: var(--ix-text-3); }
+.ix-inboxstats dd { margin: 4px 0 0; font-family: var(--ix-stencil-font); font-weight: 800; font-size: 34px; line-height: 1; color: var(--ix-text); font-variant-numeric: tabular-nums; }
+
+/* A conversation: the other side on the left, your side indented, notes on a mustard rule. */
+.ix-convo { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+.ix-convo__rail { display: grid; gap: 16px; }
+@media (max-width: 980px) { .ix-convo { grid-template-columns: minmax(0, 1fr); } }
+.ix-thread { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; max-width: 820px; }
+.ix-msg { padding: 12px 16px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); margin-right: 48px; }
+.ix-msg.is-mine { margin-right: 0; margin-left: 48px; background: var(--ix-signal-wash); border-color: var(--ix-rule-strong); }
+.ix-msg.is-note { margin-left: 48px; margin-right: 0; background: var(--ix-warn-wash); border-color: var(--ix-rule); border-left: 4px solid var(--ix-stencil); }
+.ix-msg__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 12px; margin: 0 0 6px; font-size: 13px; color: var(--ix-text-3); }
+.ix-msg__head b { color: var(--ix-text); font-size: 14px; }
+.ix-msg__body { white-space: pre-line; overflow-wrap: anywhere; line-height: 1.55; color: var(--ix-text); }
+.ix-msg__files { margin: 10px 0 0; padding: 8px 0 0; list-style: none; border-top: 1px solid var(--ix-rule); display: grid; gap: 4px; font-size: 14px; }
+.ix-msg__files a { display: inline-flex; align-items: center; gap: 6px; overflow-wrap: anywhere; }
+.ix-msg__files .material-symbols-rounded { font-size: 18px; }
+.ix-thread__event { text-align: center; font-size: 13px; color: var(--ix-text-2); padding: 2px 0; }
+.ix-thread__event .ix-hint { margin: 0; }
+@media (max-width: 640px) { .ix-msg, .ix-msg.is-mine, .ix-msg.is-note { margin-left: 0; margin-right: 0; } }

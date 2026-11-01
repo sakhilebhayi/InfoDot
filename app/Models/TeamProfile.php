@@ -34,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $business_type
  * @property array<string, bool>|null $public_contact
  * @property string|null $industries_served
+ * @property bool $accepts_enquiries
  */
 class TeamProfile extends Model
 {
@@ -95,6 +96,7 @@ class TeamProfile extends Model
             'established_on' => 'date',
             'links' => 'array',
             'public_contact' => 'array',
+            'accepts_enquiries' => 'boolean',
         ];
     }
 

@@ -62,6 +62,9 @@
                         </div>
                     </fieldset>
 
+                    <input type="hidden" name="accepts_enquiries" value="0">
+                    <label class="ix-choice__chk"><input type="checkbox" name="accepts_enquiries" value="1" @checked(old('accepts_enquiries', $profile->accepts_enquiries ?? true))> Let people message the business through InfoDot (<a href="{{ route('business.inbox', $team) }}">the inbox</a>)</label>
+
                     <button type="submit" class="ix-btn ix-btn--primary">Save the listing</button>
                 </form>
             </section>

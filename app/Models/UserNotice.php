@@ -80,6 +80,15 @@ class UserNotice extends Model
 
     public const RELATIONSHIP_DECIDED = 'relationship_decided';
 
+    /** R-33: the InfoDot Inbox — a new enquiry, a reply, an enquiry given to you, a follow-up date reached. */
+    public const ENQUIRY_RECEIVED = 'enquiry_received';
+
+    public const ENQUIRY_REPLY = 'enquiry_reply';
+
+    public const ENQUIRY_ASSIGNED = 'enquiry_assigned';
+
+    public const ENQUIRY_FOLLOW_UP = 'enquiry_follow_up';
+
     /**
      * Notices that are about something the person has booked, paid for or is owed, not about their contributions. The notifications switch
      * silences the second kind only: nobody should miss a cancelled seminar, a changed time, a refund, a dispute or a debt because they
@@ -90,6 +99,7 @@ class UserNotice extends Model
         self::SEMINAR_DEBT_OPENED, self::SEMINAR_DEBT_CLEARED, self::SEMINAR_DEBT_REOPENED, self::SEMINAR_DEBT_WRITTEN_OFF, self::SEMINAR_REMOVED, self::SEMINAR_REINSTATED, self::SEMINAR_APPEAL_DECIDED,
         self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
+        self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
     ];
 
     public const KINDS = [
@@ -101,6 +111,7 @@ class UserNotice extends Model
         self::SEMINAR_REPORT_DECIDED,
         self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
+        self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
     ];
 
     public $timestamps = false;
@@ -112,6 +123,7 @@ class UserNotice extends Model
         return ['read_at' => 'datetime', 'created_at' => 'datetime', 'subject_id' => 'integer'];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

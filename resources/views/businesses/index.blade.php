@@ -98,7 +98,7 @@
             @if ($results->isEmpty())
                 <div class="ix-empty">
                     <h2>No listed business matches that yet</h2>
-                    <p>Try fewer words, a nearby town, or a wider category. Only businesses that chose to be listed appear here@if ($guest), and you are seeing the ones listed for everyone@endif.</p>
+                    <p>Try fewer words, a nearby town, or a wider category. Only businesses that chose to be listed appear here{{ $guest ? ', and you are seeing the ones listed for everyone' : '' }}.</p>
                     <a class="ix-btn" href="{{ route('businesses.index') }}">Browse all businesses</a>
                 </div>
             @else

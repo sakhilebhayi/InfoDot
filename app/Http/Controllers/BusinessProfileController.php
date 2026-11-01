@@ -101,11 +101,16 @@ class BusinessProfileController extends Controller
             'business_type' => ['nullable', Rule::in(array_keys(TeamProfile::BUSINESS_TYPES))],
             'categories' => ['nullable', 'array', 'max:'.self::MAX_CATEGORIES],
             'categories.*' => ['integer', Rule::exists('business_categories', 'id')->where('active', true)],
+            'accepts_enquiries' => ['nullable', 'boolean'],
         ], ['categories.max' => 'Choose up to '.self::MAX_CATEGORIES.' categories — the ones a customer would look under first.']);
 
         $profile = $team->profileOrNew();
         $before = $profile->visibility;
-        $profile->fill(['visibility' => $data['visibility'], 'business_type' => $data['business_type'] ?? null])->save();
+        $profile->fill(['visibility' => $data['visibility'], 'business_type' => $data['business_type'] ?? null]);
+        if ($request->has('accepts_enquiries')) {
+            $profile->accepts_enquiries = (bool) $data['accepts_enquiries'];
+        }
+        $profile->save();
         $team->categories()->sync($data['categories'] ?? []);
         BusinessProfileEvent::record($team, $request->user(), 'listing_changed', $before !== $data['visibility'] ? $before.' → '.$data['visibility'] : 'type and categories');
 

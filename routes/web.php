@@ -5,11 +5,13 @@ use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\BusinessDirectoryController;
+use App\Http\Controllers\BusinessInboxController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessRelationshipController;
 use App\Http\Controllers\BusinessShowcaseController;
 use App\Http\Controllers\BusinessVerificationController;
 use App\Http\Controllers\CspReportController;
+use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\ExpertiseSharingController;
 use App\Http\Controllers\IdentityDeskController;
 use App\Http\Controllers\Knowledge\PickerController;
@@ -111,6 +113,20 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
     Route::post('/business/{team:uuid}/directory', [BusinessProfileController::class, 'updateDirectory'])->middleware('throttle:20,1,business.directory')->name('business.directory');
+    // The InfoDot Inbox (R-33 Phase 3): the customer's enquiries, and each business's inbox.
+    Route::get('/business/{team:uuid}/message', [EnquiryController::class, 'create'])->name('business.message');
+    Route::post('/business/{team:uuid}/message', [EnquiryController::class, 'store'])->middleware('throttle:6,1,enquiry.start')->name('business.message.store');
+    Route::get('/inbox', [EnquiryController::class, 'index'])->name('inbox');
+    Route::get('/inbox/{enquiry:uuid}', [EnquiryController::class, 'show'])->name('inbox.show');
+    Route::post('/inbox/{enquiry:uuid}/reply', [EnquiryController::class, 'reply'])->middleware('throttle:20,1,enquiry.reply')->name('inbox.reply');
+    Route::prefix('/business/{team:uuid}/inbox')->name('business.inbox')->controller(BusinessInboxController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::get('/{enquiry:uuid}', 'show')->name('.show');
+        Route::post('/{enquiry:uuid}/reply', 'reply')->middleware('throttle:30,1,enquiry.business.reply')->name('.reply');
+        Route::post('/{enquiry:uuid}', 'update')->middleware('throttle:30,1,enquiry.update')->name('.update');
+        Route::post('/{enquiry:uuid}/block', 'block')->middleware('throttle:10,1,enquiry.block')->name('.block');
+    });
+
     // What the business shows on its page (R-33 Phase 2): offerings, portfolio, locations, announcements, brochures.
     Route::prefix('/business/{team:uuid}')->name('business.')->controller(BusinessShowcaseController::class)->middleware('throttle:60,1,business.showcase')->group(function () {
         Route::post('/services', 'storeService')->name('services.store');

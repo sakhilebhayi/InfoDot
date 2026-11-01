@@ -19,6 +19,7 @@ use App\Listeners\RecordInAppNotice;
 use App\Listeners\RefreshAchievements;
 use App\Livewire\Teams\TeamMemberManager;
 use App\Models\BusinessVerification;
+use App\Models\EnquiryMessage;
 use App\Models\File;
 use App\Models\Folder;
 use App\Models\Questions;
@@ -141,6 +142,7 @@ class AppServiceProvider extends ServiceProvider
             'questions' => Questions::class,
             'team' => Team::class,
             'business_verification' => BusinessVerification::class,
+            'enquiry_message' => EnquiryMessage::class,
         ]);
     }
 }

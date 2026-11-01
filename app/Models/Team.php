@@ -157,6 +157,18 @@ class Team extends JetstreamTeam
         return $this->hasMany(BusinessAnnouncement::class)->latest('published_at')->latest('id');
     }
 
+    /** @return HasMany<Enquiry, $this> */
+    public function enquiries(): HasMany
+    {
+        return $this->hasMany(Enquiry::class);
+    }
+
+    /** Whether people may message this business through the InfoDot Inbox (R-33 §5A). */
+    public function acceptsEnquiries(): bool
+    {
+        return ! $this->personal_team && ($this->profile === null || $this->profile->accepts_enquiries !== false);
+    }
+
     /** @return HasMany<BusinessProfileEvent, $this> */
     public function profileEvents(): HasMany
     {
