@@ -30,6 +30,9 @@
 
     @if (session('status'))<p class="ix-alert" role="status">{{ session('status') }}</p>@endif
     @if ($errors->any())<div class="ix-error" role="alert"><p>{{ $errors->first() }}</p></div>@endif
+    @if ($conflict)
+        <p class="ix-alert" role="note">Identity conflict <a href="{{ route('moderation.identity.show', $conflict) }}">#{{ $conflict->id }}</a> ({{ $conflict->level }}) is open: this business matches a verified one. It cannot be approved until that is resolved.</p>
+    @endif
     @unless ($canDecide)
         <p class="ix-alert" role="note">You belong to this business, so you can read the application but another reviewer must decide it.</p>
     @endunless

@@ -178,6 +178,29 @@ class InAppNotices
         [, $id, $status] = array_pad(explode(':', $notice->ref), 3, null);
         $name = '“'.Str::limit($team->name, 60, '…', true).'”';
 
+        // R-29 Part C. The other account is never named in the verified business's notice.
+        if ($notice->kind === UserNotice::IDENTITY_CONFLICT) {
+            return [
+                'text' => "A business account shares identity details with verified $name ($status match). It needs a reviewer.",
+                'url' => route('moderation.identity.show', ['conflict' => (int) $id]),
+            ];
+        }
+
+        if ($notice->kind === UserNotice::IDENTITY_ALERT) {
+            return [
+                'text' => "Another account on InfoDot shares identity details with $name. InfoDot is looking into it; you can add what you know on the verification page.",
+                'url' => route('business.verification', $team).'#identity',
+            ];
+        }
+
+        if ($notice->kind === UserNotice::RELATIONSHIP_REQUEST) {
+            return ['text' => "A business asked $name to confirm it is related (branch, franchise, representative…). Confirm or decline it on the verification page.", 'url' => route('business.verification', $team).'#linked'];
+        }
+
+        if ($notice->kind === UserNotice::RELATIONSHIP_DECIDED) {
+            return ['text' => "{$name}’s request to be linked to a verified business was ".($status === 'confirmed' ? 'confirmed.' : 'declined.'), 'url' => route('business.verification', $team).'#linked'];
+        }
+
         if ($notice->kind === UserNotice::VERIFICATION_QUEUE) {
             return [
                 'text' => $status === 'under_review'
@@ -218,6 +241,8 @@ class InAppNotices
             UserNotice::IMPROVEMENT_PROPOSED, UserNotice::IMPROVEMENT_APPROVED, UserNotice::IMPROVEMENT_REJECTED, UserNotice::IMPROVEMENT_CLARIFY => 'Improvement',
             UserNotice::SEMINAR_REMINDER, UserNotice::SEMINAR_CHANGED, UserNotice::SEMINAR_CANCELLED, UserNotice::SEMINAR_SPOT_OPEN, UserNotice::SEMINAR_REFUNDED, UserNotice::SEMINAR_DISPUTE, UserNotice::SEMINAR_LINK_BROKEN, UserNotice::SEMINAR_DEBT_OPENED, UserNotice::SEMINAR_DEBT_CLEARED, UserNotice::SEMINAR_DEBT_REOPENED, UserNotice::SEMINAR_DEBT_WRITTEN_OFF, UserNotice::SEMINAR_REMOVED, UserNotice::SEMINAR_REINSTATED, UserNotice::SEMINAR_APPEAL_DECIDED, UserNotice::SEMINAR_REPORT_DECIDED => 'Seminar',
             UserNotice::BUSINESS_VERIFICATION, UserNotice::BUSINESS_VERIFICATION_RENEWAL, UserNotice::VERIFICATION_QUEUE => 'Verification',
+            UserNotice::IDENTITY_CONFLICT, UserNotice::IDENTITY_ALERT => 'Identity',
+            UserNotice::RELATIONSHIP_REQUEST, UserNotice::RELATIONSHIP_DECIDED => 'Linked business',
             default => 'Update',
         };
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessVerification;
+use App\Services\Identity\IdentityProtection;
 use App\Services\Verification\VerificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ class VerificationDeskController extends Controller
             'v' => $verification->load(['team.profile', 'applicant', 'decider', 'evidence', 'events.actor']),
             'canDecide' => $this->verification->canReview($request->user(), $verification->team),
             'checks' => BusinessVerification::CHECKS,
+            'conflict' => app(IdentityProtection::class)->blockingConflict($verification->team),
         ]);
     }
 

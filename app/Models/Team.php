@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Identity\IdentityProtection;
 use App\Services\Verification\VerificationService;
 use App\Support\OwnerCode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -66,12 +67,15 @@ class Team extends JetstreamTeam
             $object = $team->objects()->make(['parent_id' => null]);
             $object->objectable()->associate($team->folders()->create(['name' => $team->name]));
             $object->save();
+
+            app(IdentityProtection::class)->evaluate($team, 'team_created');
         });
 
         // A verified business that renames itself goes back for a reviewer's look (R-29 §13).
         static::updated(function (self $team) {
             if ($team->wasChanged('name')) {
                 app(VerificationService::class)->identityChanged($team);
+                app(IdentityProtection::class)->evaluate($team, 'team_renamed');
             }
         });
     }

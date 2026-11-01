@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Identity\IdentityProtection;
 use App\Services\Verification\VerificationService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,6 +49,11 @@ class TeamProfile extends Model
         static::saved(function (self $profile) {
             if ($profile->wasChanged(self::IDENTITY_FIELDS) && $profile->team) {
                 app(VerificationService::class)->identityChanged($profile->team);
+            }
+
+            // Compared with protected identities whenever identity details are written (R-29 §15–16).
+            if (($profile->wasRecentlyCreated || $profile->wasChanged([...self::IDENTITY_FIELDS, 'contact_email'])) && $profile->team) {
+                app(IdentityProtection::class)->evaluate($profile->team, 'profile_updated');
             }
         });
     }

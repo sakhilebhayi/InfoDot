@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\UserNotice;
 use App\Models\VerificationEvent;
 use App\Services\Attachments\AttachmentService;
+use App\Services\Identity\IdentityProtection;
 use App\Services\Knowledge\InAppNotices;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,7 @@ class VerificationService
     public function __construct(
         private readonly AttachmentService $attachments,
         private readonly InAppNotices $notices,
+        private readonly IdentityProtection $identity,
     ) {}
 
     // ------------------------------------------------------------------------------------------ applicants
@@ -77,6 +79,7 @@ class VerificationService
             $this->storeEvidence($applicant, $verification, $evidence);
             $this->log($verification, 'submitted', null, BusinessVerification::PENDING, $applicant);
             $this->tellModerators($verification);
+            $this->identity->evaluate($team, 'verification_applied', $data);
 
             return $verification;
         });
@@ -197,6 +200,11 @@ class VerificationService
             throw ValidationException::withMessages(['checks' => 'There is no evidence document on file. Ask for one before approving.']);
         }
 
+        // No badge while this account's details match a verified business unexplained (R-29 §16, §18).
+        if ($conflict = $this->identity->blockingConflict($verification->team)) {
+            throw ValidationException::withMessages(['checks' => 'Identity conflict #'.$conflict->id.' ('.$conflict->level.') is open against this business. Resolve it first.']);
+        }
+
         DB::transaction(function () use ($reviewer, $verification, $checks, $note) {
             $previous = $verification->team->standing;
 
@@ -215,6 +223,8 @@ class VerificationService
             if ($previous && $previous->id !== $verification->id && in_array($previous->status, [BusinessVerification::VERIFIED, BusinessVerification::UNDER_REVIEW, BusinessVerification::EXPIRED], true)) {
                 $this->move($previous, [$previous->status], BusinessVerification::SUPERSEDED, 'superseded', $reviewer);
             }
+
+            $this->identity->protect($verification->fresh());
         });
 
         $this->tellBusiness($verification);
@@ -241,6 +251,7 @@ class VerificationService
             'decided_by' => $reviewer->id,
             'decided_at' => now(),
         ]);
+        $this->identity->protect($standing->fresh());
         $this->tellBusiness($standing);
     }
 
@@ -270,6 +281,7 @@ class VerificationService
             'decided_by' => $reviewer->id,
             'decided_at' => now(),
         ]);
+        $this->identity->unprotect($standing->team);
         $this->tellBusiness($standing);
     }
 
@@ -314,6 +326,7 @@ class VerificationService
         BusinessVerification::where('status', BusinessVerification::VERIFIED)->where('expires_at', '<=', now())
             ->orderBy('id')->each(function (BusinessVerification $v) use (&$expired) {
                 $this->move($v, [BusinessVerification::VERIFIED], BusinessVerification::EXPIRED, 'expired', null);
+                $this->identity->unprotect($v->team);
                 $this->tellBusiness($v);
                 $expired++;
             });

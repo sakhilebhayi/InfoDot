@@ -5,9 +5,11 @@ use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\BusinessProfileController;
+use App\Http\Controllers\BusinessRelationshipController;
 use App\Http\Controllers\BusinessVerificationController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ExpertiseSharingController;
+use App\Http\Controllers\IdentityDeskController;
 use App\Http\Controllers\Knowledge\PickerController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
@@ -112,6 +114,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::post('/email', 'sendCode')->middleware('throttle:5,60,business.verify.code')->name('.code');
         Route::post('/email/confirm', 'confirmCode')->middleware('throttle:10,15,business.verify.confirm')->name('.confirm');
     });
+    Route::post('/business/{team:uuid}/relationships', [BusinessRelationshipController::class, 'claim'])->middleware('throttle:10,60,business.relationship.claim')->name('business.relationships.claim');
+    Route::post('/business/{team:uuid}/relationships/{relationship}/{decision}', [BusinessRelationshipController::class, 'decide'])->whereNumber('relationship')->whereIn('decision', ['confirm', 'decline'])->middleware('throttle:30,1,business.relationship.decide')->name('business.relationships.decide');
+    Route::delete('/business/{team:uuid}/relationships/{relationship}', [BusinessRelationshipController::class, 'end'])->whereNumber('relationship')->middleware('throttle:30,1,business.relationship.end')->name('business.relationships.end');
+    Route::get('/moderation/identity', [IdentityDeskController::class, 'index'])->middleware(['moderator', 'throttle:60,1,moderation.identity'])->name('moderation.identity');
+    Route::get('/moderation/identity/{conflict}', [IdentityDeskController::class, 'show'])->whereNumber('conflict')->middleware(['moderator', 'throttle:60,1,moderation.identity.show'])->name('moderation.identity.show');
+    Route::post('/moderation/identity/{conflict}/{action}', [IdentityDeskController::class, 'resolve'])->whereNumber('conflict')->whereIn('action', ['dismiss', 'relate', 'escalate'])->middleware(['moderator', 'throttle:60,1,moderation.identity.resolve'])->name('moderation.identity.resolve');
     Route::get('/moderation/verifications', [VerificationDeskController::class, 'index'])->middleware(['moderator', 'throttle:60,1,moderation.verifications'])->name('moderation.verifications');
     Route::get('/moderation/verifications/{verification}', [VerificationDeskController::class, 'show'])->whereNumber('verification')->middleware(['moderator', 'throttle:60,1,moderation.verification'])->name('moderation.verifications.show');
     Route::post('/moderation/verifications/{verification}/{action}', [VerificationDeskController::class, 'decide'])->whereNumber('verification')

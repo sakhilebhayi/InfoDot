@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BusinessRelationship;
 use App\Models\BusinessVerification;
+use App\Models\IdentityConflict;
 use App\Models\Team;
+use App\Services\Identity\IdentityProtection;
 use App\Services\Verification\VerificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +32,7 @@ class BusinessVerificationController extends Controller
         'other' => 'Other supporting document',
     ];
 
-    public function __construct(private readonly VerificationService $verification) {}
+    public function __construct(private readonly VerificationService $verification, private readonly IdentityProtection $identity) {}
 
     public function show(Request $request, Team $team): View
     {
@@ -47,6 +50,13 @@ class BusinessVerificationController extends Controller
             'latest' => $current,
             'history' => $team->verifications()->with('events')->limit(5)->get(),
             'labels' => self::EVIDENCE_LABELS,
+            // R-29 Part C: links to other businesses, alerts about accounts matching this one,
+            // and whether an extra check applies to this account.
+            'outgoing' => BusinessRelationship::where('team_id', $team->id)->whereIn('status', ['pending', 'confirmed'])->with('parent')->get(),
+            'incoming' => BusinessRelationship::where('parent_team_id', $team->id)->whereIn('status', ['pending', 'confirmed'])->with('team')->get(),
+            'alerts' => IdentityConflict::where('protected_team_id', $team->id)->where('level', '!=', 'low')->whereIn('status', ['open', 'escalated'])->with('subject')->latest()->get(),
+            'extraCheck' => $this->identity->blockingConflict($team) !== null,
+            'kinds' => BusinessRelationship::KINDS,
             'canApply' => $open === null && $standing?->status !== BusinessVerification::SUSPENDED
                 && ! ($standing?->isCurrent() && $standing->expires_at?->greaterThan(now()->addDays((int) config('verification.renewal_warning_days')))),
         ]);
