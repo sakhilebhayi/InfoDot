@@ -119,7 +119,9 @@ class BusinessDirectoryTest extends TestCase
         $this->get('/businesses?category='.$water->slug)->assertSee('Acme Boreholes')->assertDontSee('Other Co');
         $this->get('/businesses?type=sole_proprietor')->assertSee('Other Co')->assertDontSee('Acme Boreholes');
         // Nothing here is verified, so the verified filter honestly finds nothing.
-        $this->get('/businesses?verified=1')->assertSee('No listed business matches that yet')->assertDontSee('Acme Boreholes');
+        $this->get('/businesses?verified=1')->assertSee('No listed business matches that yet')->assertDontSee('Acme Boreholes')
+            // A directive glued to a word ("here@if") is not compiled by Blade and would print as text.
+            ->assertDontSee('@if', false)->assertDontSee('@endif', false);
     }
 
     public function test_the_business_page_answers_to_its_visibility(): void

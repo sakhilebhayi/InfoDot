@@ -6,6 +6,7 @@ use App\Models\Answer;
 use App\Models\Attachment;
 use App\Models\BusinessVerification;
 use App\Models\Comment;
+use App\Models\EnquiryMessage;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Steps;
@@ -252,6 +253,16 @@ class AttachmentService
 
         if (! $attachment->isBound()) {
             return $attachment->user_id === $user->id;
+        }
+
+        // Inbox files (R-33): the people in the conversation — the customer and those who handle it for
+        // the business. A file on an internal note is for the business side only.
+        if ($attachment->attachable_type === 'enquiry_message') {
+            $message = $attachment->attachable()->with('enquiry.team')->first();
+            $enquiry = $message instanceof EnquiryMessage ? $message->enquiry : null;
+
+            return $enquiry !== null
+                && ($enquiry->isHandler($user) || ($message->isPublic() && $enquiry->isCustomer($user)));
         }
 
         // Verification evidence (R-29 §25): the business's owner and administrators, and InfoDot

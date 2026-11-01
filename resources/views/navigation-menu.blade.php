@@ -68,6 +68,12 @@
         <div class="ix-top__actions">
             <livewire:dot-switcher />
 
+            @php($inboxUnread = app(\App\Services\Enquiries\EnquiryService::class)->unreadCount(Auth::user()))
+            <a href="{{ route('inbox') }}" class="ix-bell" aria-label="{{ $inboxUnread > 0 ? __('Inbox, :n conversations with something new', ['n' => $inboxUnread]) : __('Inbox') }}" @if(request()->routeIs('inbox*', 'business.inbox*')) aria-current="page" @endif>
+                <span class="material-symbols-rounded" aria-hidden="true">inbox</span>
+                @if ($inboxUnread > 0)<span class="ix-bell__count" aria-hidden="true">{{ $inboxUnread > 99 ? '99+' : $inboxUnread }}</span>@endif
+            </a>
+
             @php($bellUnread = app(\App\Services\Knowledge\InAppNotices::class)->unreadCount(Auth::user()))
             <a href="{{ route('notices') }}" class="ix-bell" aria-label="{{ $bellUnread > 0 ? __('Notifications, :n unread', ['n' => $bellUnread]) : __('Notifications') }}" @if(request()->routeIs('notices*')) aria-current="page" @endif>
                 <span class="material-symbols-rounded" aria-hidden="true">notifications</span>

@@ -2,6 +2,7 @@
 
 namespace App\Services\Knowledge;
 
+use App\Models\Enquiry;
 use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\Solutions;
@@ -164,6 +165,10 @@ class InAppNotices
             return $team === null ? $gone : $this->business($notice, $team);
         }
 
+        if ($notice->subject_type === 'enquiry') {
+            return $this->enquiry($notice) ?? $gone;
+        }
+
         return $gone;
     }
 
@@ -226,6 +231,44 @@ class InAppNotices
         return ['text' => $text, 'url' => route('business.verification', $team)];
     }
 
+    /**
+     * Inbox notices (R-33). Written for whichever side the reader is on, and only while they may
+     * still open the conversation; the message's words are never part of a notice.
+     *
+     * @return array{text: string, url: string}|null
+     */
+    private function enquiry(UserNotice $notice): ?array
+    {
+        $enquiry = Enquiry::with(['team', 'customer'])->find($notice->subject_id);
+        $reader = $notice->user;
+
+        if ($enquiry === null || $enquiry->team === null || $reader === null) {
+            return null;
+        }
+
+        $subject = '“'.Str::limit($enquiry->subject, 70, '…', true).'”';
+        $business = Str::limit($enquiry->team->name, 60, '…', true);
+
+        if ($enquiry->isHandler($reader)) {
+            $who = $enquiry->customer->name ?? 'A former InfoDot user';
+            $text = match ($notice->kind) {
+                UserNotice::ENQUIRY_RECEIVED => "New enquiry for $business from $who: $subject.",
+                UserNotice::ENQUIRY_REPLY => "$who replied to $subject.",
+                UserNotice::ENQUIRY_ASSIGNED => "The enquiry $subject for $business is now yours.",
+                UserNotice::ENQUIRY_FOLLOW_UP => "Today is the follow-up date for $subject.",
+                default => "There is news on $subject.",
+            };
+
+            return ['text' => $text, 'url' => route('business.inbox.show', [$enquiry->team, $enquiry])];
+        }
+
+        if ($enquiry->isCustomer($reader)) {
+            return ['text' => "$business replied to your enquiry $subject.", 'url' => route('inbox.show', $enquiry)];
+        }
+
+        return null;
+    }
+
     /** The short plate shown beside a notice: what kind of thing happened. */
     public static function label(string $kind): string
     {
@@ -243,6 +286,7 @@ class InAppNotices
             UserNotice::BUSINESS_VERIFICATION, UserNotice::BUSINESS_VERIFICATION_RENEWAL, UserNotice::VERIFICATION_QUEUE => 'Verification',
             UserNotice::IDENTITY_CONFLICT, UserNotice::IDENTITY_ALERT => 'Identity',
             UserNotice::RELATIONSHIP_REQUEST, UserNotice::RELATIONSHIP_DECIDED => 'Linked business',
+            UserNotice::ENQUIRY_RECEIVED, UserNotice::ENQUIRY_REPLY, UserNotice::ENQUIRY_ASSIGNED, UserNotice::ENQUIRY_FOLLOW_UP => 'Inbox',
             default => 'Update',
         };
     }

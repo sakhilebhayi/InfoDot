@@ -87,6 +87,22 @@
                         </ul>
                     @endif
                 </div>
+                @if (! $isMember && ! $preview && $team->acceptsEnquiries())
+                    <div class="ix-biz__editbtn">
+                        <a href="{{ route('business.message', $team) }}" class="ix-btn ix-btn--primary">
+                            <span class="material-symbols-rounded" aria-hidden="true">chat</span>Message business
+                        </a>
+                    </div>
+                @elseif ($preview && $team->acceptsEnquiries())
+                    <div class="ix-biz__editbtn"><span class="ix-btn ix-btn--primary" aria-disabled="true"><span class="material-symbols-rounded" aria-hidden="true">chat</span>Message business</span></div>
+                @endif
+                @if ($isMember)
+                    <div class="ix-biz__editbtn">
+                        <a href="{{ route('business.inbox', $team) }}" class="ix-btn ix-btn--ghost">
+                            <span class="material-symbols-rounded" aria-hidden="true">inbox</span>Inbox
+                        </a>
+                    </div>
+                @endif
                 @if ($canEdit)
                     <div class="ix-biz__editbtn">
                         <a href="{{ route('business.show', [$team, 'as' => 'visitor']) }}" class="ix-btn ix-btn--ghost">

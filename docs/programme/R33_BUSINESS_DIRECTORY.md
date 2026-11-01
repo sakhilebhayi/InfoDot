@@ -128,3 +128,37 @@ can be changed in the database until it is.
 
 Still to come: Phase 3 (InfoDot Inbox and enquiries), Phase 4 (reports, featured placement,
 collections, similar businesses, analytics).
+
+## Phase 3 — shipped in this PR (2026-11-01)
+
+The InfoDot Inbox, built new (InfoDot had no messaging), as the one conversation system.
+
+- **Message business** on every business page a person may open (sign-in required; guests are
+  sent to sign in and back). The enquiry has a category, a subject, the message and up to 3
+  files (same upload checks as all InfoDot files). A business can switch enquiries off on its
+  edit page; members of a business cannot message it.
+- **Owned by the business** (`enquiries.team_id`). The owner and administrators handle every
+  enquiry; the owner or an administrator can give one to any member, who then sees and answers
+  only what they were given. Replies go out as the business — the customer never sees which
+  person wrote them, and never sees internal notes or recorded events.
+- **Statuses** New → Open → In progress → Awaiting response → Resolved → Closed. A business reply
+  moves New/Open/In progress to Awaiting response; a customer reply reopens Awaiting/Resolved.
+  A closed enquiry takes no more customer messages.
+- **Enquiry management**: filters (status, who has it, subject), internal notes, assignment,
+  follow-up dates (reminder notice at 07:30 server time via `business:enquiry-follow-ups`),
+  history of status/assignment changes in the thread, and numbers from recorded data only — not
+  yet answered, not yet resolved, received in 30 days, median time to first reply over 90 days.
+- **Notifications**: one bell notice per recipient per message (service kinds, so a business
+  cannot miss an enquiry by switching off contribution notices), and at most one email per
+  person per conversation per 30 minutes. Emails say who and about what and link to InfoDot;
+  they never contain the message.
+- **Unread**: per person, per conversation; an Inbox icon with a count sits beside the bell.
+- **Abuse prevention**: 10 new enquiries a day per person, 2 a day per business, the same words
+  refused for 24 hours, a 20-character minimum, route throttles, and a per-business block that
+  stops new enquiries (the person is not told who blocked them; existing conversations stay).
+- **Isolation**: every business route checks the enquiry belongs to the business in the URL and
+  that the person handles it; anything else is 404. Files on messages are visible only to the
+  people in the conversation; files on internal notes only to the business side.
+
+Also fixed: two live pages printed raw Blade (`here@if (...)`, `businesses@if (...)`) because a
+directive glued to a word is not compiled; a unit test now fails if any view does that.

@@ -62,7 +62,7 @@
 
     @if ($insights)
         <p class="ix-tried__insights">
-            Tried by {{ $insights['businesses'] }} businesses@if ($insights['industries'] >= 2) across {{ $insights['industries'] }} industries@endif.
+            Tried by {{ $insights['businesses'] }} businesses{{ $insights['industries'] >= 2 ? ' across '.$insights['industries'].' industries' : '' }}.
             @if ($insights['with_results'] > 0) {{ $insights['with_results'] }} reported their results.@endif
             @if ($insights['would_recommend']) {{ $insights['would_recommend'] }} who answered would recommend it.@endif
         </p>
