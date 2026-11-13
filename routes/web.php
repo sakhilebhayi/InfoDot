@@ -3,7 +3,6 @@
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
-use App\Http\Controllers\Auth\EcosystemAuthController;
 use App\Http\Controllers\BusinessCollectionController;
 use App\Http\Controllers\BusinessDirectoryController;
 use App\Http\Controllers\BusinessFeatureController;
@@ -93,8 +92,11 @@ Route::get('/.well-known/security.txt', function () {
     return response(file_get_contents(public_path('.well-known/security.txt')), 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
 })->middleware('throttle:30,1,security-txt')->name('security.txt');
 
-Route::match(['get', 'post'], '/auth/ecosystem', [EcosystemAuthController::class, 'handle'])
+// InfoDot's own copy of the platform sign-in address. It used to turn a launch code into an InfoDot session; no
+// platform ever posts here (they redeem server to server), so it signs nobody in and a stale link reaches sign-in.
+Route::match(['get', 'post'], '/auth/ecosystem', fn () => redirect('/login', 303)->with('status', 'We could not sign you in from that link. Please sign in below.'))
     ->withoutMiddleware(['Illuminate\Foundation\Http\Middleware\PreventRequestForgery', 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken', 'Illuminate\Foundation\Http\Middleware\ValidateCsrfToken'])
+    ->middleware('throttle:30,1,auth-ecosystem')
     ->name('auth.ecosystem');
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
