@@ -174,9 +174,9 @@ class SeminarAccessMatrixTest extends TestCase
             $this->assertStringNotContainsString('INV-2026-0001', $list);
             $payouts = $this->actingAs($who)->get('/seminars/payouts')->assertOk()->getContent();
             $this->assertStringNotContainsString('7 777', $payouts, "another host's debt amount is never shown");
-            // Random per-request tokens (CSP nonce, CSRF token, asset ids) can contain any four digits by chance, which
-            // failed this check about once in a few hundred runs: they are taken out before looking for the digits.
-            $visible = (string) preg_replace('/(nonce|data-csrf|content|value|id)="[A-Za-z0-9+\/=_-]{16,}"|\?id=[a-f0-9]+/', '', $payouts);
+            // Only the text a person can read is checked. Markup carries random values (CSP nonce, CSRF token, uuids in
+            // links, asset hashes) that contain any four digits by chance now and then, which made this check fail at random.
+            $visible = strip_tags((string) preg_replace('#<(script|style)\b[^>]*>.*?</\1>#si', '', $payouts));
             $this->assertStringNotContainsString('4321', $visible, "another host's account digits are never shown");
         }
     }
