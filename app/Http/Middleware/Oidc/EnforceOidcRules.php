@@ -3,6 +3,7 @@
 namespace App\Http\Middleware\Oidc;
 
 use App\Models\DotPlatform;
+use App\Support\Input;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -26,22 +27,22 @@ class EnforceOidcRules
 
     private function enforceAuthorize(Request $request, Closure $next): Response
     {
-        $platform = DotPlatform::findByClientId($request->query('client_id'));
+        $platform = DotPlatform::findByClientId(Input::text($request->query('client_id')) ?: null);
 
         $reason = match (true) {
             ! $platform => 'unregistered_client',
             ! $platform->isActive() => 'platform_suspended',
             $request->query('response_type') !== 'code' => 'response_type_not_code',
-            ! in_array('openid', preg_split('/[\s+]+/', (string) $request->query('scope')) ?: [], true) => 'missing_openid_scope',
-            strlen((string) $request->query('state')) < config('sso.min_state_length') => 'state_missing_or_short',
-            strlen((string) $request->query('nonce')) < config('sso.min_nonce_length') => 'nonce_missing_or_short',
+            ! in_array('openid', preg_split('/[\s+]+/', Input::text($request->query('scope'))) ?: [], true) => 'missing_openid_scope',
+            strlen(Input::text($request->query('state'))) < config('sso.min_state_length') => 'state_missing_or_short',
+            strlen(Input::text($request->query('nonce'))) < config('sso.min_nonce_length') => 'nonce_missing_or_short',
             $request->query('code_challenge_method') !== 'S256' => 'pkce_method_not_s256',
-            ! preg_match('/^[A-Za-z0-9\-._~]{43,128}$/', (string) $request->query('code_challenge')) => 'pkce_challenge_invalid',
+            ! preg_match('/^[A-Za-z0-9\-._~]{43,128}$/', Input::text($request->query('code_challenge'))) => 'pkce_challenge_invalid',
             default => null,
         };
 
         if ($reason !== null) {
-            Log::info('sso.authorize_rejected', ['reason' => $reason, 'client_id' => (string) $request->query('client_id')]);
+            Log::info('sso.authorize_rejected', ['reason' => $reason, 'client_id' => Input::text($request->query('client_id'))]);
 
             abort(400, 'This sign-in request was not accepted. The requesting platform must retry with a valid request.');
         }

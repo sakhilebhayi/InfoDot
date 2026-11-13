@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\TopicService;
 use App\Support\Industry;
+use App\Support\Input;
 use App\Support\Related;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,11 +25,11 @@ class SolutionsController extends Controller
     public function index(Request $request, TopicService $topics)
     {
         // ?topic=slug narrows the list; ?topic=none shows what has no topic yet. An unknown slug is simply an empty list.
-        $slug = trim((string) $request->query('topic', ''));
+        $slug = trim(Input::text($request->query('topic', '')));
         $untagged = $slug === 'none';
         $topic = $slug !== '' && ! $untagged ? Topic::where('slug', $slug)->first() : null;
 
-        $has = trim((string) $request->query('has', ''));
+        $has = trim(Input::text($request->query('has', '')));
         $hasKind = Attachment::kindFromWord($has);
 
         $solutions = Solutions::withCount(['likes', 'comments'])
@@ -66,7 +67,7 @@ class SolutionsController extends Controller
         return view('solutions.create', [
             'industry' => Industry::for(auth()->user()->currentTeam),
             'topicChoices' => $choices,
-            'preselectedTopic' => $choices->firstWhere('slug', (string) $request->query('topic'))?->id,
+            'preselectedTopic' => $choices->firstWhere('slug', Input::text($request->query('topic')))?->id,
         ]);
     }
 

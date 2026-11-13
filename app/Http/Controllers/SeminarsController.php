@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\Privacy\SeminarDataExporter;
 use App\Services\Seminars\MeetingLinkCheck;
 use App\Services\Seminars\SeminarService;
+use App\Support\Input;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -182,7 +183,7 @@ class SeminarsController extends Controller
     /** The "test this link" button on the form. */
     public function linkCheck(Request $request): JsonResponse
     {
-        $url = (string) $request->query('url', '');
+        $url = Input::text($request->query('url', ''));
         abort_if(strlen($url) > 500, 422);
 
         return response()->json(app(MeetingLinkCheck::class)->check($url), 200, ['Cache-Control' => 'no-store, private']);

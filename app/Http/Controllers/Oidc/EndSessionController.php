@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Oidc;
 use App\Http\Controllers\Controller;
 use App\Models\DotPlatform;
 use App\Services\Sso\BackchannelLogoutService;
+use App\Support\Input;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -33,7 +34,7 @@ class EndSessionController extends Controller
 {
     public function __invoke(Request $request, BackchannelLogoutService $backchannel): RedirectResponse|Response
     {
-        [$platform, $subject] = $this->readHint((string) $request->input('id_token_hint', ''));
+        [$platform, $subject] = $this->readHint(Input::text($request->input('id_token_hint', '')));
 
         $user = Auth::user();
 
@@ -58,10 +59,10 @@ class EndSessionController extends Controller
             Log::info('sso.central_logout', ['via' => $platform->slug ?? 'direct', 'confirmed' => ! $provenByHint]);
         }
 
-        $destination = (string) $request->input('post_logout_redirect_uri', '');
+        $destination = Input::text($request->input('post_logout_redirect_uri', ''));
 
         if ($platform && $destination !== '' && $platform->allowsPostLogoutRedirect($destination)) {
-            if ($state = $request->input('state')) {
+            if (($state = Input::text($request->input('state'))) !== '') {
                 $destination .= (str_contains($destination, '?') ? '&' : '?').'state='.urlencode($state);
             }
 

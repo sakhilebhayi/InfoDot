@@ -17,7 +17,9 @@ use App\Models\User;
 use App\Services\Knowledge\AnswerService;
 use App\Support\ImageBudget;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -357,6 +359,48 @@ class AttachmentService
                 $gone++;
             }
         });
+
+        return $gone;
+    }
+
+    /**
+     * Delete attachments whose owner record is gone. Solutions, steps, answers and everything under a business are
+     * removed by database cascade when an account or a business is deleted, which runs no model code, so their files
+     * stayed on disk. Only a type that maps to a known table is looked at, the check is on the raw table (a soft-deleted
+     * or hidden owner still counts as there), and a row touched in the last day is left alone. Returns how many went.
+     */
+    public function pruneOrphans(): int
+    {
+        $gone = 0;
+        $types = Attachment::query()->whereNotNull('attachable_id')->whereNotNull('attachable_type')->distinct()->pluck('attachable_type');
+
+        foreach ($types as $type) {
+            $class = Relation::getMorphedModel($type) ?? $type;
+
+            if (! is_string($class) || ! is_subclass_of($class, Model::class)) {
+                continue;
+            }
+
+            $owner = new $class;
+            $table = $owner->getTable();
+
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+
+            Attachment::query()
+                ->where('attachable_type', $type)
+                ->whereNotNull('attachable_id')
+                ->where('updated_at', '<', now()->subDay())
+                ->whereNotExists(fn ($q) => $q->from($table)->whereColumn($table.'.'.$owner->getKeyName(), 'attachments.attachable_id'))
+                ->orderBy('id')
+                ->chunkById(100, function ($batch) use (&$gone) {
+                    foreach ($batch as $attachment) {
+                        $attachment->delete();
+                        $gone++;
+                    }
+                });
+        }
 
         return $gone;
     }

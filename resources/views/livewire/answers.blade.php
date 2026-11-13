@@ -26,7 +26,7 @@
             @include('attachments._list', ['attachments' => $answer->attachments, 'compact' => true])
 
             @foreach ($answer->recommendations as $recommendation)
-                @continue($recommendation->solution === null || ! $service->canSeeContent($recommendation->solution, $user))
+                @continue($recommendation->solution === null || ! $service->canRead($recommendation->solution, $user))
                 <a class="ix-reccard" href="{{ route('solutions.view', ['id' => $recommendation->solution_id]) }}">
                     <span class="ix-reccard__kind"><span class="material-symbols-rounded" aria-hidden="true">lightbulb</span> Recommended solution</span>
                     <span class="ix-reccard__title">{{ $recommendation->solution->solution_title }}</span>

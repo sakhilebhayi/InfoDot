@@ -156,12 +156,35 @@ class MeetingLinkCheck
     private function anyPrivate(array $ips): bool
     {
         foreach ($ips as $ip) {
-            if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            if (! $this->isPublic($ip)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * Only an address on the public internet. PHP's "private" and "reserved" flags leave out shared carrier space (100.64.0.0/10, used inside
+     * hosting networks), benchmarking and protocol-assignment blocks; the "global" flag covers those. Multicast, and the IPv6 prefixes that
+     * carry an IPv4 address inside them (which could be a private one), are refused by hand.
+     */
+    private function isPublic(string $ip): bool
+    {
+        if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE | FILTER_FLAG_GLOBAL_RANGE)) {
+            return false;
+        }
+
+        $bytes = (string) @inet_pton($ip);
+
+        if (strlen($bytes) === 4) {
+            return ord($bytes[0]) < 224;
+        }
+
+        return strlen($bytes) === 16
+            && ord($bytes[0]) !== 0xFF
+            && ! str_starts_with($bytes, "\x00\x64\xff\x9b")
+            && ! str_starts_with($bytes, "\x20\x02");
     }
 
     private function absolute(string $base, string $location): ?string

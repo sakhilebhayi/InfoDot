@@ -171,8 +171,9 @@ class SeminarService
         app(SeminarHostPoints::class)->reverseIfAwarded($seminar);
 
         // Everyone who paid is refunded in full; anyone part-way through paying is released.
-        $regs = SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'pending'])->get();
-        $refundable = $regs->filter(fn ($r) => $r->payment_status === 'paid'
+        // A ticket the host already refunded in part still holds the rest of the buyer's money.
+        $regs = SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'partially_refunded', 'pending'])->get();
+        $refundable = $regs->filter(fn ($r) => $r->payment_status !== 'pending'
             && ! ($refunds === 'none' || ($refunds === 'complainants' && ! in_array($r->user_id, $refundUserIds, true))));
 
         // Mark every refund as requested BEFORE the first call to Finance. Each call can take seconds; if this request is cut off part-way
@@ -181,7 +182,7 @@ class SeminarService
         SeminarRegistration::whereIn('id', $refundable->pluck('id'))->whereNull('refund_requested_at')->update(['refund_requested_at' => now()]);
 
         foreach ($regs as $reg) {
-            if ($reg->payment_status === 'paid') {
+            if ($reg->payment_status !== 'pending') {
                 if ($refundable->contains('id', $reg->id)) {
                     $this->requestRefund($reg->fresh());
                 }
@@ -622,7 +623,7 @@ class SeminarService
             return;
         }
 
-        if (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['pending', 'paid'])->exists()) {
+        if (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['pending', 'paid', 'partially_refunded'])->exists()) {
             throw ValidationException::withMessages(['price' => 'People have already bought or started buying tickets, so the price cannot change.']);
         }
     }
@@ -645,7 +646,7 @@ class SeminarService
 
         $account = SeminarPayoutAccount::where('user_id', $seminar->host_id)->where('status', 'active')->first();
 
-        [$reg, $reuse] = DB::transaction(function () use ($seminar, $user) {
+        [$reg, $reuse, $replaced] = DB::transaction(function () use ($seminar, $user) {
             $locked = Seminar::whereKey($seminar->id)->lockForUpdate()->firstOrFail();
 
             if (! $locked->isPublished() || $locked->hasEnded() || ! $locked->isPaid()) {
@@ -658,9 +659,17 @@ class SeminarService
                 throw ValidationException::withMessages(['seminar' => 'You already have a ticket.']);
             }
 
+            // One row holds a person's ticket for a seminar. While money from an earlier ticket is still held or on its way back, a new
+            // checkout would overwrite the reference Finance confirms against and the record of what was paid.
+            if ($existing && in_array($existing->payment_status, ['paid', 'partially_refunded'], true)) {
+                throw ValidationException::withMessages(['seminar' => $existing->refund_requested_at !== null || $existing->refund_pending_cents !== null
+                    ? 'The refund for your earlier ticket is still on its way. You can buy a new ticket once it has arrived.'
+                    : 'You already paid for a ticket to this seminar and gave up your place after the refund deadline, so a new ticket cannot be bought.']);
+            }
+
             if ($existing && $existing->status === SeminarRegistration::PENDING_PAYMENT && $existing->hold_expires_at?->isFuture()) {
                 if ($existing->checkout_url) {
-                    return [$existing, true];
+                    return [$existing, true, null];
                 }
 
                 // The first request is still asking Finance for the payment page. A second one now would make a second ticket reference and
@@ -678,19 +687,32 @@ class SeminarService
                 throw ValidationException::withMessages(['seminar' => 'This seminar is full.']);
             }
 
+            // An earlier, unpaid checkout whose reference is about to be replaced: its payment page may still be open.
+            $replaced = $existing && in_array($existing->payment_status, ['pending', 'free'], true) ? $existing->ticket_ref : null;
+
             $reg = SeminarRegistration::updateOrCreate(['seminar_id' => $locked->id, 'user_id' => $user->id], [
                 'status' => SeminarRegistration::PENDING_PAYMENT, 'payment_status' => 'pending', 'attended_at' => null,
                 'ticket_ref' => 'sem'.$locked->id.'-u'.$user->id.'-'.Str::lower(Str::random(10)),
                 'amount_cents' => $locked->price_cents, 'currency' => $locked->currency, 'checkout_url' => null,
                 'hold_expires_at' => now()->addMinutes((int) config('seminars.paid.hold_minutes', 30)),
                 'paid_at' => null, 'refund_requested_at' => null, 'refunded_at' => null,
+                // A new ticket starts clean: what was refunded or disputed belonged to the earlier, fully refunded one.
+                'refunded_cents' => 0, 'refund_pending_cents' => null, 'dispute_status' => null, 'disputed_at' => null,
             ]);
 
-            return [$reg, false];
+            return [$reg, false, $replaced];
         });
 
         if ($reuse) {
             return $reg->checkout_url;
+        }
+
+        if ($replaced !== null) {
+            try {
+                $this->finance->cancel((string) $replaced);
+            } catch (MarketplaceUnavailable) {
+                // A payment still made on the old page is sent back when Finance reports it (applyTicketEvent).
+            }
         }
 
         try {
@@ -733,6 +755,20 @@ class SeminarService
             $seminar = $seminarId ? Seminar::whereKey($seminarId)->lockForUpdate()->first() : null;
             $reg = $seminar ? SeminarRegistration::where('ticket_ref', $ticketRef)->lockForUpdate()->first() : null;
             $outcome = 'unknown';
+
+            // Money arrived for a reference InfoDot issued but no longer holds (the checkout was started again and replaced it).
+            // There is no ticket to give, so it goes back. The event is recorded below, so a repeat does not ask twice.
+            if (! $reg && $event === 'ticket.paid' && preg_match('/^sem\d+-u\d+-[a-z0-9]{10}$/', $ticketRef) === 1) {
+                Log::warning('Seminar payment arrived for a ticket reference that was replaced; asking for it to be refunded.', ['ticket_ref' => $ticketRef]);
+
+                DB::afterCommit(function () use ($ticketRef) {
+                    try {
+                        $this->finance->refund($ticketRef);
+                    } catch (MarketplaceUnavailable $e) {
+                        Log::error('Seminar payment for a replaced ticket reference could not be sent back; refund it by hand.', ['ticket_ref' => $ticketRef, 'reason' => mb_substr($e->getMessage(), 0, 200)]);
+                    }
+                });
+            }
 
             if ($reg) {
                 if ($amountCents !== (int) $reg->amount_cents || strtoupper($currency) !== strtoupper((string) $reg->currency)) {
@@ -875,7 +911,7 @@ class SeminarService
     {
         $n = 0;
 
-        foreach (SeminarRegistration::where('payment_status', 'paid')->whereNotNull('refund_requested_at')->where('refund_requested_at', '<', now()->subMinutes(10))->get() as $reg) {
+        foreach (SeminarRegistration::whereIn('payment_status', ['paid', 'partially_refunded'])->whereNotNull('refund_requested_at')->where('refund_requested_at', '<', now()->subMinutes(10))->get() as $reg) {
             $this->requestRefund($reg);
             $n++;
         }

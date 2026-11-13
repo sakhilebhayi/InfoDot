@@ -7,6 +7,7 @@ use App\Models\SolutionConfirmation;
 use App\Models\Solutions;
 use App\Services\Knowledge\MentionService;
 use App\Services\Knowledge\SimilarContent;
+use App\Support\Input;
 use App\Support\Reference;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ class PickerController extends Controller
 {
     public function mentions(Request $request, MentionService $mentions): JsonResponse
     {
-        $query = Str::limit(trim((string) $request->query('q', '')), 60, '');
+        $query = Str::limit(trim(Input::text($request->query('q', ''))), 60, '');
         $user = $request->user();
 
         $results = Cache::remember('mentions:u'.$user->id.':'.md5(mb_strtolower($query)), 60,
@@ -49,7 +50,7 @@ class PickerController extends Controller
 
     public function solutions(Request $request): JsonResponse
     {
-        $query = Str::limit(trim((string) $request->query('q', '')), 80, '');
+        $query = Str::limit(trim(Input::text($request->query('q', ''))), 80, '');
 
         if (mb_strlen($query) < 2) {
             return response()->json([]);
