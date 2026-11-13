@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Models\Passport\Client;
 use App\Models\Team;
 use App\Policies\TeamPolicy;
+use App\Support\EcosystemHandoff;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Passport\Passport;
+use Laravel\Sanctum\Sanctum;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -38,6 +40,13 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+
+        // A launch code is stored as a personal access token, but it is not a login. It may only be redeemed, once, by
+        // the platform it names (EcosystemRedeemController reads it by value). Presented as "Authorization: Bearer" to
+        // InfoDot's own pages or API it is refused, so holding a code never amounts to holding the person's account.
+        Sanctum::authenticateAccessTokensUsing(
+            fn ($token, bool $valid) => $valid && ! str_starts_with((string) $token->name, EcosystemHandoff::TOKEN_PREFIX)
+        );
 
         // R-20: InfoDot is the ecosystem's OpenID Provider (see docs/programme/R20_SSO_CENTRAL_IDENTITY.md).
         Passport::useClientModel(Client::class);

@@ -65,6 +65,9 @@ class EcosystemRedeemController extends Controller
         return response()->json([
             'user' => [
                 'id' => $user->id,
+                // The stable identifier a platform should key its local account on. An email address can change or be
+                // reused; matching on it alone lets one person's platform account capture another's sign-in (R-48 S-18).
+                'uuid' => $user->uuid,
                 'name' => $user->name,
                 'email' => $user->email,
                 'email_verified' => true,

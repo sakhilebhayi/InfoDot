@@ -61,7 +61,7 @@ class SecurityFixesTest extends TestCase
     {
         $user = $this->verified();
         $handoff = $user->createToken('ecosystem-handoff:files', ['ecosystem:read'], now()->addMinute());
-        $this->withHeader('Authorization', 'Bearer '.$handoff->plainTextToken)->postJson('/api/ecosystem/token', ['platform' => 'files'])->assertForbidden();
+        $this->withHeader('Authorization', 'Bearer '.$handoff->plainTextToken)->postJson('/api/ecosystem/token', ['platform' => 'files'])->assertUnauthorized(); // refused at the door since R-48: a launch code is not a login
 
     }
 
