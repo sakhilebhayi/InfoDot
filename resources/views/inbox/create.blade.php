@@ -27,7 +27,7 @@
             <div class="ix-form__row"><label class="ix-label" for="subject">Subject</label><input class="ix-input" id="subject" name="subject" minlength="3" maxlength="160" required value="{{ old('subject') }}" placeholder="For example: Quote for a borehole in Hazyview"></div>
             <div class="ix-form__row">
                 <label class="ix-label" for="body">Your message</label>
-                <textarea class="ix-input" id="body" name="body" rows="8" minlength="{{ config('enquiries.min_length') }}" maxlength="{{ config('enquiries.max_length') }}" required placeholder="What you need, where, and by when. The more the business knows, the better it can answer.">{{ old('body') }}</textarea>
+                <textarea class="ix-textarea" id="body" name="body" rows="8" minlength="{{ config('enquiries.min_length') }}" maxlength="{{ config('enquiries.max_length') }}" required placeholder="What you need, where, and by when. The more the business knows, the better it can answer.">{{ old('body') }}</textarea>
             </div>
             <div class="ix-form__row">
                 <label class="ix-label" for="files">Files <span class="ix-hint">optional; up to {{ config('enquiries.max_files') }} images, PDFs or videos</span></label>

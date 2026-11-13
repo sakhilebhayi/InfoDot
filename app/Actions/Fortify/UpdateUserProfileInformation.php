@@ -2,11 +2,15 @@
 
 namespace App\Actions\Fortify;
 
+use App\Notifications\EmailAddressChanged;
 use App\Services\Profile\ProfilePhoto;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
@@ -33,6 +37,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             app(ProfilePhoto::class)->store($user, $input['photo']);
         }
 
+        $previousEmail = (string) $user->email;
+
         if ($input['email'] !== $user->email &&
             $user instanceof MustVerifyEmail) {
             $this->updateVerifiedUser($user, $input);
@@ -42,10 +48,36 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'email' => $input['email'],
             ])->save();
         }
+
+        if ($previousEmail !== '' && $previousEmail !== $input['email']) {
+            $this->tellThePreviousAddress($user, $previousEmail);
+        }
     }
 
     /**
-     * Update the given verified user's profile information.
+     * The old address hears that the account's email changed, so a change the owner did not make is
+     * noticed. The change is already saved; a mail server that is down is logged, never an error page.
+     *
+     * @param  mixed  $user
+     */
+    protected function tellThePreviousAddress($user, string $previousEmail): void
+    {
+        try {
+            Notification::route('mail', $previousEmail)->notify(new EmailAddressChanged((string) $user->name));
+        } catch (TransportExceptionInterface $e) {
+            Log::error('profile.email_change_notice_failed', [
+                'category' => 'mail',
+                'user_id' => $user->getAuthIdentifier(),
+                'exception' => $e::class,
+                'reason' => mb_substr($e->getMessage(), 0, 300),
+            ]);
+        }
+    }
+
+    /**
+     * Update the given verified user's profile information. The new address is saved before the
+     * verification email goes out, so a mail server that is down must not turn the saved change
+     * into an error page: it is logged, and the "verify your email" page offers Resend.
      *
      * @param  mixed  $user
      * @return void
@@ -58,6 +90,19 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             'email_verified_at' => null,
         ])->save();
 
-        $user->sendEmailVerificationNotification();
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (TransportExceptionInterface $e) {
+            Log::error('profile.verification_mail_failed', [
+                'category' => 'mail',
+                'user_id' => $user->getAuthIdentifier(),
+                'exception' => $e::class,
+                'reason' => mb_substr($e->getMessage(), 0, 300),
+            ]);
+
+            if (app()->bound('session') && request()->hasSession()) {
+                session()->flash('verification_mail_failed', true);
+            }
+        }
     }
 }

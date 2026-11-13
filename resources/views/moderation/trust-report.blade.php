@@ -31,7 +31,7 @@
                         @if ($open)
                             <details><summary class="ix-btn ix-btn--primary">Add to the open investigation</summary>
                                 <form method="post" action="{{ route('moderation.trust.report.resolve', [$report, 'link']) }}" class="ix-form ix-vgap">@csrf
-                                    <div class="ix-field"><label class="ix-label" for="n-link">Note for the investigation</label><textarea id="n-link" name="note" class="ix-input" rows="2" minlength="10" maxlength="2000" required></textarea></div>
+                                    <div class="ix-field"><label class="ix-label" for="n-link">Note for the investigation</label><textarea id="n-link" name="note" class="ix-textarea" rows="2" minlength="10" maxlength="2000" required></textarea></div>
                                     <div><button class="ix-btn ix-btn--primary">Link it</button></div>
                                 </form>
                             </details>
@@ -42,13 +42,13 @@
                         @endif
                         <details><summary class="ix-btn">Handled — action taken</summary>
                             <form method="post" action="{{ route('moderation.trust.report.resolve', [$report, 'action']) }}" class="ix-form ix-vgap">@csrf
-                                <div class="ix-field"><label class="ix-label" for="n-act">What was done (reviewers only)</label><textarea id="n-act" name="note" class="ix-input" rows="2" minlength="10" maxlength="2000" required></textarea></div>
+                                <div class="ix-field"><label class="ix-label" for="n-act">What was done (reviewers only)</label><textarea id="n-act" name="note" class="ix-textarea" rows="2" minlength="10" maxlength="2000" required></textarea></div>
                                 <div><button class="ix-btn">Close as actioned</button></div>
                             </form>
                         </details>
                         <details><summary class="ix-btn">No problem found</summary>
                             <form method="post" action="{{ route('moderation.trust.report.resolve', [$report, 'dismiss']) }}" class="ix-form ix-vgap">@csrf
-                                <div class="ix-field"><label class="ix-label" for="n-dis">Why (reviewers only)</label><textarea id="n-dis" name="note" class="ix-input" rows="2" minlength="10" maxlength="2000" required></textarea></div>
+                                <div class="ix-field"><label class="ix-label" for="n-dis">Why (reviewers only)</label><textarea id="n-dis" name="note" class="ix-textarea" rows="2" minlength="10" maxlength="2000" required></textarea></div>
                                 <div><button class="ix-btn">Dismiss</button></div>
                             </form>
                         </details>
