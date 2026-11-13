@@ -1,36 +1,27 @@
 <x-guest-layout title="Reset your password">
     <x-jet-authentication-card>
-        <x-slot name="logo">
-            <x-jet-authentication-card-logo />
-        </x-slot>
-
         <h1 class="ix-auth-title">Reset your password</h1>
-
-        <div class="mb-4 text-sm text-[var(--ink-soft)]">
-            {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-        </div>
+        <p class="ix-entry__lede">Enter the email address of your account and we will send a link for choosing a new password.</p>
 
         @if (session('status'))
-            <div class="mb-4 font-medium text-sm text-emerald-600">
-                {{ session('status') }}
-            </div>
+            <p class="ix-alert" role="status">{{ session('status') }}</p>
         @endif
 
-        <x-jet-validation-errors class="mb-4" />
+        <x-jet-validation-errors />
 
-        <form method="POST" action="{{ route('password.email') }}">
+        <form class="ix-entry__form" method="POST" action="{{ route('password.email') }}">
             @csrf
 
-            <div class="block">
+            <div class="ix-field">
                 <x-jet-label for="email" value="{{ __('Email') }}" />
-                <x-jet-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
+                <x-jet-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
             </div>
 
-            <div class="flex items-center justify-end mt-4">
-                <x-jet-button>
-                    {{ __('Email Password Reset Link') }}
-                </x-jet-button>
-            </div>
+            <x-jet-button class="ix-entry__go">Send the reset link</x-jet-button>
         </form>
+
+        <p class="ix-entry__links">
+            <a href="{{ route('login') }}">Back to sign in</a>
+        </p>
     </x-jet-authentication-card>
 </x-guest-layout>

@@ -235,19 +235,18 @@
                         <span class="ixa-stamp">{{ str_pad((string) $livePlatforms->count(), 2, '0', STR_PAD_LEFT) }} live / {{ str_pad((string) count($platforms), 2, '0', STR_PAD_LEFT) }} registered</span>
                     </h2>
                     @if(count($platforms) > 0)
-                        <div class="ixa-bays-wrap">
-                            <div class="ix-bays ixa-bays">
-                                @foreach($sortedPlatforms as $platform)
-                                    @php $live = ! empty($platform['active']); @endphp
-                                    <div class="ix-bay {{ $live ? 'ix-bay--live' : '' }}">
-                                        <span class="ix-bay__text">
-                                            <span class="ix-bay__name">{{ $platform['name'] }}</span>
-                                            <span class="ix-bay__state">{{ $live ? 'Live' : 'Not live yet' }}</span>
-                                        </span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
+                        <ul class="ixa-cover">
+                            @foreach($sortedPlatforms as $platform)
+                                <li>
+                                    <span>{{ $platform['name'] }}</span>
+                                    @if (! empty($platform['active']))
+                                        <span class="ixa-cover__live">Live</span>
+                                    @else
+                                        <span class="ixa-cover__soon">Not live yet</span>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
                     @else
                         <p class="ixa-none">No platforms are registered in this environment's ecosystem configuration.</p>
                     @endif

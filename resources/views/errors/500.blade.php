@@ -1,13 +1,5 @@
 @extends('errors._ecosystem-layout', ['code' => 500])
 
-@section('icon')
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="1.75">
-        <path d="M12 3l9.5 16.5H2.5L12 3z" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12 10v4" stroke-linecap="round"/>
-        <circle cx="12" cy="17" r="0.15" fill="var(--coral)" stroke="none"/>
-    </svg>
-@endsection
-
 @section('title', 'Something went wrong on our end')
 @php
     // The id AssignRequestId gave this request: it is on the log line for this error and in the X-Request-Id header.
@@ -22,8 +14,8 @@
 @endif
 
 @section('actions')
-    <a href="/" class="press" style="padding: 12px 24px; background: var(--gold); color: var(--charcoal); font-family: var(--font-display); font-weight: 600; font-size: 15px; border-radius: 999px; text-decoration: none;">Go home</a>
+    <a href="/" class="ix-btn ix-btn--primary">Go home</a>
     @if (Route::has('contact'))
-        <a href="{{ route('contact') }}" class="press link-underline" style="padding: 12px 24px; color: var(--ink); font-size: 15px; text-decoration: none;">Contact support</a>
+        <a href="{{ route('contact') }}" class="ix-btn ix-btn--ghost">Contact support</a>
     @endif
 @endsection

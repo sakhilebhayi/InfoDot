@@ -24,8 +24,12 @@
 
     @if ($rows->isEmpty())
         <section class="ix-empty">
-            <h2>Nothing yet</h2>
-            <p>{{ $wants ? 'When someone answers your question, or a moderator verifies your solution, it will be listed here.' : 'Notifications are off, so nothing new is being recorded.' }}</p>
+            <h2>{{ $wants ? 'Nothing has happened to your work yet' : 'Notifications are off' }}</h2>
+            <p>{{ $wants ? 'When someone answers your question, accepts your answer or verifies your solution, it is listed here. The quickest way to start is to ask something.' : 'Nothing new is being recorded. Tick the box below to turn them on again.' }}</p>
+            @if ($wants)
+                <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">Ask a question</a>
+                <a href="{{ route('questions') }}" class="ix-btn">Find a question to answer</a>
+            @endif
         </section>
     @else
         @foreach ([['New', 'notices-new', $new], ['Earlier', 'notices-earlier', $earlier]] as [$heading, $id, $group])

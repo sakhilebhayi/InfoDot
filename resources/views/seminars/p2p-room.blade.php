@@ -13,7 +13,7 @@
          data-allow-fake="{{ config('app.debug') ? 1 : 0 }}"
          data-join-url="{{ route('seminars.p2p.join', $seminar) }}" data-poll-url="{{ route('seminars.p2p.poll', $seminar) }}" data-signal-url="{{ route('seminars.p2p.signal', $seminar) }}"
          data-ready-url="{{ route('seminars.p2p.ready', $seminar) }}" data-report-url="{{ route('seminars.p2p.report', $seminar) }}" data-leave-url="{{ route('seminars.p2p.leave', $seminar) }}" data-chat-url="{{ route('seminars.p2p.chat', $seminar) }}">
-        <noscript><p class="ix-error">The room needs JavaScript. Turn it on in your browser and reload.</p></noscript>
+        <noscript><p class="ix-error" role="alert">The room needs JavaScript. Turn it on in your browser and reload.</p></noscript>
         <section class="ix-notices__pref" data-consent aria-labelledby="p2p-consent-h">
             <h2 class="ix-label" id="p2p-consent-h">Before you {{ $isHost ? 'start' : 'join' }}</h2>
             <p>This is a small room with no video server. Your computer connects <b>directly</b> to other people's computers.</p>

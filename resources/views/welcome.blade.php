@@ -30,7 +30,7 @@
         <div class="lp-hero__veil" aria-hidden="true"></div>
         <div class="lp-hero__inner">
             <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Find practical business solutions.' }}</h1>
-            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'Search what business owners have learned, or ask your own question.' }}</p>
+            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'InfoDot is where people who run a business ask each other questions and write down what worked. Search it, or ask your own.' }}</p>
 
             <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>
                 <label for="lp-q" class="ix-sr">Search practical business solutions</label>

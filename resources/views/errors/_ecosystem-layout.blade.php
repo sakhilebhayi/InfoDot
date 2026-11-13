@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light dark">
         <title>{{ $code }} — @yield('title') · InfoDot</title>
         <meta name="robots" content="noindex">
 
         @include('partials.head-icons')
 
-        {{-- The fonts (Baloo 2, DM Sans, Space Mono and the icons) are declared in the stylesheet below and served from this site. --}}
+        {{-- An error page is drawn in The Yard like every other page: the top bar, a band, the status as a stencil
+             numeral, the words, and the same buttons. Archivo, the stencil face and the icons are declared in the
+             stylesheet and served from this site. --}}
         @php
             $viteManifest = public_path('build/manifest.json');
 
@@ -25,107 +28,92 @@
         @endphp
         @if (file_exists($viteManifest))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @else
+            {{-- An error page must open even when the build is missing: the same layout in plain system type. --}}
+            <style>
+                body { margin: 0; font: 15px/1.55 system-ui, -apple-system, 'Segoe UI', sans-serif; background: #e3e6e7; color: #14181a; }
+                a { color: inherit; }
+                .ix-top, .ix-band { background: #1b2124; color: #f1f3f3; }
+                .ix-top__inner, .ix-band__inner, .ix-page, .ix-foot { max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
+                .ix-page { display: block; padding-top: 48px; padding-bottom: 64px; }
+                .ix-err__code { margin: 0; font-size: 96px; font-weight: 800; line-height: 1; }
+                .ix-btn { display: inline-block; padding: 10px 16px; border: 1px solid #8c959a; border-radius: 2px; font-weight: 600; text-decoration: none; }
+                .ix-btn--primary { background: #1b2124; border-color: #1b2124; color: #f6f4ee; }
+                .ix-err__actions, .ix-err__more ul { display: flex; flex-wrap: wrap; gap: 10px 16px; padding: 0; list-style: none; }
+                @media (prefers-color-scheme: dark) { body { background: #111517; color: #e9ecec; } .ix-btn--primary { background: #e9ecec; border-color: #e9ecec; color: #14181a; } }
+            </style>
         @endif
-
-        <style>
-            :root {
-                --paper: #f6f7f9;
-                --paper-soft: #e7eaef;
-                --ink: #16212c;
-                --ink-soft: #4c5c6c;
-                --charcoal: #24272b;
-                --charcoal-soft: #34383e;
-                --gold: #f0bc2e;
-                --gold-deep: #d9a30f;
-                --blue-dot: #2fa8e0;
-                --coral: #f47272;
-                --green: #4fce8e;
-                --line: rgba(22, 33, 44, 0.11);
-                --line-dark: rgba(246, 247, 249, 0.14);
-                --font-display: 'Baloo 2', system-ui, sans-serif;
-                --font-body: 'DM Sans', system-ui, sans-serif;
-                --font-mono: 'Space Mono', ui-monospace, monospace;
-                --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-            }
-            * { box-sizing: border-box; }
-            html { background: var(--paper); }
-            body { margin: 0; font-family: var(--font-body); background: var(--paper); color: var(--ink); min-height: 100dvh; display: flex; flex-direction: column; }
-            .font-display { font-family: var(--font-display); }
-            .font-mono { font-family: var(--font-mono); }
-            a { color: inherit; }
-            .press { transition: transform 160ms var(--ease-out); }
-            .press:active { transform: scale(0.97); }
-            .link-underline { background-image: linear-gradient(currentColor, currentColor); background-position: 0 100%; background-repeat: no-repeat; background-size: 0% 1px; transition: background-size 200ms var(--ease-out); }
-            @media (hover: hover) and (pointer: fine) {
-                .link-underline:hover { background-size: 100% 1px; }
-            }
-        </style>
     </head>
-    <body>
-        <header style="background: var(--charcoal);">
-            <nav style="max-width: 1400px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;">
-                <a href="/" class="press" style="display: flex; align-items: center; gap: 10px;">
-                    {{-- An error page must open even when the build is missing, so the logo falls back to the name. --}}
-                    @if ($logo = \App\Support\OptionalVite::asset('resources/img/brand/logo_white.png'))
-                        <img src="{{ $logo }}" alt="InfoDot" style="height: 40px; width: auto;">
-                    @else
-                        <span style="color: #fff; font-weight: 700; font-size: 20px;">InfoDot</span>
-                    @endif
-                </a>
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="press" style="padding: 10px 20px; background: var(--gold); color: var(--charcoal); font-family: var(--font-display); font-weight: 600; font-size: 14px; border-radius: 999px; text-decoration: none;">Dashboard</a>
-                    @else
-                        @if (Route::has('login'))
-                            <a href="{{ route('login') }}" class="link-underline" style="color: rgba(246,247,249,0.85); font-size: 14px; text-decoration: none; padding-bottom: 1px;">Sign in</a>
+    <body class="ix" data-area="home">
+        <div class="ix-shell">
+            <header class="ix-top ix-top--public">
+                <div class="ix-top__inner">
+                    <a href="/" class="ix-brand" aria-label="InfoDot home">
+                        {{-- The logo falls back to the name when the build does not hold it. --}}
+                        @if ($logo = \App\Support\OptionalVite::asset('resources/img/brand/logo_white.png'))
+                            <img src="{{ $logo }}" alt="InfoDot" width="64" height="26">
+                        @else
+                            <strong>InfoDot</strong>
                         @endif
-                    @endauth
+                    </a>
+                    <div class="ix-top__actions">
+                        @auth
+                            <a href="{{ route('dashboard') }}" class="ix-btn">Open InfoDot</a>
+                        @else
+                            @if (Route::has('login'))
+                                <a href="{{ route('login') }}" class="ix-btn">Sign in</a>
+                            @endif
+                        @endauth
+                    </div>
                 </div>
-            </nav>
-        </header>
+            </header>
 
-        <main style="flex: 1; display: flex; align-items: center; padding: 48px 20px;">
-            <div style="max-width: 640px; margin: 0 auto; width: 100%; text-align: center;">
-                <div style="display: inline-flex; align-items: center; justify-content: center; width: 88px; height: 88px; border-radius: 24px; background: var(--paper-soft); margin-bottom: 28px;" aria-hidden="true">
-                    @yield('icon')
+            <div class="ix-band">
+                <div class="ix-band__inner">
+                    <span class="ix-band__code">STOP</span>
+                    <nav class="ix-crumbs" aria-label="Breadcrumb">
+                        <a href="/">InfoDot</a>
+                        <span class="material-symbols-rounded sep" aria-hidden="true">chevron_right</span>
+                        <span class="here" aria-current="page">Error {{ $code }}</span>
+                    </nav>
                 </div>
+            </div>
 
-                <p class="font-mono" style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 10px;">Error {{ $code }}</p>
-                <h1 class="font-display" style="font-size: clamp(26px, 4vw, 34px); font-weight: 700; line-height: 1.2; margin: 0 0 14px;">@yield('title')</h1>
-                <p style="font-size: 16px; line-height: 1.6; color: var(--ink-soft); margin: 0 0 32px;">@yield('message')</p>
+            <main id="main" class="ix-page ix-err">
+                <p class="ix-stencil-num ix-err__code" aria-hidden="true">{{ $code }}</p>
 
-                @hasSection('reference')
-                    {{-- Something to quote to support: the id on the matching log line. Selects whole on one tap; a long one wraps. --}}
-                    <p class="font-mono" style="font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin: -16px 0 32px; overflow-wrap: anywhere;">Reference: <span style="color: var(--ink); user-select: all;">@yield('reference')</span></p>
-                @endif
+                <div class="ix-err__body">
+                    <h1 class="ix-h1">@yield('title')</h1>
+                    <p class="ix-lede">@yield('message')</p>
 
-                <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-bottom: 56px;">
-                    @yield('actions')
+                    @hasSection('reference')
+                        {{-- Something to quote to support: the id on the matching log line. Selects whole on one tap; a long one wraps. --}}
+                        <p class="ix-err__ref">Reference: <span class="ix-ref">@yield('reference')</span></p>
+                    @endif
+
+                    <div class="ix-err__actions">
+                        @yield('actions')
+                    </div>
                 </div>
 
                 @if (!empty($discover))
-                    <div style="border-top: 1px solid var(--line); padding-top: 28px; text-align: left;">
-                        <p class="font-mono" style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 14px; text-align: center;">While you're here — the rest of the Dot Ecosystem ({{ count($discover) }})</p>
-                        <div style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;">
+                    <section class="ix-err__more" aria-labelledby="err-more">
+                        <h2 id="err-more">While you're here: the rest of the Dot Ecosystem ({{ count($discover) }})</h2>
+                        <ul>
                             @foreach ($discover as $platform)
-                                <a href="{{ $platform['url'] }}" class="press" style="flex: 0 0 auto; scroll-snap-align: start; display: flex; align-items: center; gap: 8px; padding: 7px 14px 7px 7px; background: #fff; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; white-space: nowrap;">
-                                    <span class="material-symbols-rounded" aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: {{ $platform['accent'] ?? 'var(--gold)' }}; color: #ffffff; font-size: 16px; flex-shrink: 0;">{{ $platform['icon'] ?? 'apps' }}</span>
-                                    <span class="font-display" style="font-weight: 600; font-size: 13px; color: var(--ink);">{{ $platform['name'] }}</span>
-                                </a>
+                                <li><a href="{{ $platform['url'] }}">{{ $platform['name'] }}</a></li>
                             @endforeach
-                        </div>
-                    </div>
+                        </ul>
+                    </section>
                 @endif
-            </div>
-        </main>
+            </main>
 
-        <footer style="background: var(--charcoal-soft); padding: 24px 20px;">
-            <div style="max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px;">
-                <p class="font-mono" style="font-size: 12px; color: rgba(246,247,249,0.6); margin: 0;">&copy; {{ date('Y') }} InfoDot. The hub of the Dot Ecosystem.</p>
+            <footer class="ix-foot">
+                <span>&copy; {{ date('Y') }} InfoDot. The hub of the Dot Ecosystem.</span>
                 @if (Route::has('contact'))
-                    <a href="{{ route('contact') }}" class="link-underline font-mono" style="font-size: 12px; color: rgba(246,247,249,0.6); text-decoration: none; padding-bottom: 1px;">Contact support</a>
+                    <nav aria-label="Help"><a href="{{ route('contact') }}">Contact support</a></nav>
                 @endif
-            </div>
-        </footer>
+            </footer>
+        </div>
     </body>
 </html>

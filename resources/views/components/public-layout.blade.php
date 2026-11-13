@@ -55,10 +55,7 @@
                 </div>
             </div>
             <div class="ix-top__inner ix-top__inner--nav">
-                <nav class="ix-tabs" aria-label="About InfoDot">
-                    <a href="{{ route('faqs') }}" class="ix-tab" @if (request()->routeIs('faqs')) aria-current="page" @endif>Questions people ask</a>
-                    <a href="{{ route('solution_search_results') }}" class="ix-tab" @if (request()->routeIs('solution_search_results')) aria-current="page" @endif>Browse public answers</a>
-                </nav>
+                @include('layouts.public-tabs')
             </div>
         </header>
 

@@ -43,7 +43,7 @@
             <div class="ix-field">
                 <label class="ix-label" for="message">Tell a moderator what looks wrong</label>
                 <textarea class="ix-textarea" id="message" name="message" rows="3" maxlength="1000" required></textarea>
-                @error('message')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('message')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
             <button class="ix-btn" type="submit">Send appeal</button>
         </form>

@@ -1,5 +1,5 @@
 <x-public-layout title="About" band="INFO" crumb="About" description="InfoDot helps people start, operate, manage and grow successful businesses by combining collective human experience, practical knowledge and business intelligence.">
-    <article class="ix-prose">
+    <article class="ix-prose ix-prose--ledger">
         <h1 class="ix-h1">About InfoDot</h1>
         <p class="ix-lede">InfoDot exists to help people start, operate, manage and grow successful businesses by combining collective human experience, practical knowledge and business intelligence from across the Dot.Eco-system.</p>
 
@@ -18,9 +18,9 @@
         </ul>
 
         <h2 id="photo-credits">Photograph credits</h2>
-        <p>The photographs on the home page, and the one behind the sign-in pages, come from Wikimedia Commons. Each was cropped and resized, and each is shared under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).</p>
+        <p>The photographs on the home page come from Wikimedia Commons. Each was cropped and resized, and each is shared under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).</p>
         <ul>
-            <li><a href="https://commons.wikimedia.org/wiki/File:Openspace_wao_coworking.jpg" rel="noopener">"Openspace wao coworking"</a> by WAO Coworking (home page and sign-in pages)</li>
+            <li><a href="https://commons.wikimedia.org/wiki/File:Openspace_wao_coworking.jpg" rel="noopener">"Openspace wao coworking"</a> by WAO Coworking</li>
             <li><a href="https://commons.wikimedia.org/wiki/File:A_seamstress_at_work.jpg" rel="noopener">"A seamstress at work"</a> by Rwebogora</li>
             <li><a href="https://commons.wikimedia.org/wiki/File:Couturi%C3%A8re_3.jpg" rel="noopener">"Couturière 3"</a> by Metchyves</li>
             <li><a href="https://commons.wikimedia.org/wiki/File:Greenmarket,_Cape_Town_(P1050987).jpg" rel="noopener">"Greenmarket, Cape Town"</a> by Matti Blume</li>

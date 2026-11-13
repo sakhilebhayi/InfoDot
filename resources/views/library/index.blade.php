@@ -49,6 +49,7 @@
                         </a>
                         <div class="ix-lib__meta">
                             <span class="ix-chip ix-chip--done">Verified by moderators</span>
+                            <x-demo-mark :of="$source" />
                             @include('topics._chips', ['item' => $home])
                         </div>
                     </div>

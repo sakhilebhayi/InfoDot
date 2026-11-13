@@ -130,7 +130,7 @@
             <div class="ix-biz__main">
                 @if ($announcements->isNotEmpty())
                     <section class="ix-bizsec" aria-labelledby="news-h">
-                        <div class="ix-bizsec__head"><span class="ix-bizsec__num">{{ $no() }}</span><h2 class="ix-bizsec__lbl" id="news-h">From {{ $team->name }}</h2></div>
+                        <div class="ix-bizsec__head"><span class="ix-bizsec__num">{{ $no() }}</span><h2 class="ix-bizsec__lbl" id="news-h">Announcements</h2></div>
                         <ul class="ix-news">
                             @foreach ($announcements as $a)
                                 <li>
@@ -157,6 +157,8 @@
                     @if ($items->isNotEmpty())
                         <section class="ix-bizsec">
                             <div class="ix-bizsec__head"><span class="ix-bizsec__num">{{ $no() }}</span><h2 class="ix-bizsec__lbl">{{ $heading }}</h2></div>
+                            {{-- A demonstration business says once, for the whole block, that its prices are not offers; each price then reads as a price. --}}
+                            @if ($demo)<p class="ix-hint ix-offers__demo">Demonstration prices: nothing in this list is an offer.</p>@endif
                             <ul class="ix-offers">
                                 @foreach ($items as $item)
                                     @php
@@ -169,7 +171,7 @@
                                         <div class="ix-offers__body">
                                             <h3>{{ $item->name }}</h3>
                                             @if ($item->description)<p>{{ $item->description }}</p>@endif
-                                            @if ($item->price_note)<p class="ix-offers__price"><span>Price</span> {{ $item->price_note }}</p>@endif
+                                            @if ($item->price_note)<p class="ix-offers__price"><span>Price</span> {{ $demo ? \Illuminate\Support\Str::of($item->price_note)->replaceMatches('/^Demonstration price:\s*/i', '')->ucfirst() : $item->price_note }}</p>@endif
                                         </div>
                                     </li>
                                 @endforeach
@@ -266,20 +268,25 @@
 
                 @if ($questions->isNotEmpty() || $solutions->isNotEmpty())
                     <section class="ix-fieldblock">
-                        <div class="ix-fieldblock__head"><span class="ix-fieldblock__num">{{ $no() }}</span><h2 class="ix-fieldblock__lbl">On InfoDot</h2></div>
-                        <ul class="ix-biz__activity">
+                        <div class="ix-fieldblock__head"><span class="ix-stencil-num ix-fieldblock__num">{{ $no() }}</span><h2 class="ix-fieldblock__lbl">Questions and solutions on InfoDot</h2></div>
+                        {{-- The same reference, title and date rows as the Knowledge field on Home: white ink on the blue, never page-coloured chips. --}}
+                        <ul>
                             @foreach ($questions as $question)
                                 <li>
-                                    <span class="ix-chip ix-chip--open">Question</span>
-                                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}">{{ $question->question }}</a>
-                                    <time datetime="{{ $question->created_at->toDateString() }}">{{ $question->created_at->format('j M Y') }}</time>
+                                    <a href="{{ route('questions.view', ['qid' => $question->id]) }}">
+                                        <span class="ix-ref">Question</span>
+                                        <span class="t">{{ $question->question }}</span>
+                                        <time class="w" datetime="{{ $question->created_at->toDateString() }}">{{ $question->created_at->format('j M Y') }}</time>
+                                    </a>
                                 </li>
                             @endforeach
                             @foreach ($solutions as $solution)
                                 <li>
-                                    <span class="ix-chip ix-chip--done">Solution</span>
-                                    <a href="{{ route('solutions.view', ['id' => $solution->id]) }}">{{ $solution->solution_title }}</a>
-                                    <time datetime="{{ $solution->created_at->toDateString() }}">{{ $solution->created_at->format('j M Y') }}</time>
+                                    <a href="{{ route('solutions.view', ['id' => $solution->id]) }}">
+                                        <span class="ix-ref">Solution</span>
+                                        <span class="t">{{ $solution->solution_title }}</span>
+                                        <time class="w" datetime="{{ $solution->created_at->toDateString() }}">{{ $solution->created_at->format('j M Y') }}</time>
+                                    </a>
                                 </li>
                             @endforeach
                         </ul>

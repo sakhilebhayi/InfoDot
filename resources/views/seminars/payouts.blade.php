@@ -17,7 +17,7 @@
         <div class="ix-field">
             <label class="ix-label" for="business_name">Name on the account</label>
             <input class="ix-input" id="business_name" name="business_name" type="text" maxlength="100" value="{{ old('business_name') }}" required>
-            @error('business_name')<p class="ix-error">{{ $message }}</p>@enderror
+            @error('business_name')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         </div>
         <div class="ix-field">
             <label class="ix-label" for="settlement_bank">Bank</label>
@@ -28,13 +28,13 @@
                 @endforeach
             </select>
             @if (empty($banks))<p class="ix-hint">The bank list could not be loaded just now. Try again in a minute.</p>@endif
-            @error('settlement_bank')<p class="ix-error">{{ $message }}</p>@enderror
+            @error('settlement_bank')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         </div>
         <div class="ix-field">
             <label class="ix-label" for="account_number">Account number</label>
             <input class="ix-input" id="account_number" name="account_number" type="text" inputmode="numeric" pattern="\d{6,20}" maxlength="20" autocomplete="off" required>
             <p class="ix-hint">This goes straight to our payment partner. InfoDot keeps only the last four digits.</p>
-            @error('account_number')<p class="ix-error">{{ $message }}</p>@enderror
+            @error('account_number')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         </div>
         <div class="ix-actions">
             <button class="ix-btn ix-btn--primary" type="submit">Save payout account</button>
@@ -50,12 +50,12 @@
             <div class="ix-field">
                 <label class="ix-label" for="trading_name">Name to show as the seller</label>
                 <input class="ix-input" id="trading_name" name="trading_name" type="text" maxlength="100" value="{{ old('trading_name', $seller?->trading_name ?? auth()->user()->name) }}" required>
-                @error('trading_name')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('trading_name')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
             <div class="ix-field">
                 <label class="ix-label" for="vat_number">VAT number (optional)</label>
                 <input class="ix-input" id="vat_number" name="vat_number" type="text" inputmode="numeric" maxlength="10" value="{{ old('vat_number', $seller?->vat_number) }}">
-                @error('vat_number')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('vat_number')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
             <div class="ix-field">
                 <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
@@ -83,7 +83,7 @@
                     <input type="checkbox" name="accept" value="1" style="margin-top:3px">
                     <span>I have read and accept this agreement (version {{ $agreementVersion }}).</span>
                 </label>
-                @error('accept')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('accept')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
                 <button class="ix-btn ix-btn--primary" type="submit">Accept the agreement</button>
             </form>
         @endif

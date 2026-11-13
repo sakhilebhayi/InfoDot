@@ -1,11 +1,11 @@
-<x-guest-layout>
+<x-guest-layout title="Authorise">
     {{-- Registered first-party Dot platforms skip this screen (Client::skipsAuthorization). It
          renders only for a client that is not an active platform, so it is a safety net, not a
          normal step of ecosystem sign-in. --}}
-    <div class="ix-auth-card">
-        <h1 class="ix-auth-card__title">Authorise {{ $client->name }}</h1>
+    <div class="ix-entry__card">
+        <h1 class="ix-auth-title">Authorise {{ $client->name }}</h1>
 
-        <p>{{ $client->name }} is asking to confirm your identity through your InfoDot account.</p>
+        <p class="ix-entry__lede">{{ $client->name }} is asking to confirm your identity through your InfoDot account.</p>
 
         @if (count($scopes) > 0)
             <ul>
@@ -15,7 +15,7 @@
             </ul>
         @endif
 
-        <div style="display:flex; gap:0.75rem; margin-top:1rem;">
+        <div class="ix-entry__row">
             <form method="post" action="{{ route('passport.authorizations.approve', array_filter(['nonce' => request('nonce')])) }}">
                 @csrf
                 <input type="hidden" name="state" value="{{ $request->state }}">

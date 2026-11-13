@@ -1,4 +1,4 @@
-<div {{ $attributes->merge(['class' => 'space-y-4 md:grid md:grid-cols-3 md:gap-8 md:space-y-0', 'style' => 'padding: 24px 0; border-top: 1px solid var(--ix-rule);']) }}>
+<div {{ $attributes->merge(['class' => 'ix-settings__block space-y-4 md:grid md:grid-cols-3 md:gap-8 md:space-y-0']) }}>
     <x-jet-section-title>
         <x-slot name="title">{{ $title }}</x-slot>
         <x-slot name="description">{{ $description }}</x-slot>

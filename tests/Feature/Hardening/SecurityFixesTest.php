@@ -86,6 +86,31 @@ class SecurityFixesTest extends TestCase
         $this->assertSame(429, $statuses[7], 'the seventh and later are refused');
     }
 
+    public function test_sign_up_allows_a_room_of_people_on_one_address_and_then_answers_with_the_error_page(): void
+    {
+        $statuses = [];
+
+        // An address that is already taken is refused by validation, which still counts as an attempt and writes nothing.
+        User::factory()->create(['email' => 'taken@example.test', 'email_verified_at' => now()]);
+        foreach (range(1, 31) as $i) {
+            $last = $this->post('/register', ['name' => 'Person', 'email' => 'taken@example.test', 'password' => 'x']);
+            $statuses[] = $last->getStatusCode();
+        }
+
+        $this->assertNotContains(429, array_slice($statuses, 0, 30), 'thirty sign-ups in ten minutes are allowed from one address');
+        $this->assertSame(429, $statuses[30], 'the thirty-first is refused');
+
+        // A person gets the 429 page in the site's own shell, told how long to wait, with a way back; never bare text.
+        $last->assertHeader('Retry-After');
+        $this->assertGreaterThan(0, (int) $last->headers->get('Retry-After'));
+        $last->assertSee('Slow down a little')->assertSee('Error 429')->assertSee('Try again in about')
+            ->assertSee('class="ix-top ix-top--public"', false)->assertSee('Go back and try again');
+
+        // A JSON caller gets JSON, with the same header.
+        $json = $this->postJson('/register', ['name' => 'Person', 'email' => 'taken@example.test', 'password' => 'x']);
+        $json->assertStatus(429)->assertHeader('Retry-After')->assertJsonStructure(['message']);
+    }
+
     // ---- S-04 host header ------------------------------------------------------------------------------------------------
 
     public function test_generated_links_use_the_configured_url_when_the_request_host_is_foreign(): void

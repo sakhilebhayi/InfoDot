@@ -119,7 +119,7 @@ class NavSection
             request()->routeIs('business.show') => [['Businesses', route('businesses.index')], [self::title(Team::class, 'name', request()->route('team')?->id), null]],
             request()->routeIs('business.edit', 'business.update', 'business.media', 'business.media.remove') => [['Businesses', route('businesses.index')], ['Edit profile', null]],
             request()->routeIs('teams.show') => [['Administration', null], ['Team settings', null]],
-            request()->routeIs('teams.create') => [['Administration', null], ['New team', null]],
+            request()->routeIs('teams.create') => [['Administration', null], ['New business', null]],
             request()->routeIs('api-tokens.*') => [['Administration', null], ['API tokens', null]],
             default => [['InfoDot', null]],
         };

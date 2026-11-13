@@ -17,17 +17,19 @@
     </div>
 
     @unless ($enabled)
+        {{-- Said in plain words: a moderator cannot switch this on from here, so the page says who can and what it would count. --}}
         <section class="ix-empty">
             <h2>Counting is off</h2>
-            <p>Nothing new is being counted. The owner switches it on with <code>UX_SIGNALS=true</code>; see docs/programme/R12_UX_SIGNALS.md for what is stored and why it holds no personal information.</p>
+            <p>Nothing new is being counted on this copy of InfoDot, so the list below can only show what was counted before. Whoever runs the site switches counting on in its settings. When it is on, it counts failed forms, empty searches, slow pages and errors by page, and stores nothing about the person.</p>
         </section>
     @endunless
 
-    <nav class="ix-tabs" aria-label="Period">
+    {{-- The same period control as a business's insights page: pills on a sunken strip, the chosen one raised. --}}
+    <div class="ix-filters" role="group" aria-label="Period">
         @foreach ([7, 14, 30, 90] as $d)
-            <a href="{{ route('moderation.friction', ['days' => $d]) }}" class="ix-tab" @if ($days === $d) aria-current="page" @endif>{{ $d }} days</a>
+            <a href="{{ route('moderation.friction', ['days' => $d]) }}" class="ix-pill" @if ($days === $d) aria-current="true" @endif>{{ $d }} days</a>
         @endforeach
-    </nav>
+    </div>
 
     <p class="ix-hint">{{ $report['from'] }} to {{ $report['to'] }}: {{ number_format($report['totals']['events']) }} counted events on {{ $report['totals']['routes'] }} pages.</p>
 

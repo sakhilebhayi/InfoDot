@@ -42,6 +42,8 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
         'suspended_at' => 'datetime',
+        'getting_started_dismissed_at' => 'datetime',
+        'platform_opened_at' => 'datetime',
         'points_expiry_emails' => 'boolean',
         'achievements_public' => 'boolean',
         'badges_visible' => 'boolean',

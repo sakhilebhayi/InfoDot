@@ -367,6 +367,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 // Outside Pages
 // -------------------------------------------------------
 Route::get('/home', 'App\Http\Controllers\HomeController@index')->name('dashboard');
+Route::post('/home/getting-started/dismiss', 'App\Http\Controllers\HomeController@dismissGettingStarted')->middleware('throttle:20,1,getting-started')->name('getting-started.dismiss');
 Route::get('/about', 'App\Http\Controllers\PagesController@about')->name('about');
 Route::get('/contact', 'App\Http\Controllers\PagesController@contact')->name('contact');
 Route::post('/contact-send', 'App\Http\Controllers\PagesController@contactSend')->middleware('throttle:5,10,send-contact')->name('send-contact');

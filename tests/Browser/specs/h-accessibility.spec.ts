@@ -83,12 +83,8 @@ for (const scheme of ['light', 'dark'] as const) {
         });
 
         test('text contrast on every page scanned above', async () => {
-            // KNOWN FAILURE, kept visible on purpose: axe finds text below 4.5:1 on a few pages in each scheme, and the
-            // cure is a change to The Yard's colour tokens, which belongs to the design pass and not to a test run
-            // (docs/programme/r49/UX_FINDINGS.md, U-02 to U-06; every element is in ACCESSIBILITY_SCAN.md).
-            // Delete the next line when the palette is fixed: the test then guards the result.
-            test.fail(true, 'Text contrast below 4.5:1: UX_FINDINGS.md U-02 to U-06');
-
+            // The colour tokens were corrected in the design pass (UX_FINDINGS.md U-02 to U-06, closed), so any text below
+            // 4.5:1 on a scanned page now fails the run.
             const found = contrast(recorded(scheme));
             expect(found, found.join('\n')).toEqual([]);
         });

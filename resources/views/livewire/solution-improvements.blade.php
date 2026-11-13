@@ -112,9 +112,9 @@
                     @if ($revising === $proposal->id)
                         <form class="ix-improve__form" wire:submit="saveRevision">
                             <textarea class="ix-textarea" rows="4" maxlength="5000" wire:model="revision.body" aria-label="Revised proposed text"></textarea>
-                            @error('revision.body')<p class="ix-error">{{ $message }}</p>@enderror
+                            @error('revision.body')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
                             <textarea class="ix-textarea" rows="2" maxlength="2000" wire:model="revision.rationale" aria-label="Revised reason"></textarea>
-                            @error('revision.rationale')<p class="ix-error">{{ $message }}</p>@enderror
+                            @error('revision.rationale')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
                             <div class="ix-actions" style="margin:0">
                                 <button type="submit" class="ix-btn ix-btn--sm ix-btn--primary">Send revision</button>
                                 <button type="button" class="ix-btn ix-btn--sm ix-btn--ghost" wire:click="$set('revising', null)">Cancel</button>

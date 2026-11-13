@@ -159,13 +159,16 @@ class PublicPagesTest extends TestCase
         $this->assertStringNotContainsString('alt="Dot.Agents"', $html, 'the one mark without wording is not in the wall');
     }
 
-    public function test_the_visitor_tab_row_has_only_the_two_search_oriented_links(): void
+    public function test_the_visitor_tab_row_has_the_two_search_links_and_the_directory_and_nothing_else(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
         preg_match('/<nav class="ix-tabs" aria-label="About InfoDot">(.*?)<\/nav>/s', $html, $m);
 
         $this->assertStringContainsString('Questions people ask', $m[1]);
         $this->assertStringContainsString('Browse public answers', $m[1]);
+        // The directory is public too (R-33); without a tab the landing family of pages had no way to reach it.
+        $this->assertStringContainsString('>Businesses</a>', $m[1]);
+        $this->assertSame(3, substr_count($m[1], '<a '), 'three places, no more');
         $this->assertStringNotContainsString('What it does', $m[1]);
         $this->assertStringNotContainsString('>About<', $m[1]);
         $this->assertStringContainsString('>About</a>', $html, 'About is still in the footer');
