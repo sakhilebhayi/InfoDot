@@ -101,6 +101,9 @@ class UserNotice extends Model
     /** R-49: ownership of a business was transferred; which side the reader is on is carried in `ref`. */
     public const BUSINESS_OWNERSHIP = 'business_ownership';
 
+    /** R-50: a platform was switched on, switched off, granted, suspended or restored for the company the reader runs. `ref` is "pe:{event}:{platform}:{type}". */
+    public const PLATFORM_ENTITLEMENT = 'platform_entitlement';
+
     /**
      * Notices that are about something the person has booked, paid for or is owed, not about their contributions. The notifications switch
      * silences the second kind only: nobody should miss a cancelled seminar, a changed time, a refund, a dispute or a debt because they
@@ -113,6 +116,7 @@ class UserNotice extends Model
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
         self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP,
+        self::PLATFORM_ENTITLEMENT,
     ];
 
     public const KINDS = [
@@ -126,6 +130,7 @@ class UserNotice extends Model
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
         self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP,
+        self::PLATFORM_ENTITLEMENT,
     ];
 
     public $timestamps = false;

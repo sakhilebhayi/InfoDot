@@ -1,17 +1,8 @@
 @php
-    $all = $this->platforms;
-    // code, area colour variable, members
-    $groups = [
-        'Workspace' => ['WORK', 'knowledge', ['files', 'docs', 'forms', 'sheet', 'projects', 'tasks', 'hr']],
-        'AI & Automation' => ['AUTO', 'analytics', ['agents', 'analytics']],
-        'Community & Engagement' => ['COMM', 'platforms', ['pulse', 'engage', 'press']],
-        'Commerce & Finance' => ['FINA', 'files', ['finance', 'emall', 'auction', 'charts']],
-        'Services & Learning' => ['LEARN', 'documents', ['ehail', 'tutor', 'design']],
-        'Infrastructure' => ['INFRA', 'people', ['central', 'notify']],
-        'Industry Verticals' => ['VERT', 'knowledge', ['mines']],
-    ];
-    $liveCount = collect($all)->filter(fn ($p, $k) => $k !== 'infodot' && ! empty($p['active']))->count();
-    $total = collect($all)->except('infodot')->count();
+    $groups = $this->groups;
+    $count = collect($groups)->sum(fn ($group) => count($group['members']));
+    $team = auth()->user()?->currentTeam;
+    $isCompany = $team && ! $team->personal_team;
 @endphp
 <div x-data="{ open: @entangle('open'), q: '' }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }" class="ix-yardwrap">
     <button type="button" class="ix-btn" @click="open = !open; if (open) $nextTick(() => $refs.f.focus())" :aria-expanded="open" aria-haspopup="true" aria-controls="ix-yardmap" title="Switch Dot platform">
@@ -23,8 +14,11 @@
         <div class="ix-yardmap__in">
             <div class="ix-yardmap__head">
                 <div>
-                    <p class="ix-yardmap__title">The Dot ecosystem</p>
-                    <p class="ix-yardmap__sub">{{ $liveCount }} of {{ $total }} platforms are live. Each opens already signed in.</p>
+                    <p class="ix-yardmap__title">Dot Apps</p>
+                    <p class="ix-yardmap__sub">
+                        {{ $count === 1 ? 'The one platform' : 'The '.$count.' platforms' }} {{ $isCompany ? $team->name.' has and you can open' : 'in your personal workspace' }}. Each opens already signed in.
+                        <a href="{{ route('ecosystem.widget') }}" class="ix-yardmap__all" data-all-platforms>See all platforms</a>
+                    </p>
                 </div>
                 <label class="ix-yardmap__filter">
                     <span class="ix-sr">Filter platforms</span>
@@ -34,37 +28,28 @@
             </div>
 
             <div class="ix-yardmap__groups">
-                @foreach($groups as $name => [$code, $tone, $keys])
-                    @php($members = collect($keys)->filter(fn ($k) => isset($all[$k]))->sortByDesc(fn ($k) => ! empty($all[$k]['active']))->values())
-                    @if($members->isNotEmpty())
-                        <section class="ix-bays" data-tone="{{ $tone }}" style="--tone: var(--ix-{{ $tone }})"
-                                 x-data="{ names: @js($members->map(fn ($k) => strtolower($all[$k]['name']))->all()) }"
-                                 x-show="q === '' || names.some(n => n.includes(q.toLowerCase()))">
-                            <h3 class="ix-bays__head"><span class="ix-bays__code">{{ $code }}</span><span class="ix-bays__name">{{ $name }}</span></h3>
-                            <div class="ix-bays__grid">
-                                @foreach($members as $key)
-                                    @php($platform = $all[$key])
-                                    @php($live = (bool) ($platform['active'] ?? false))
-                                    @php($hasLogo = file_exists(resource_path('img/apps/'.$key.'.png')))
-                                    <button type="button"
-                                            class="ix-bay{{ $live ? '' : ' is-soon' }}"
-                                            @if($live) wire:click="switchTo('{{ $key }}')" @else disabled @endif
-                                            x-show="q === '' || @js(strtolower($platform['name'])).includes(q.toLowerCase())"
-                                            title="{{ $live ? $platform['name'] : $platform['name'].' is not live yet' }}">
-                                        <span class="ix-bay__logo">
-                                            @if($hasLogo)
-                                                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/apps/'.$key.'.png') }}" alt="" width="64" height="52" loading="lazy">
-                                            @else
-                                                <span class="material-symbols-rounded" aria-hidden="true">{{ $platform['icon'] }}</span>
-                                            @endif
-                                        </span>
-                                        <span class="ix-bay__name">{{ $platform['name'] }}</span>
-                                        @unless($live)<span class="ix-bay__soon">Soon</span>@endunless
-                                    </button>
-                                @endforeach
-                            </div>
-                        </section>
-                    @endif
+                @foreach($groups as $group)
+                    <section class="ix-bays" data-tone="{{ $group['tone'] }}" style="--tone: var(--ix-{{ $group['tone'] }})"
+                             x-data="{ names: @js(collect($group['members'])->map(fn ($row) => strtolower($row['name']))->values()->all()) }"
+                             x-show="q === '' || names.some(n => n.includes(q.toLowerCase()))">
+                        <h3 class="ix-bays__head"><span class="ix-bays__code">{{ $group['code'] }}</span><span class="ix-bays__name">{{ $group['name'] }}</span></h3>
+                        <div class="ix-bays__grid">
+                            @foreach($group['members'] as $key => $row)
+                                <button type="button" class="ix-bay" wire:click="switchTo('{{ $key }}')"
+                                        x-show="q === '' || @js(strtolower($row['name'])).includes(q.toLowerCase())"
+                                        title="Open {{ $row['name'] }}">
+                                    <span class="ix-bay__logo">
+                                        @if(file_exists(resource_path('img/apps/'.$key.'.png')))
+                                            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/apps/'.$key.'.png') }}" alt="" width="64" height="52" loading="lazy">
+                                        @else
+                                            <span class="material-symbols-rounded" aria-hidden="true">{{ config('ecosystem.platforms.'.$key.'.icon', 'apps') }}</span>
+                                        @endif
+                                    </span>
+                                    <span class="ix-bay__name">{{ $row['name'] }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </section>
                 @endforeach
             </div>
         </div>

@@ -31,6 +31,7 @@ use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
 use App\Services\Demo\DemoRegistry;
+use App\Services\Platforms\PlatformNotices;
 use App\Support\CanonicalUrl;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -72,6 +73,9 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction()) {
             CanonicalUrl::apply($this->app->runningInConsole() ? null : $this->app['request']);
         }
+
+        // R-50: the owner and administrators of a company are told when its entitlement to a platform changes.
+        PlatformNotices::register();
 
         // Jetstream's team member manager with a server-side check on cancelling invitations (app/Livewire/Teams/TeamMemberManager.php).
         Livewire::component('teams.team-member-manager', TeamMemberManager::class);
