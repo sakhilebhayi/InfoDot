@@ -9,6 +9,8 @@ use App\Models\Comment;
 use App\Models\DemoRecord;
 use App\Models\Enquiry;
 use App\Models\EnquiryMessage;
+use App\Models\LibraryEntry;
+use App\Models\ModerationAction;
 use App\Models\Questions;
 use App\Models\SolutionConfirmation;
 use App\Models\Solutions;
@@ -287,6 +289,34 @@ class DemonstrationContentTest extends TestCase
         $this->signIn($naledi);
         $this->get(route('business.inbox', $ledger))->assertOk()->assertSee(self::MARK, false);
         $this->get(route('business.inbox.show', [$ledger, $enquiry]))->assertOk()->assertSee(self::MARK, false);
+    }
+
+    public function test_the_library_holds_two_labelled_demonstration_answers_and_loses_them_on_removal(): void
+    {
+        $this->install();
+
+        // Two accepted, public answers are on the shelf: entries that point at the answers, adopted by nobody real.
+        $entries = LibraryEntry::query()->get();
+        $this->assertCount(2, $entries);
+        foreach ($entries as $entry) {
+            $this->assertSame('answer', $entry->kind);
+            $this->assertNull($entry->adopted_by, 'no real moderator is named as having adopted demonstration content');
+            $this->assertTrue(app(DemoRegistry::class)->has($entry), 'the entry is on the register');
+            $this->assertTrue(app(DemoRegistry::class)->has($entry->answer), 'and so is the answer it points at');
+            $this->assertNotNull($entry->answer->accepted_at, 'only an answer its asker accepted is shelved');
+        }
+        // Nobody is paid and nothing is written in a moderator's name for it.
+        $this->assertSame(0, DB::table('moderation_actions')->where('action', ModerationAction::LIBRARY_ADOPTED)->count());
+        $this->assertSame(0, DB::table('library_outcomes')->count());
+
+        // The Library page is no longer empty, and every row on it carries the marker.
+        $this->signIn($this->realPerson());
+        $page = $this->get(route('library'))->assertOk()->assertDontSee('The library is empty so far')->assertSee('How do I chase a late invoice');
+        $this->assertSame(2, substr_count($page->getContent(), self::MARK), 'one marker per row');
+
+        $this->artisan('demo:remove')->assertSuccessful();
+        $this->assertSame(0, LibraryEntry::query()->count(), 'removal takes the entries with the answers');
+        $this->get(route('library'))->assertOk()->assertSee('The library is empty so far');
     }
 
     public function test_real_content_is_never_marked(): void

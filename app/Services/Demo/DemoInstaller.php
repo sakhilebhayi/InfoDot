@@ -3,6 +3,7 @@
 namespace App\Services\Demo;
 
 use App\Events\Knowledge\QuestionSubmitted;
+use App\Models\Answer;
 use App\Models\Attachment;
 use App\Models\BusinessAnnouncement;
 use App\Models\BusinessCategory;
@@ -11,6 +12,7 @@ use App\Models\BusinessProfileEvent;
 use App\Models\BusinessProject;
 use App\Models\BusinessService;
 use App\Models\DemoRecord;
+use App\Models\LibraryEntry;
 use App\Models\Questions;
 use App\Models\SolutionConfirmation;
 use App\Models\Solutions;
@@ -366,11 +368,32 @@ class DemoInstaller
             if ($entry['accept'] ?? false) {
                 $this->answers->accept($answer, $asker);
             }
+
+            if ($entry['library'] ?? false) {
+                $this->shelve($answer);
+            }
         }
 
         foreach ($data['comments'] ?? [] as $comment) {
             $this->comment($question, 'question', $comment);
         }
+    }
+
+    /**
+     * Put an accepted, public demonstration answer in the Verified library, so that page is not empty when the
+     * content is shown. Only the entry is written. No moderator adopted it, so there is no audit row in a real
+     * moderator's name and no event to the points ledger: nobody is paid for demonstration content. The entry points
+     * at the answer (it holds no text), is on the register like everything else made here, and leaves with it.
+     */
+    private function shelve(Answer $answer): void
+    {
+        LibraryEntry::create([
+            'contribution_ref' => LibraryEntry::refFor(LibraryEntry::ANSWER, $answer->getKey()),
+            'kind' => LibraryEntry::ANSWER,
+            'answer_id' => $answer->getKey(),
+            'adopted_by' => null,
+            'adopted_at' => now(),
+        ]);
     }
 
     /**
