@@ -31,8 +31,20 @@
             <section id="directory" class="ix-settings__sec">
                 <h2>Directory listing</h2>
                 <p class="ix-hint">Who can find {{ $team->name }} in <a href="{{ route('businesses.index') }}">Businesses</a> and open its page. Your team always can.</p>
-                @if (! filled($profile->description) && $profile->visibility !== \App\Models\TeamProfile::PRIVATE)
-                    <p class="ix-alert" role="note">Not listed yet: the directory lists a business once it says what it does. Fill in <a href="#about">what the business does</a>.</p>
+                @php
+                    $listing = $team->listing();
+                @endphp
+                @if ($listing['listed'])
+                    <p class="ix-alert" role="note"><b>Listed.</b> {{ $listing['audience'] === \App\Models\TeamProfile::PUBLIC ? 'Anyone can find '.$team->name.' in Businesses, signed in or not.' : 'People signed in to InfoDot can find '.$team->name.' in Businesses.' }}</p>
+                @else
+                    <div class="ix-alert" role="note">
+                        <p><b>Not listed yet.</b> To put {{ $team->name }} in Businesses:</p>
+                        <ul class="list-disc pl-5">
+                            @if (in_array('visibility', $listing['missing'], true))<li>Choose Anyone or InfoDot users below. At the moment only your own team can see it.</li>@endif
+                            @if (in_array('description', $listing['missing'], true))<li>Say what the business does, in the box below.</li>@endif
+                            @if (in_array('restricted', $listing['missing'], true))<li>InfoDot is reviewing the business. <a href="{{ route('business.standing', $team) }}">Why, and how to respond</a>.</li>@endif
+                        </ul>
+                    </div>
                 @endif
                 <form method="post" action="{{ route('business.directory', $team) }}" class="ix-form">
                     @csrf
@@ -46,6 +58,8 @@
                         @endforeach
                     </fieldset>
                     <p class="ix-hint">Whatever you choose, InfoDot never shows your team’s own accounts, personal numbers or staff contact details. People reach the business through the details you publish below.</p>
+
+                    <div class="ix-form__row"><label class="ix-label" for="description">What the business does <span class="ix-hint">a business is listed once it says this</span></label><textarea class="ix-textarea" id="description" name="description" rows="5" maxlength="2000">{{ old('description', $profile->description) }}</textarea></div>
 
                     <div class="ix-form__row">
                         <label class="ix-label" for="business_type">Type of business</label>
@@ -118,11 +132,10 @@
                 <form method="post" action="{{ route('business.update', $team) }}" class="ix-form">
                     @csrf
                     <div class="ix-form__row"><label class="ix-label" for="trading_name">Trading name</label><input class="ix-input" id="trading_name" name="trading_name" maxlength="160" value="{{ old('trading_name', $profile->trading_name) }}"></div>
-                    <div class="ix-form__row"><label class="ix-label" for="description">What the business does</label><textarea class="ix-input" id="description" name="description" rows="5" maxlength="2000">{{ old('description', $profile->description) }}</textarea></div>
                     <div class="ix-form__row"><label class="ix-label" for="industry">Industry</label><input class="ix-input" id="industry" name="industry" maxlength="80" value="{{ old('industry', $profile->industry) }}"></div>
                     <div class="ix-form__row"><label class="ix-label" for="category">Category</label><input class="ix-input" id="category" name="category" maxlength="80" value="{{ old('category', $profile->category) }}"></div>
                     <div class="ix-form__row"><label class="ix-label" for="industries_served">Industries served <span class="ix-hint">who your customers are</span></label><input class="ix-input" id="industries_served" name="industries_served" maxlength="300" value="{{ old('industries_served', $profile->industries_served) }}" placeholder="For example: Mining, agriculture, local government"></div>
-                    <div class="ix-form__row"><label class="ix-label" for="products_services">More about what you offer <span class="ix-hint">optional; list each offering under Services and products</span></label><textarea class="ix-input" id="products_services" name="products_services" rows="3" maxlength="2000">{{ old('products_services', $profile->products_services) }}</textarea></div>
+                    <div class="ix-form__row"><label class="ix-label" for="products_services">More about what you offer <span class="ix-hint">optional; list each offering under Services and products</span></label><textarea class="ix-textarea" id="products_services" name="products_services" rows="3" maxlength="2000">{{ old('products_services', $profile->products_services) }}</textarea></div>
 
                     <h2 id="facts">Registry facts</h2>
                     <div class="ix-form__row"><label class="ix-label" for="location">Location</label><input class="ix-input" id="location" name="location" maxlength="160" value="{{ old('location', $profile->location) }}" placeholder="Town or city, province"></div>
@@ -307,7 +320,7 @@
                 <form method="post" action="{{ route('business.announcements.store', $team) }}" class="ix-form">
                     @csrf
                     <div class="ix-form__row"><label class="ix-label" for="a_title">Headline</label><input class="ix-input" id="a_title" name="title" minlength="3" maxlength="140" required></div>
-                    <div class="ix-form__row"><label class="ix-label" for="a_body">The news</label><textarea class="ix-input" id="a_body" name="body" rows="3" minlength="10" maxlength="1500" required></textarea></div>
+                    <div class="ix-form__row"><label class="ix-label" for="a_body">The news</label><textarea class="ix-textarea" id="a_body" name="body" rows="3" minlength="10" maxlength="1500" required></textarea></div>
                     <div class="ix-form__row"><label class="ix-label" for="a_ends">Take it down on <span class="ix-hint">optional</span></label><input class="ix-input" type="date" id="a_ends" name="ends_at" min="{{ now()->addDay()->toDateString() }}"></div>
                     <button type="submit" class="ix-btn">Publish</button>
                 </form>
@@ -392,7 +405,7 @@
                     @else
                         <form method="post" action="{{ route('business.feature', $team) }}" class="ix-form">
                             @csrf
-                            <div class="ix-form__row"><label class="ix-label" for="feature_reason">Anything the reviewer should know <span class="ix-hint">optional</span></label><textarea class="ix-input" id="feature_reason" name="reason" rows="2" maxlength="600"></textarea></div>
+                            <div class="ix-form__row"><label class="ix-label" for="feature_reason">Anything the reviewer should know <span class="ix-hint">optional</span></label><textarea class="ix-textarea" id="feature_reason" name="reason" rows="2" maxlength="600"></textarea></div>
                             <button type="submit" class="ix-btn">Ask to be featured</button>
                         </form>
                     @endif

@@ -15,6 +15,19 @@
     <header class="ix-dir__head">
         <h1 class="ix-h1">Businesses</h1>
         <p class="ix-lede">Find a business by what it does, where it works or what it offers. Ask the way you would ask a person: “accounting firms in Johannesburg”.</p>
+        @auth
+            @php
+                $mine = auth()->user()->currentTeam;
+                $canList = $mine && ! $mine->personal_team && auth()->user()->can('updateProfile', $mine);
+            @endphp
+            <p class="ix-hint">
+                @if ($canList)
+                    {{ $mine->listing()['listed'] ? $mine->name.' is listed.' : $mine->name.' is not listed yet.' }} <a href="{{ route('business.edit', $mine) }}#directory">Open its listing</a>.
+                @else
+                    Run a business? <a href="{{ route('teams.create') }}">Add your business</a>.
+                @endif
+            </p>
+        @endauth
 
         <form class="ix-dir__form" method="get" action="{{ route('businesses.index') }}" role="search" aria-label="Search businesses">
             <div class="ix-dir__bar">

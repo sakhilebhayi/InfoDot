@@ -239,6 +239,46 @@ class Team extends JetstreamTeam
                 ->whereNull('restricted_at'));
     }
 
+    /**
+     * Where the business stands with the directory, and what is still missing before it is listed. The same three
+     * conditions scopeListedFor() applies, in words an owner can act on.
+     *
+     * @return array{listed: bool, audience: string, missing: list<string>}
+     */
+    public function listing(): array
+    {
+        $profile = $this->profile;
+        $audience = $profile->visibility ?? TeamProfile::PRIVATE;
+        $missing = [];
+
+        if ($audience === TeamProfile::PRIVATE) {
+            $missing[] = 'visibility';
+        }
+        if (! filled($profile?->description)) {
+            $missing[] = 'description';
+        }
+        if ($profile?->restricted_at !== null) {
+            $missing[] = 'restricted';
+        }
+
+        return ['listed' => $missing === [], 'audience' => $audience, 'missing' => $missing];
+    }
+
+    /** What to tell the owner after a save: only what is true of the directory right now. */
+    public function listingMessage(): string
+    {
+        $listing = $this->listing();
+        $audience = $listing['audience'] === TeamProfile::PUBLIC ? 'anyone' : 'people signed in to InfoDot';
+
+        return match (true) {
+            in_array('restricted', $listing['missing'], true) => 'Saved. '.$this->name.' stays out of the directory while InfoDot reviews it.',
+            $listing['audience'] === TeamProfile::PRIVATE => 'Saved. '.$this->name.' is not listed; its page is for your own team.',
+            in_array('description', $listing['missing'], true) => 'Saved. Not listed yet: say what the business does and '.$this->name.' will be listed for '.$audience.'.',
+            $listing['audience'] === TeamProfile::PUBLIC => 'Saved. '.$this->name.' is listed for anyone, and its page opens without signing in.',
+            default => 'Saved. '.$this->name.' is listed for people signed in to InfoDot.',
+        };
+    }
+
     /** The profile row, saved on first use, so edit forms always have something to fill. */
     public function profileOrNew(): TeamProfile
     {

@@ -4,7 +4,7 @@
     </x-slot>
 
     <x-slot name="description">
-        {{ __('Create a new team to collaborate with others on projects.') }}
+        Name the business, say what it does and choose who can find it. All three can be changed later.
     </x-slot>
 
     <x-slot name="form">
@@ -34,7 +34,7 @@
         </div>
 
         <div class="col-span-6 sm:col-span-4">
-            <x-jet-label for="industry" value="{{ __('What does the company do?') }}" />
+            <x-jet-label for="industry" value="Industry" />
             <select id="industry" class="ix-input ix-select block w-full" wire:model.defer="state.industry">
                 <option value="">{{ __('General business') }}</option>
                 @foreach (\App\Support\Industry::options() as $key => $label)
@@ -44,6 +44,27 @@
             </select>
             <p class="ix-hint">{{ __('Search, the question form and empty pages suggest examples that fit your business. You can change this any time.') }}</p>
             <x-jet-input-error for="industry" />
+        </div>
+
+        <div class="col-span-6 sm:col-span-4">
+            <x-jet-label for="description" value="What the business does" />
+            <textarea id="description" class="ix-textarea block w-full" rows="4" maxlength="2000" wire:model.defer="state.description"></textarea>
+            <p class="ix-hint">A sentence or two a customer would understand. Businesses lists a business once it says this.</p>
+            <x-jet-input-error for="description" />
+        </div>
+
+        <div class="col-span-6 sm:col-span-4">
+            <fieldset class="ix-choice">
+                <legend class="ix-label">Who can see the business</legend>
+                @foreach (\App\Models\TeamProfile::VISIBILITY as $value => $label)
+                    <label class="ix-choice__opt">
+                        <input type="radio" name="visibility" value="{{ $value }}" wire:model.defer="state.visibility">
+                        <span><b>{{ \Illuminate\Support\Str::before($label, ' — ') }}</b><span class="ix-hint">{{ \Illuminate\Support\Str::ucfirst(\Illuminate\Support\Str::after($label, ' — ')) }}</span></span>
+                    </label>
+                @endforeach
+            </fieldset>
+            <x-jet-input-error for="visibility" />
+            <p class="ix-hint">Nothing is chosen for you. InfoDot never shows your team’s own accounts or staff contact details, whatever you pick.</p>
         </div>
     </x-slot>
 

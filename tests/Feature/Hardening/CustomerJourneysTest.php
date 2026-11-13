@@ -146,7 +146,7 @@ class CustomerJourneysTest extends TestCase
     {
         $owner = $this->registerThrough('Olwethu Owner', 'olwethu@example.test');
         $this->switchTo($owner);
-        Livewire::actingAs($owner->fresh())->test(CreateTeamForm::class)->set('state', ['name' => 'Olwethu Logistics'])->call('createTeam');
+        Livewire::actingAs($owner->fresh())->test(CreateTeamForm::class)->set('state', ['name' => 'Olwethu Logistics', 'visibility' => 'private'])->call('createTeam');
         $company = Team::where('name', 'Olwethu Logistics')->firstOrFail();
         $this->assertFalse((bool) $company->personal_team);
 
