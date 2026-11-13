@@ -132,7 +132,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /** The official InfoDot account that platform-curated library entries are published under (R-14). */
     /**
      * Whether this person administers the platform catalogue, prices and complimentary access (R-50). Separate from
-     * moderation on purpose, and only ever set by `platform:admin grant` on the host.
+     * moderation on purpose, and only ever set by `platform-admin:grant` on the host.
      */
     public function isPlatformAdmin(): bool
     {

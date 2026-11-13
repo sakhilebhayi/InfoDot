@@ -7915,6 +7915,33 @@ body {
 .ix-dir__check { display: inline-flex; align-items: center; gap: 8px; height: 36px; font-size: 14px; color: var(--ix-text-2); }
 .ix-dir__check input { accent-color: var(--ix-ok); width: 16px; height: 16px; }
 
+/* Platform admin centre (R-50): a working desk in the moderation vocabulary. Tables, forms and the audit list are the
+   shared ones; these are only the arrangements they sit in. No colour of its own: chips carry state. */
+.ix-adm__split { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+.ix-adm__side { display: grid; gap: 16px; min-width: 0; }
+.ix-adm__side .ix-panel + .ix-panel { margin-top: 0; }
+.ix-adm__price { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 3fr); gap: 16px; }
+.ix-adm__price + .ix-hint { margin-top: -12px; }
+.ix-adm__code { text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.ix-adm__short { max-width: 14ch; }
+.ix-adm__picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px 16px; margin-top: 8px; }
+.ix-adm__picks label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; min-height: 28px; font-size: 14px; }
+.ix-adm__picks input, .ix-adm__acts input[type='radio'], .ix-adm__acts input[type='checkbox'] { accent-color: var(--ix-check); }
+.ix-adm__acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 28px 36px; align-items: start; }
+.ix-adm__acts .ix-form { gap: 14px; max-width: none; }
+.ix-adm__h { margin: 0; font-size: 15px; font-weight: 700; color: var(--ix-text); }
+.ix-adm__soft { color: var(--ix-text-2); }
+.ix-table tr[aria-current='true'] td { background: var(--ix-signal-wash); }
+@media (max-width: 899px) { .ix-adm__split { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 767px) {
+    /* The shared table stacks its cells on a phone and drops the header row, so each value here carries its own label. */
+    .ix-adm__table td[data-label]::before { content: attr(data-label) ': '; color: var(--ix-text-3); font-size: 13px; font-weight: 500; }
+    .ix-adm__table td.num, .ix-adm__table td.muted { display: block; margin-right: 0; font-size: 14px; white-space: normal; }
+    .ix-adm__table tr[aria-current='true'] { background: var(--ix-signal-wash); }
+    .ix-adm__table tr[aria-current='true'] td { background: none; }
+}
+@media (max-width: 599px) { .ix-adm__price { grid-template-columns: minmax(0, 1fr); } }
+
 .ix-dir__sum { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: 16px; }
 .ix-dir__sum .ix-filters { margin: 0; }
 .ix-dir__sum .ix-hint { margin: 4px 0 0; max-width: 72ch; }

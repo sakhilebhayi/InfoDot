@@ -188,6 +188,46 @@ paths:
                   status: { type: string, enum: [applied, duplicate, ignored, mismatch, open, cleared, written_off] }
         "400": { description: "Body is not valid JSON of the required shape." }
         "401": { description: "Bad signature, outside the window, or paid seminars are off." }
+  /finance/platform-subscription-events:
+    post:
+      summary: Dot.Finance confirms a platform subscription payment event
+      description: |
+        Signed with its own callback secret (HMAC-SHA256 over "{timestamp}.{raw body}"), 300 second window, refused entirely while the
+        secret is unset. Events `paid`, `renewed`, `payment_failed`, `refunded` and `cancelled`. Applied once per `event_id`. The only
+        thing that makes a platform paid. The full contract is in docs/programme/R50_ADMIN_CENTRE.md.
+      security: [{ hmac: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_id, event, company_uuid, platform, reference, occurred_at]
+              properties:
+                event_id: { type: string, maxLength: 100 }
+                event: { type: string, enum: [paid, renewed, payment_failed, refunded, cancelled] }
+                company_uuid: { type: string }
+                platform: { type: string }
+                plan: { type: string }
+                bundle: { type: string }
+                amount_minor: { type: integer }
+                currency: { type: string, minLength: 3, maxLength: 3 }
+                reference: { type: string, maxLength: 120 }
+                period_end: { type: string, format: date-time }
+                grace_until: { type: string, format: date-time }
+                occurred_at: { type: string, format: date-time }
+      responses:
+        "200":
+          description: The outcome.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [applied, duplicate, ignored] }
+        "400": { description: "Body is not a well-formed event." }
+        "401": { description: "Signature, timestamp or secret is wrong, or the secret is unset." }
+        "422": { description: "The company, platform, plan or bundle is unknown or does not fit. The answer does not say which." }
   /seminars/livekit-webhook:
     post:
       summary: LiveKit reports a participant joining a seminar room

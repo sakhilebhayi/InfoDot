@@ -62,6 +62,8 @@ class Kernel extends ConsoleKernel
 
         // Entitlement changes waiting to be told to their platform (R-50; retried with growing delays, see EntitlementOutbox).
         $schedule->command('platforms:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
+        // Trials, dated complimentary grants and grace periods that have run out (R-50). Before the next outbox flush picks the changes up.
+        $schedule->command('platforms:lifecycle')->everyMinute()->withoutOverlapping(30)->onOneServer();
     }
 
     /**

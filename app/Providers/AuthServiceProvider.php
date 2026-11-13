@@ -12,6 +12,7 @@ use App\Support\SuspensionAwareAccessTokenRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Passport\Bridge\AccessTokenRepository;
 use Laravel\Passport\Passport;
@@ -47,6 +48,10 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+
+        // R-50: the one gate in front of the catalogue, prices, bundles, complimentary access and every other commercial
+        // power. The role is set only by `platform-admin:grant` on the host; being a moderator or owning a company is not it.
+        Gate::define('administer-platforms', fn (User $user) => $user->isPlatformAdmin() && $user->email_verified_at !== null && ! $user->isSuspended());
 
         // A launch code is stored as a personal access token, but it is not a login. It may only be redeemed, once, by
         // the platform it names (EcosystemRedeemController reads it by value). Presented as "Authorization: Bearer" to

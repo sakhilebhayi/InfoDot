@@ -147,6 +147,16 @@ class EntitlementOutbox
         return $sent;
     }
 
+    /**
+     * Put an undelivered event back at the front of the queue: a parked one is un-parked, a waiting one is made due
+     * now, and the attempt count starts again. A delivered event is left alone. Returns whether anything changed.
+     */
+    public function retry(int $id): bool
+    {
+        return DB::table('entitlement_outbox')->where('id', $id)->whereNull('sent_at')
+            ->update(['failed_at' => null, 'attempts' => 0, 'next_attempt_at' => now(), 'updated_at' => now()]) === 1;
+    }
+
     /** True while an earlier event about the same company and platform has neither been delivered nor been parked. */
     private function waitsForEarlierEvent(object $row): bool
     {

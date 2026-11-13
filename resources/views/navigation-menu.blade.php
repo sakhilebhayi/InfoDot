@@ -59,6 +59,9 @@
             @if (Auth::user()->isModerator())
                 <a href="{{ route('moderation') }}" class="ix-tab" data-area="people" @if(request()->routeIs('moderation*')) aria-current="page" @endif>Moderation</a>
             @endif
+            @can('administer-platforms')
+                <a href="{{ route('admin.platforms') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('admin.platforms*')) aria-current="page" @endif>Platform admin</a>
+            @endcan
         </nav>
 
         <div class="ix-top__search">
