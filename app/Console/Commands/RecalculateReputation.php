@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Services\Reputation\ReputationEngine;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Recalculates stored reputation snapshots. Counts only in the output. Does nothing while REPUTATION_ENABLED is off.
@@ -36,8 +38,7 @@ class RecalculateReputation extends Command
         $n = 0;
         $users->chunkById(200, function ($chunk) use ($engine, &$n) {
             foreach ($chunk as $u) {
-                $engine->snapshot($u);
-                $n++;
+                $n += $this->recalculate($engine, $u) ? 1 : 0;
             }
         });
         $this->info("Recalculated {$n} person/people.");
@@ -72,9 +73,8 @@ class RecalculateReputation extends Command
             }
 
             foreach ($batch as $u) {
-                $engine->snapshot($u);
+                $n += $this->recalculate($engine, $u) ? 1 : 0;
                 $cursor = $u->id;
-                $n++;
 
                 if (microtime(true) >= $deadline) {
                     break;
@@ -86,5 +86,19 @@ class RecalculateReputation extends Command
         $this->info("Recalculated {$n} person/people; will continue after user {$cursor}.");
 
         return self::SUCCESS;
+    }
+
+    /** One person's failure is logged and skipped: it must not end the pass for everyone after them. */
+    private function recalculate(ReputationEngine $engine, User $user): bool
+    {
+        try {
+            $engine->snapshot($user);
+
+            return true;
+        } catch (Throwable $e) {
+            Log::error('reputation.recalculate_failed', ['user_id' => $user->id, 'exception' => $e::class, 'reason' => mb_substr($e->getMessage(), 0, 300)]);
+
+            return false;
+        }
     }
 }
