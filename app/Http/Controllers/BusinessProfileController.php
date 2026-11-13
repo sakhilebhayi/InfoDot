@@ -114,6 +114,7 @@ class BusinessProfileController extends Controller
 
         $data = $request->validate([
             'visibility' => ['required', Rule::in(array_keys(TeamProfile::VISIBILITY))],
+            'description' => ['nullable', 'string', 'max:2000'],
             'business_type' => ['nullable', Rule::in(array_keys(TeamProfile::BUSINESS_TYPES))],
             'categories' => ['nullable', 'array', 'max:'.self::MAX_CATEGORIES],
             'categories.*' => ['integer', Rule::exists('business_categories', 'id')->where('active', true)],
@@ -123,6 +124,10 @@ class BusinessProfileController extends Controller
         $profile = $team->profileOrNew();
         $before = $profile->visibility;
         $profile->fill(['visibility' => $data['visibility'], 'business_type' => $data['business_type'] ?? null]);
+        // What the business does is saved with who can see it: the two together decide whether it is listed.
+        if ($request->has('description')) {
+            $profile->description = $data['description'] ?? null;
+        }
         if ($request->has('accepts_enquiries')) {
             $profile->accepts_enquiries = (bool) $data['accepts_enquiries'];
         }
@@ -130,11 +135,7 @@ class BusinessProfileController extends Controller
         $team->categories()->sync($data['categories'] ?? []);
         BusinessProfileEvent::record($team, $request->user(), 'listing_changed', $before !== $data['visibility'] ? $before.' → '.$data['visibility'] : 'type and categories');
 
-        return redirect()->route('business.edit', $team)->withFragment('directory')->with('status', match ($data['visibility']) {
-            TeamProfile::PUBLIC => 'Saved. The business is listed for anyone, and its page opens without signing in.',
-            TeamProfile::MEMBERS => 'Saved. The business is listed for people signed in to InfoDot.',
-            default => 'Saved. The business is not listed; its page is for your own team.',
-        });
+        return redirect()->route('business.edit', $team)->withFragment('directory')->with('status', $team->fresh()->listingMessage());
     }
 
     public function update(Request $request, Team $team)
@@ -169,6 +170,11 @@ class BusinessProfileController extends Controller
         // Which contact details show is the business's choice (R-33 §5B); the form sends every field.
         $public = array_map(fn ($key) => (bool) ($data['public_contact'][$key] ?? false), array_combine(array_keys(TeamProfile::CONTACT_FIELDS), array_keys(TeamProfile::CONTACT_FIELDS)));
         unset($data['public_contact']);
+
+        // The description lives in the listing form now; a save here that does not send it must not blank it.
+        if (! $request->has('description')) {
+            unset($data['description']);
+        }
 
         $profile = $team->profileOrNew();
         $contactChanged = $request->has('public_contact') && $public !== array_map(fn ($k) => $profile->shows($k), array_combine(array_keys($public), array_keys($public)));

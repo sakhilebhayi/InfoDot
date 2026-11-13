@@ -2,15 +2,22 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Models\BusinessProfileEvent;
+use App\Models\Team;
+use App\Models\TeamProfile;
 use App\Support\Industry;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Laravel\Jetstream\Contracts\CreatesTeams;
 use Laravel\Jetstream\Events\AddingTeam;
 use Laravel\Jetstream\Jetstream;
 
 class CreateTeam implements CreatesTeams
 {
+    /** The business this action just created, for redirectTo(). */
+    private ?Team $created = null;
+
     /**
      * Validate and create a new team for the given user.
      *
@@ -24,6 +31,12 @@ class CreateTeam implements CreatesTeams
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'industry' => ['nullable', 'string', 'in:'.implode(',', array_keys(Industry::options()))],
+            'description' => ['nullable', 'string', 'max:2000'],
+            // Who can see the business is the owner's decision, asked here and never assumed (R-48 S-05).
+            'visibility' => ['required', Rule::in(array_keys(TeamProfile::VISIBILITY))],
+        ], [
+            'visibility.required' => 'Choose who can see the business.',
+            'visibility.in' => 'Choose who can see the business.',
         ])->validateWithBag('createTeam');
 
         AddingTeam::dispatch($user);
@@ -37,8 +50,29 @@ class CreateTeam implements CreatesTeams
             $team->forceFill(['industry' => $input['industry']])->save();
         }
 
+        // The profile row is written with the business, so the directory knows where it stands from the first minute.
+        $team->profile()->create([
+            'visibility' => $input['visibility'],
+            'description' => filled($input['description'] ?? null) ? trim((string) $input['description']) : null,
+        ]);
+        BusinessProfileEvent::record($team, $user, 'listing_changed', 'created as '.$input['visibility']);
+
         $user->switchTeam($team);
 
-        return $team;
+        return $this->created = $team;
+    }
+
+    /** Jetstream's create form asks the action where to go next: the new business's listing, with where it stands. */
+    public function redirectTo()
+    {
+        if ($this->created === null) {
+            return config('fortify.home');
+        }
+
+        $team = $this->created->fresh();
+
+        session()->flash('status', $team->listingMessage());
+
+        return route('business.edit', $team).'#directory';
     }
 }

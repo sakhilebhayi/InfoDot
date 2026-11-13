@@ -69,7 +69,7 @@ class IndustrySearchTest extends TestCase
     {
         $user = User::factory()->create(['email_verified_at' => Carbon::now()]);
 
-        $team = (new CreateTeam)->create($user, ['name' => 'Karoo Farms', 'industry' => 'agriculture']);
+        $team = (new CreateTeam)->create($user, ['name' => 'Karoo Farms', 'industry' => 'agriculture', 'visibility' => 'private']);
         $this->assertSame('agriculture', $team->fresh()->industry);
 
         (new UpdateTeamName)->update($user, $team, ['name' => 'Karoo Farms', 'industry' => 'retail']);
@@ -79,7 +79,7 @@ class IndustrySearchTest extends TestCase
         $this->assertNull($team->fresh()->industry, 'blank means general business');
 
         $this->expectException(ValidationException::class);
-        (new CreateTeam)->create($user, ['name' => 'Bad Co', 'industry' => 'not-an-industry']);
+        (new CreateTeam)->create($user, ['name' => 'Bad Co', 'industry' => 'not-an-industry', 'visibility' => 'private']);
     }
 
     public function test_the_empty_search_suggests_what_to_ask_for_this_kind_of_business(): void
