@@ -87,8 +87,8 @@ class DeleteUser implements DeletesUsers
         $names = $businesses->pluck('name')->map(fn ($name) => '“'.$name.'”')->join(', ', ' and ');
 
         return $businesses->count() === 1
-            ? "Your account cannot be deleted while you own $names, because other people are members of it. Transfer its ownership to one of them, or delete the company, in its team settings; then delete your account."
-            : "Your account cannot be deleted while you own $names, because other people are members of them. For each one, transfer its ownership to a member or delete the company in its team settings; then delete your account.";
+            ? "Your account cannot be deleted while you own $names, because other people are members of it. Transfer its ownership to one of them, or delete the company, in its company settings; then delete your account."
+            : "Your account cannot be deleted while you own $names, because other people are members of them. For each one, transfer its ownership to a member or delete the company in its company settings; then delete your account.";
     }
 
     /**

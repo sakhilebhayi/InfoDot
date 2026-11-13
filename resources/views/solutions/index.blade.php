@@ -92,8 +92,8 @@
         </section>
     @else
         <section class="ix-empty ix-empty--start">
-            <h2>{{ $team?->name ?? 'Your team' }} has no solutions yet</h2>
-            <p>When you work something out that others will hit again, write it as steps. Here is what {{ strtolower($industry['label']) }} teams usually write down first.</p>
+            <h2>{{ $team?->name ?? 'Your company' }} has no solutions yet</h2>
+            <p>When you work something out that others will hit again, write it as steps. Here is what people in {{ strtolower($industry['label']) }} usually write down first.</p>
             <ul class="ix-ideas__list">
                 @foreach ($industry['solutions'] as $idea)
                     <li><a class="ix-idea" href="{{ route('add') }}">{{ $idea }}</a></li>

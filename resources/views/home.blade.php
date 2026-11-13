@@ -12,6 +12,10 @@
                     @if ($role) You are {{ \Illuminate\Support\Str::lower($role) === 'owner' ? 'the owner' : 'an '.\Illuminate\Support\Str::lower($role) }}.@endif
                     {{ $memberCount }} {{ \Illuminate\Support\Str::plural('person', $memberCount) }} here.</p>
             </div>
+            {{-- The gate's mark is the owner code itself, stencilled on the graphite the way it is painted on a container door. --}}
+            @if (filled($team?->code))
+                <p class="ix-gate__code"><span class="ix-sr">Owner code </span>{{ $team->code }}</p>
+            @endif
         </div>
     </section>
 

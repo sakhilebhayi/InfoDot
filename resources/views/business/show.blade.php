@@ -59,7 +59,7 @@
 
     @if ($isMember && $team->isRestricted())
         <div class="ix-previewbar" role="status">
-            <p><b>{{ $team->name }} is out of the directory while InfoDot reviews it.</b> Only your team can open this page for now.</p>
+            <p><b>{{ $team->name }} is out of the directory while InfoDot reviews it.</b> Only people in your company can open this page for now.</p>
             @if ($canEdit)<a class="ix-btn ix-btn--sm" href="{{ route('business.standing', $team) }}">Why, and how to respond</a>@endif
         </div>
     @endif

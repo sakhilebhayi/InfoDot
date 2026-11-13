@@ -21,12 +21,13 @@ class SeminarDataExporter
 
         $hosted = DB::table('seminars')->where('host_id', $id)->orderBy('id')->get();
         $regs = DB::table('seminar_registrations')->where('user_id', $id)->orderBy('id')->get();
+        $sales = DB::table('seminar_ticket_sales')->where('user_id', $id)->orderBy('id')->get();
         $feedback = DB::table('seminar_feedback')->where('user_id', $id)->orderBy('id')->get();
         $chat = DB::table('p2p_chat')->where('user_id', $id)->orderBy('id')->get();
         $reports = DB::table('seminar_reports')->where('reporter_id', $id)->orderBy('id')->get();
         $linkReports = DB::table('seminar_link_reports')->where('user_id', $id)->get();
         $bans = DB::table('seminar_room_bans')->where('user_id', $id)->get();
-        $name = $titles(array_merge($regs->pluck('seminar_id')->all(), $feedback->pluck('seminar_id')->all(), $chat->pluck('seminar_id')->all(), $reports->pluck('seminar_id')->all(), $linkReports->pluck('seminar_id')->all(), $bans->pluck('seminar_id')->all()));
+        $name = $titles(array_merge($regs->pluck('seminar_id')->all(), $sales->pluck('seminar_id')->all(), $feedback->pluck('seminar_id')->all(), $chat->pluck('seminar_id')->all(), $reports->pluck('seminar_id')->all(), $linkReports->pluck('seminar_id')->all(), $bans->pluck('seminar_id')->all()));
 
         return [
             'person' => $user->email,
@@ -42,6 +43,11 @@ class SeminarDataExporter
                 'seminar' => $name[$r->seminar_id] ?? null, 'status' => $r->status, 'attended_at' => $iso($r->attended_at),
                 'payment_status' => $r->payment_status, 'amount_cents' => $r->amount_cents, 'currency' => $r->currency, 'paid_at' => $iso($r->paid_at), 'refunded_cents' => $r->refunded_cents,
                 'refunded_at' => $iso($r->refunded_at), 'dispute_status' => $r->dispute_status, 'ticket_ref' => $r->ticket_ref,
+            ])->all(),
+            // Every ticket bought, one entry per sale: a seminar bought twice (after a refund) appears twice here and once under registrations.
+            'ticket_purchases' => $sales->map(fn ($t) => [
+                'seminar' => $name[$t->seminar_id] ?? null, 'ticket_ref' => $t->ticket_ref, 'amount_cents' => $t->amount_cents, 'currency' => $t->currency, 'state' => $t->state,
+                'paid_at' => $iso($t->paid_at), 'refunded_cents' => $t->refunded_cents, 'refund_requested_at' => $iso($t->refund_requested_at), 'refunded_at' => $iso($t->refunded_at),
             ])->all(),
             'ratings_given' => $feedback->map(fn ($f) => ['seminar' => $name[$f->seminar_id] ?? null, 'rating' => $f->rating, 'note' => $f->comment, 'given_at' => $iso($f->created_at)])->all(),
             'room_chat_messages' => $chat->map(fn ($c) => ['seminar' => $name[$c->seminar_id] ?? null, 'name_shown' => $c->name, 'message' => $c->body, 'sent_at' => $iso($c->created_at)])->all(),

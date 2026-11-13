@@ -38,8 +38,8 @@ class CreateTeam implements CreatesTeams
             // Who can see the business is the owner's decision, asked here and never assumed (R-48 S-05).
             'visibility' => ['required', Rule::in(array_keys(TeamProfile::VISIBILITY))],
         ], [
-            'visibility.required' => 'Choose who can see the business.',
-            'visibility.in' => 'Choose who can see the business.',
+            'visibility.required' => 'Choose who can see the business page.',
+            'visibility.in' => 'Choose who can see the business page.',
         ])->validateWithBag('createTeam');
 
         AddingTeam::dispatch($user);

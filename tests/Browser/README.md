@@ -53,7 +53,7 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 
 | Project | Browser and size | Runs |
 |---|---|---|
-| `desktop-chromium` | Chromium, 1440 x 900 | everything except E |
+| `desktop-chromium` | Chromium, 1440 x 900 | everything except E (A to D, F to J) |
 | `desktop-firefox` | Firefox, 1440 x 900 | A, B, D, G |
 | `desktop-webkit` | WebKit, 1440 x 900 | A, B, D, G |
 | `phone-webkit` | WebKit, iPhone 14 | E |
@@ -65,13 +65,14 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 | File | What it proves |
 |---|---|
 | `a-new-user.spec.ts` | A visitor walks the public pages, registers, verifies by email, edits the profile, uploads a 4032 x 3024 photo, moves through the signed-in areas, signs out and in. |
-| `b-business.spec.ts` | "Create team", logo and cover through the crop frame, profile, found in the directory by search, an enquiry from another person, the owner's reply, an edit that shows on the public page. |
+| `b-business.spec.ts` | "Create a company", logo and cover through the crop frame, profile, found in the directory by search, an enquiry from another person, the owner's reply, an edit that shows on the public page. |
 | `c-knowledge.spec.ts` | Library and an existing solution, a question with a picture, an answer from a colleague, 404 for an outsider, a solution with steps, a report, and a moderator hiding the reported item. |
 | `d-permissions.spec.ts` | Private business pages, another person's attachment, the moderation area and another business's edit page are refused with 403/404 or the sign-in page, never a server error. |
 | `e-mobile.spec.ts` | The main journey on a phone and a tablet, with no sideways scrolling on any page. A second test checks that primary buttons are 44 x 44; it is marked as a known failure (see `docs/programme/r49/UX_FINDINGS.md`, U-01). |
 | `f-investor-walkthrough.spec.ts` | One continuous visit through the labelled demonstration content (`php artisan demo:install --with-moderator`, which the run installs), as its owner and then its moderator: fails on any console error, script error, failed request to the app, 4xx/5xx or broken image. Saves a full-page picture of every page at desktop and phone size in `screens/`. |
 | `g-failure-paths.spec.ts` | Wrong password, an email already registered, a business with fields missing, uploads that are too large or the wrong type: each gets a clear message and no server error. |
 | `h-accessibility.spec.ts` | axe-core, WCAG 2.0/2.1/2.2 A and AA, light and dark colour schemes. Fails on serious or critical violations and writes `docs/programme/r49/ACCESSIBILITY_SCAN.md` when the whole scan has run. Text contrast is asserted in a test of its own, marked as a known failure (U-02 to U-06). |
+| `j-case-pages.spec.ts` | The pages no demonstration content reaches: a seminar's own page and the moderators' case pages (a verification application, an identity conflict, a report about a business, its investigation, the appeal). Each answers, has a heading and no broken image, passes axe in both schemes with no contrast finding, and does not scroll sideways at 375px. |
 | `i-keyboard.spec.ts` | Sign-in, registration and business creation with the keyboard only; tab order, visible focus, Ctrl/Cmd+K, and menus and dialogs that close with Escape and give focus back. |
 
 ## Known failures

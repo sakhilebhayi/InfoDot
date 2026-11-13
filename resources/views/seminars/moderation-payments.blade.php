@@ -2,7 +2,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Seminar payments</h1>
-            <p class="ix-lede">Ticket payments that need a person. Disputes are answered in the Paystack dashboard; nothing here submits evidence.</p>
+            <p class="ix-lede">Ticket payments that need a person. Payments are handled by Dot.Finance. Disputes are answered there, with the payment provider; nothing here submits evidence.</p>
         </div>
     </div>
     @foreach ([['Disputes', $disputes, 'dispute'], ['Refunds asked for but not confirmed for over an hour', $stuck, 'stuck']] as [$heading, $rows, $kind])

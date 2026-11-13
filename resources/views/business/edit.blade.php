@@ -21,7 +21,7 @@
     @endif
 
     <div class="ix-settings">
-        <nav class="ix-settings__index" aria-label="Profile sections">
+        <nav class="ix-settings__index" id="sections" aria-label="Profile sections">
             @foreach ([['directory', 'Directory listing'], ['logo', 'Logo'], ['cover', 'Cover photograph'], ['about', 'About the business'], ['facts', 'Registry facts'], ['contact', 'Contact and links'], ['services', 'Services and products'], ['portfolio', 'Portfolio'], ['locations', 'Locations'], ['announcements', 'Announcements'], ['gallery', 'Gallery'], ['brochures', 'Brochures'], ['managers', 'Who manages this'], ['changes', 'Recent changes'], ['standing', 'Standing and appeals'], ['featured', 'Featured placement']] as $i => [$id, $label])
                 <a href="#{{ $id }}"><span class="ix-settings__no">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>{{ $label }}</a>
             @endforeach
@@ -30,7 +30,7 @@
         <div class="ix-settings__body">
             <section id="directory" class="ix-settings__sec">
                 <h2>Directory listing</h2>
-                <p class="ix-hint">Who can find {{ $team->name }} in <a href="{{ route('businesses.index') }}">Businesses</a> and open its page. Your team always can.</p>
+                <p class="ix-hint">Who can find {{ $team->name }} in <a href="{{ route('businesses.index') }}">Businesses</a> and open its page. People in your company always can.</p>
                 @php
                     $listing = $team->listing();
                 @endphp
@@ -40,7 +40,7 @@
                     <div class="ix-alert" role="note">
                         <p><b>Not listed yet.</b> To put {{ $team->name }} in Businesses:</p>
                         <ul class="list-disc pl-5">
-                            @if (in_array('visibility', $listing['missing'], true))<li>Choose Anyone or InfoDot users below. At the moment only your own team can see it.</li>@endif
+                            @if (in_array('visibility', $listing['missing'], true))<li>Choose Anyone or InfoDot users below. At the moment only people in your company can see it.</li>@endif
                             @if (in_array('description', $listing['missing'], true))<li>Say what the business does, in the box below.</li>@endif
                             @if (in_array('restricted', $listing['missing'], true))<li>InfoDot is reviewing the business. <a href="{{ route('business.standing', $team) }}">Why, and how to respond</a>.</li>@endif
                         </ul>
@@ -57,7 +57,7 @@
                             </label>
                         @endforeach
                     </fieldset>
-                    <p class="ix-hint">Whatever you choose, InfoDot never shows your team’s own accounts, personal numbers or staff contact details. People reach the business through the details you publish below.</p>
+                    <p class="ix-hint">Whatever you choose, InfoDot never shows your people’s own accounts, personal numbers or staff contact details. People reach the business through the details you publish below.</p>
 
                     <div class="ix-form__row"><label class="ix-label" for="description">What the business does <span class="ix-hint">a business is listed once it says this</span></label><textarea class="ix-textarea" id="description" name="description" rows="5" maxlength="2000">{{ old('description', $profile->description) }}</textarea></div>
 
@@ -110,7 +110,7 @@
 
             <section id="cover" class="ix-settings__sec">
                 <h2>Cover photograph</h2>
-                <p class="ix-hint">The wide picture across the top of the page: the premises, the workshop, the team, the work itself. At least 800×250.</p>
+                <p class="ix-hint">The wide picture across the top of the page: the premises, the workshop, the people, the work itself. At least 800×250.</p>
                 @if ($cover)
                     <img class="ix-biz__coverprev" src="{{ route('attachments.show', $cover) }}" alt="Current cover photograph">
                 @endif
@@ -380,8 +380,8 @@
 
             <section id="managers" class="ix-settings__sec">
                 <h2>Who manages this profile</h2>
-                <p class="ix-hint">The owner and the business’s administrators can change everything on this page. Editors and other members cannot. Roles are set in the team settings.</p>
-                <p><a class="ix-btn ix-btn--ghost" href="{{ route('teams.show', $team->id) }}"><span class="material-symbols-rounded" aria-hidden="true">group</span>Team members and roles</a></p>
+                <p class="ix-hint">The owner and the business’s administrators can change everything on this page. Editors and other members cannot. Roles are set in the company settings.</p>
+                <p><a class="ix-btn ix-btn--ghost" href="{{ route('teams.show', $team->id) }}"><span class="material-symbols-rounded" aria-hidden="true">group</span>People and roles</a></p>
             </section>
 
             <section id="standing" class="ix-settings__sec">
@@ -429,5 +429,7 @@
                 @endif
             </section>
         </div>
+        {{-- Phones only (U-18): fourteen sections make a long page, so the way back to the index stays in reach at the foot of the screen. --}}
+        <a class="ix-settings__up" href="#sections">Sections</a>
     </div>
 </x-app-layout>

@@ -9,7 +9,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Questions</h1>
-            <p class="ix-lede">What the team is stuck on, and what has already been answered. Ask in plain words; anyone who knows can reply.</p>
+            <p class="ix-lede">What the company is stuck on, and what has already been answered. Ask in plain words; anyone who knows can reply.</p>
         </div>
     </div>
 
@@ -94,8 +94,8 @@
         </section>
     @else
         <section class="ix-empty ix-empty--start">
-            <h2>{{ $team?->name ?? 'Your team' }} has no questions yet</h2>
-            <p>Questions are how the team gets unblocked. Start with one that is true for a {{ strtolower($industry['label']) }} business, or write your own.</p>
+            <h2>{{ $team?->name ?? 'Your company' }} has no questions yet</h2>
+            <p>Questions are how the company gets unblocked. Start with one that is true for a {{ strtolower($industry['label']) }} business, or write your own.</p>
             <ul class="ix-ideas__list">
                 @foreach (array_slice($industry['questions'], 0, 4) as $idea)
                     <li><a class="ix-idea" href="{{ route('seek', ['question' => $idea]) }}">{{ $idea }}</a></li>

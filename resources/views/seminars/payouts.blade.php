@@ -3,11 +3,14 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Get paid for seminars</h1>
-            <p class="ix-lede">You set the price of each seminar. InfoDot keeps {{ $percent }}% of every ticket and Paystack's processing fee comes out of your share. Paystack pays the rest to the bank account you give here.</p>
+            <p class="ix-lede">You set the price of each seminar. InfoDot keeps {{ $percent }}% of every ticket and the payment processing fee comes out of your share. Payments are handled by Dot.Finance, which pays the rest to the bank account you give here.</p>
         </div>
     </div>
     @if ($flash)<p class="ix-pts__muted" role="status">{{ $flash }}</p>@endif
 
+    <div class="ix-settings__body">
+    <section class="ix-settings__sec" aria-labelledby="account-h">
+    <h2 id="account-h">Where you are paid</h2>
     @if ($account)
         <p><span class="ix-chip ix-chip--done">Payout account saved</span> Ending {{ $account->account_last4 }}. Enter new details below to replace it.</p>
     @endif
@@ -41,9 +44,10 @@
             <a class="ix-btn ix-btn--ghost" href="{{ route('seminars') }}">Back to seminars</a>
         </div>
     </form>
+    </section>
 
-    <section aria-labelledby="seller-h" style="margin-top: 28px;">
-        <h2 class="ix-label" id="seller-h">Who is selling the ticket</h2>
+    <section class="ix-settings__sec" aria-labelledby="seller-h">
+        <h2 id="seller-h">Who is selling the ticket</h2>
         <p class="ix-hint">You are the seller; InfoDot collects the payment and keeps {{ $percent }}% as its commission. This is what the attendee's receipt says. Add a VAT number only if you are registered for VAT.</p>
         <form class="ix-form" method="POST" action="{{ route('seminars.payouts.seller') }}">
             @csrf
@@ -58,29 +62,31 @@
                 @error('vat_number')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
             <div class="ix-field">
-                <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
-                    <input type="checkbox" name="authorises_receipts" value="1" style="margin-top:3px" @checked(old('authorises_receipts', $seller?->authorises_receipts))>
-                    <span class="ix-hint" style="margin:0">I authorise InfoDot to issue receipts to my attendees in my name.</span>
+                <label class="ix-choice__chk">
+                    <input type="checkbox" name="authorises_receipts" value="1" @checked(old('authorises_receipts', $seller?->authorises_receipts))>
+                    <span>I authorise InfoDot to issue receipts to my attendees in my name.</span>
                 </label>
             </div>
-            <button class="ix-btn" type="submit">Save seller details</button>
-            <a class="ix-btn ix-btn--ghost" href="{{ route('seminars.invoices') }}">My commission invoices</a>
+            <div class="ix-actions">
+                <button class="ix-btn ix-btn--primary" type="submit">Save seller details</button>
+                <a class="ix-btn ix-btn--ghost" href="{{ route('seminars.invoices') }}">My commission invoices</a>
+            </div>
         </form>
     </section>
 
-    <section aria-labelledby="agreement-h" style="margin-top: 28px;">
-        <h2 class="ix-label" id="agreement-h">Host agreement</h2>
+    <section class="ix-settings__sec" aria-labelledby="agreement-h">
+        <h2 id="agreement-h">Host agreement</h2>
         @if (! $agreementApproved)
             <p class="ix-hint">Paid seminars open once InfoDot has finished and approved the host agreement. You can set up where you are paid now; we will tell you when you can start charging.</p>
         @elseif ($accepted)
             <p><span class="ix-chip ix-chip--done">Accepted</span> You accepted version {{ $agreementVersion }} on {{ $accepted->accepted_at->format('j M Y') }}.</p>
-            <details><summary>Read it again</summary><div class="ix-prose">{!! $agreementText !!}</div></details>
+            <details class="ix-disclose"><summary>Read it again</summary><div class="ix-prose">{!! $agreementText !!}</div></details>
         @else
             <div class="ix-prose">{!! $agreementText !!}</div>
             <form class="ix-form" method="POST" action="{{ route('seminars.payouts.agreement') }}">
                 @csrf
-                <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
-                    <input type="checkbox" name="accept" value="1" style="margin-top:3px">
+                <label class="ix-choice__chk">
+                    <input type="checkbox" name="accept" value="1">
                     <span>I have read and accept this agreement (version {{ $agreementVersion }}).</span>
                 </label>
                 @error('accept')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
@@ -90,8 +96,8 @@
     </section>
 
     @if ($debts->isNotEmpty())
-        <section aria-labelledby="debts-h" style="margin-top: 28px;">
-            <h2 class="ix-label" id="debts-h">What you owe InfoDot</h2>
+        <section class="ix-settings__sec" aria-labelledby="debts-h">
+            <h2 id="debts-h">What you owe InfoDot</h2>
             <p class="ix-hint">When a chargeback on one of your tickets is lost, the amount InfoDot lost is owed back. It is taken only from your share of future tickets, never more than half of your share of any ticket. You never have to pay it separately.</p>
             <table class="ix-table">
                 <thead><tr><th scope="col">Opened</th><th scope="col">Owed</th><th scope="col">Taken so far</th><th scope="col">Still owed</th><th scope="col">State</th></tr></thead>
@@ -109,4 +115,5 @@
             </table>
         </section>
     @endif
+    </div>
 </x-app-layout>

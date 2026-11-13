@@ -309,13 +309,21 @@ jobs:
           # host it carries the docroot-to-app path bootstrap. The tab and home-screen icons (R-49)
           # are here because browsers ask for them at fixed root addresses; every other image,
           # font, script and stylesheet goes through the Vite build.
-          for F in robots.txt .well-known/security.txt favicon.ico apple-touch-icon.png icon-192.png icon-512.png site.webmanifest; do
+          for F in robots.txt .well-known/security.txt favicon.ico apple-touch-icon.png icon-192.png icon-512.png; do
             if [ -f "public/$F" ] && [ ! -L "$DOCROOT/$F" ]; then
               mkdir -p "$(dirname "$DOCROOT/$F")"
               cp -f "public/$F" "$DOCROOT/$F"
               echo "== docroot $F refreshed from the repo"
             fi
           done
+
+          # site.webmanifest is NOT in that list: the application serves it (WebManifestController) so it carries
+          # application/manifest+json. As a physical file the web server sent it with a generic type, and a file in the
+          # docroot is served before any route. Remove the copy earlier releases put there (a real file only).
+          if [ -f "$DOCROOT/site.webmanifest" ] && [ ! -L "$DOCROOT/site.webmanifest" ]; then
+            rm -f "$DOCROOT/site.webmanifest"
+            echo "== docroot site.webmanifest removed: the application serves it now"
+          fi
 
           # ---- database
           echo "== Pending migrations:"

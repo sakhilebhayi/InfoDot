@@ -17,7 +17,7 @@ class HeadIconsTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const ROOT_FILES = ['favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'site.webmanifest'];
+    private const ROOT_FILES = ['favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 
     /** @return list<string> the icon, manifest and theme-colour tags of a page, in order */
     private function iconTags(string $html): array
@@ -55,7 +55,8 @@ class HeadIconsTest extends TestCase
 
     public function test_the_web_manifest_carries_the_real_name_the_yard_colours_and_icons_that_exist(): void
     {
-        $manifest = json_decode((string) file_get_contents(public_path('site.webmanifest')), true, flags: JSON_THROW_ON_ERROR);
+        // The manifest is served by a route (see the content-type test below); its content is in resources/.
+        $manifest = json_decode((string) $this->get('/site.webmanifest')->assertOk()->getContent(), true, flags: JSON_THROW_ON_ERROR);
         $css = (string) file_get_contents(resource_path('css/infodot.css'));
         preg_match('/--ix-top:\s*(#[0-9a-f]{6})/', $css, $top);
         preg_match('/--ix-bg:\s*(#[0-9a-f]{6})/', $css, $ground);
@@ -98,6 +99,9 @@ class HeadIconsTest extends TestCase
         foreach ($expected as $tag) {
             if (preg_match('/href="([^"]+)"/', $tag, $m)) {
                 $path = ltrim((string) parse_url($m[1], PHP_URL_PATH), '/');
+                if ($path === 'site.webmanifest') {
+                    continue;   // a route, not a file: test_the_web_manifest_is_served_by_the_application_with_its_content_type
+                }
                 $this->assertContains($path, self::ROOT_FILES, $tag);
                 $this->assertFileExists(public_path($path));
                 $this->assertGreaterThan(0, filesize(public_path($path)), $path.' is empty');
@@ -120,6 +124,35 @@ class HeadIconsTest extends TestCase
                 $this->assertStringContainsString("@include('partials.head-icons')", $source, $path.' is a full page without the shared icons');
             }
         }
+    }
+
+    public function test_the_web_manifest_is_served_by_the_application_with_its_content_type(): void
+    {
+        $response = $this->get('/site.webmanifest')->assertOk();
+
+        $this->assertStringStartsWith('application/manifest+json', (string) $response->headers->get('Content-Type'));
+        $this->assertTrue($response->headers->hasCacheControlDirective('public'));
+        $this->assertSame('604800', (string) $response->headers->getCacheControlDirective('max-age'));
+        $this->assertNotNull($response->headers->get('ETag'));
+        $this->assertSame([], $response->headers->getCookies(), 'a publicly cached answer sets no cookie');
+        $this->assertSame('InfoDot', $response->json('name'));
+
+        // A browser that already holds it is told so.
+        $this->get('/site.webmanifest', ['If-None-Match' => (string) $response->headers->get('ETag')])->assertStatus(304);
+
+        // Every page points at the route.
+        $this->assertStringContainsString('<link rel="manifest" href="'.route('site.webmanifest').'">', (string) $this->get('/login')->getContent());
+    }
+
+    public function test_no_static_copy_of_the_manifest_can_stand_in_front_of_the_route(): void
+    {
+        // A file in the web root is served by the web server before any route, with the server's own content type.
+        $this->assertFileDoesNotExist(public_path('site.webmanifest'));
+
+        $deploy = (string) file_get_contents(base_path('.github/workflows/deploy.yml'));
+        $this->assertSame(1, preg_match('/for F in ([^;]+); do/', $deploy, $m));
+        $this->assertNotContains('site.webmanifest', preg_split('/\s+/', trim($m[1])), 'the deploy must not copy the manifest to the web root');
+        $this->assertStringContainsString('rm -f "$DOCROOT/site.webmanifest"', $deploy, 'the copy earlier releases left in the web root is removed');
     }
 
     public function test_the_deploy_copies_every_icon_file_to_the_web_root(): void

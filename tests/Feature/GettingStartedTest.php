@@ -65,7 +65,7 @@ class GettingStartedTest extends TestCase
         foreach ([
             'photo' => [route('profile.edit').'#profile', 'Add a profile picture'],
             'contribute' => [route('seek'), 'Ask a first question or write a first solution'],
-            'business' => [route('teams.create'), 'Create your business and list it'],
+            'business' => [route('teams.create'), 'Create your company and list its business page'],
             'platform' => [route('ecosystem.widget'), 'Open a platform'],
         ] as $key => [$url, $title]) {
             $row = $this->row($html, $key);

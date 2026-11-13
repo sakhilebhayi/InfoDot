@@ -8,7 +8,7 @@ use App\Events\Knowledge\AnswerPublished;
 use App\Events\Knowledge\ContentReported;
 use App\Events\Knowledge\QuestionSubmitted;
 use App\Livewire\Answers;
-use App\Livewire\Question as QuestionComponent;
+use App\Livewire\Comments;
 use App\Models\Answer;
 use App\Models\ContentReport;
 use App\Models\Questions;
@@ -301,17 +301,18 @@ class AnswersTest extends TestCase
         DB::table('likes')->insert(['user_id' => $fan->id, 'likable_type' => $question->getMorphClass(), 'likable_id' => $question->id, 'like' => 1]);
     }
 
-    public function test_marking_solved_by_hand_is_the_askers_or_a_moderators_call_not_anyones(): void
+    /** Through the Comments panel, the one place the action is mounted (the legacy Question component that also carried it is deleted). */
+    public function test_marking_solved_by_hand_is_the_askers_call_not_anyones(): void
     {
         $asker = $this->person();
         $stranger = $this->person();
         $question = $this->question($asker);
 
-        Livewire::actingAs($stranger)->test(QuestionComponent::class, ['model' => $question, 'question' => $question])
+        Livewire::actingAs($stranger)->test(Comments::class, ['model' => $question, 'question' => $question])
             ->call('markedAsSolved')->assertForbidden();
         $this->assertSame(0, (int) $question->fresh()->status);
 
-        Livewire::actingAs($asker)->test(QuestionComponent::class, ['model' => $question, 'question' => $question])
+        Livewire::actingAs($asker)->test(Comments::class, ['model' => $question, 'question' => $question])
             ->call('markedAsSolved')->assertOk();
         $this->assertSame(1, (int) $question->fresh()->status);
     }

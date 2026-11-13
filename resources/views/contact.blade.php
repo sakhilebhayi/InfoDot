@@ -1,5 +1,5 @@
 <x-public-layout title="Contact" band="INFO" crumb="Contact" description="How to contact InfoDot: questions, ideas, concerns and requests about your personal information.">
-    <div class="ix-prose">
+    <article class="ix-prose ix-prose--ledger">
         <h1 class="ix-h1">Contact us</h1>
         <p class="ix-lede">Questions, ideas or concerns about InfoDot are welcome.</p>
 
@@ -36,5 +36,5 @@
                 <p class="ix-hint">We use what you send only to reply to you.</p>
             </form>
         @endif
-    </div>
+    </article>
 </x-public-layout>

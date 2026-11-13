@@ -21,13 +21,13 @@ The design pass took every item below as input. The list itself is kept as it wa
 | U-09 | Closed. The sign-in pages are The Yard. | D-01 |
 | U-10 | Closed. The 429 page, with the wait in minutes; sign-up allows 30 in ten minutes. | D-30 |
 | U-11 | Closed for the heading and the terms box. The password fields come back empty on purpose. | D-28, D-29 |
-| U-12 | Open. Needs the photo field's upload binding changed. | D-31 |
-| U-13 | Open. A change to the structure of two forms. | D-32 |
+| U-12 | Closed later. The browser checks type and size and refuses before anything is uploaded; the server check stays. | D-31 |
+| U-13 | Closed later. Topics come straight after the title on both forms and say they are required. | D-32 |
 | U-14 | Closed on the create form ("Create a business"). "Team settings" and "company" elsewhere are left for the owner. | D-08 |
 | U-15 | Closed. Any authenticator app. | D-09 |
 | U-16 | Closed. The tab row fades at its right edge. | D-25 |
 | U-17 | Open. Deciding what leaves the phone top bar is a product decision. | D-25 |
-| U-18 | Open. Splitting the editor is a redesign of that screen. | D-26 |
+| U-18 | Closed later without splitting the editor: on a phone the index is a two-column register and a "Sections" plate at the foot of the screen goes back to it. | D-26 |
 
 ## Held by a test that is marked as a known failure (at the time; both marks are now removed)
 

@@ -45,13 +45,21 @@ use App\Http\Controllers\TopicsController;
 use App\Http\Controllers\TopicSuggestionsController;
 use App\Http\Controllers\UxFrictionController;
 use App\Http\Controllers\VerificationDeskController;
+use App\Http\Controllers\WebManifestController;
+use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\EndSuspendedSession;
 use App\Http\Middleware\ExplainFailedUpload;
+use App\Http\Middleware\VerifyCsrfToken;
 use App\Livewire\EcosystemWidget;
 use App\Livewire\Moderation\Library as ModerationLibrary;
 use App\Livewire\Moderation\Queue as ModerationQueue;
 use App\Livewire\Moderation\Topics as ModerationTopics;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Laravel\Jetstream\Http\Middleware\AuthenticateSession;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +93,12 @@ Route::get('/attachments/{attachment:uuid}', [AttachmentController::class, 'show
 // Profile pictures (R-48): served by the app because this host's web root has no link to storage/app/public.
 Route::get('/storage/profile-photos/{file}', ProfilePhotoController::class)->where('file', '[A-Za-z0-9]{1,80}\.(jpg|jpeg|png|webp)')->middleware('throttle:600,1,profile-photos')->name('profile-photos.show');
 Route::get('/sitemap.xml', SitemapController::class)->middleware('throttle:30,1,sitemap')->name('sitemap');
+
+// The web manifest (R-49), with its registered content type. No session and no cookies: the answer is the same for
+// everyone and is cached publicly. The content is in resources/, so no file in the web root shadows this route.
+Route::get('/site.webmanifest', WebManifestController::class)->middleware('throttle:120,1,webmanifest')
+    ->withoutMiddleware([EncryptCookies::class, AddQueuedCookiesToResponse::class, StartSession::class, AuthenticateSession::class, EndSuspendedSession::class, ShareErrorsFromSession::class, VerifyCsrfToken::class])
+    ->name('site.webmanifest');
 
 // RFC 9116 disclosure file (R-19). The web server serves the physical copy first; this route is the
 // safety net on hosts whose docroot copy lags a deploy.

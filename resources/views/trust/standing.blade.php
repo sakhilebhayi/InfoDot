@@ -11,7 +11,7 @@
     @if ($errors->any())<div class="ix-error" role="alert"><p>{{ $errors->first() }}</p></div>@endif
 
     @if ($team->isRestricted())
-        <div class="ix-previewbar" role="status"><p><b>{{ $team->name }} is out of the directory while InfoDot reviews it.</b> Its page opens only for your team; everyone else finds no page, and is never given a reason.</p></div>
+        <div class="ix-previewbar" role="status"><p><b>{{ $team->name }} is out of the directory while InfoDot reviews it.</b> Its page opens only for people in your company; everyone else finds no page, and is never given a reason.</p></div>
     @endif
 
     <section class="ix-panel" aria-labelledby="rev-h">

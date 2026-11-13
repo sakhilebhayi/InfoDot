@@ -37,7 +37,7 @@ Each page is laid out for its job, not from one card template.
 - The primary action (`--ix-signal`) is ink on the ground in both schemes: graphite by day, light ink by night. It never follows the area colour.
 - Chips and secondary text are measured against every surface they sit on (panel, ground, sunken, hover), wash included: `--ix-warn`, `--ix-ok` and `--ix-text-3` are set so each passes 4.5:1 on all four.
 - Touch: on a touch screen or below 769px every button, field, pill and icon control is at least 44px; a mouse keeps the 36px density.
-- A panel, list item or note is marked with a top rule in its area colour, never a stripe down one side. The gold bar beside the company name on the Home gate is the one upright mark.
+- A panel, list item or note is marked with a top rule in its area colour, never a stripe down one side. The Home gate has no stripe either: its mark is the company's owner code, stencilled in gold at the far end of the gate (`ix-gate__code`).
 
 ## Behaviour
 Search matches content, references (`CODE-Q|S-000014`, visibility-scoped) and quick actions (Ctrl/Cmd K). Page changes use the view-transition API on the area band. Below 1200px the tabs move to their own scrolling row; search stays reachable at every width.

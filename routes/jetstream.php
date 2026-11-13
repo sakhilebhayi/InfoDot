@@ -1,12 +1,12 @@
 <?php
 
+use App\Http\Controllers\TeamInvitationController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Jetstream\Http\Controllers\CurrentTeamController;
 use Laravel\Jetstream\Http\Controllers\Livewire\ApiTokenController;
 use Laravel\Jetstream\Http\Controllers\Livewire\PrivacyPolicyController;
 use Laravel\Jetstream\Http\Controllers\Livewire\TeamController;
 use Laravel\Jetstream\Http\Controllers\Livewire\TermsOfServiceController;
-use Laravel\Jetstream\Http\Controllers\TeamInvitationController;
 use Laravel\Jetstream\Jetstream;
 
 Route::group(['middleware' => config('jetstream.middleware', ['web'])], function () {

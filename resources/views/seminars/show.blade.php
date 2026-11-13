@@ -57,40 +57,6 @@
         <p class="ix-hint">A moderator put this seminar back on after your appeal: {{ $appeal->resolution_note }}</p>
     @endif
 
-    @if ($canReportPerson)
-        <details class="ix-hint" id="report-person" style="margin-bottom: 12px;">
-            <summary>Report someone in this seminar</summary>
-            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
-                <label class="ix-label" for="rp-name">Their name as it shows in the room or chat</label>
-                <input class="ix-input" id="rp-name" name="about_name" type="text" maxlength="60" required>
-                <label class="ix-label" for="rp-reason">What happened</label>
-                <select class="ix-input" id="rp-reason" name="reason" required>
-                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
-                </select>
-                <label class="ix-label" for="rp-detail">Tell the moderators more (optional)</label>
-                <textarea class="ix-textarea" id="rp-detail" name="detail" rows="3" maxlength="1000"></textarea>
-                <p class="ix-hint">A moderator reads it. The person is not told who reported them. As host you can also remove someone from the room yourself.</p>
-                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
-            </form>
-        </details>
-    @endif
-
-    @if (! $isHost && $seminar->status === 'published')
-        <details class="ix-hint" style="margin-bottom: 12px;">
-            <summary>Report this seminar</summary>
-            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
-                <label class="ix-label" for="report-reason">What is wrong with it</label>
-                <select class="ix-input" id="report-reason" name="reason" required>
-                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
-                </select>
-                <label class="ix-label" for="report-detail">Tell the moderators more (optional)</label>
-                <textarea class="ix-textarea" id="report-detail" name="detail" rows="3" maxlength="1000"></textarea>
-                <p class="ix-hint">A moderator reads it. The host is not told who reported.</p>
-                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
-            </form>
-        </details>
-    @endif
-
     @if (! $isHost && $seminar->status === 'published')
         <section class="ix-notices__pref" aria-label="Your registration">
             @if ($reg && $reg->status === 'registered')
@@ -115,7 +81,7 @@
                     </form>
                 @endif
                 @if ($seminar->isPaid() && $reg->paid_at)
-                    <p class="ix-hint"><a href="{{ route('seminars.receipt', $seminar) }}" style="text-decoration: underline;">View your receipt</a>@if ($reg->refunded_cents > 0) · refunded {{ \App\Models\Seminar::money($reg->refunded_cents) }}@endif</p>
+                    <p class="ix-hint"><a class="ix-link" href="{{ route('seminars.receipt', $seminar) }}">View your receipt</a>@if ($reg->refunded_cents > 0) · refunded {{ \App\Models\Seminar::money($reg->refunded_cents) }}@endif</p>
                 @endif
             @elseif ($reg && $reg->status === 'waitlist')
                 <p><span class="ix-chip">Waiting list</span> You will be registered automatically if a place opens.</p>
@@ -127,7 +93,7 @@
                 <form method="POST" action="{{ route('seminars.register', $seminar) }}">@csrf
                     @if ($seminar->isPaid())
                         <button class="ix-btn ix-btn--primary" type="submit" @disabled($seminar->capacity && $registeredCount >= $seminar->capacity)>{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Sold out' : 'Buy a ticket ('.$seminar->priceLabel().')' }}</button>
-                        <p class="ix-hint">You pay on Paystack. If you cancel at least {{ config('seminars.paid.refund_hours_before', 24) }} hours before the start you get a full refund; later than that there is no refund. If the host cancels the seminar you are always refunded in full.</p>
+                        <p class="ix-hint">Payments are handled by Dot.Finance: you pay on its secure payment page and come back here. If you cancel at least {{ config('seminars.paid.refund_hours_before', 24) }} hours before the start you get a full refund; later than that there is no refund. If the host cancels the seminar you are always refunded in full.</p>
                     @else
                         <button class="ix-btn ix-btn--primary" type="submit">{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Join the waiting list' : 'Register for free' }}</button>
                     @endif
@@ -156,6 +122,41 @@
         </section>
     @endif
 
+    {{-- Reporting comes after the person's own place: it is the rare action, not the first thing under the description. --}}
+    @if ($canReportPerson)
+        <details class="ix-disclose" id="report-person">
+            <summary>Report someone in this seminar</summary>
+            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
+                <label class="ix-label" for="rp-name">Their name as it shows in the room or chat</label>
+                <input class="ix-input" id="rp-name" name="about_name" type="text" maxlength="60" required>
+                <label class="ix-label" for="rp-reason">What happened</label>
+                <select class="ix-input" id="rp-reason" name="reason" required>
+                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                </select>
+                <label class="ix-label" for="rp-detail">Tell the moderators more (optional)</label>
+                <textarea class="ix-textarea" id="rp-detail" name="detail" rows="3" maxlength="1000"></textarea>
+                <p class="ix-hint">A moderator reads it. The person is not told who reported them. As host you can also remove someone from the room yourself.</p>
+                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
+            </form>
+        </details>
+    @endif
+
+    @if (! $isHost && $seminar->status === 'published')
+        <details class="ix-disclose">
+            <summary>Report this seminar</summary>
+            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
+                <label class="ix-label" for="report-reason">What is wrong with it</label>
+                <select class="ix-input" id="report-reason" name="reason" required>
+                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                </select>
+                <label class="ix-label" for="report-detail">Tell the moderators more (optional)</label>
+                <textarea class="ix-textarea" id="report-detail" name="detail" rows="3" maxlength="1000"></textarea>
+                <p class="ix-hint">A moderator reads it. The host is not told who reported.</p>
+                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
+            </form>
+        </details>
+    @endif
+
     @if ($isHost)
         <section aria-labelledby="people-h" style="margin-top: 24px;">
             @if ($linkReports > 0)
@@ -175,7 +176,7 @@
                 <form method="POST" action="{{ route('seminars.join', $seminar) }}">@csrf<button class="ix-btn" type="submit">{{ $seminar->isRoom() || $seminar->isP2p() ? 'Enter the room' : 'Open my meeting room' }}</button></form>
             @endif
             @if ($revenue)
-                <p class="ix-hint">Tickets sold: <b>{{ $revenue['tickets'] }}</b>. Paid by attendees {{ \App\Models\Seminar::money($revenue['gross_cents']) }}; InfoDot keeps {{ \App\Models\Seminar::money($revenue['platform_cents']) }}; yours {{ \App\Models\Seminar::money($revenue['host_cents']) }} before Paystack's processing fee. Paystack pays you out on its own schedule.</p>
+                <p class="ix-hint">Tickets sold: <b>{{ $revenue['tickets'] }}</b>. Paid by attendees {{ \App\Models\Seminar::money($revenue['gross_cents']) }}; InfoDot keeps {{ \App\Models\Seminar::money($revenue['platform_cents']) }}; yours {{ \App\Models\Seminar::money($revenue['host_cents']) }} before the payment processing fee. Payments are handled by Dot.Finance, which pays you out on its own schedule.</p>
             @endif
             @if ($people->isEmpty())
                 <p class="ix-hint">Nobody has registered yet.</p>

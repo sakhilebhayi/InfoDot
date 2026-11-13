@@ -11,6 +11,10 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Jetstream\CreateTeam;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Seminars\SeminarService;
+use App\Services\Trust\BusinessTrustService;
+use App\Services\Verification\VerificationService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -52,7 +56,7 @@ $result = match ($op['op']) {
         return ['id' => $user->id, 'email' => $user->email, 'name' => $user->name];
     })(),
 
-    // A business, made the way the "Create a business" form makes one.
+    // A business, made the way the "Create a company" form makes one.
     'make-business' => (function () use ($op) {
         $owner = User::where('email', $op['owner'])->firstOrFail();
         $team = app(CreateTeam::class)->create($owner, [
@@ -73,6 +77,45 @@ $result = match ($op['op']) {
         $user->forceFill(['current_team_id' => $team->id])->save();
 
         return ['id' => $user->id];
+    })(),
+
+    // The records behind the pages no demonstration content reaches (R-49): a seminar with a registered attendee, a
+    // verified business and a second application under the same registration number (an identity conflict), a report
+    // about the first business, an investigation that takes it out of the directory, and the owner's appeal. Made
+    // through the same services the forms call. The meeting-link check is off for this one call: it would ask the
+    // meeting host over the network.
+    'make-cases' => (function () use ($op) {
+        config(['seminars.link_check.enabled' => false]);
+        $person = fn (string $key) => User::where('email', $op[$key])->firstOrFail();
+        [$owner, $other, $reporter, $reviewer, $second, $host, $attendee] = array_map($person, ['owner', 'other', 'reporter', 'reviewer', 'second_reviewer', 'host', 'attendee']);
+        $acme = Team::findOrFail($op['business_id']);
+        $copy = Team::findOrFail($op['other_business_id']);
+
+        $evidence = function (): array {
+            $path = tempnam(sys_get_temp_dir(), 'e2e').'.pdf';
+            file_put_contents($path, "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF");
+
+            return [['file' => new UploadedFile($path, 'registration.pdf', 'application/pdf', null, true), 'label' => 'Registration certificate']];
+        };
+        $application = fn (Team $team): array => ['category' => 'registered_company', 'registered_name' => $team->name, 'registration_number' => '2019/123456/07', 'registration_country' => 'South Africa', 'applicant_role' => 'Director'];
+
+        $verification = app(VerificationService::class);
+        $standing = $verification->apply($owner, $acme, $application($acme), $evidence());
+        $verification->approve($second, $standing, ['registration_document', 'representative_authority']);
+        $pending = $verification->apply($other, $copy, $application($copy), $evidence());
+
+        $trust = app(BusinessTrustService::class);
+        $report = $trust->report($reporter, $acme, ['category' => 'impersonation', 'detail' => 'This page uses the name of another company in our town and quotes its telephone number.']);
+        $investigation = $trust->open($reviewer, $acme, 'potential_impersonation', 'The name matches another registered company.', [$report->id], true, 'Please send proof that you own the name you trade under.');
+        $appeal = $trust->appeal($owner, $acme, 'investigation', $investigation->id, 'We have traded under this name since 2019 and the registration document we sent shows it clearly.');
+
+        $seminars = app(SeminarService::class);
+        $seminar = $seminars->save($host, null, ['title' => 'Pricing your first product', 'summary' => 'A practical hour with worked examples.', 'description' => "What we cover:\n\ncost-plus pricing, value pricing and when to raise a price.",
+            'starts_at' => now()->addDays(3)->format('Y-m-d\TH:i'), 'duration_minutes' => 60, 'capacity' => 40, 'join_url' => 'https://meet.example.com/pricing'], true);
+        $seminars->register($seminar, $attendee);
+
+        return ['seminar' => $seminar->id, 'verification' => $pending->id, 'conflict' => DB::table('identity_conflicts')->orderByDesc('id')->value('id'),
+            'report' => $report->id, 'investigation' => $investigation->id, 'appeal' => $appeal->id];
     })(),
 
     // Mark a person's email verified without the link (used where the link itself is not what is being tested).

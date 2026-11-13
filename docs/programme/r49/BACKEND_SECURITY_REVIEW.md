@@ -40,20 +40,20 @@ skipped). Pint passes; PHPStan reports no errors and the baseline is unchanged a
 | B-14 | P3 | 2 Points | An acceptance could be reversed twice; a late request could reset a question | Fixed | Test |
 | L-01 | P2 | 5 Accounts | Deleting an owner's account deletes their businesses for every member, without warning | Left: owner decision | Test (probe) |
 | L-02 | P2 | 4 Visibility | Any business can be named in a mention by its id, including private and restricted ones | Left: owner decision | Read |
-| L-03 | P2 | 1 Seminars | One row per person per seminar: a second purchase overwrites the first sale's record | Left: large | Read |
+| L-03 | P2 | 1 Seminars | One row per person per seminar: a second purchase overwrites the first sale's record | Fixed later (`seminar_ticket_sales`, one row per paid checkout) | `SeminarTicketSalesTest` |
 | L-04 | P3 | 1 Seminars | Refund callback: stated amount is not compared with the computed amount | Left: contract | Read |
 | L-05 | P3 | 1 Seminars | Raising capacity lets a newcomer pass the waiting list | Left: owner decision | Read |
 | L-06 | P3 | 1 Seminars | Host can edit attendance after the end, which changes whose rating counts | Left: owner decision | Read |
 | L-07 | P3 | 1 Seminars | Host can move or cancel a seminar that has already ended | Left: owner decision | Read |
 | L-08 | P3 | 1 Seminars | Link checker reads the whole response body | Left: small, untested | Read |
-| L-09 | P3 | 5 Accounts | Team invitations never expire; the link adds the invited address whoever opens it | Left: owner decision | Read |
-| L-10 | P3 | 5 Accounts | Two-factor is switched on before the person has proved the authenticator works | Left: needs the view | Read |
+| L-09 | P3 | 5 Accounts | Team invitations never expire; the link adds the invited address whoever opens it | Expiry fixed later (14 days, resend, daily prune). The link still adds the invited address whoever opens it | `TeamInvitationExpiryTest` |
+| L-10 | P3 | 5 Accounts | Two-factor is switched on before the person has proved the authenticator works | Fixed later (Fortify `confirm`, the form asks for one code) | `TwoFactorAuthenticationSettingsTest` |
 | L-11 | P3 | 8 Database | `teams.user_id`, `questions.user_id`, `comments`, `likes`, `attachments.user_id` have no foreign key | Left: schema change | Read |
 | L-12 | P3 | 8 Database | `associates` has no uniqueness on (person, associate) | Left: soft deletes | Read |
 | L-13 | P2 (conditional) | 7 Scheduler | With `CACHE_DRIVER=database` the scheduler's locks have no table | Left: not the configured driver | Read |
 | L-14 | P3 | 1 Seminars | A repeated notice inside a transaction would abort it on PostgreSQL | Left: production is MySQL | Read |
 | L-15 | P3 | 4 Visibility | Comment bodies of company-only items are written to the search index (no read path uses it) | Left | Read |
-| L-16 | P3 | 3 Livewire | `QuestionList`, `SolutionList` and `Question` components have no guards and are mounted nowhere | Left: dead code | Read |
+| L-16 | P3 | 3 Livewire | `QuestionList`, `SolutionList` and `Question` components have no guards and are mounted nowhere | Deleted later, with their views | Read |
 | L-17 | P3 | 9 Errors | A moderator typing a reference on the library desk gets different messages for "company-only", "hidden" and "not there" | Left | Read |
 
 ## 1. Seminars and money paths

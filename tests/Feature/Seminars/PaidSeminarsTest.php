@@ -6,6 +6,7 @@ use App\Models\Seminar;
 use App\Models\SeminarHostAgreement;
 use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarRegistration;
+use App\Models\SeminarTicketSale;
 use App\Models\User;
 use App\Services\Seminars\SeminarService;
 use App\Support\Knowledge\Signature;
@@ -254,6 +255,8 @@ class PaidSeminarsTest extends TestCase
         $reg = $this->buy($s, $this->person());
         $this->financeCallback('ticket.paid', $reg->ticket_ref);
         $reg->forceFill(['refund_requested_at' => now()->subMinutes(30)])->save();
+        // The sweep reads the sale (one per paid checkout), not the registration row.
+        SeminarTicketSale::where('ticket_ref', $reg->ticket_ref)->update(['refund_requested_at' => now()->subMinutes(30)]);
 
         $this->assertSame(1, app(SeminarService::class)->retryRefunds());
     }
@@ -269,7 +272,7 @@ class PaidSeminarsTest extends TestCase
 
         $r = app(SeminarService::class)->hostRevenue($s);
         $this->assertSame([2, 40000, 4000, 36000], [$r['tickets'], $r['gross_cents'], $r['platform_cents'], $r['host_cents']]);
-        $this->actingAs($host)->get('/seminars/'.$s->id)->assertSee('InfoDot keeps R40.00', false)->assertSee('before Paystack');
+        $this->actingAs($host)->get('/seminars/'.$s->id)->assertSee('InfoDot keeps R40.00', false)->assertSee('before the payment processing fee')->assertSee('Payments are handled by Dot.Finance')->assertDontSee('Paystack');
     }
 
     public function test_the_price_hint_names_dot_finance_as_where_payment_is_handled_and_no_provider_brand(): void

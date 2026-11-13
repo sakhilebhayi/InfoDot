@@ -3,17 +3,17 @@
         <!-- Add Team Member -->
         <x-jet-form-section submit="addTeamMember">
             <x-slot name="title">
-                {{ __('Add team member') }}
+                {{ __('Add a person') }}
             </x-slot>
 
             <x-slot name="description">
-                {{ __('Add a new team member to your team, allowing them to collaborate with you.') }}
+                {{ __('Invite someone to your company so they can work in it with you.') }}
             </x-slot>
 
             <x-slot name="form">
                 <div class="col-span-6">
                     <div class="max-w-xl text-sm" style="color: var(--ix-text-2);">
-                        {{ __('Please provide the email address of the person you would like to add to this team.') }}
+                        {{ __('Enter the email address of the person you want to add to this company.') }}
                     </div>
                 </div>
 
@@ -75,30 +75,46 @@
         <!-- Team Member Invitations -->
         <x-jet-action-section>
             <x-slot name="title">
-                {{ __('Pending team invitations') }}
+                {{ __('Invitations not yet answered') }}
             </x-slot>
 
             <x-slot name="description">
-                {{ __('These people have been invited to your team and have been sent an invitation email. They may join the team by accepting the email invitation.') }}
+                {{ __('These people have been sent an invitation email. They join the company by accepting it.') }}
             </x-slot>
 
             <x-slot name="content">
                 <div>
                     @foreach ($team->teamInvitations as $invitation)
-                        <div class="flex items-center justify-between gap-3 py-3" style="{{ $loop->first ? '' : 'border-top: 1px solid var(--ix-rule);' }}">
-                            <div class="min-w-0 truncate" style="color: var(--ix-text-2);">{{ $invitation->email }}</div>
+                        <div class="flex flex-wrap items-center justify-between gap-3 py-3" style="{{ $loop->first ? '' : 'border-top: 1px solid var(--ix-rule);' }}">
+                            <div class="min-w-0">
+                                <div class="truncate" style="color: var(--ix-text-2);">{{ $invitation->email }}</div>
+                                <div class="text-xs" style="color: var(--ix-text-3);">
+                                    @if ($invitation->isExpired())
+                                        <span class="ix-chip ix-chip--open">{{ __('Expired') }}</span>
+                                        {{ __('Ran out on :date and holds no seat. Send it again to give it another :days days.', ['date' => $invitation->expires_at->timezone(config('app.timezone'))->format('j M Y'), 'days' => config('licensing.invitation_days', 14)]) }}
+                                    @elseif ($invitation->expires_at)
+                                        {{ __('Can be accepted until :date.', ['date' => $invitation->expires_at->timezone(config('app.timezone'))->format('j M Y')]) }}
+                                    @endif
+                                </div>
+                            </div>
 
-                            <div class="flex items-center">
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="ix-btn ix-btn--sm" wire:click="resendTeamInvitation({{ $invitation->id }})" wire:loading.attr="disabled" wire:target="resendTeamInvitation({{ $invitation->id }})"
+                                        aria-label="{{ __('Send the invitation to :email again', ['email' => $invitation->email]) }}">
+                                    {{ __('Send again') }}
+                                </button>
                                 @if (Gate::check('removeTeamMember', $team))
                                     <!-- Cancel Team Invitation -->
-                                    <button class="ix-btn ix-btn--sm ix-btn--ghost" style="color: var(--ix-danger);"
-                                                        wire:click="cancelTeamInvitation({{ $invitation->id }})">
+                                    <button type="button" class="ix-btn ix-btn--sm ix-btn--ghost" style="color: var(--ix-danger);"
+                                                        wire:click="cancelTeamInvitation({{ $invitation->id }})"
+                                                        aria-label="{{ __('Cancel the invitation to :email', ['email' => $invitation->email]) }}">
                                         {{ __('Cancel') }}
                                     </button>
                                 @endif
                             </div>
                         </div>
                     @endforeach
+                    <x-jet-action-message on="invitation-resent">{{ __('Sent again. It can be accepted for :days days.', ['days' => config('licensing.invitation_days', 14)]) }}</x-jet-action-message>
                 </div>
             </x-slot>
         </x-jet-action-section>
@@ -108,11 +124,11 @@
         <!-- Manage Team Members -->
         <x-jet-action-section>
             <x-slot name="title">
-                {{ __('Team members') }}
+                {{ __('People in the company') }}
             </x-slot>
 
             <x-slot name="description">
-                {{ __('All of the people that are part of this team.') }}
+                {{ __('Everyone who is part of this company.') }}
             </x-slot>
 
             <!-- Team Member List -->
@@ -205,11 +221,11 @@
     <!-- Leave Team Confirmation Modal -->
     <x-jet-confirmation-modal wire:model="confirmingLeavingTeam">
         <x-slot name="title">
-            {{ __('Leave team') }}
+            {{ __('Leave company') }}
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you would like to leave this team?') }}
+            {{ __('Are you sure you would like to leave this company?') }}
         </x-slot>
 
         <x-slot name="footer">
@@ -226,11 +242,11 @@
     <!-- Remove Team Member Confirmation Modal -->
     <x-jet-confirmation-modal wire:model="confirmingTeamMemberRemoval">
         <x-slot name="title">
-            {{ __('Remove team member') }}
+            {{ __('Remove person') }}
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you would like to remove this person from the team?') }}
+            {{ __('Are you sure you would like to remove this person from the company?') }}
         </x-slot>
 
         <x-slot name="footer">

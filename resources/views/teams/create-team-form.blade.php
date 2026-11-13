@@ -1,10 +1,10 @@
 <x-jet-form-section submit="createTeam">
     <x-slot name="title">
-        Business details
+        Company details
     </x-slot>
 
     <x-slot name="description">
-        Name the business, say what it does and choose who can find it. All three can be changed later.
+        Name the company, say what it does and choose who can find its business page. All three can be changed later.
     </x-slot>
 
     <x-slot name="form">
@@ -22,7 +22,7 @@
         </div>
 
         <div class="col-span-6 sm:col-span-4">
-            <x-jet-label for="name" value="Business name" />
+            <x-jet-label for="name" value="Company name" />
             <x-jet-input id="name" type="text" class="block w-full" wire:model.defer="state.name" autofocus />
             <x-jet-input-error for="name" />
         </div>
@@ -49,7 +49,7 @@
 
         <div class="col-span-6 sm:col-span-4">
             <fieldset class="ix-choice">
-                <legend class="ix-label">Who can see the business</legend>
+                <legend class="ix-label">Who can see the business page</legend>
                 @foreach (\App\Models\TeamProfile::VISIBILITY as $value => $label)
                     <label class="ix-choice__opt">
                         <input type="radio" name="visibility" value="{{ $value }}" wire:model.defer="state.visibility">
@@ -64,7 +64,7 @@
 
     <x-slot name="actions">
         <x-jet-button>
-            Create business
+            Create company
         </x-jet-button>
     </x-slot>
 </x-jet-form-section>
