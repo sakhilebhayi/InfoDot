@@ -2,7 +2,7 @@
     $money = $seats['price']
         ? number_format($seats['price']['amount_minor_units'] / 100, 2).' '.$seats['price']['currency']
         : null;
-    $labels = ['invited' => 'Invitation sent', 'joined' => 'Joined', 'left' => 'Left or removed', 'blocked' => 'Invitation blocked: no seat free', 'capacity_changed' => 'Seats changed'];
+    $labels = ['invited' => 'Invitation sent', 'joined' => 'Joined', 'left' => 'Left or removed', 'blocked' => 'Invitation blocked: no seat free', 'capacity_changed' => 'Seats changed', 'ownership_transferred' => 'Ownership transferred to'];
 @endphp
 <x-jet-action-section>
     <x-slot name="title">{{ __('Seats') }}</x-slot>

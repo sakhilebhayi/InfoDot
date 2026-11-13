@@ -98,6 +98,9 @@ class UserNotice extends Model
     /** The business — an investigation was opened, changed or concluded, or an appeal decided. */
     public const BUSINESS_STANDING = 'business_standing';
 
+    /** R-49: ownership of a business was transferred; which side the reader is on is carried in `ref`. */
+    public const BUSINESS_OWNERSHIP = 'business_ownership';
+
     /**
      * Notices that are about something the person has booked, paid for or is owed, not about their contributions. The notifications switch
      * silences the second kind only: nobody should miss a cancelled seminar, a changed time, a refund, a dispute or a debt because they
@@ -109,7 +112,7 @@ class UserNotice extends Model
         self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
-        self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING,
+        self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP,
     ];
 
     public const KINDS = [
@@ -122,7 +125,7 @@ class UserNotice extends Model
         self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE,
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
-        self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING,
+        self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP,
     ];
 
     public $timestamps = false;

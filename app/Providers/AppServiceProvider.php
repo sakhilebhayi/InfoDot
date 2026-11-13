@@ -20,6 +20,7 @@ use App\Listeners\RefreshAchievements;
 use App\Listeners\SkipMailToReservedDomains;
 use App\Livewire\Profile\UpdateProfileInformationForm;
 use App\Livewire\Teams\TeamMemberManager;
+use App\Livewire\Teams\TransferOwnershipForm;
 use App\Models\BusinessAppeal;
 use App\Models\BusinessReport;
 use App\Models\BusinessVerification;
@@ -74,6 +75,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Jetstream's team member manager with a server-side check on cancelling invitations (app/Livewire/Teams/TeamMemberManager.php).
         Livewire::component('teams.team-member-manager', TeamMemberManager::class);
+        // R-49: the owner hands a company to one of its members (app/Livewire/Teams/TransferOwnershipForm.php).
+        Livewire::component('teams.transfer-ownership-form', TransferOwnershipForm::class);
         // Jetstream's profile form, returning to the account page after a picture is saved (app/Livewire/Profile/UpdateProfileInformationForm.php).
         Livewire::component('profile.update-profile-information-form', UpdateProfileInformationForm::class);
 
