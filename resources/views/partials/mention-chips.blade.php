@@ -1,5 +1,6 @@
-{{-- The resolved identities mentioned on an item (R-16). Include with $item (eager-load mentions). --}}
-@php($rows = $item->relationLoaded('mentions') ? $item->mentions : $item->mentions()->with(['mentionedUser', 'mentionedTeam'])->get())
+{{-- The resolved identities mentioned on an item (R-16). Include with $item (eager-load mentions). A business that
+     has since gone private or been restricted is not named to a reader who may not see it. --}}
+@php($rows = ($item->relationLoaded('mentions') ? $item->mentions : $item->mentions()->with(['mentionedUser', 'mentionedTeam'])->get())->filter(fn ($mention) => $mention->mentioned_team_id ? (bool) $mention->mentionedTeam?->isVisibleTo(auth()->user()) : (bool) $mention->mentionedUser))
 @if ($rows->isNotEmpty())
     <p class="ix-mentioned" aria-label="Mentioned here">
         <span class="ix-mentioned__label">Mentioned:</span>

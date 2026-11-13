@@ -13,6 +13,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
+use Laravel\Jetstream\Jetstream;
 
 /**
  * In-app notices for contributors. `record()` is the only writer; it is called from a listener that can never fail the
@@ -183,6 +184,19 @@ class InAppNotices
         [, $id, $status] = array_pad(explode(':', $notice->ref), 3, null);
         $name = '“'.Str::limit($team->name, 60, '…', true).'”';
 
+        // R-49. The reference says which side the reader is on: "own:{team}:owner:…" or "own:{team}:{role they now hold}:…".
+        if ($notice->kind === UserNotice::BUSINESS_OWNERSHIP) {
+            [, , $side] = array_pad(explode(':', $notice->ref), 3, null);
+            $role = mb_strtolower(Jetstream::findRole((string) $side)->name ?? 'member');
+
+            return [
+                'text' => $side === 'owner'
+                    ? "You are now the owner of $name. Seats, ownership and deleting the company are yours to decide."
+                    : "You transferred ownership of $name. You are still in the company as $role.",
+                'url' => route('teams.show', $team->getKey()),
+            ];
+        }
+
         // R-33 Phase 4a. Reviewers see what is waiting; the reporter learns only whether action was
         // taken; the business is pointed at its standing page, where the explanation is.
         if ($notice->kind === UserNotice::BUSINESS_TRUST_QUEUE) {
@@ -329,6 +343,7 @@ class InAppNotices
             UserNotice::RELATIONSHIP_REQUEST, UserNotice::RELATIONSHIP_DECIDED => 'Linked business',
             UserNotice::ENQUIRY_RECEIVED, UserNotice::ENQUIRY_REPLY, UserNotice::ENQUIRY_ASSIGNED, UserNotice::ENQUIRY_FOLLOW_UP => 'Inbox',
             UserNotice::BUSINESS_TRUST_QUEUE, UserNotice::BUSINESS_REPORT_DECIDED, UserNotice::BUSINESS_STANDING => 'Business review',
+            UserNotice::BUSINESS_OWNERSHIP => 'Ownership',
             default => 'Update',
         };
     }

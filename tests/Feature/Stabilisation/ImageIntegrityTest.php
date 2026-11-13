@@ -7,9 +7,13 @@ use App\Models\Questions;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Attachments\AttachmentService;
+use App\Support\OptionalVite;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Vite;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 use Symfony\Component\Finder\Finder;
 use Tests\Feature\Stabilisation\Support\BuildsTheYard;
 use Tests\TestCase;
@@ -29,12 +33,18 @@ class ImageIntegrityTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * The files under public/ that views name directly. Only public/build and the files listed in the deploy
-     * workflow ("static files the docroot serves") are copied to the live web root; these few predate that rule and
-     * are served from copies already on the host. The list is closed: a NEW picture goes in resources/img and is
-     * named with Vite::asset, or it will be missing on the live site.
+     * The only files under public/ a page may name directly: the ones the deploy workflow copies to the live web
+     * root ("static files the docroot serves"). Everything else a page needs goes in resources/ and is named through
+     * Vite, or it will be missing on the live site, where only public/build and that short list are published.
+     *
+     * @return list<string>
      */
-    private const LEGACY_PUBLIC_FILES = ['favicon.ico', 'img/icons/icon.png', 'img/logo1.png', 'img/logo_white.png'];
+    private function filesTheDeployCopiesToTheWebRoot(): array
+    {
+        $this->assertSame(1, preg_match('/for F in ([^;]+); do/', (string) file_get_contents(base_path('.github/workflows/deploy.yml')), $m));
+
+        return preg_split('/\s+/', trim($m[1])) ?: [];
+    }
 
     protected function setUp(): void
     {
@@ -196,27 +206,69 @@ class ImageIntegrityTest extends TestCase
 
     // ---- what the views name --------------------------------------------------------------------------------------
 
-    public function test_every_file_a_view_names_under_public_exists_and_no_new_one_has_been_added(): void
+    public function test_a_page_names_no_file_under_public_except_the_ones_the_deploy_publishes(): void
     {
+        $published = $this->filesTheDeployCopiesToTheWebRoot();
         $named = [];
-        foreach ($this->sources() as $file => $source) {
+        foreach ($this->sources() + $this->frontendSources() as $file => $source) {
             preg_match_all('/(?<!::)\basset\(\s*[\'"]([^\'"]+)[\'"]\s*\)/', $source, $m);
             foreach ($m[1] as $path) {
                 $named[ltrim($path, '/')][] = $file;
             }
-            // A hard-coded address under the web root, in an attribute or a style.
-            preg_match_all('#(?:src|href|poster|content)="/((?:img|css|js|fonts|images)/[^"{}]+)"|url\([\'"]?/((?:img|css|js|fonts|images)/[^\'"){}]+)#', $source, $h);
-            foreach (array_filter(array_merge($h[1], $h[2])) as $path) {
+            // A hard-coded address under the web root, in an attribute, a style, a stylesheet or a script.
+            preg_match_all('#(?:src|href|poster|content)="/((?:img|css|js|fonts|images)/[^"{}]+)"|url\([\'"]?/((?:img|css|js|fonts|images)/[^\'"){}]+)|[\'"`]/((?:img|fonts|images)/[^\'"`]+)[\'"`]#', $source, $h);
+            foreach (array_filter(array_merge($h[1], $h[2], $h[3])) as $path) {
                 $named[$path][] = $file;
             }
         }
         ksort($named);
 
+        $this->assertNotEmpty($named, 'the shared icon partial names the root icon files');
         foreach ($named as $path => $files) {
-            $this->assertFileExists(public_path($path), "{$path} is named by ".implode(', ', array_unique($files)).' but is not in public/');
+            $by = implode(', ', array_unique($files));
+            $this->assertFalse(str_starts_with($path, 'img/'), "{$path} is named by {$by}. public/img is not published to the live web root: put the picture in resources/img, add it to the import.meta.glob list in resources/js/app.js and name it with Vite::asset.");
+            $this->assertContains($path, $published, "{$path} is named by {$by} but the deploy does not copy it to the live web root. Use resources/ and Vite::asset, or add it to the list in deploy.yml if it must live at a fixed root address.");
+            $this->assertFileExists(public_path($path), "{$path} is named by {$by} but is not in public/");
+            $this->assertGreaterThan(0, filesize(public_path($path)), "{$path} is an empty file");
         }
-        $this->assertSame(self::LEGACY_PUBLIC_FILES, array_keys($named),
-            'A view names a file under public/ that is not on the closed list. The live web root only receives public/build: put new pictures in resources/img and name them with Vite::asset.');
+    }
+
+    public function test_the_site_logo_ships_with_the_build_and_public_img_holds_no_copy(): void
+    {
+        $this->assertNull($this->builtFromSource('/build/source/resources/img/brand/logo_white.png'));
+        // Nothing a page uses lives under public/img (the deploy does not publish it), so the folder is gone and stays gone.
+        $this->assertDirectoryDoesNotExist(public_path('img'), 'public/img is back. A picture kept there never reaches the live web root: put it in resources/img.');
+
+        foreach ([[null, '/'], [null, '/login'], [null, '/businesses'], [$this->member, '/home']] as [$viewer, $page]) {
+            $html = (string) $this->as($viewer)->get($page)->assertOk()->getContent();
+            $this->assertSame(1, preg_match('#<img[^>]+src="/build/source/resources/img/brand/logo_white\.png"[^>]*alt="(InfoDot)?"#', $html), "{$page} does not show the logo from the build");
+        }
+    }
+
+    public function test_an_email_and_an_error_page_still_come_out_when_the_build_has_no_logo(): void
+    {
+        $this->swap(Vite::class, new class extends Vite
+        {
+            public function asset($asset, $buildDirectory = null)
+            {
+                throw new \RuntimeException('Unable to locate file in Vite manifest: '.$asset);
+            }
+
+            public function __invoke($entrypoints, $buildDirectory = null)
+            {
+                return new HtmlString('');
+            }
+        });
+        \Illuminate\Support\Facades\Vite::clearResolvedInstance();
+
+        $this->assertNull(OptionalVite::asset('resources/img/brand/logo_white.png'));
+
+        $mail = (new MailMessage)->line('Hello.')->render();
+        $this->assertStringContainsString('Hello.', (string) $mail);
+        $this->assertStringNotContainsString('<img', (string) $mail);
+        $this->assertStringContainsString(config('app.name'), (string) $mail);
+
+        $this->as(null)->get('/no-such-page-here')->assertNotFound()->assertSee('InfoDot');
     }
 
     public function test_every_picture_named_through_vite_is_a_source_file_the_build_picks_up(): void
@@ -268,55 +320,50 @@ class ImageIntegrityTest extends TestCase
         }
     }
 
-    public function test_every_outside_host_a_page_loads_from_is_allowed_by_the_content_security_policy(): void
+    public function test_no_page_loads_a_file_from_another_host(): void
     {
-        $policy = (string) $this->as(null)->get('/')->headers->get('Content-Security-Policy');
-        $allowed = function (string $directive, string $host) use ($policy): bool {
-            foreach (explode(';', $policy) as $part) {
-                $words = preg_split('/\s+/', trim($part)) ?: [];
-                if (array_shift($words) === $directive) {
-                    return in_array('https://'.$host, $words, true) || in_array('https:', $words, true);
-                }
-            }
-
-            return false;
-        };
-
+        // Since R-49 the fonts, the icon font, the charting library and every picture come from this site, and the
+        // Content-Security-Policy names no other host for them. A view that names one would simply be blocked.
         $found = [];
         foreach ($this->sources() as $file => $source) {
             if (! str_ends_with($file, '.blade.php') || str_contains($file, '/vendor/mail/') || str_contains($file, '/emails/')) {
                 continue; // an email is opened in a mail program, which this site's policy does not govern
             }
-            preg_match_all('#<(img|script|iframe|source|video|audio)\b[^>]*\ssrc="https?://([^/"]+)#i', $source, $tags, PREG_SET_ORDER);
-            foreach ($tags as $t) {
-                $found[] = [match (strtolower($t[1])) {
-                    'script' => 'script-src', 'iframe' => 'frame-src', 'video', 'audio', 'source' => 'media-src', default => 'img-src'
-                }, $t[2], $file];
-            }
-            preg_match_all('#<link\b[^>]*\brel="stylesheet"[^>]*\shref="https?://([^/"]+)|<link\b[^>]*\shref="https?://([^/"]+)[^>]*\brel="stylesheet"#i', $source, $links, PREG_SET_ORDER);
-            foreach ($links as $l) {
-                $found[] = ['style-src', $l[1] ?: $l[2], $file];
-            }
-            preg_match_all('#url\([\'"]?https?://([^/\'")]+)#i', $source, $urls);
-            foreach ($urls[1] as $host) {
-                $found[] = ['img-src', $host, $file];
+            preg_match_all('#<(?:img|script|iframe|source|video|audio)\b[^>]*\ssrc="(?:https?:)?//([^/"]+)#i', $source, $tags);
+            preg_match_all('#<link\b[^>]*\brel="(?:stylesheet|preload|preconnect|modulepreload|icon)"[^>]*\shref="(?:https?:)?//([^/"]+)|<link\b[^>]*\shref="(?:https?:)?//([^/"]+)[^>]*\brel="(?:stylesheet|preload|preconnect|modulepreload|icon)"#i', $source, $links);
+            preg_match_all('#url\([\'"]?(?:https?:)?//([^/\'")]+)#i', $source, $urls);
+            foreach (array_filter(array_merge($tags[1], $links[1], $links[2], $urls[1])) as $host) {
+                $found[] = "{$file} loads from {$host}";
             }
         }
-        // The stylesheets the fonts come from name their font files on these hosts.
-        foreach (['fonts.gstatic.com', 'cdnjs.cloudflare.com'] as $fontHost) {
-            $found[] = ['font-src', $fontHost, 'the Google Fonts and Font Awesome stylesheets'];
-        }
-        foreach ((new Finder)->files()->in(resource_path('css'))->name('*.css') as $css) {
-            preg_match_all('#(?:url\(|@import\s+)[\'"]?https?://([^/\'")]+)#i', $css->getContents(), $urls);
+        foreach ($this->frontendSources() as $file => $source) {
+            if (! str_ends_with($file, '.css')) {
+                continue;
+            }
+            preg_match_all('#(?:url\(|@import\s+)[\'"]?(?:https?:)?//([^/\'")]+)#i', (string) preg_replace('#/\*.*?\*/#s', '', $source), $urls);
             foreach ($urls[1] as $host) {
-                $found[] = [str_contains($host, 'font') ? 'font-src' : 'img-src', $host, $css->getRelativePathname()];
+                $found[] = "{$file} loads from {$host}";
             }
         }
 
-        $this->assertNotEmpty($found);
-        foreach ($found as [$directive, $host, $file]) {
-            $this->assertTrue($allowed($directive, $host), "{$file} loads from {$host}, which the Content-Security-Policy {$directive} does not allow");
+        $this->assertSame([], $found, 'Serve the file from this site instead: put it in resources/ (or install its npm package) so the build ships it.');
+
+        $policy = (string) $this->as(null)->get('/')->headers->get('Content-Security-Policy');
+        foreach (['script-src', 'style-src', 'font-src', 'img-src', 'media-src', 'frame-src'] as $directive) {
+            $this->assertSame(1, preg_match('/(?:^|;\s*)'.$directive.' ([^;]+)/', $policy, $m), $directive);
+            $this->assertSame(0, preg_match('#https?:#', $m[1]), "{$directive} allows another host: {$m[1]}");
         }
+    }
+
+    /** @return array<string, string> every script and stylesheet the build is made from, by relative path */
+    private function frontendSources(): array
+    {
+        $sources = [];
+        foreach ((new Finder)->files()->in([resource_path('js'), resource_path('css')])->name(['*.js', '*.css']) as $file) {
+            $sources[str_replace(base_path().'/', '', $file->getRealPath())] = $file->getContents();
+        }
+
+        return $sources;
     }
 
     /** @return array<string, string> every Blade view and every PHP file that can name a file, by relative path */

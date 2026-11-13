@@ -109,3 +109,7 @@ Defects 9 to 12 are about pictures and are in `IMAGE_AUDIT.md` (a blocked outsid
 - Pint and PHPStan pass. The PHPStan baseline went from 136 to 135 (the entry for the removed `PagesController::sharesATeam`).
 - Defects 1 and 3 to 8 were reported by the sweep before they were fixed. Defect 2 was found by reading the component and its test was written with the fix. The missing-file guards were checked by switching the fallback off and watching four tests fail.
 - Not done: the changed pages were not looked at in a browser. The markup uses the same `ix-` classes as before and no CSS changed.
+
+## Follow-up, 2026-11-13
+
+Three rows of "Found and not fixed" are now closed on branch `r49/assets-selfhost-lifecycle`: the empty `favicon.ico` (a real icon set, see `IMAGE_AUDIT.md`), the six `/sub-services/*` placeholder pages (routes and views removed, the addresses answer 404; `RetiredPlaceholderPagesTest`), and the seminar price hint (it names Dot.Finance as where payment is handled). The sweep no longer names any file as empty on purpose, and it now also fails on an icon that the site's icon font does not hold.

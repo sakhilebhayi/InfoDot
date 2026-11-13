@@ -6,13 +6,9 @@
         <title>{{ $code }} — @yield('title') · InfoDot</title>
         <meta name="robots" content="noindex">
 
-        <link rel="icon" href="{{ asset('favicon.ico') }}">
+        @include('partials.head-icons')
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
-
+        {{-- The fonts (Baloo 2, DM Sans, Space Mono and the icons) are declared in the stylesheet below and served from this site. --}}
         @php
             $viteManifest = public_path('build/manifest.json');
 
@@ -69,7 +65,12 @@
         <header style="background: var(--charcoal);">
             <nav style="max-width: 1400px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;">
                 <a href="/" class="press" style="display: flex; align-items: center; gap: 10px;">
-                    <img src="{{ asset('img/logo_white.png') }}" alt="InfoDot" style="height: 40px; width: auto;">
+                    {{-- An error page must open even when the build is missing, so the logo falls back to the name. --}}
+                    @if ($logo = \App\Support\OptionalVite::asset('resources/img/brand/logo_white.png'))
+                        <img src="{{ $logo }}" alt="InfoDot" style="height: 40px; width: auto;">
+                    @else
+                        <span style="color: #fff; font-weight: 700; font-size: 20px;">InfoDot</span>
+                    @endif
                 </a>
                 <div style="display: flex; align-items: center; gap: 12px;">
                     @auth

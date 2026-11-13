@@ -325,6 +325,30 @@ trait BuildsTheYard
     protected function builtFromSource(string $path): ?string
     {
         $source = Str::after($path, '/build/source/');
+
+        // A font: it reaches the build by being named in a url() of the fonts stylesheet. One from an npm package is
+        // checked against package.json, because the test job installs no node_modules to look in.
+        if (str_ends_with($source, '.woff2')) {
+            $fonts = (string) file_get_contents(resource_path('css/fonts.css'));
+            if (str_starts_with($source, 'node_modules/')) {
+                $package = implode('/', array_slice(explode('/', Str::after($source, 'node_modules/')), 0, str_starts_with(Str::after($source, 'node_modules/'), '@') ? 2 : 1));
+                $declared = json_decode((string) file_get_contents(base_path('package.json')), true);
+                if (! isset($declared['devDependencies'][$package]) && ! isset($declared['dependencies'][$package])) {
+                    return "{$source} comes from {$package}, which package.json does not install";
+                }
+                if (is_dir(base_path('node_modules')) && ! is_file(base_path($source))) {
+                    return "the font {$source} is not in the installed package";
+                }
+
+                return str_contains($fonts, "url('../../{$source}')") ? null : "{$source} is not named in resources/css/fonts.css, so the build leaves it out";
+            }
+            if (! is_file(base_path($source))) {
+                return "the source file {$source} does not exist";
+            }
+
+            return str_contains($fonts, "url('../".Str::after($source, 'resources/')."')") ? null : "{$source} is not named in resources/css/fonts.css, so the build leaves it out";
+        }
+
         if (! is_file(base_path($source))) {
             return "the source file {$source} does not exist";
         }

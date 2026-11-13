@@ -53,7 +53,7 @@ class LinkIntegrityTest extends TestCase
             }
             $path = ($parts['path'] ?? '/').(isset($parts['query']) ? '?'.$parts['query'] : '');
             // Opening a platform signs a token over to another host and is covered by its own tests.
-            if (str_starts_with($path, '/go/') || str_starts_with($path, '/open/') || str_starts_with($path, '/sub-services/') || str_starts_with($path, '/logout')) {
+            if (str_starts_with($path, '/go/') || str_starts_with($path, '/open/') || str_starts_with($path, '/logout')) {
                 continue;
             }
             $links[$path] = true;

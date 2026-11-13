@@ -22,7 +22,7 @@ class NavSection
             request()->routeIs('dashboard') => 'Home',
             request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*', 'library', 'solution_search_results') => 'Knowledge',
             request()->routeIs('seminars*') => 'Seminars',
-            request()->routeIs('ecosystem.widget', 'subservices.*') => 'Platforms',
+            request()->routeIs('ecosystem.widget') => 'Platforms',
             request()->routeIs('analytics.*') => 'Analytics',
             request()->routeIs('people') => 'People',
             request()->routeIs('business.*', 'businesses.*') => 'Businesses',
@@ -50,7 +50,7 @@ class NavSection
             request()->routeIs('dashboard') => ['home', 'GATE'],
             request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*', 'library', 'solution_search_results') => ['knowledge', 'KNOW'],
             request()->routeIs('seminars*') => ['knowledge', 'SEMI'],
-            request()->routeIs('ecosystem.widget', 'subservices.*') => ['platforms', 'PLAT'],
+            request()->routeIs('ecosystem.widget') => ['platforms', 'PLAT'],
             request()->routeIs('analytics.*') => ['analytics', 'DATA'],
             request()->routeIs('people') => ['people', 'CREW'],
             request()->routeIs('business.*', 'businesses.*') => ['people', 'IDNT'],
@@ -74,7 +74,6 @@ class NavSection
     public static function crumbs(): array
     {
         $knowledge = ['Knowledge', route('questions')];
-        $platforms = ['Platforms', route('ecosystem.widget')];
 
         return match (true) {
             request()->routeIs('dashboard') => [['Home', null]],
@@ -85,7 +84,6 @@ class NavSection
             request()->routeIs('add') => [$knowledge, ['Solutions', route('solutions')], ['Add a solution', null]],
             request()->routeIs('solutions.view') => [$knowledge, ['Solutions', route('solutions')], [self::title(Solutions::class, 'solution_title', request()->route('id')), null]],
             request()->routeIs('ecosystem.widget') => [['Platforms', null]],
-            request()->routeIs('subservices.*') => [$platforms, [self::platformName(), null]],
             request()->routeIs('analytics.*') => [['Analytics', null]],
             request()->routeIs('people') => [['People', null]],
             request()->routeIs('moderation') => [['Moderation', null]],
@@ -132,14 +130,6 @@ class NavSection
         $value = is_scalar($id) ? $model::query()->whereKey($id)->value($column) : null;
 
         return filled($value) ? (string) $value : 'Details';
-    }
-
-    private static function platformName(): string
-    {
-        $key = str(request()->route()?->getName() ?? '')->after('subservices.')->toString();
-        $key = ['sheets' => 'sheet'][$key] ?? $key;
-
-        return (string) (config('ecosystem.platforms.'.$key.'.name') ?? 'Platform');
     }
 
     /** Whether the signed-in person administers their current team. */

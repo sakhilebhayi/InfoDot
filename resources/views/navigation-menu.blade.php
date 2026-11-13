@@ -4,7 +4,7 @@
 <header class="ix-top">
     <div class="ix-top__inner">
         <a href="{{ route('dashboard') }}" class="ix-brand" aria-label="InfoDot home">
-            <img src="{{ asset('img/logo_white.png') }}" alt="InfoDot" width="64" height="26">
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/brand/logo_white.png') }}" alt="InfoDot" width="64" height="26">
         </a>
 
         <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
@@ -52,7 +52,7 @@
             <a href="{{ route('seminars') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('seminars*')) aria-current="page" @endif>Seminars</a>
             <livewire:platform-link platform="files" label="Files" icon="folder" variant="tab" />
             <livewire:platform-link platform="docs" label="Documents" icon="description" variant="tab" />
-            <a href="{{ route('ecosystem.widget') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('ecosystem.widget', 'subservices.*')) aria-current="page" @endif>Platforms</a>
+            <a href="{{ route('ecosystem.widget') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('ecosystem.widget')) aria-current="page" @endif>Platforms</a>
             <a href="{{ route('businesses.index') }}" class="ix-tab" data-area="people" @if(request()->routeIs('businesses.*', 'business.show')) aria-current="page" @endif>Businesses</a>
             <a href="{{ route('people') }}" class="ix-tab" data-area="people" @if(request()->routeIs('people', 'teams.*', 'api-tokens.*')) aria-current="page" @endif>People</a>
             <a href="{{ route('analytics.dashboard') }}" class="ix-tab" data-area="analytics" @if(request()->routeIs('analytics.*')) aria-current="page" @endif>Analytics</a>

@@ -20,6 +20,9 @@ use Symfony\Component\HttpFoundation\Response;
  * removing it means replacing the frontend stack (R-19 report). style-src keeps 'unsafe-inline' because the Yard
  * views use style attributes throughout; script injection, not style, is the attack surface that matters here.
  *
+ * Since R-49 no other host is named for scripts, styles, fonts or images: the typefaces, the icon font, the charting
+ * library and every picture are served from this site (the build), so nothing a page draws depends on another site.
+ *
  * Violations report to /csp-report through both the legacy report-uri and the modern Reporting-Endpoints/report-to
  * pair. SECURITY_CSP_REPORT_ONLY=true in .env is the kill-switch back to report-only without a deploy.
  */
@@ -44,11 +47,11 @@ class SecurityHeaders
         ];
 
         $policy = "default-src 'self'; "
-            ."script-src 'self' 'nonce-{$nonce}' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+            ."script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'; "
             ."script-src-attr 'none'; "
-            ."style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
-            ."font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
-            ."img-src 'self' data: blob: https://images.unsplash.com https://source.unsplash.com; media-src 'self' blob:; "
+            ."style-src 'self' 'unsafe-inline'; "
+            ."font-src 'self' data:; "
+            ."img-src 'self' data: blob:; media-src 'self' blob:; "
             // Local dev talks to Reverb over plaintext ws:; production websockets are wss: only.
             ."connect-src 'self' wss: https:".(app()->isLocal() ? ' ws:' : '').'; '
             ."frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; "

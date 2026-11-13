@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Feature\Stabilisation\Support\BuildsTheYard;
+use Tests\Feature\Stabilisation\Support\IconFont;
 use Tests\Feature\Stabilisation\Support\PageInspector;
 use Tests\TestCase;
 
@@ -39,7 +40,7 @@ class InteractionSweepTest extends TestCase
 
     private const PUBLIC_ENTRY = ['/', '/about', '/features', '/faqs', '/contact', '/complains', '/policy', '/terms', '/cookies', '/security', '/terms-of-service', '/privacy-policy', '/solution-results', '/solution-results?search=borehole', '/businesses', '/businesses/featured', '/login', '/register', '/forgot-password'];
 
-    private const SIGNED_IN_ENTRY = ['/home', '/questions', '/questions/ask', '/solutions', '/solution/create', '/topics', '/library', '/platforms', '/people', '/analytics', '/points', '/notifications', '/inbox', '/collections', '/seminars', '/seminars/new', '/user/profile/edit', '/teams/create', '/user/confirm-password', '/go/files', '/go/docs', '/sub-services/dot-files', '/sub-services/dot-docs', '/sub-services/dot-sheets', '/sub-services/dot-press', '/sub-services/dot-forms', '/sub-services/dot-engage'];
+    private const SIGNED_IN_ENTRY = ['/home', '/questions', '/questions/ask', '/solutions', '/solution/create', '/topics', '/library', '/platforms', '/people', '/analytics', '/points', '/notifications', '/inbox', '/collections', '/seminars', '/seminars/new', '/user/profile/edit', '/teams/create', '/user/confirm-password', '/go/files', '/go/docs'];
 
     private const MODERATOR_ENTRY = ['/moderation', '/moderation/friction', '/moderation/topics', '/moderation/library', '/moderation/trust', '/moderation/identity', '/moderation/verifications', '/moderation/seminars'];
 
@@ -55,13 +56,6 @@ class InteractionSweepTest extends TestCase
      * visitor is shown must open for a visitor, so a new sign-in wall is a decision, not an accident.
      */
     private const VISITOR_SIGN_IN_WALLS = ['/questions/ask', '/solutions', '/question/view/{id}', '/solution/view/{id}', '/solution/create', '/topics', '/topics/*', '/business/{uuid}/message', '/business/{uuid}/report', '/j/*'];
-
-    /**
-     * public/favicon.ico has been a zero-byte file since the first commit, so the app and public pages have no tab
-     * icon. Which mark becomes the icon is the owner's choice (docs/programme/r49/IMAGE_AUDIT.md, decision 1); until
-     * then this one empty file is named here rather than passed over in silence. Any other empty file fails.
-     */
-    private const EMPTY_ON_PURPOSE_UNTIL_DECIDED = ['/favicon.ico'];
 
     /** @var array<string, mixed> */
     private static array $report = [];
@@ -284,6 +278,9 @@ class InteractionSweepTest extends TestCase
             foreach ($found['problems'] as $problem) {
                 $note($page, $problem);
             }
+            foreach (IconFont::notInTheFont((string) $response->getContent()) as $icon) {
+                $note($page, "shows the icon \"{$icon}\", which the icon font the site ships does not hold: it would appear as the word. Add it to resources/fonts/material-symbols-rounded.txt and run tools/build-icon-font.py");
+            }
             foreach ($found['counts'] as $type => $n) {
                 $counts[$type] = ($counts[$type] ?? 0) + $n;
             }
@@ -399,7 +396,7 @@ class InteractionSweepTest extends TestCase
         }
         if (is_file(public_path(ltrim($path, '/')))) {
             $resources[$local] = 'static '.$kind;
-            if (filesize(public_path(ltrim($path, '/'))) === 0 && ! in_array($path, self::EMPTY_ON_PURPOSE_UNTIL_DECIDED, true)) {
+            if (filesize(public_path(ltrim($path, '/'))) === 0) {
                 $note($pagePath, "loads the {$kind} {$path}, which is an empty file");
             }
 
