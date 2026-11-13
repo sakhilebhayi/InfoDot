@@ -67,7 +67,7 @@
                             <form method="POST" action="{{ route('platforms.recommendation.dismiss', ['platform' => $row['key']]) }}">
                                 @csrf
                                 <input type="hidden" name="company" value="{{ $team->uuid }}">
-                                <button type="submit" class="ix-btn ix-btn--ghost ix-btn--sm" aria-label="Do not suggest {{ $row['name'] }} again">Not for us</button>
+                                <button type="submit" class="ix-btn ix-btn--ghost ix-btn--sm">Not for us<span class="ix-sr">: do not suggest {{ $row['name'] }} again</span></button>
                             </form>
                         </div>
                     </li>
