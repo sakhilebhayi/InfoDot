@@ -17,7 +17,7 @@
 
                 <!-- Current Profile Photo -->
                 <div class="relative" x-show="! photoPreview">
-                    <input type="file" id="photo" class="absolute h-20 w-20 cursor-pointer opacity-0" wire:model="photo" wire:key="photo" x-ref="photo" x-on:change="
+                    <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" class="absolute h-20 w-20 cursor-pointer opacity-0" wire:model="photo" wire:key="photo" x-ref="photo" x-on:change="
                         photoName = $refs.photo.files[0].name;
                         const reader = new FileReader();
                         reader.onload = (e) => {
@@ -40,7 +40,8 @@
                     </span>
                 </div>
 
-                <p class="ix-hint">{{ __('Select the picture to choose a new photo.') }}</p>
+                <p class="ix-hint">Select the picture to choose a new photo. JPG, PNG or WebP, up to 10 MB.</p>
+                <p class="ix-hint" wire:loading wire:target="photo">Uploading…</p>
 
                 @if ($this->user->profile_photo_path)
                     <x-jet-secondary-button type="button" class="mt-3" wire:click="deleteProfilePhoto">
