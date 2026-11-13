@@ -54,6 +54,23 @@ class AnswerService
         };
     }
 
+    /**
+     * May this person read it as a reader does? canSeeContent() plus the moderation rule: once a moderator has hidden a
+     * question or solution, only its author and moderators still see it. (The desk itself asks canSeeContent(), because
+     * moderators act on hidden items.)
+     */
+    public function canRead(Model $item, User $user): bool
+    {
+        if (! $this->canSeeContent($item, $user)) {
+            return false;
+        }
+
+        $subject = $item instanceof Answer ? $item->question : $item;
+        $hidden = ($subject instanceof Questions || $subject instanceof Solutions) && $subject->isHidden();
+
+        return ! $hidden || $subject->user_id === $user->id || $user->isModerator();
+    }
+
     public function publish(Questions $question, User $author, string $body): Answer
     {
         $body = trim($body);
