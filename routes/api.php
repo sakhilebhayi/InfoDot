@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CompanyPlatformsController;
 use App\Http\Controllers\Api\EcosystemRedeemController;
 use App\Http\Controllers\Api\KnowledgeCandidatesController;
+use App\Http\Controllers\Api\PlatformSubscriptionEventsController;
 use App\Http\Controllers\Api\ResourceRegistryController;
 use App\Http\Controllers\Api\SeminarRoomWebhookController;
 use App\Http\Controllers\Api\SeminarTicketEventsController;
@@ -43,6 +44,12 @@ Route::get('/knowledge/candidates', KnowledgeCandidatesController::class)
 Route::post('/finance/ticket-events', SeminarTicketEventsController::class)
     ->middleware('throttle:finance-callbacks')
     ->name('api.finance.ticket-events');
+
+// R-50: Dot.Finance reports that a company's platform subscription was paid, renewed, failed, refunded or cancelled. Signed with
+// its own secret and refused entirely while that secret is unset; see PlatformSubscriptionEventsController.
+Route::post('/finance/platform-subscription-events', PlatformSubscriptionEventsController::class)
+    ->middleware('throttle:finance-callbacks')
+    ->name('api.finance.platform-subscription-events');
 
 // LiveKit tells InfoDot who connected to a seminar room. Signed with the LiveKit API secret; see SeminarRoomWebhookController.
 Route::post('/seminars/livekit-webhook', SeminarRoomWebhookController::class)

@@ -58,6 +58,25 @@ class OpsCheck
         $found['sso_platform_slug_not_in_registry'] = (int) (Schema::hasTable('dot_platforms')
             ? DB::table('dot_platforms')->whereNotIn('slug', array_map('strval', array_keys((array) config('ecosystem.platforms', []))))->count() : 0);
 
+        // R-50: nothing may be paid without Dot.Finance's signed confirmation, and nothing may be on sale without a recorded approval.
+        // Either count above zero means a row was written around the services and needs a person to look at it.
+        if (Schema::hasTable('platform_payment_confirmations')) {
+            $found['paid_entitlement_without_confirmation'] = (int) DB::table('platform_entitlements as e')->where('e.source', 'paid')->where('e.status', '!=', 'pending')
+                ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('platform_payment_confirmations as c')->whereColumn('c.team_id', 'e.team_id')
+                    ->whereColumn('c.platform_key', 'e.platform_key')->whereIn('c.event', ['paid', 'renewed'])->where('c.outcome', 'applied'))->count();
+
+            $approved = DB::table('platform_catalogue_events')->where('type', 'price_approved');
+            $found['plan_on_sale_without_approval_record'] = (int) DB::table('platform_plans')->whereNotNull('approved_at')->get(['platform_key', 'slug'])
+                ->reject(fn ($plan) => (clone $approved)->where('subject_type', 'plan')->where('subject_key', $plan->platform_key.'/'.$plan->slug)->exists())->count()
+                + (int) DB::table('platform_bundles')->whereNotNull('approved_at')->pluck('slug')
+                    ->reject(fn ($slug) => (clone $approved)->where('subject_type', 'bundle')->where('subject_key', $slug)->exists())->count();
+
+            // A trial or dated grant still open an hour after its end means the lifecycle command is not running.
+            $found['entitlements_overdue_1h'] = (int) DB::table('platform_entitlements')->where(fn ($w) => $w
+                ->where(fn ($q) => $q->where('status', 'trial')->where('trial_ends_at', '<', now()->subHour()))
+                ->orWhere(fn ($q) => $q->where('status', 'active')->whereNotNull('ended_at')->where('ended_at', '<', now()->subHour())))->count();
+        }
+
         // The host conditions behind uploads and sign-ups failing: a folder the web user cannot write to, and a full disk.
         foreach ($this->writablePaths() as $label => $path) {
             $found["{$label}_not_writable"] = $this->canWrite($path) ? 0 : 1;

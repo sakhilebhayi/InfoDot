@@ -36,6 +36,9 @@ class RouteServiceProvider extends ServiceProvider
             Route::namespace($this->namespace)
                 ->group(base_path('routes/jetstream.php'));
 
+            // R-50: the platform admin centre, behind the `administer-platforms` gate (its own file; it names its middleware itself).
+            Route::group([], base_path('routes/admin.php'));
+
             // R-20: the identity provider's OAuth/OIDC surface (Passport routes are ignored).
             Route::group([], base_path('routes/oauth.php'));
         });
