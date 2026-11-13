@@ -93,6 +93,11 @@
                 <h1 class="font-display" style="font-size: clamp(26px, 4vw, 34px); font-weight: 700; line-height: 1.2; margin: 0 0 14px;">@yield('title')</h1>
                 <p style="font-size: 16px; line-height: 1.6; color: var(--ink-soft); margin: 0 0 32px;">@yield('message')</p>
 
+                @hasSection('reference')
+                    {{-- Something to quote to support: the id on the matching log line. Selects whole on one tap; a long one wraps. --}}
+                    <p class="font-mono" style="font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin: -16px 0 32px; overflow-wrap: anywhere;">Reference: <span style="color: var(--ink); user-select: all;">@yield('reference')</span></p>
+                @endif
+
                 <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-bottom: 56px;">
                     @yield('actions')
                 </div>

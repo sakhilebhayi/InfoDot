@@ -18,7 +18,7 @@
     @else
         <form method="post" action="{{ route('inbox.reply', $enquiry) }}" enctype="multipart/form-data" class="ix-form ix-compose ix-vgap">
             @csrf
-            <div class="ix-form__row"><label class="ix-label" for="body">Reply</label><textarea class="ix-input" id="body" name="body" rows="4" maxlength="{{ config('enquiries.max_length') }}" required>{{ old('body') }}</textarea></div>
+            <div class="ix-form__row"><label class="ix-label" for="body">Reply</label><textarea class="ix-textarea" id="body" name="body" rows="4" maxlength="{{ config('enquiries.max_length') }}" required>{{ old('body') }}</textarea></div>
             <div class="ix-form__row"><label class="ix-label" for="files">Files <span class="ix-hint">optional, up to {{ config('enquiries.max_files') }}</span></label><input class="ix-input" type="file" id="files" name="files[]" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4"></div>
             <div><button type="submit" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">send</span>Send</button></div>
         </form>

@@ -8,6 +8,7 @@
  *   seats      N people invited at once into a company with F free seats: exactly F succeed
  *   capacity   N people register at once for C places: exactly C are registered, the rest wait
  *   accept     the asker and a moderator accept two different answers at once: exactly one answer ends up accepted
+ *   counters   (not a race) the directory insight upsert inserts and then adds on MySQL, whose update clause differs from SQLite's
  *
  * Run by the CI job "concurrency on MySQL" after `php artisan migrate:fresh` (DB_* in the environment). It needs a throwaway database: it creates
  * users, a company, a seminar and a question. Exit code 0 only if every invariant held.
@@ -21,6 +22,7 @@ use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Insights\BusinessInsights;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Licensing\SeatLedger;
 use App\Services\Seminars\SeminarService;
@@ -147,6 +149,25 @@ $out = $race('accept', [[$answers[0]->id, $asker->id, ''], [$answers[1]->id, $mo
 $accepted = Answer::withoutGlobalScopes()->where('question_id', $question->id)->whereNotNull('accepted_at')->count();
 $check($accepted === 1, "exactly one answer is accepted afterwards (got {$accepted}): ".implode(' ', $out));
 $check(! in_array(true, array_map(fn ($o) => str_starts_with($o, 'CRASH:'), $out), true), 'no worker crashed');
+
+// counters ------------------------------------------------------------------------------------------------------------------
+// Not a race: the directory's "appeared in a search" counters are written with an upsert whose update clause differs between SQLite (the
+// test suite) and MySQL (production). This runs the real statement on MySQL: a first write inserts, a second adds to the same rows.
+$say('counters: the directory insight upsert inserts, then adds, on MySQL');
+$addAll = new ReflectionMethod(BusinessInsights::class, 'addAll');
+$anyTeam = Team::query()->firstOrFail();
+$rows = [
+    ['team_id' => $anyTeam->id, 'day' => now()->toDateString(), 'metric' => 'search', 'count' => 1],
+    ['team_id' => $anyTeam->id, 'day' => now()->toDateString(), 'metric' => 'service:1', 'count' => 1],
+];
+try {
+    $addAll->invoke(app(BusinessInsights::class), 'business_stats_daily', $rows, ['team_id', 'day', 'metric']);
+    $addAll->invoke(app(BusinessInsights::class), 'business_stats_daily', $rows, ['team_id', 'day', 'metric']);
+    $counts = DB::table('business_stats_daily')->where('team_id', $anyTeam->id)->pluck('count', 'metric')->all();
+    $check(count($counts) === 2 && (int) $counts['search'] === 2 && (int) $counts['service:1'] === 2, 'two rows, each counted twice (got '.json_encode($counts).')');
+} catch (Throwable $e) {
+    $check(false, 'the upsert ran on MySQL: '.$e->getMessage());
+}
 
 $say($failed ? 'RESULT: FAILED' : 'RESULT: every invariant held');
 exit($failed ? 1 : 0);

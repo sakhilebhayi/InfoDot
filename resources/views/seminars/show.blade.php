@@ -41,7 +41,7 @@
             @if ($seminar->removed_at->gte(now()->subDays((int) config('seminars.removal_appeal_days', 30))))
                 <form method="POST" action="{{ route('seminars.appeal', $seminar) }}" class="ix-form" style="max-width: 520px; margin-bottom: 16px;">@csrf
                     <label class="ix-label" for="appeal-msg">Think this was a mistake? Appeal once. A different moderator reads it.</label>
-                    <textarea class="ix-input" id="appeal-msg" name="message" rows="4" minlength="10" maxlength="1000" required></textarea>
+                    <textarea class="ix-textarea" id="appeal-msg" name="message" rows="4" minlength="10" maxlength="1000" required></textarea>
                     <p class="ix-hint">You have {{ (int) config('seminars.removal_appeal_days', 30) }} days from the removal. If the seminar has not started and the moderator agrees, it is put back on. Refunds already made stay made.</p>
                     <button class="ix-btn" type="submit">Send my appeal</button>
                 </form>
@@ -68,7 +68,7 @@
                     @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select>
                 <label class="ix-label" for="rp-detail">Tell the moderators more (optional)</label>
-                <textarea class="ix-input" id="rp-detail" name="detail" rows="3" maxlength="1000"></textarea>
+                <textarea class="ix-textarea" id="rp-detail" name="detail" rows="3" maxlength="1000"></textarea>
                 <p class="ix-hint">A moderator reads it. The person is not told who reported them. As host you can also remove someone from the room yourself.</p>
                 <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
             </form>
@@ -84,7 +84,7 @@
                     @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select>
                 <label class="ix-label" for="report-detail">Tell the moderators more (optional)</label>
-                <textarea class="ix-input" id="report-detail" name="detail" rows="3" maxlength="1000"></textarea>
+                <textarea class="ix-textarea" id="report-detail" name="detail" rows="3" maxlength="1000"></textarea>
                 <p class="ix-hint">A moderator reads it. The host is not told who reported.</p>
                 <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
             </form>

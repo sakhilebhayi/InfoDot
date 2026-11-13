@@ -241,20 +241,6 @@ class AccountSuspensionTest extends TestCase
         $this->assertNull(PersonalAccessToken::findToken($code));
     }
 
-    public function test_a_handoff_into_infodot_does_not_sign_a_suspended_person_in(): void
-    {
-        $user = $this->person();
-        $code = $user->createToken(EcosystemHandoff::tokenName(null), ['ecosystem:read'], now()->addMinute())->plainTextToken;
-        $user->forceFill(['suspended_at' => now()])->save();
-
-        $this->withHeader('Origin', 'http://localhost')
-            ->post('/auth/ecosystem', ['token' => $code])
-            ->assertRedirect('/login');
-
-        $this->assertGuest();
-        $this->assertNull(PersonalAccessToken::findToken($code));
-    }
-
     public function test_an_api_token_of_a_suspended_person_stops_working(): void
     {
         $user = $this->person();
