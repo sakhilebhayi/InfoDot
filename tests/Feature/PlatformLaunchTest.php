@@ -109,18 +109,6 @@ class PlatformLaunchTest extends TestCase
         $this->assertSame(0, DB::table('personal_access_tokens')->count());
     }
 
-    public function test_infodots_own_endpoint_signs_in_from_a_post_and_spends_the_token(): void
-    {
-        $user = $this->user();
-        $token = $user->createToken('ecosystem-handoff', ['ecosystem:read'], now()->addMinute())->plainTextToken;
-
-        $this->post('/auth/ecosystem', ['token' => $token], ['Origin' => 'http://files.localhost'])
-            ->assertRedirect(route('solutions'));
-
-        $this->assertAuthenticatedAs($user);
-        $this->assertSame(0, DB::table('personal_access_tokens')->count());
-    }
-
     public function test_a_post_from_another_site_is_refused_without_spending_or_echoing_the_token(): void
     {
         $user = $this->user();
@@ -157,7 +145,7 @@ class PlatformLaunchTest extends TestCase
         $this->get('/auth/ecosystem?token=not-a-token')->assertStatus(303)->assertRedirect('/login');
     }
 
-    public function test_the_sign_in_post_is_not_rejected_for_a_missing_csrf_token_because_it_comes_from_another_origin(): void
+    public function test_a_post_from_another_origin_reaches_the_sign_in_page_not_a_csrf_error(): void
     {
         // CSRF verification is skipped while unit tests run, which hid HTTP 419 in production on the Laravel 13
         // platforms: run the request in production mode, where the middleware is active.
@@ -167,9 +155,10 @@ class PlatformLaunchTest extends TestCase
 
         $response = $this->post('/auth/ecosystem', ['token' => $token], ['Origin' => 'http://files.localhost']);
 
+        // InfoDot's own copy of this address no longer signs anyone in (R-48): it answers with the sign-in page, never 419.
         $this->assertNotSame(419, $response->getStatusCode());
-        $response->assertRedirect(route('solutions'));
-        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect('/login');
+        $this->assertGuest();
     }
 
     public function test_a_platform_with_its_own_sign_in_opens_at_its_front_door_and_no_token_is_minted(): void
