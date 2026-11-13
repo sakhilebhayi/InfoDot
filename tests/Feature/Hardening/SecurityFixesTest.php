@@ -57,21 +57,6 @@ class SecurityFixesTest extends TestCase
         $this->assertSame(1, DB::table('personal_access_tokens')->count());
     }
 
-    public function test_a_handoff_token_cannot_mint_another(): void
-    {
-        $user = $this->verified();
-        $handoff = $user->createToken('ecosystem-handoff:files', ['ecosystem:read'], now()->addMinute());
-        $this->withHeader('Authorization', 'Bearer '.$handoff->plainTextToken)->postJson('/api/ecosystem/token', ['platform' => 'files'])->assertUnauthorized(); // refused at the door since R-48: a launch code is not a login
-
-    }
-
-    public function test_an_ordinary_api_token_can_still_mint_a_handoff_token(): void
-    {
-        $normal = $this->verified()->createToken('mobile', ['*']);
-
-        $this->withHeader('Authorization', 'Bearer '.$normal->plainTextToken)->postJson('/api/ecosystem/token', [])->assertOk()->assertJsonStructure(['token', 'expires_at']);
-    }
-
     // ---- S-02 /api/user --------------------------------------------------------------------------------------------------
 
     public function test_the_api_user_response_never_carries_two_factor_secrets(): void

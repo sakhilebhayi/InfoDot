@@ -28,7 +28,7 @@
                 </div>
                 <div class="ix-field">
                     <label class="ix-label" for="message">Message</label>
-                    <textarea class="ix-input" id="message" name="message" rows="6" maxlength="4000" required @error('message') aria-invalid="true" aria-describedby="message-error" @enderror>{{ old('message') }}</textarea>
+                    <textarea class="ix-textarea" id="message" name="message" rows="6" maxlength="4000" required @error('message') aria-invalid="true" aria-describedby="message-error" @enderror>{{ old('message') }}</textarea>
                     @error('message')<p class="ix-error" id="message-error">{{ $message }}</p>@enderror
                 </div>
                 <div class="ix-sr" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>

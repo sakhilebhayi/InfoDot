@@ -111,7 +111,7 @@
                         </fieldset>
                         <div class="ix-field">
                             <label class="ix-label" for="note-approve">Internal note (reviewers only)</label>
-                            <textarea id="note-approve" name="note" class="ix-input" rows="2" maxlength="2000"></textarea>
+                            <textarea id="note-approve" name="note" class="ix-textarea" rows="2" maxlength="2000"></textarea>
                         </div>
                         <div><button type="submit" class="ix-btn ix-btn--primary">Verify the business</button></div>
                     </form>
@@ -144,11 +144,11 @@
                             @csrf
                             <div class="ix-field">
                                 <label class="ix-label" for="msg-{{ $action }}">Message to the business (they see this)</label>
-                                <textarea id="msg-{{ $action }}" name="message" class="ix-input" rows="3" minlength="10" maxlength="2000" required></textarea>
+                                <textarea id="msg-{{ $action }}" name="message" class="ix-textarea" rows="3" minlength="10" maxlength="2000" required></textarea>
                             </div>
                             <div class="ix-field">
                                 <label class="ix-label" for="note-{{ $action }}">Internal note (reviewers only)</label>
-                                <textarea id="note-{{ $action }}" name="note" class="ix-input" rows="2" maxlength="2000"></textarea>
+                                <textarea id="note-{{ $action }}" name="note" class="ix-textarea" rows="2" maxlength="2000"></textarea>
                             </div>
                             <div><button type="submit" class="{{ $class }}">{{ $label }}</button></div>
                         </form>
