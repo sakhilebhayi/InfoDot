@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\CompanyPlatformsController;
 use App\Http\Controllers\Api\EcosystemRedeemController;
 use App\Http\Controllers\Api\KnowledgeCandidatesController;
 use App\Http\Controllers\Api\ResourceRegistryController;
@@ -17,6 +18,11 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/ecosystem/redeem', EcosystemRedeemController::class)
     ->middleware('throttle:ecosystem-redeem')
     ->name('api.ecosystem.redeem');
+
+// R-50: what a company holds, for the platform that asks (its own secret, like the redeem call). See CompanyPlatformsController.
+Route::get('/ecosystem/companies/{uuid}/platforms', CompanyPlatformsController::class)
+    ->middleware('throttle:ecosystem-redeem')
+    ->name('api.ecosystem.companies.platforms');
 
 // A platform registers (and removes) pointers to the objects it owns. Authenticated by that
 // platform's secret. See ResourceRegistryController.

@@ -3,7 +3,6 @@
 namespace Tests\Feature\Stabilisation;
 
 use App\Http\Middleware\VerifyCsrfToken;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\Feature\Oidc\OidcTestCase;
@@ -18,7 +17,7 @@ class EndSessionConfirmationTest extends OidcTestCase
     public function test_a_bare_link_does_not_sign_out_and_asks_first(): void
     {
         Http::fake();
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
 
         $response = $this->actingAs($user)->get('/oauth/end-session');
 
@@ -33,7 +32,7 @@ class EndSessionConfirmationTest extends OidcTestCase
     public function test_the_confirmation_button_signs_out(): void
     {
         Http::fake();
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $this->completeCodeFlow($user);
 
         $this->actingAs($user)->post('/oauth/end-session')->assertRedirect('/');
@@ -57,7 +56,7 @@ class EndSessionConfirmationTest extends OidcTestCase
     public function test_the_persons_own_id_token_signs_out_directly(): void
     {
         Http::fake();
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $result = $this->completeCodeFlow($user);
 
         $this->actingAs($user)
@@ -70,11 +69,11 @@ class EndSessionConfirmationTest extends OidcTestCase
     public function test_an_id_token_issued_to_someone_else_does_not_sign_out(): void
     {
         Http::fake();
-        $other = User::factory()->create();
+        $other = $this->entitledUser();
         $result = $this->completeCodeFlow($other);
         $this->post('/logout');
 
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
 
         $response = $this->actingAs($user)->get('/oauth/end-session?'.http_build_query([
             'id_token_hint' => $result['id_token'],
@@ -90,11 +89,11 @@ class EndSessionConfirmationTest extends OidcTestCase
     public function test_confirming_keeps_the_registered_return_address_and_refuses_any_other(): void
     {
         Http::fake();
-        $other = User::factory()->create();
+        $other = $this->entitledUser();
         $hint = $this->completeCodeFlow($other)['id_token'];
         $this->post('/logout');
 
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
 
         $page = $this->actingAs($user)->get('/oauth/end-session?'.http_build_query([
             'id_token_hint' => $hint,

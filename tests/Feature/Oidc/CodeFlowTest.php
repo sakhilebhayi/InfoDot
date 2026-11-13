@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Oidc;
 
-use App\Models\User;
 use Laravel\Passport\Passport;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Signer\Key\InMemory;
@@ -17,7 +16,7 @@ class CodeFlowTest extends OidcTestCase
 {
     public function test_a_registered_platform_gets_a_valid_id_token_for_a_signed_in_user(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
 
         $result = $this->completeCodeFlow($user);
 
@@ -46,7 +45,7 @@ class CodeFlowTest extends OidcTestCase
 
     public function test_the_access_token_reads_userinfo_with_the_uuid_subject(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $result = $this->completeCodeFlow($user);
 
         $this->getJson('/oauth/userinfo', ['Authorization' => 'Bearer '.$result['access_token']])
@@ -66,7 +65,7 @@ class CodeFlowTest extends OidcTestCase
 
     public function test_an_authorization_code_is_single_use(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $result = $this->completeCodeFlow($user);
 
         $this->post('/oauth/token', [
@@ -81,7 +80,7 @@ class CodeFlowTest extends OidcTestCase
 
     public function test_a_wrong_pkce_verifier_is_rejected(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         [, $challenge] = $this->pkcePair();
 
         $redirect = $this->actingAs($user)
@@ -101,7 +100,7 @@ class CodeFlowTest extends OidcTestCase
 
     public function test_a_wrong_client_secret_is_rejected(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         [$verifier, $challenge] = $this->pkcePair();
 
         $redirect = $this->actingAs($user)

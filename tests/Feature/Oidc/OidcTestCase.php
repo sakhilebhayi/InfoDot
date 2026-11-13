@@ -6,11 +6,13 @@ use App\Models\DotPlatform;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Passport\ClientRepository;
+use Tests\Support\ActivatesPlatforms;
 use Tests\TestCase;
 
 /** Shared plumbing for the R-20 identity-provider suite: a registered platform and the PKCE dance. */
 abstract class OidcTestCase extends TestCase
 {
+    use ActivatesPlatforms;
     use RefreshDatabase;
 
     protected DotPlatform $platform;
@@ -38,6 +40,20 @@ abstract class OidcTestCase extends TestCase
             'scopes' => ['openid', 'profile', 'email'],
             'status' => 'active',
         ]);
+    }
+
+    /**
+     * A verified person whose company has switched Dot.Central on. Since R-50 the authorize endpoint refuses a
+     * platform the person's company does not hold, so a test about the protocol itself starts from here.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    protected function entitledUser(array $attributes = []): User
+    {
+        $user = User::factory()->create($attributes);
+        $this->companyWith($user, 'central');
+
+        return $user;
     }
 
     /** @return array{0: string, 1: string} verifier and S256 challenge */

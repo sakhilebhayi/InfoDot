@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Oidc;
 
-use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Http;
@@ -23,7 +22,7 @@ class LogoutTest extends OidcTestCase
     {
         Http::fake();
 
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $result = $this->completeCodeFlow($user);
 
         $response = $this->actingAs($user)->get('/oauth/end-session?'.http_build_query([
@@ -40,7 +39,7 @@ class LogoutTest extends OidcTestCase
     {
         Http::fake();
 
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $result = $this->completeCodeFlow($user);
 
         $this->actingAs($user)->get('/oauth/end-session?'.http_build_query([
@@ -55,7 +54,7 @@ class LogoutTest extends OidcTestCase
     {
         Http::fake();
 
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $this->completeCodeFlow($user);
 
         // A second platform signed in too; it must also be told. (The initiating flow here is
@@ -85,7 +84,7 @@ class LogoutTest extends OidcTestCase
     {
         Http::fake();
 
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $this->completeCodeFlow($user);
 
         event(new PasswordReset($user));

@@ -122,4 +122,22 @@ class TeamPolicy
     {
         return $user->ownsTeam($team);
     }
+
+    /**
+     * Who may switch a free or unpriced platform on for the company and choose who uses it (R-50): the owner and
+     * administrators. A personal workspace has the free core only, so there is nothing to manage.
+     */
+    public function managePlatforms(User $user, Team $team)
+    {
+        return ! $team->personal_team && TeamRoles::manages($user, $team);
+    }
+
+    /**
+     * Who may switch a platform off again, and later subscribe, change plan or cancel (R-50 section 6): the owner
+     * only, like every other decision about what the company pays for.
+     */
+    public function cancelPlatforms(User $user, Team $team)
+    {
+        return ! $team->personal_team && $user->ownsTeam($team);
+    }
 }

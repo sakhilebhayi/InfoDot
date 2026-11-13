@@ -52,6 +52,14 @@ class SsoPlatform extends Command
             return self::FAILURE;
         }
 
+        // R-50: the slug is how the OAuth door finds the platform's catalogue entry and the company's entitlement, so it
+        // must be the platform's key in config/ecosystem.php.
+        if (config('ecosystem.platforms.'.$slug) === null) {
+            $this->error("Refused: '{$slug}' is not a platform key in config/ecosystem.php.");
+
+            return self::FAILURE;
+        }
+
         if (DotPlatform::where('slug', $slug)->exists()) {
             $this->error("Platform '{$slug}' is already registered.");
 

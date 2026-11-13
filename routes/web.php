@@ -25,6 +25,7 @@ use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
 use App\Http\Controllers\NoticesController;
 use App\Http\Controllers\PeopleController;
+use App\Http\Controllers\PlatformAccessController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
 use App\Http\Controllers\ProfilePhotoController;
@@ -131,6 +132,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/open/{resource}', ResourceOpenController::class)->name('resources.open');
     // Opens a platform signed in: a page that posts a single-use token to it. The token is never in a URL.
     Route::get('/go/{platform}', PlatformLaunchController::class)->middleware('throttle:30,1,platform.launch')->name('platform.launch');
+    // Why a platform did not open, and (for an owner or administrator) the button that switches a free one on (R-50).
+    Route::get('/platforms/{platform}/access', [PlatformAccessController::class, 'show'])->name('platform.access');
+    Route::post('/platforms/{platform}/activate', [PlatformAccessController::class, 'activate'])->middleware('throttle:20,1,platform.activate')->name('platform.activate');
 
     // -------------------------------------------------------
     // People: the members of the company the person is acting for

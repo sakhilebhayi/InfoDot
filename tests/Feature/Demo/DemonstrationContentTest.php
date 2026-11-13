@@ -11,6 +11,8 @@ use App\Models\Enquiry;
 use App\Models\EnquiryMessage;
 use App\Models\LibraryEntry;
 use App\Models\ModerationAction;
+use App\Models\PlatformEntitlement;
+use App\Models\PlatformEntitlementEvent;
 use App\Models\Questions;
 use App\Models\SolutionConfirmation;
 use App\Models\Solutions;
@@ -24,6 +26,8 @@ use App\Services\Demo\DemoInstaller;
 use App\Services\Demo\DemoRegistry;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Licensing\FinanceCompanies;
+use App\Services\Platforms\Entitlements;
+use App\Services\Platforms\PlatformAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -374,6 +378,33 @@ class DemonstrationContentTest extends TestCase
         foreach (['a@b.test' => true, 'A@Sub.Domain.TEST' => true, 'a@x.example' => true, 'a@host.invalid' => true, 'a@gmail.com' => false, 'a@contest.co.za' => false, 'a@test.co.za' => false, 'not-an-address' => false] as $address => $reserved) {
             $this->assertSame($reserved, SkipMailToReservedDomains::reserved($address), $address);
         }
+    }
+
+    public function test_the_first_company_has_two_platforms_switched_on_through_the_real_service_and_removal_takes_them_away(): void
+    {
+        // R-50: a real company's entitlement, to prove removal touches only the demonstration's.
+        $real = $this->realPerson();
+        app(Entitlements::class)->activate($real->currentTeam, 'forms', $real);
+        $outbox = DB::table('entitlement_outbox')->count();
+
+        $this->install();
+
+        $companies = app(DemoInstaller::class)->companies();
+        $first = $companies->first();
+
+        $this->assertSame(['hr', 'projects'], PlatformEntitlement::where('team_id', $first->id)->orderBy('platform_key')->pluck('platform_key')->all());
+        $this->assertSame(['active'], PlatformEntitlement::where('team_id', $first->id)->distinct()->pluck('status')->all());
+        $this->assertSame(['activated', 'activated'], PlatformEntitlementEvent::where('team_id', $first->id)->pluck('type')->all());
+        $this->assertSame($first->user_id, PlatformEntitlementEvent::where('team_id', $first->id)->value('actor_id'), 'switched on as its owner would');
+        $this->assertTrue(app(PlatformAccess::class)->decide($first->owner, 'projects')->allowed);
+        $this->assertSame(0, PlatformEntitlement::whereIn('team_id', $companies->skip(1)->pluck('id'))->count(), 'the other company keeps the free core only');
+        $this->assertSame($outbox, DB::table('entitlement_outbox')->count(), 'no platform is told about a company that does not exist');
+        $this->assertSame(2, DemoRecord::where('record_type', PlatformEntitlement::class)->count());
+
+        $this->artisan('demo:remove')->assertSuccessful();
+
+        $this->assertSame(['forms'], PlatformEntitlement::pluck('platform_key')->all(), 'the real company keeps its own');
+        $this->assertSame(1, PlatformEntitlementEvent::count());
     }
 
     public function test_remove_restores_every_table_to_its_count_and_deletes_the_files(): void

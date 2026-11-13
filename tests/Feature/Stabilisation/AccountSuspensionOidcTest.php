@@ -24,7 +24,7 @@ class AccountSuspensionOidcTest extends OidcTestCase
 
     public function test_a_suspended_person_is_not_authorised_for_a_platform(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $this->suspendQuietly($user);
         [, $challenge] = $this->pkcePair();
 
@@ -36,7 +36,7 @@ class AccountSuspensionOidcTest extends OidcTestCase
 
     public function test_a_code_issued_before_the_suspension_buys_no_tokens(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         [$verifier, $challenge] = $this->pkcePair();
 
         $redirect = $this->actingAs($user)
@@ -60,7 +60,7 @@ class AccountSuspensionOidcTest extends OidcTestCase
 
     public function test_a_refresh_token_of_a_suspended_person_buys_no_new_tokens(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $result = $this->completeCodeFlow($user);
         $this->assertArrayHasKey('refresh_token', $result);
 
@@ -76,7 +76,7 @@ class AccountSuspensionOidcTest extends OidcTestCase
 
     public function test_a_refresh_token_still_works_for_everyone_else(): void
     {
-        $result = $this->completeCodeFlow(User::factory()->create());
+        $result = $this->completeCodeFlow($this->entitledUser());
 
         $this->post('/oauth/token', [
             'grant_type' => 'refresh_token',
@@ -88,7 +88,7 @@ class AccountSuspensionOidcTest extends OidcTestCase
 
     public function test_userinfo_refuses_a_suspended_person(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $result = $this->completeCodeFlow($user);
 
         $this->suspendQuietly($user);
@@ -104,7 +104,7 @@ class AccountSuspensionOidcTest extends OidcTestCase
     {
         Http::fake();
 
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         $this->completeCodeFlow($user);
 
         $summary = app(AccountSuspension::class)->suspend($user, 'Reported', null);

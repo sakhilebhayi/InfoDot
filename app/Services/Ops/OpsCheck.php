@@ -21,7 +21,7 @@ class OpsCheck
 {
     public const HEARTBEAT_KEY = 'ops:scheduler-heartbeat';
 
-    private const OUTBOXES = ['reward_outbox' => 'points', 'participation_outbox' => 'memory', 'library_outcomes' => 'library'];
+    private const OUTBOXES = ['reward_outbox' => 'points', 'participation_outbox' => 'memory', 'library_outcomes' => 'library', 'entitlement_outbox' => 'entitlements'];
 
     public function __construct(private readonly ErrorLog $log) {}
 
@@ -52,6 +52,11 @@ class OpsCheck
 
         // R-20: without the OIDC signing keys every platform sign-in fails; deploy generates them once.
         $found['sso_signing_keys_missing'] = is_file(Passport::keyPath('oauth-private.key')) ? 0 : 1;
+
+        // R-50: the OAuth door finds a platform's entitlement by its registry slug. A slug that is not a key in config/ecosystem.php
+        // cannot be judged, so that platform's sign-in is let through unchecked until the slug is corrected.
+        $found['sso_platform_slug_not_in_registry'] = (int) (Schema::hasTable('dot_platforms')
+            ? DB::table('dot_platforms')->whereNotIn('slug', array_map('strval', array_keys((array) config('ecosystem.platforms', []))))->count() : 0);
 
         // The host conditions behind uploads and sign-ups failing: a folder the web user cannot write to, and a full disk.
         foreach ($this->writablePaths() as $label => $path) {

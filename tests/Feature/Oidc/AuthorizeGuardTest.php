@@ -18,7 +18,7 @@ class AuthorizeGuardTest extends OidcTestCase
 
     public function test_every_malformed_authorize_request_is_rejected_with_400(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
 
         $this->authorizeExpecting400(['client_id' => 'not-registered'], $user);
         $this->authorizeExpecting400(['response_type' => 'token'], $user);
@@ -35,12 +35,12 @@ class AuthorizeGuardTest extends OidcTestCase
     {
         $this->platform->update(['status' => 'suspended']);
 
-        $this->authorizeExpecting400([], User::factory()->create());
+        $this->authorizeExpecting400([], $this->entitledUser());
     }
 
     public function test_an_unregistered_redirect_uri_is_never_redirected_to(): void
     {
-        $user = User::factory()->create();
+        $user = $this->entitledUser();
         [, $challenge] = $this->pkcePair();
 
         $response = $this->actingAs($user)->get('/oauth/authorize?'.http_build_query(

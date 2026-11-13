@@ -33,6 +33,7 @@ class SessionsEndElsewhereTest extends OidcTestCase
 
         $password = Str::password(24);
         $user = User::factory()->withPersonalTeam()->create(['password' => Hash::make($password)]);
+        $this->companyWith($user, 'central'); // R-50: the code flow needs a company that holds the platform
         $this->completeCodeFlow($user);
         $tokenIds = Token::where('user_id', $user->id)->pluck('id');
         $this->assertNotEmpty($tokenIds);
@@ -52,6 +53,7 @@ class SessionsEndElsewhereTest extends OidcTestCase
         $password = Str::password(24);
         $newPassword = Str::password(24);
         $user = User::factory()->withPersonalTeam()->create(['password' => Hash::make($password)]);
+        $this->companyWith($user, 'central'); // R-50: the code flow needs a company that holds the platform
         $this->completeCodeFlow($user);
 
         Livewire::actingAs($user)->test(UpdatePasswordForm::class)
@@ -72,6 +74,7 @@ class SessionsEndElsewhereTest extends OidcTestCase
         $password = Str::password(24);
         $newPassword = Str::password(24);
         $user = User::factory()->withPersonalTeam()->create(['password' => Hash::make($password)]);
+        $this->companyWith($user, 'central'); // R-50: the code flow needs a company that holds the platform
         $this->completeCodeFlow($user);
 
         Livewire::actingAs($user)->test(UpdatePasswordForm::class)
