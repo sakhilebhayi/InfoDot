@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Livewire\Associates;
 use App\Livewire\Comments;
-use App\Livewire\Question as QuestionComponent;
 use App\Models\Like;
 use App\Models\Questions;
 use App\Models\Solutions;
@@ -132,7 +131,7 @@ class CorePlatformFeaturesTest extends TestCase
 
         $this->actingAs($user);
 
-        Livewire::test(QuestionComponent::class, [
+        Livewire::test(Comments::class, [
             'model' => $question,
             'question' => $question,
         ])->call('storeLike');
@@ -143,7 +142,7 @@ class CorePlatformFeaturesTest extends TestCase
             'likable_type' => 'questions',
         ]);
 
-        Livewire::test(QuestionComponent::class, [
+        Livewire::test(Comments::class, [
             'model' => $question,
             'question' => $question,
         ])->call('storeLike');

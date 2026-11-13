@@ -53,7 +53,7 @@ skipped). Pint passes; PHPStan reports no errors and the baseline is unchanged a
 | L-13 | P2 (conditional) | 7 Scheduler | With `CACHE_DRIVER=database` the scheduler's locks have no table | Left: not the configured driver | Read |
 | L-14 | P3 | 1 Seminars | A repeated notice inside a transaction would abort it on PostgreSQL | Left: production is MySQL | Read |
 | L-15 | P3 | 4 Visibility | Comment bodies of company-only items are written to the search index (no read path uses it) | Left | Read |
-| L-16 | P3 | 3 Livewire | `QuestionList`, `SolutionList` and `Question` components have no guards and are mounted nowhere | Left: dead code | Read |
+| L-16 | P3 | 3 Livewire | `QuestionList`, `SolutionList` and `Question` components have no guards and are mounted nowhere | Deleted later, with their views | Read |
 | L-17 | P3 | 9 Errors | A moderator typing a reference on the library desk gets different messages for "company-only", "hidden" and "not there" | Left | Read |
 
 ## 1. Seminars and money paths
