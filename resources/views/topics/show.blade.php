@@ -34,8 +34,8 @@
                     @php($isSolved = (int) $question->status === 1)
                     @php($replies = $question->comments_count + $question->answers_count)
                     <li class="ix-q {{ $isSolved ? 'is-solved' : '' }}">
-                        <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-q__count" aria-label="{{ $replies }} {{ Str::plural('reply', $replies) }}">
-                            <span class="ix-stencil-num">{{ str_pad((string) min($replies, 99), 2, '0', STR_PAD_LEFT) }}</span>
+                        <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-q__count">
+                            <span class="ix-stencil-num" aria-hidden="true">{{ str_pad((string) min($replies, 99), 2, '0', STR_PAD_LEFT) }}</span><span class="ix-sr">{{ $replies }}</span>
                             <small>{{ Str::plural('reply', $replies) }}</small>
                         </a>
                         <div class="ix-q__body">

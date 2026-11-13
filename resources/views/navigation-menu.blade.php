@@ -7,9 +7,9 @@
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/brand/logo_white.png') }}" alt="InfoDot" width="64" height="26">
         </a>
 
-        <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
-            <button type="button" class="ix-owner" style="background:none;border-top:0;border-bottom:0;border-left:0;color:inherit;cursor:pointer;text-align:left" @click="open = !open" :aria-expanded="open" aria-haspopup="true" aria-label="Company menu">
-                <span class="ix-owner__name">{{ $company?->name ?? 'Personal workspace' }}<small>{{ ($company?->personal_team ?? true) ? 'Personal workspace' : 'Company' }}</small></span>
+        <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }">
+            <button type="button" class="ix-owner" style="background:none;border-top:0;border-bottom:0;border-left:0;color:inherit;cursor:pointer;text-align:left" @click="open = !open" :aria-expanded="open" aria-haspopup="true">
+                <span class="ix-sr">Company menu: </span><span class="ix-owner__name">{{ $company?->name ?? 'Personal workspace' }} <small>{{ ($company?->personal_team ?? true) ? 'Personal workspace' : 'Company' }}</small></span>
                 <span class="material-symbols-rounded" aria-hidden="true" style="opacity:.7">expand_more</span>
             </button>
             <div class="ix-pop__panel" style="left:0;right:auto" x-show="open" x-cloak x-transition.opacity.duration.100ms>
@@ -80,7 +80,7 @@
                 @if ($bellUnread > 0)<span class="ix-bell__count" aria-hidden="true">{{ $bellUnread > 99 ? '99+' : $bellUnread }}</span>@endif
             </a>
 
-            <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
+            <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }">
                 <button type="button" class="ix-avatar" @click="open = !open" :aria-expanded="open" aria-haspopup="true" aria-label="{{ __('Account menu') }}">
                     @if ($photo = Auth::user()->photoUrl())
                         <img src="{{ $photo }}" alt="">
