@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { artisan, op } from './support/app';
+import { demo, seededAccounts } from './support/pages';
 import { dataDir, databaseFile, repoRoot, runFile, screensDir } from './support/env';
 
 /**
@@ -25,10 +26,14 @@ export default async function globalSetup(): Promise<void> {
     const password = `E2e-${crypto.randomBytes(12).toString('base64url')}-9a`;
     fs.writeFileSync(runFile, JSON.stringify({ password, tag: crypto.randomBytes(3).toString('hex') }));
 
+    op({ op: 'write-ahead-log' });
     artisan(['migrate:fresh', '--force', '--seed']);
     artisan(['cache:clear']);
     artisan(['view:clear']);
 
-    op({ op: 'reset-passwords', emails: ['demo-owner@infodot.test', 'demo-editor@infodot.test', 'demo-member@infodot.test'] });
+    // The labelled demonstration content the owner shows (docs/programme/r49/DEMONSTRATION_CONTENT.md), with its moderator.
+    // Its accounts get one-time passwords that are only printed; the run gives them its own instead.
+    artisan(['demo:install', '--with-moderator']);
+    op({ op: 'reset-passwords', emails: [...seededAccounts, ...Object.values(demo)] });
     op({ op: 'fixtures', dir: path.join(dataDir, 'fixtures') });
 }

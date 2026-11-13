@@ -2,9 +2,7 @@ import type { Page } from '@playwright/test';
 import { makeBusiness, makeUser, type Business, type Person } from '../support/app';
 import { blocking, contrast, record, recorded, scan, type Violation } from '../support/a11y';
 import { expect, password, register, signIn, test } from '../support/fixtures';
-import { moderatorStops, ownerStops, publicStops, type Stop } from '../support/pages';
-
-const DEMO_OWNER = 'demo-owner@infodot.test';
+import { demo, moderatorStops, ownerStops, publicStops, type Stop } from '../support/pages';
 
 async function scanStops(page: Page, stops: Stop[], scheme: string, found: Violation[], scanned: string[]): Promise<void> {
     for (const stop of stops) {
@@ -49,7 +47,7 @@ for (const scheme of ['light', 'dark'] as const) {
             const found: Violation[] = [];
             const scanned: string[] = [];
 
-            await signIn(page, DEMO_OWNER);
+            await signIn(page, demo.owner);
             await scanStops(page, ownerStops(), scheme, found, scanned);
 
             // Menus open, as they are when someone is using them.
@@ -87,9 +85,9 @@ for (const scheme of ['light', 'dark'] as const) {
         test('text contrast on every page scanned above', async () => {
             // KNOWN FAILURE, kept visible on purpose: axe finds text below 4.5:1 on a few pages in each scheme, and the
             // cure is a change to The Yard's colour tokens, which belongs to the design pass and not to a test run
-            // (docs/programme/r49/UX_FINDINGS.md, U-02 to U-05; every element is in ACCESSIBILITY_SCAN.md).
+            // (docs/programme/r49/UX_FINDINGS.md, U-02 to U-06; every element is in ACCESSIBILITY_SCAN.md).
             // Delete the next line when the palette is fixed: the test then guards the result.
-            test.fail(true, 'Text contrast below 4.5:1: UX_FINDINGS.md U-02 to U-05');
+            test.fail(true, 'Text contrast below 4.5:1: UX_FINDINGS.md U-02 to U-06');
 
             const found = contrast(recorded(scheme));
             expect(found, found.join('\n')).toEqual([]);

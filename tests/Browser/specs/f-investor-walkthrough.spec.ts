@@ -1,12 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { makeUser } from '../support/app';
 import { dataDir, screensDir } from '../support/env';
 import { brokenImages, expect, openContext, screenshot, signIn, test, watch, type Watch } from '../support/fixtures';
-import { moderatorStops, ownerStops, publicStops, type Stop } from '../support/pages';
-
-const DEMO_OWNER = 'demo-owner@infodot.test';
+import { demo, moderatorStops, ownerStops, publicStops, type Stop } from '../support/pages';
 
 /** Open one page of the walk, check it, photograph it. Everything wrong is collected, so one run lists it all. */
 async function visit(page: Page, record: Watch, stop: Stop, size: string, widths: Record<string, number>): Promise<void> {
@@ -33,7 +30,6 @@ async function visit(page: Page, record: Watch, stop: Stop, size: string, widths
 test.describe('F. Investor walkthrough', () => {
     test('one continuous visit with nothing broken on any page, photographed at desktop and phone size', async ({ page, browser }) => {
         test.setTimeout(600_000);
-        const moderator = makeUser('Demo Moderator', { moderator: true });
         // Last run's pictures go first, so the folder only ever holds this run.
         for (const size of ['desktop', 'phone']) {
             fs.rmSync(path.join(screensDir, size), { recursive: true, force: true });
@@ -47,7 +43,7 @@ test.describe('F. Investor walkthrough', () => {
         }
 
         // The demonstration owner signs in and walks the product.
-        await signIn(page, DEMO_OWNER);
+        await signIn(page, demo.owner);
         for (const stop of ownerStops()) {
             await visit(page, record, stop, 'desktop', widths);
         }
@@ -66,7 +62,7 @@ test.describe('F. Investor walkthrough', () => {
         const theirs = await openContext(browser, { viewport: { width: 1440, height: 900 } });
         const moderatorPage = await theirs.newPage();
         const moderatorRecord = watch(moderatorPage);
-        await signIn(moderatorPage, moderator.email);
+        await signIn(moderatorPage, demo.moderator);
         for (const stop of moderatorStops()) {
             await visit(moderatorPage, moderatorRecord, stop, 'desktop', widths);
         }
@@ -79,7 +75,7 @@ test.describe('F. Investor walkthrough', () => {
         for (const stop of publicStops()) {
             await visit(phonePage, phoneRecord, stop, 'phone', widths);
         }
-        await signIn(phonePage, DEMO_OWNER);
+        await signIn(phonePage, demo.owner);
         for (const stop of ownerStops()) {
             await visit(phonePage, phoneRecord, stop, 'phone', widths);
         }
@@ -88,7 +84,7 @@ test.describe('F. Investor walkthrough', () => {
         const phoneModerator = await openContext(browser, { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
         const phoneModeratorPage = await phoneModerator.newPage();
         const phoneModeratorRecord = watch(phoneModeratorPage);
-        await signIn(phoneModeratorPage, moderator.email);
+        await signIn(phoneModeratorPage, demo.moderator);
         for (const stop of moderatorStops()) {
             await visit(phoneModeratorPage, phoneModeratorRecord, stop, 'phone', widths);
         }

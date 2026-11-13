@@ -1,6 +1,6 @@
 # R-49 UX findings from the browser run
 
-Things noticed while the real-browser journeys ran (`tests/Browser`, 2026-11-13). None of them stops a journey, and none was changed: each needs a design decision, so it is listed here for the design pass. Functional defects were fixed in the same pull request and are not in this list.
+Things noticed while the real-browser journeys ran (`tests/Browser`, 2026-11-13, on main as of #215 with the demonstration content installed). None of them stops a journey, and none was changed: each needs a design decision, so it is listed here for the design pass. Functional defects were fixed in the same pull request and are not in this list.
 
 Screenshot names refer to `tests/Browser/screens/`, which `npm run test:browser -- --project=desktop-chromium f-investor` writes on your machine (the folder is not in git). Desktop is 1440 x 900; phone is 390 x 844.
 
@@ -11,24 +11,22 @@ Two checks the brief asks for cannot pass until the design system changes. They 
 | No. | Page | Viewport | Screenshot | Finding |
 |---|---|---|---|---|
 | U-01 | Every page with a primary button (17 buttons on 11 pages of the phone journey: `/`, `/register`, `/email/verify`, `/login`, `/people`, `/seminars`, `/user/profile/edit`, `/questions/ask`, `/question/view/{id}`, `/teams/create`, `/business/{uuid}/edit`) | phone, tablet | `phone/public-create-account.png`, `phone/business-profile.png` | Primary buttons are 36px high on touch screens (`.ix-btn` has a fixed `height: 36px`); the target is 44px. `e-mobile.spec.ts`, second test. |
-| U-02 | `/business/{uuid}` | desktop, light and dark | `desktop/business-page.png` | Text below 4.5:1: the field labels in "Reach them" (`.ix-biz__field > span`), the status chips (`.ix-chip--open`, `.ix-chip--done`) and the dates in the blue "On InfoDot" panel; in dark also the section numeral (`.ix-bizsec__num`). |
-| U-03 | `/home` | desktop, dark | `desktop/home.png` | Text below 4.5:1 in dark only: the reference (`.ix-ref`, for example DETR-Q-000001) inside the blue Knowledge field, and one element with class `.w` beside it. |
-| U-04 | `/` | desktop, light and dark | `desktop/public-home.png` | The suggestion chips under the search field sit on the hero photograph; where the photograph is pale behind them ("Find customers", "Manage cash") their text is below 4.5:1. |
-| U-05 | `/moderation/friction` | desktop, light | `desktop/moderation-friction.png` | The period tabs (7, 14, 30, 90 days) reuse `.ix-tab`, which is drawn for the dark top bar: on the light page they are almost invisible. |
+| U-02 | Wherever demonstration content is labelled: `/questions`, `/solution-results`, `/question/view/{id}`, `/solution/view/{id}`, `/user/profile/{id}`, `/business/{uuid}` | desktop, light | `desktop/knowledge-questions.png`, `desktop/business-page.png` | The `.ix-chip--open` chip is below 4.5:1 in the light scheme. The "Demonstration" label is drawn with it (and it also marks open states), so the label that tells a visitor the content is not real is one of the hardest things on the row to read. |
+| U-03 | `/business/{uuid}` | desktop, light and dark | `desktop/business-page.png` | Text below 4.5:1 besides the chip: the field labels in "Reach them" (`.ix-biz__field > span`), the dates in the announcement and "On InfoDot" lists, and in dark the section numerals (`.ix-bizsec__num`). |
+| U-04 | `/home` | desktop, dark | `desktop/home.png` | Text below 4.5:1 in dark only: the references (`.ix-ref`) inside the blue Knowledge field, and the element with class `.w` beside each. |
+| U-05 | `/` | desktop, light and dark | `desktop/public-home.png` | The suggestion chips under the search field sit on the hero photograph; where the photograph is pale behind one, its text is below 4.5:1. |
+| U-06 | `/moderation/friction` | desktop, light | `desktop/moderation-friction.png` | The period tabs (7, 14, 30, 90 days) reuse `.ix-tab`, which is drawn for the dark top bar: on the light page they are almost invisible. |
 
-Every element behind U-02 to U-05 is listed with its selector in `ACCESSIBILITY_SCAN.md`. `h-accessibility.spec.ts`, "text contrast" tests.
+Every element behind U-02 to U-06 is listed with its selector in `ACCESSIBILITY_SCAN.md` (80 elements on 9 pages, counting each colour scheme). `h-accessibility.spec.ts`, "text contrast" tests.
 
 ## Demonstration readiness
 
 | No. | Page | Viewport | Screenshot | Finding |
 |---|---|---|---|---|
-| U-06 | `/library` | all | `desktop/library.png` | The Verified library is empty after `php artisan migrate:fresh --seed`: the seeder adds public solutions but adopts none into the library, so a demonstration opens on "The library is empty so far". |
-| U-07 | `/business/{uuid}` (Demo Traders) | all | `desktop/business-page.png` | The seeded business has no description, logo, cover or contact details, so its page is a grey plate with the owner code and little else. |
+| U-07 | `/library` | all | `desktop/library.png` | The Verified library is empty with the demonstration content installed: `demo:install` writes questions, answers and solutions but adopts none into the library, so that tab opens on "The library is empty so far". |
 | U-08 | `/moderation/friction` | all | `desktop/moderation-friction.png` | The empty state shows a setting name and a file path meant for a developer ("UX_SIGNALS=true; see docs/programme/R12_UX_SIGNALS.md"). |
-| U-09 | `/login`, `/register`, `/email/verify` | all | `desktop/public-sign-in.png`, `desktop/public-create-account.png` | The sign-in pages are not in The Yard: a server-room photograph, a blue button, DM Sans and Baloo type, and Font Awesome loaded for no icon on the page. Everything before and after them is The Yard. |
-| U-10 | `/login`, `/register` | all | `desktop/public-sign-in.png` | The background is a 2,400px photograph hot-linked from `images.unsplash.com`. On a cold cache the page took 8.5 seconds to finish loading in the run, and if that host is slow or blocked at the venue the page waits on it. |
-
-| U-19 | `/register` | all | none (seen in the tablet run) | Sign-up is limited to ten in ten minutes from one address. A room of people joining on one Wi-Fi, at a seminar or a demonstration, reaches that, and the eleventh person gets a bare white page reading "Too many attempts. Please wait a few minutes and try again." with no InfoDot styling and no way back. The limit is deliberate (`ThrottleAccountForms`); the number and the page it shows are the decisions to make. |
+| U-09 | `/login`, `/register`, `/email/verify` | all | `desktop/public-sign-in.png`, `desktop/public-create-account.png` | The sign-in pages are not in The Yard: a full-page photograph, a white card, a blue button, DM Sans and Baloo type. Everything before and after them is The Yard. |
+| U-10 | `/register` | all | none (seen in the tablet run) | Sign-up is limited to ten in ten minutes from one address. A room of people joining on one Wi-Fi, at a seminar or a demonstration, reaches that, and the eleventh person gets a bare white page reading "Too many attempts. Please wait a few minutes and try again." with no InfoDot styling and no way back. The limit is deliberate (`ThrottleAccountForms`); the number and the page it shows are the decisions to make. |
 
 ## Forms and feedback
 
@@ -50,5 +48,5 @@ Every element behind U-02 to U-05 is listed with its selector in `ACCESSIBILITY_
 
 ## Not design, but worth knowing
 
-- No page scrolls sideways: the 43 pages of the walkthrough were measured at 390px and at 1440px in Chromium, and every page of the phone journey was measured in WebKit at iPhone 14 and iPad sizes and in Chromium at Pixel 7 size.
+- No page scrolls sideways: the 44 pages of the walkthrough were measured at 390px and at 1440px in Chromium, and every page of the phone journey was measured in WebKit at iPhone 14 and iPad sizes and in Chromium at Pixel 7 size.
 - The public home page reveals its sections as you scroll; a visitor who has asked for reduced motion gets the whole page at once.

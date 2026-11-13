@@ -94,8 +94,19 @@ test.describe('G. When something goes wrong', () => {
         await page.goto('/questions/ask');
         await page.getByLabel('Add attachment files').setInputFiles(fixture('not-a-picture.txt'));
         await expect(page.locator('.ix-attach__item.is-error, .ix-field > .ix-error').filter({ hasText: /\S/ }).first()).toBeVisible({ timeout: 30_000 });
-        await page.getByLabel('Add attachment files').setInputFiles(fixture('too-large.png'));
-        await expect(page.locator('.ix-attach__item.is-error, .ix-field > .ix-error').filter({ hasText: /10 MB|too large|larger/i }).first()).toBeVisible({ timeout: 60_000 });
+        // PHP's development server now and then drops a 12 MB body part-way ("The upload did not arrive intact. Try
+        // again."). That is a clear message too, and the test does what it says: takes the file off and tries again.
+        const large = page.locator('.ix-attach__item').filter({ hasText: 'too-large.png' });
+        for (const attempt of [1, 2, 3]) {
+            await page.getByLabel('Add attachment files').setInputFiles(fixture('too-large.png'));
+            await expect(large.getByRole('alert')).toHaveText(/\S/, { timeout: 60_000 });
+            if (attempt === 3 || !/did not arrive intact/.test(await large.getByRole('alert').innerText())) {
+                break;
+            }
+            await page.getByRole('button', { name: 'Remove too-large.png' }).click();
+            await expect(large).toHaveCount(0);
+        }
+        await expect(large.getByRole('alert')).toHaveText(/10 MB|too large|larger/i);
         expect(rows('attachments', { user_id: owner.id })).toHaveLength(0);
 
         // A business logo.

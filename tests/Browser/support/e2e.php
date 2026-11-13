@@ -109,6 +109,10 @@ $result = match ($op['op']) {
         return ['flushed' => false];
     })(),
 
+    // Several browsers write to the one SQLite file at once. Write-ahead logging (a setting kept in the file itself) lets
+    // them read while another writes, which the default journal does not.
+    'write-ahead-log' => ['mode' => DB::selectOne('PRAGMA journal_mode=WAL')->journal_mode ?? null],
+
     // Read rows back, to assert what was saved.
     'rows' => DB::table($op['table'])->where($op['where'] ?? [])->orderBy($op['order'] ?? 'id')->limit(50)->get()->all(),
 

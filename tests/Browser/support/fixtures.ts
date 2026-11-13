@@ -8,9 +8,9 @@ import { baseURL, dataDir, screensDir } from './env';
 type Stored = { status: number; headers: Record<string, string>; body: Buffer };
 
 /**
- * Fonts and the sign-in photograph come from other hosts. Every new browser context starts with an empty cache, and
- * those hosts can take seconds to answer, so each file is fetched once, kept in .data/elsewhere and replayed from there
- * (per browser engine: the font stylesheet differs between them). Delete that folder to fetch them afresh.
+ * Files a page loads from another host (a font, a photograph). Every new browser context starts with an empty cache
+ * and such hosts can take seconds to answer, so each file is fetched once, kept in .data/elsewhere and replayed from
+ * there (per browser engine: a font stylesheet can differ between them). Delete that folder to fetch them afresh.
  */
 const elsewhere = new Map<string, Stored>();
 const elsewhereDir = path.join(dataDir, 'elsewhere');
@@ -128,7 +128,9 @@ export async function signOut(page: Page): Promise<void> {
  * minutes from one address, and the whole matrix makes more than that, so the counters are emptied once if it answers.
  */
 export async function register(page: Page, name: string): Promise<string> {
-    const email = `${unique('e2e-')}@infodot.test`;
+    // The app never mails a .test address (SkipMailToReservedDomains), so a person who must receive the verification
+    // email registers on example.com: reserved, so it can reach nobody, and the run's mailer only writes to the log.
+    const email = `${unique('e2e-')}@browser-tests.example.com`;
     for (const attempt of [1, 2]) {
         await page.goto('/register');
         await page.getByLabel('Name').fill(name);

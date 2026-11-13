@@ -2,6 +2,19 @@ import { rows } from './app';
 
 export type Stop = { name: string; path: string };
 
+/** The demonstration accounts `php artisan demo:install --with-moderator` creates (database/demo/content.php). */
+export const demo = {
+    owner: 'naledi@demo.infodot.test',
+    colleague: 'sipho@demo.infodot.test',
+    outsider: 'lerato@demo.infodot.test',
+    moderator: 'thabo@demo.infodot.test',
+};
+
+/** The development baseline accounts of DemoSeeder. */
+export const seededAccounts = ['demo-owner@infodot.test', 'demo-editor@infodot.test', 'demo-member@infodot.test'];
+
+export const demoCompany = 'Ledger Works (Demonstration)';
+
 /** The pages a visitor reads before signing in. */
 export function publicStops(): Stop[] {
     return [
@@ -20,16 +33,18 @@ export function publicStops(): Stop[] {
 
 /** The signed-in pages the demonstration owner walks through, in order. */
 export function ownerStops(): Stop[] {
-    const company = rows('teams', { name: 'Demo Traders (Pty) Ltd' })[0];
-    const owner = rows('users', { email: 'demo-owner@infodot.test' })[0];
+    const company = rows('teams', { name: demoCompany })[0];
+    const owner = rows('users', { email: demo.owner })[0];
+    const question = rows('questions', { user_id: owner.id, visibility: 'public' })[0];
+    const solution = rows('solutions', { team_id: company.id, visibility: 'public' })[0];
 
     return [
         { name: 'home', path: '/home' },
         { name: 'knowledge-questions', path: '/questions' },
-        { name: 'knowledge-question', path: '/question/view/1' },
+        { name: 'knowledge-question', path: `/question/view/${question.id}` },
         { name: 'knowledge-ask', path: '/questions/ask' },
         { name: 'knowledge-solutions', path: '/solutions' },
-        { name: 'knowledge-solution', path: '/solution/view/1' },
+        { name: 'knowledge-solution', path: `/solution/view/${solution.id}` },
         { name: 'knowledge-write-solution', path: '/solution/create' },
         { name: 'knowledge-topics', path: '/topics' },
         { name: 'library', path: '/library' },
@@ -57,6 +72,7 @@ export function ownerStops(): Stop[] {
 export function moderatorStops(): Stop[] {
     return [
         { name: 'moderation-queue', path: '/moderation' },
+        { name: 'moderation-accounts', path: '/moderation/accounts' },
         { name: 'moderation-library', path: '/moderation/library' },
         { name: 'moderation-topics', path: '/moderation/topics' },
         { name: 'moderation-trust', path: '/moderation/trust' },
