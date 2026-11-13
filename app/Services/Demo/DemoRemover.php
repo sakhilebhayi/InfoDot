@@ -248,7 +248,8 @@ class DemoRemover
     {
         $shapes = [];
 
-        foreach (array_column(Schema::getTables(), 'name') as $table) {
+        // This database only: on a shared MySQL server the account may see other applications' databases too.
+        foreach (array_column(Schema::getTables(Schema::getCurrentSchemaName()), 'name') as $table) {
             $columns = array_column(Schema::getColumns($table), 'name');
             $references = [];
 

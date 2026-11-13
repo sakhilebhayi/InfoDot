@@ -56,7 +56,7 @@ class DemonstrationContentTest extends TestCase
     private function counts(): array
     {
         $counts = [];
-        foreach (array_column(Schema::getTables(), 'name') as $table) {
+        foreach (array_column(Schema::getTables(Schema::getCurrentSchemaName()), 'name') as $table) {
             $counts[$table] = DB::table($table)->count();
         }
         ksort($counts);
@@ -101,9 +101,9 @@ class DemonstrationContentTest extends TestCase
         $this->install();
 
         $people = User::where('email', 'like', '%@demo.infodot.test')->get();
-        $this->assertCount(4, $people);
+        $this->assertCount(3, $people, 'owner, colleague and outside person');
         $this->assertTrue($people->every(fn (User $u) => $u->email_verified_at !== null), 'every demonstration account is verified');
-        $this->assertSame(1, $people->where('is_moderator', true)->count(), 'one demonstration moderator');
+        $this->assertSame(0, User::where('is_moderator', true)->count(), 'no moderator exists unless it is asked for');
         foreach ($people as $person) {
             $this->assertNotNull($person->profile_photo_path);
             Storage::disk('public')->assertExists($person->profile_photo_path);
@@ -206,8 +206,8 @@ class DemonstrationContentTest extends TestCase
         $passwords = app(DemoInstaller::class)->install();
         app(DemoRegistry::class)->flush();
 
-        $this->assertCount(4, $passwords);
-        $this->assertCount(4, array_unique($passwords));
+        $this->assertCount(3, $passwords);
+        $this->assertCount(3, array_unique($passwords));
         foreach ($passwords as $email => $password) {
             $this->assertGreaterThanOrEqual(20, strlen($password));
             $this->assertTrue(Hash::check($password, User::where('email', $email)->value('password')));
@@ -361,7 +361,7 @@ class DemonstrationContentTest extends TestCase
 
         $this->assertNotSame($before, $this->counts());
         $this->assertCount(4, Storage::disk('local')->allFiles(), 'two logos and two covers');
-        $this->assertCount(4, Storage::disk('public')->allFiles(), 'four profile pictures');
+        $this->assertCount(3, Storage::disk('public')->allFiles(), 'three profile pictures');
 
         $this->artisan('demo:remove')->expectsOutputToContain('removed')->assertSuccessful();
 
@@ -480,6 +480,50 @@ class DemonstrationContentTest extends TestCase
         $comment->save();
 
         $this->assertSame(['id' => $comment->id, 'body' => 'A comment with words to find.'], $comment->toSearchableArray());
+    }
+
+    public function test_the_moderator_is_created_only_when_asked_for_and_removed_either_way(): void
+    {
+        $before = $this->counts();
+
+        // Asked for at install: four accounts, one of them a moderator, and status says so.
+        $this->artisan('demo:install', ['--with-moderator' => true])->expectsOutputToContain('real moderation powers')->assertSuccessful();
+        app(DemoRegistry::class)->flush();
+        $moderator = $this->person('thabo');
+        $this->assertTrue($moderator->isModerator());
+        $this->assertTrue(app(DemoRegistry::class)->isDemoUser($moderator));
+        $this->assertNotNull($moderator->email_verified_at);
+        $this->assertSame(4, User::where('email', 'like', '%@demo.infodot.test')->count());
+        $this->assertSame(1, User::where('is_moderator', true)->count());
+        $this->assertSame(6, Questions::withoutGlobalScopes()->count(), 'the content is the same with or without the moderator');
+        $this->artisan('demo:status')->expectsOutputToContain('thabo@demo.infodot.test exists')->assertSuccessful();
+
+        $this->artisan('demo:remove')->assertSuccessful();
+        $this->assertSame($before, $this->counts());
+        $this->assertSame([], Storage::disk('public')->allFiles());
+
+        // Left out by default, then added later: only the moderator is created, and the other passwords stay as they were.
+        app(DemoRegistry::class)->flush();
+        $this->artisan('demo:install')->expectsOutputToContain('No demonstration moderator was created')->assertSuccessful();
+        app(DemoRegistry::class)->flush();
+        $this->artisan('demo:status')->expectsOutputToContain('Demonstration moderator: none')->assertSuccessful();
+        $hash = $this->person('naledi')->password;
+        $questions = Questions::withoutGlobalScopes()->count();
+
+        $this->artisan('demo:install', ['--with-moderator' => true])->expectsOutputToContain('moderator was added')->assertSuccessful();
+        app(DemoRegistry::class)->flush();
+        $this->assertTrue($this->person('thabo')->isModerator());
+        $this->assertSame($hash, $this->person('naledi')->password);
+        $this->assertSame($questions, Questions::withoutGlobalScopes()->count());
+
+        // Asking again changes nothing.
+        $installed = $this->counts();
+        $this->artisan('demo:install', ['--with-moderator' => true])->expectsOutputToContain('already installed')->assertSuccessful();
+        $this->assertSame($installed, $this->counts());
+
+        $this->artisan('demo:remove')->assertSuccessful();
+        $this->assertSame($before, $this->counts());
+        $this->assertSame(0, User::where('is_moderator', true)->count());
     }
 
     public function test_status_reports_what_is_there(): void

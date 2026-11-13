@@ -15,6 +15,9 @@
 |  - No customer counts, testimonials, ratings, revenue or activity numbers. Nothing here is a claim about a
 |    real business.
 |
+|  - A person marked 'moderator' is created only on request (demo:install --with-moderator) and must not be the
+|    author of anything below: the default install has to be complete without them.
+|
 | Keys ("naledi", "ledger", "late-invoice") only tie the entries together inside this file.
 */
 
@@ -24,7 +27,7 @@ return [
         'naledi' => ['name' => 'Naledi Demo', 'email' => 'naledi@demo.infodot.test', 'ground' => 'knowledge', 'role' => 'Owner of the first demonstration company'],
         'sipho' => ['name' => 'Sipho Demo', 'email' => 'sipho@demo.infodot.test', 'ground' => 'documents', 'role' => 'Colleague in the first demonstration company'],
         'lerato' => ['name' => 'Lerato Demo', 'email' => 'lerato@demo.infodot.test', 'ground' => 'files', 'role' => 'Outside the first company; owner of the second'],
-        'thabo' => ['name' => 'Thabo Demo', 'email' => 'thabo@demo.infodot.test', 'ground' => 'people', 'role' => 'Demonstration moderator', 'moderator' => true],
+        'thabo' => ['name' => 'Thabo Demo', 'email' => 'thabo@demo.infodot.test', 'ground' => 'people', 'role' => 'Demonstration moderator: created only by demo:install --with-moderator', 'moderator' => true],
     ],
 
     'companies' => [
@@ -138,9 +141,9 @@ return [
             ],
         ],
         'spreadsheet-or-software' => [
-            'by' => 'thabo', 'public' => true, 'topics' => ['Getting started', 'Money and cash flow'],
+            'by' => 'naledi', 'public' => true, 'topics' => ['Getting started', 'Money and cash flow'],
             'question' => 'When is it worth moving from a spreadsheet to accounting software?',
-            'description' => 'A friend runs a small catering business from a spreadsheet and it works. At what point does that stop being enough, and what are the signs?',
+            'description' => 'A client runs a small catering business from a spreadsheet and it works. At what point does that stop being enough, and what are the signs?',
             'answers' => [
                 ['by' => 'sipho', 'body' => "A spreadsheet is fine while one careful person captures everything and nobody else needs the numbers. The signs that it has stopped being enough:\n\n1. You cannot say what customers owe you today without rebuilding a list.\n2. Two people edit the file, and you have found a formula overwritten at least once.\n3. Sending invoices, matching payments to them and following up are three separate manual jobs.\n4. Your accountant spends the first hours of every engagement cleaning the data.\n\nIf two of those are true, the software will pay for itself in time. Choose one your accountant already works with, start at the beginning of a month, and run the spreadsheet alongside it for one month to check the totals agree."],
             ],

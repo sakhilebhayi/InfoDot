@@ -13,7 +13,8 @@ The content is data in `database/demo/content.php`, reviewed like any other chan
 
 | Kind | Count | Notes |
 | --- | --- | --- |
-| People | 4 | Naledi Demo (owner), Sipho Demo (colleague), Lerato Demo (outside the first company; owns the second), Thabo Demo (moderator). Addresses `…@demo.infodot.test`, verified, each with a drawn profile picture and a personal workspace. |
+| People | 3 | Naledi Demo (owner), Sipho Demo (colleague), Lerato Demo (outside the first company; owns the second). Addresses `…@demo.infodot.test`, verified, each with a drawn profile picture and a personal workspace. |
+| Moderator | 0, or 1 with `--with-moderator` | Thabo Demo. Not created by default: see section 3. |
 | Companies | 2 | Ledger Works (Demonstration): bookkeeping, Johannesburg. Fieldline IT (Demonstration): IT support, Durban. Visibility "Anyone". |
 | Business profile, per company | 1 | Description, type, industry, two directory categories, 4 and 3 services/products with "Demonstration price" notes, 1 portfolio project, 1 location, 1 announcement, website on `example.com`, email on `*.infodot.test`, phone `+27 00 000 01xx`. |
 | Logo and cover, per company | 2 | Drawn with GD (`DemoArtwork`): the owner code stencilled in gold on graphite; the cover carries the word DEMONSTRATION. Stored through `TeamMediaService`, so they are ordinary attachments. |
@@ -23,9 +24,9 @@ The content is data in `database/demo/content.php`, reviewed like any other chan
 | Comments | 2 | One on a question, one on a solution. |
 | "Tried it" confirmation | 1 | Lerato on the month-end solution. |
 | Enquiry | 1 | Lerato to Ledger Works, with Naledi's reply (through `EnquiryService`). |
-| Notices | 15 | Whatever the application's rules produce from those actions; every person has at least one. |
+| Notices | 15 | Whatever the application's rules produce from those actions; each of the three people has at least one. |
 
-Also created because the application creates them: 4 personal workspaces, 6 root folders with their objects, 1
+Also created because the application creates them: 3 personal workspaces, 5 root folders with their objects, 1
 membership, 2 listing events, and the milestones (`user_achievements`) the seeded actions earn. Nothing is typed
 in: no Dot Points, no reputation score, no verification. The content is filed under topics that already exist on
 the site (for example "Money and cash flow" after `knowledge:seed`); the installer never creates a topic or a
@@ -72,9 +73,10 @@ The company and people names also say so ("… (Demonstration)", "… Demo"), fo
 Run on the host from the application folder. In production each command needs `--force`, like `migrate`.
 
 ```
-php artisan demo:install --force      # create the content; prints the four one-time passwords
+php artisan demo:install --force      # create the content; prints the three one-time passwords
+php artisan demo:install --force --with-moderator   # the same, plus the demonstration moderator (or adds it later)
 php artisan demo:install --force --rotate   # new passwords; the old ones stop working
-php artisan demo:status               # what is installed, and whether real accounts added to it
+php artisan demo:status               # what is installed, whether the moderator exists, whether real accounts added to it
 php artisan demo:remove --force       # take all of it away
 ```
 
@@ -84,6 +86,18 @@ php artisan demo:remove --force       # take all of it away
   log. Lost them: `--rotate`.
 - The install is all or nothing: one database transaction, and the files of a failed run are deleted.
 - If an account already uses one of the demonstration addresses, the install stops and changes nothing.
+
+### The demonstration moderator is opt-in
+
+A moderator can hide, verify and decide on real people's content, so an extra moderator account does not exist on
+a real site unless someone asks for it. The default install creates none, and the walkthrough uses the owner's
+own moderator account for the moderation part.
+
+`demo:install --with-moderator` creates Thabo Demo with the rest, or adds only him to content that is already
+installed (the other accounts and their passwords are untouched). `demo:status` says whether he exists.
+`demo:remove` removes him with everything else. If he is created: on the accounts desk he can act on
+demonstration accounts only (section 5); on the older desks nothing limits him, so use him on demonstration
+content only and remove the content when the demonstration is over.
 
 ### What removal does
 
@@ -106,10 +120,9 @@ install and remove, every table holds the number of rows it held before, and bot
 - A real person's notice about demonstration content ("someone answered your question", where the answer was a
   demonstration account's) is removed with the content. A notice that points at a demonstration question itself
   stays and reads "no longer available".
-- The demonstration moderator is a real moderator: on the desks that existed before R-49 it can act on real
-  content. Use it on demonstration content only. On the accounts desk this is enforced (section 5).
-- Tested on SQLite. The commands use only portable schema calls and are written for MySQL as well, but no MySQL
-  run has been made: run `demo:install` and `demo:remove` once on a copy of production data before the live site.
+- Engines: the test suite runs on SQLite. On MySQL, the CI job "migrations on MySQL" runs
+  `tools/mysql-demo-content-test.php`: the real commands in production mode, the two companies listed for a
+  visitor, a second install that creates nothing, and every table's row count restored after `demo:remove`.
 
 ## 4. A 10-minute walkthrough
 
@@ -133,8 +146,9 @@ where it says so.
    Reply. Then `/questions`: the company-only question shows for her ("Your company"); it did not for Lerato.
    Open the company-only solution "How we onboard a new bookkeeping client".
 6. **Notices (30 s).** The bell: an answer received, an answer accepted, a comment, a confirmation.
-7. **Moderation, as the moderator (1.5 min).** Sign in as Thabo. Moderation, Accounts. Search `demo`. Open
-   Lerato, read what suspension does, suspend with a reason, show the history line, restore.
+7. **Moderation, as yourself (1.5 min).** Sign in with your own moderator account. Moderation, Accounts. Search
+   `demo`. Open Lerato, read what suspension does, suspend with a reason, show the history line, restore. (Only
+   if you would rather not show your own account: install with `--with-moderator` and sign in as Thabo.)
 
 Afterwards: `php artisan demo:status`, then `php artisan demo:remove --force` when the content is no longer
 wanted.
@@ -157,7 +171,7 @@ hides the form:
 - A moderator cannot suspend or restore themselves.
 - A moderator cannot suspend or restore another moderator. That stays the owner's decision, with
   `account:suspend` and `account:restore`.
-- The demonstration moderator can act on demonstration accounts only.
+- The demonstration moderator, when one was installed, can act on demonstration accounts only.
 - Every action is written to `account_suspension_events` with the moderator who did it. A second click writes no
   second line.
 - A person who does not exist is a 404. Anyone who is not a moderator gets the 403 the rest of `/moderation`

@@ -39,7 +39,8 @@ use Throwable;
  * Writes the demonstration content of database/demo/content.php (R-49): two fictional companies with complete
  * business pages, four fictional people, and a small body of questions, answers, solutions and one enquiry. It
  * exists so the owner can show InfoDot working on a site that has little content yet, without inventing a single
- * customer or number.
+ * customer or number. The demonstration moderator is created only when asked for (`$withModerator`, or addModerator()
+ * later): on a real site it would hold real moderation powers.
  *
  * It writes the way the application writes: pictures through the media pipeline, answers through AnswerService,
  * the enquiry through EnquiryService, notices through InAppNotices. So achievements, notices and the search
@@ -78,29 +79,88 @@ class DemoInstaller
      *
      * @throws RuntimeException when demonstration content is already installed, or an address is taken by a real account
      */
-    public function install(): array
+    public function install(bool $withModerator = false): array
     {
         if ($this->registry->installed()) {
             throw new RuntimeException('Demonstration content is already installed. Nothing was changed.');
         }
 
         $content = $this->content();
-        $emails = array_column($content['people'], 'email');
+        // The moderator is a real moderator on a real site, so it exists only when asked for.
+        $content['people'] = array_filter($content['people'], fn (array $person) => $withModerator || ! ($person['moderator'] ?? false));
+
+        $passwords = $this->passwordsFor($content['people']);
+
+        $this->run(fn () => $this->build($content, $passwords));
+
+        return $passwords;
+    }
+
+    /**
+     * Add the demonstration moderator to content that was installed without one.
+     *
+     * @return array<string, string> its one-time password by email address
+     *
+     * @throws RuntimeException when nothing is installed, the moderator exists already, or its address is taken
+     */
+    public function addModerator(): array
+    {
+        if (! $this->registry->installed()) {
+            throw new RuntimeException('No demonstration content is installed. Nothing was changed.');
+        }
+
+        if ($this->moderator() !== null) {
+            throw new RuntimeException('The demonstration moderator already exists. Nothing was changed.');
+        }
+
+        $people = array_filter($this->content()['people'], fn (array $person) => (bool) ($person['moderator'] ?? false));
+        $passwords = $this->passwordsFor($people);
+
+        $this->run(function () use ($people, $passwords): void {
+            foreach ($people as $person) {
+                $this->person($person, $passwords[$person['email']]);
+            }
+        });
+
+        return $passwords;
+    }
+
+    /** The demonstration moderator, when the install was asked for one. */
+    public function moderator(): ?User
+    {
+        return User::whereIn('id', $this->registry->ids(User::class))->where('is_moderator', true)->orderBy('id')->first();
+    }
+
+    /**
+     * A fresh password for each of these people, after checking no real account holds one of their addresses.
+     *
+     * @param  array<string, array<string, mixed>>  $people
+     * @return array<string, string>
+     */
+    private function passwordsFor(array $people): array
+    {
+        $emails = array_column($people, 'email');
 
         if ($taken = User::whereIn('email', $emails)->value('email')) {
             throw new RuntimeException('An account already uses '.$taken.' and it is not a demonstration account. Nothing was changed.');
         }
-
-        // The content must be findable when the command returns, with no worker running (Scout indexes on save).
-        config(['scout.queue' => false]);
 
         $passwords = [];
         foreach ($emails as $email) {
             $passwords[$email] = $this->password();
         }
 
+        return $passwords;
+    }
+
+    /** One transaction with every created record registered; the files of a failed run are deleted. */
+    private function run(\Closure $work): void
+    {
+        // The content must be findable when the command returns, with no worker running (Scout indexes on save).
+        config(['scout.queue' => false]);
+
         try {
-            $this->registry->recording(fn () => DB::transaction(fn () => $this->build($content, $passwords)));
+            $this->registry->recording(fn () => DB::transaction($work));
         } catch (Throwable $e) {
             foreach ($this->written as [$disk, $path]) {
                 Storage::disk($disk)->delete($path);
@@ -112,8 +172,6 @@ class DemoInstaller
 
         $this->registry->flush();
         Cache::forget('sitemap.xml');
-
-        return $passwords;
     }
 
     /**

@@ -10,11 +10,13 @@ use RuntimeException;
 /**
  * R-49: puts the labelled demonstration content on the site, so InfoDot can be shown working where little has been
  * written yet. Safe to run again (a second run changes nothing), needs no queue worker, and on production runs only
- * with --force. The accounts' passwords are generated here, printed once and stored nowhere but as hashes.
+ * with --force. The accounts' passwords are generated here, printed once and stored nowhere but as hashes. The
+ * demonstration moderator is left out unless --with-moderator is given: a moderator can act on real people's content.
  */
 class DemoInstall extends Command
 {
     protected $signature = 'demo:install
+        {--with-moderator : Also create the demonstration moderator, an account with real moderation powers (not created otherwise)}
         {--rotate : Issue new one-time passwords for the demonstration accounts}
         {--force : Required when the application is in production}';
 
@@ -29,6 +31,21 @@ class DemoInstall extends Command
         }
 
         if ($registry->installed()) {
+            // Content installed without the moderator can be given one later, and only that is added.
+            if ($this->option('with-moderator') && $installer->moderator() === null) {
+                try {
+                    $password = $installer->addModerator();
+                } catch (RuntimeException $e) {
+                    $this->error($e->getMessage());
+
+                    return self::FAILURE;
+                }
+
+                $this->passwords($password, 'The demonstration moderator was added. It has real moderation powers: use it on demonstration content only.');
+
+                return self::SUCCESS;
+            }
+
             if (! $this->option('rotate')) {
                 $this->info('Demonstration content is already installed. Nothing was changed.');
                 $this->line('New passwords: php artisan demo:install --rotate. Remove it: php artisan demo:remove.');
@@ -42,7 +59,7 @@ class DemoInstall extends Command
         }
 
         try {
-            $passwords = $installer->install();
+            $passwords = $installer->install((bool) $this->option('with-moderator'));
         } catch (RuntimeException $e) {
             $this->error($e->getMessage());
 
@@ -55,6 +72,10 @@ class DemoInstall extends Command
         foreach ($installer->companies() as $company) {
             $this->line('Business page: '.route('business.show', $company));
         }
+
+        $this->line($this->option('with-moderator')
+            ? 'The demonstration moderator was created. It has real moderation powers: use it on demonstration content only.'
+            : 'No demonstration moderator was created (add one with demo:install --with-moderator).');
 
         $this->passwords($passwords, 'Sign-in for the demonstration accounts.');
 

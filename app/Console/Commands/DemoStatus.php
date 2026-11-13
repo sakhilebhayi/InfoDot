@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 
 /**
  * R-49: says whether demonstration content is on the site, what it consists of, and whether anything a real
- * account wrote is attached to it. Reads only.
+ * account wrote is attached to it, and whether the opt-in demonstration moderator exists. Reads only.
  */
 class DemoStatus extends Command
 {
@@ -30,6 +30,10 @@ class DemoStatus extends Command
         $this->table(['Kind', 'Records'], collect($installer->counts())->map(fn (int $n, string $kind) => [$kind, $n])->values()->all());
 
         $this->line('Accounts: '.User::whereIn('id', $registry->ids(User::class))->orderBy('id')->pluck('email')->implode(', '));
+        $moderator = $installer->moderator();
+        $this->line($moderator !== null
+            ? 'Demonstration moderator: '.$moderator->email.' exists and has real moderation powers.'
+            : 'Demonstration moderator: none (not created unless demo:install --with-moderator is run).');
         foreach ($installer->companies() as $company) {
             $this->line('Business page: '.route('business.show', $company));
         }

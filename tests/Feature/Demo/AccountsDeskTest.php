@@ -197,7 +197,7 @@ class AccountsDeskTest extends TestCase
         Storage::fake('public');
         Http::preventStrayRequests();
         $real = $this->member(['name' => 'Real Person']);
-        $this->artisan('demo:install')->assertSuccessful();
+        $this->artisan('demo:install', ['--with-moderator' => true])->assertSuccessful();
         app(DemoRegistry::class)->flush();
 
         $demoModerator = User::where('email', 'thabo@demo.infodot.test')->firstOrFail();
