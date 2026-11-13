@@ -1,0 +1,136 @@
+name: Demonstration Content
+
+# Installs, rotates, reports on or removes the clearly labelled demonstration content on the production site, by
+# running the app's own `demo:*` commands on the host. Fixed commands on purpose: this workflow must never become a
+# general remote shell.
+#
+# `demo:install` prints one-time passwords for the demonstration accounts. This repository is PUBLIC, so NOTHING the
+# host prints appears here: the output is encrypted to tools/diagnostics-public-key.pem and only the ciphertext is
+# uploaded (the same arrangement as server-logs.yml; the commands to read it are in that file's header). The job log
+# shows the mode, the exit status and the size of the output.
+#
+# A fresh backup is the caller's job: run the Backups workflow (mode run, keys infodot) first.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: status | install | rotate | remove
+        required: true
+        default: status
+        type: choice
+        options: [status, install, rotate, remove]
+      confirm:
+        description: 'install, rotate and remove change the live site: type "demo" to confirm'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: demo-content
+  cancel-in-progress: false
+
+jobs:
+  demo:
+    name: demo content (${{ inputs.mode }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check the inputs
+        env:
+          MODE: ${{ inputs.mode }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          case "$MODE" in status|install|rotate|remove) ;; *) echo "::error::unknown mode"; exit 1 ;; esac
+          if [ "$MODE" != status ] && [ "$CONFIRM" != demo ]; then
+            echo '::error::install, rotate and remove need confirm=demo'; exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Locate the app on the host
+        run: |
+          APP="${{ secrets.DEPLOY_PATH }}"
+          if [ -z "$APP" ]; then
+            APP="$(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+                "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+                SITE="${{ secrets.DEPLOY_HOST }}" \
+                'bash -s' <<'FIND'
+          set -euo pipefail
+          D="$HOME/$SITE"
+          [ -d "$D" ] || D="$HOME/public_html"
+          A="$(find "$D" -maxdepth 2 -name artisan -type f -exec dirname {} \; | sort -u)"
+          if [ "$(printf '%s\n' "$A" | grep -c .)" != 1 ]; then
+            echo "expected exactly one Laravel app under the docroot, found: ${A:-none}" >&2
+            exit 1
+          fi
+          printf '%s\n' "$A"
+          FIND
+            )"
+          fi
+          echo "APP_PATH=$APP" >> "$GITHUB_ENV"
+
+      - name: Run on the host (nothing is printed)
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          set -uo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/demo"
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+              DEPLOY_PATH="$APP_PATH" MODE="$MODE" 'bash -s' > "$RUNNER_TEMP/demo/output.txt" 2>&1 <<'RUN'
+          set -uo pipefail
+          cd "$DEPLOY_PATH" || exit 1
+          PHP_BIN="$(command -v php || true)"
+          [ -x /opt/alt/php84/usr/bin/php ] && PHP_BIN=/opt/alt/php84/usr/bin/php
+          case "$MODE" in
+            status)  "$PHP_BIN" artisan demo:status ;;
+            install) "$PHP_BIN" artisan demo:install --force --no-interaction ;;
+            rotate)  "$PHP_BIN" artisan demo:install --rotate --force --no-interaction ;;
+            remove)  "$PHP_BIN" artisan demo:remove --force --no-interaction ;;
+            *) echo "unknown mode"; exit 2 ;;
+          esac
+          RC=$?
+          echo
+          echo "== exit status: $RC"
+          "$PHP_BIN" artisan demo:status 2>&1 | tail -20
+          exit "$RC"
+          RUN
+          RC=$?
+          echo "host exit status: $RC"
+          echo "output: $(wc -l < "$RUNNER_TEMP/demo/output.txt") lines, $(wc -c < "$RUNNER_TEMP/demo/output.txt") bytes"
+          echo "HOST_RC=$RC" >> "$GITHUB_ENV"
+
+      - name: Encrypt
+        run: |
+          set -euo pipefail
+          umask 077
+          cd "$RUNNER_TEMP/demo"
+          openssl rand -hex 32 > key
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in output.txt -out demo.enc -pass file:key
+          openssl pkeyutl -encrypt -pubin -inkey "$GITHUB_WORKSPACE/tools/diagnostics-public-key.pem" \
+              -pkeyopt rsa_padding_mode:oaep -in key -out key.enc
+          rm -f key output.txt
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          mv demo.enc key.enc "$GITHUB_WORKSPACE/out/"
+
+      - name: Upload the ciphertext
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-content
+          path: out/
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Fail if the host command failed
+        run: '[ "$HOST_RC" = 0 ] || { echo "::error::the demo command exited $HOST_RC on the host; read the encrypted output"; exit 1; }'

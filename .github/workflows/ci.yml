@@ -194,20 +194,6 @@ jobs:
       - name: Run the fixture test (migrations, casts, dependencies, hosts; no value from any .env.example may reach the output)
         run: bash tools/test-popia-inventory.sh
 
-  finance-env-keys:
-    # TEMPORARY (added 2026-11-13): delete this job with tools/finance-env-keys.sh after the first deploy that ran it.
-    name: payment setting names (fake host)
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Syntax and lint
-        run: |
-          bash -n tools/finance-env-keys.sh tools/test-finance-env-keys.sh
-          shellcheck -S warning tools/finance-env-keys.sh tools/test-finance-env-keys.sh
-      - name: Run the fake-host test of the one-time .env rename the deploy runs (values kept byte for byte, one mode-600 backup, names only on screen, nothing on a second run)
-        run: bash tools/test-finance-env-keys.sh
-
   backup-pull:
     name: off-host pull (forced command + Mac script)
     runs-on: ubuntu-latest
