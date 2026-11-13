@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Platforms\PlatformAccess;
+use App\Services\Platforms\PlatformRefusal;
 use App\Support\EcosystemHandoff;
 use App\Support\GettingStarted;
 use App\Support\Platforms;
@@ -35,7 +37,19 @@ class PlatformLaunchController extends Controller
         }
 
         $redirect = $request->query('redirect');
-        $form = EcosystemHandoff::launchForm($user, $platform, is_string($redirect) ? $redirect : null);
+        $redirect = is_string($redirect) ? $redirect : null;
+
+        // R-50: a platform the person's company may not use is explained, not opened. A platform that is unknown, switched
+        // off or on an untrusted address is still the "cannot be opened" page below: that is unavailability, not a refusal.
+        if (EcosystemHandoff::endpointFor(config('ecosystem.platforms.'.$platform)) !== null && ! $user->isSuspended()) {
+            $decision = app(PlatformAccess::class)->decide($user, $platform);
+
+            if ($decision->refused()) {
+                return app(PlatformRefusal::class)->response($user, $platform, $decision, $redirect);
+            }
+        }
+
+        $form = EcosystemHandoff::launchForm($user, $platform, $redirect);
 
         if ($form === null) {
             return response()->view('resources.unavailable', ['platform' => config('ecosystem.platforms.'.$platform.'.name', $platform)], 503);

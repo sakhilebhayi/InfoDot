@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
+use Tests\Support\ActivatesPlatforms;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,7 @@ use Tests\TestCase;
  */
 class EcosystemHandoffTest extends TestCase
 {
+    use ActivatesPlatforms;
     use RefreshDatabase;
 
     private function platform(string $url, bool $active = true): array
@@ -145,7 +147,11 @@ class EcosystemHandoffTest extends TestCase
     {
         config(['ecosystem.platforms.forms.url' => 'https://forms.infodot.co.za', 'ecosystem.platforms.forms.active' => true]);
 
-        Livewire::actingAs($this->user())
+        // R-50: Dot.Forms is not in the free core, so the company must have switched it on to be launched.
+        $user = $this->user();
+        $this->companyWith($user, 'forms');
+
+        Livewire::actingAs($user)
             ->test(EcosystemWidget::class)
             ->call('launch', 'forms')
             ->assertRedirect(route('platform.launch', ['platform' => 'forms']));

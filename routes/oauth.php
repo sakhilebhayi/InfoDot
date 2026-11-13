@@ -25,7 +25,7 @@ Route::group(['as' => 'passport.', 'prefix' => 'oauth'], function () {
         ->name('token');
 
     Route::get('/authorize', [AuthorizationController::class, 'authorize'])
-        ->middleware(['web', 'oidc.enforce', 'auth', 'verified'])
+        ->middleware(['web', 'oidc.enforce', 'auth', 'verified', 'platform.entitled'])
         ->name('authorizations.authorize');
 
     Route::middleware(['web', 'auth'])->group(function () {

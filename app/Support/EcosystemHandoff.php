@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\User;
+use App\Services\Platforms\PlatformAccess;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -57,6 +58,12 @@ final class EcosystemHandoff
 
         $safe = self::safeRedirect($redirect);
 
+        // R-50: a platform this person's company may not use still gets a URL, so no caller is left with nothing to
+        // send the browser to, but it is the InfoDot page that explains why and offers the next step.
+        if (app(PlatformAccess::class)->decide($user, $key)->refused()) {
+            return route('platform.access', ['platform' => $key] + ($safe !== null ? ['redirect' => $safe] : []));
+        }
+
         return route('platform.launch', ['platform' => $key] + ($safe !== null ? ['redirect' => $safe] : []));
     }
 
@@ -98,6 +105,15 @@ final class EcosystemHandoff
                 'platform' => $key,
                 'url' => $platform['url'] ?? null,
             ]);
+
+            return null;
+        }
+
+        // R-50: no launch code for a platform the person's current company is not entitled to, whoever asks for the form.
+        $decision = app(PlatformAccess::class)->decide($user, $key);
+
+        if ($decision->refused()) {
+            Log::info('Ecosystem handoff refused: the company is not entitled to the platform.', ['platform' => $key, 'reason' => $decision->reason]);
 
             return null;
         }

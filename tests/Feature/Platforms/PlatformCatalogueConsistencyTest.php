@@ -4,6 +4,7 @@ namespace Tests\Feature\Platforms;
 
 use App\Models\DotPlatform;
 use App\Models\PlatformCatalogue;
+use App\Services\Ops\OpsCheck;
 use App\Services\Platforms\CatalogueSync;
 use App\Support\PlatformCategories;
 use App\Support\Platforms;
@@ -119,6 +120,17 @@ class PlatformCatalogueConsistencyTest extends TestCase
         }
 
         $this->assertTrue(true);
+    }
+
+    public function test_ops_check_counts_an_oidc_platform_whose_slug_is_not_a_registry_key(): void
+    {
+        $row = fn (string $slug) => DotPlatform::create(['name' => $slug, 'slug' => $slug, 'domain' => "https://$slug.test", 'oauth_client_id' => 'client-'.$slug, 'redirect_uris' => [], 'scopes' => ['openid'], 'status' => 'active']);
+
+        $row('central');
+        $this->assertSame(0, app(OpsCheck::class)->run()['sso_platform_slug_not_in_registry']);
+
+        $row('sheets');
+        $this->assertSame(1, app(OpsCheck::class)->run()['sso_platform_slug_not_in_registry']);
     }
 
     public function test_an_oidc_platform_cannot_be_registered_under_a_slug_the_registry_does_not_hold(): void

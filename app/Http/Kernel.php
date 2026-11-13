@@ -8,7 +8,9 @@ use App\Http\Middleware\CanonicalRedirects;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EndSuspendedSession;
 use App\Http\Middleware\EnsureModerator;
+use App\Http\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\Oidc\EnforceOidcRules;
+use App\Http\Middleware\Oidc\EnforcePlatformEntitlement;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RecordUxSignals;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -99,6 +101,8 @@ class Kernel extends HttpKernel
         'guest' => RedirectIfAuthenticated::class,
         'knowledge.signed' => VerifyKnowledgeSignature::class,
         'moderator' => EnsureModerator::class,
+        'platform.admin' => EnsurePlatformAdmin::class,
+        'platform.entitled' => EnforcePlatformEntitlement::class,
         'not-demo' => RefuseDemonstrationAccount::class,
         'oidc.enforce' => EnforceOidcRules::class,
         'password.confirm' => RequirePassword::class,

@@ -96,7 +96,8 @@
                     </div>
                 </div>
 
-                @if (!empty($discover))
+                {{-- A page about one platform (R-50 refusals) passes `quiet` and leaves this list off. --}}
+                @if (!empty($discover) && empty($quiet))
                     <section class="ix-err__more" aria-labelledby="err-more">
                         <h2 id="err-more">While you're here: the rest of the Dot Ecosystem ({{ count($discover) }})</h2>
                         <ul>
