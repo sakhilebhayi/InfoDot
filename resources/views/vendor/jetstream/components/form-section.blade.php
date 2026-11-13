@@ -1,6 +1,6 @@
 @props(['submit'])
 
-<div {{ $attributes->merge(['class' => 'space-y-4 md:grid md:grid-cols-3 md:gap-8 md:space-y-0', 'style' => 'padding: 24px 0; border-top: 1px solid var(--ix-rule);']) }}>
+<div {{ $attributes->merge(['class' => 'ix-settings__block space-y-4 md:grid md:grid-cols-3 md:gap-8 md:space-y-0']) }}>
     <x-jet-section-title>
         <x-slot name="title">{{ $title }}</x-slot>
         <x-slot name="description">{{ $description }}</x-slot>
@@ -16,7 +16,7 @@
                 </div>
 
                 @if (isset($actions))
-                    <div class="flex items-center justify-end gap-3" style="padding: 12px 16px; border-top: 1px solid var(--ix-rule); background: var(--ix-sunken); border-radius: 0 0 2px 2px;">
+                    <div class="ix-settings__actions">
                         {{ $actions }}
                     </div>
                 @endif

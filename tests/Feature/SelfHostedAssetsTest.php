@@ -125,15 +125,13 @@ class SelfHostedAssetsTest extends TestCase
             }
         }
 
-        // Exactly what the pages set text in: nothing loaded that nothing uses (Inter, Manrope and Font Awesome are gone).
+        // Exactly what the pages set text in: nothing loaded that nothing uses (Inter, Manrope and Font Awesome are gone, and
+        // since the sign-in and error pages joined The Yard so are DM Sans, Baloo 2 and Space Mono).
         ksort($families);
         $this->assertSame([
             'Archivo' => ['400', '500', '600', '700'],
-            'Baloo 2' => ['500', '600', '700', '800'],
             'Big Shoulders Stencil Display' => ['700', '800', '900'],
-            'DM Sans' => ['400', '500', '600', '700'],
             'Material Symbols Rounded' => ['100 700'],
-            'Space Mono' => ['400', '700'],
         ], array_map(fn (array $weights) => array_map('strval', array_keys($weights)), $families));
 
         // Each family is one the stylesheets or the layouts actually ask for.
@@ -145,13 +143,13 @@ class SelfHostedAssetsTest extends TestCase
 
     public function test_the_layouts_preload_the_fonts_of_the_first_screen_from_this_site(): void
     {
-        $this->assertSame(['archivo', 'stencil', 'dm-sans', 'icons'], array_keys(OptionalVite::PRELOADABLE_FONTS));
+        $this->assertSame(['archivo', 'stencil', 'icons'], array_keys(OptionalVite::PRELOADABLE_FONTS));
         $css = (string) file_get_contents(resource_path('css/fonts.css'));
         foreach (OptionalVite::PRELOADABLE_FONTS as $path) {
             $this->assertStringContainsString(str_starts_with($path, 'node_modules/') ? "url('../../{$path}')" : "url('../".substr($path, strlen('resources/'))."')", $css, $path.' is preloaded but not a font the stylesheet uses');
         }
 
-        foreach (['layouts/app.blade.php' => "['archivo', 'stencil', 'icons']", 'components/public-layout.blade.php' => "['archivo', 'stencil', 'icons']", 'layouts/guest.blade.php' => "['dm-sans', 'icons']"] as $layout => $fonts) {
+        foreach (['layouts/app.blade.php' => "['archivo', 'stencil', 'icons']", 'components/public-layout.blade.php' => "['archivo', 'stencil', 'icons']", 'layouts/guest.blade.php' => "['archivo', 'stencil', 'icons']"] as $layout => $fonts) {
             $this->assertStringContainsString("@include('partials.head-fonts', ['fonts' => {$fonts}])", (string) file_get_contents(resource_path('views/'.$layout)), $layout);
         }
         $partial = (string) file_get_contents(resource_path('views/partials/head-fonts.blade.php'));
@@ -174,15 +172,25 @@ class SelfHostedAssetsTest extends TestCase
         }
     }
 
-    public function test_the_sign_in_background_is_a_credited_photograph_from_the_build(): void
+    public function test_the_sign_in_pages_are_drawn_from_the_build_with_no_photograph_behind_them(): void
     {
+        // The way-in pages are The Yard (R-49): the shared shell, the product's two typefaces, and nothing fetched to decorate them.
         $card = (string) file_get_contents(resource_path('views/vendor/jetstream/components/authentication-card.blade.php'));
-        $this->assertStringContainsString("Vite::asset('resources/img/landing/hero-1920.jpg')", $card);
-        $this->assertFileExists(resource_path('img/landing/hero-1920.jpg'));
+        $layout = (string) file_get_contents(resource_path('views/layouts/guest.blade.php'));
+        $this->assertStringNotContainsString('hero-1920.jpg', $card.$layout);
+        $this->assertStringNotContainsString('<style', $card.$layout, 'the sign-in pages carry no styles of their own');
+        $this->assertSame(0, preg_match('#https?://#', $card.$layout), 'the sign-in pages name another host');
 
+        $html = $this->get('/login')->assertOk()->getContent();
+        $this->assertStringContainsString('<body class="ix" data-area="people">', $html);
+        $this->assertStringContainsString('class="ix-entry__card"', $html);
+        $this->assertStringNotContainsString('background-image', $html);
+
+        // The home page's photographs are still credited where they are used.
         $this->get('/about')->assertOk()
-            ->assertSee('and the one behind the sign-in pages, come from Wikimedia Commons')
-            ->assertSee('by WAO Coworking (home page and sign-in pages)');
+            ->assertSee('The photographs on the home page come from Wikimedia Commons')
+            ->assertSee('by WAO Coworking')
+            ->assertDontSee('sign-in pages');
     }
 
     public function test_a_fresh_build_serves_its_own_fonts(): void
@@ -199,7 +207,8 @@ class SelfHostedAssetsTest extends TestCase
 
         $css = (string) file_get_contents(public_path('build/'.$entry));
         preg_match_all('#url\(([^)]+\.woff2)\)#', $css, $urls);
-        $this->assertGreaterThanOrEqual(13, count(array_unique($urls[1])));
+        // Archivo and the stencil face, each in Latin and Latin Extended, and the icons.
+        $this->assertCount(5, array_unique($urls[1]));
         foreach (array_unique($urls[1]) as $url) {
             $this->assertStringStartsWith('/build/assets/', $url);
             $this->assertFileExists(public_path(ltrim($url, '/')));

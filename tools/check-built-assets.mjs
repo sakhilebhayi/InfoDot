@@ -13,7 +13,7 @@ const entry = (key) => manifest[key] ?? fail(`${key} is not in the build manifes
 
 const css = readFileSync(`public/build/${entry('resources/css/app.css').file}`, 'utf8');
 const fonts = [...new Set([...css.matchAll(/url\(([^)]+\.woff2)\)/g)].map((m) => m[1]))];
-if (fonts.length < 13) fail(`the stylesheet names ${fonts.length} font files; 13 are expected`);
+if (fonts.length !== 5) fail(`the stylesheet names ${fonts.length} font files; 5 are expected (Archivo and the stencil face, Latin and Latin Extended each, and the icons)`);
 for (const font of fonts) {
     if (!font.startsWith('/build/assets/')) fail(`a font is not served from the build: ${font}`);
     if (!existsSync(`public${font}`)) fail(`the stylesheet names a font the build does not hold: ${font}`);
@@ -24,7 +24,7 @@ if (!/font-display:\s*block/.test(css)) fail('the icon font no longer blocks, so
 // The fonts a layout preloads must be in the manifest under the names OptionalVite::PRELOADABLE_FONTS uses.
 const php = readFileSync('app/Support/OptionalVite.php', 'utf8');
 const preloaded = [...php.matchAll(/=> '((?:node_modules|resources)\/[^']+\.woff2)'/g)].map((m) => m[1]);
-if (preloaded.length !== 4) fail(`expected 4 preloadable fonts in OptionalVite, found ${preloaded.length}`);
+if (preloaded.length !== 3) fail(`expected 3 preloadable fonts in OptionalVite, found ${preloaded.length}`);
 preloaded.forEach(entry);
 entry('resources/img/brand/logo_white.png');
 entry('resources/img/landing/hero-1920.jpg');

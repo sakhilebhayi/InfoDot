@@ -1,5 +1,5 @@
 <x-public-layout title="What InfoDot does" band="INFO" crumb="What InfoDot does" description="What InfoDot does today: ask and answer business questions, write and verify solutions, file them by topic, keep company work private, and open every Dot platform with one account.">
-    <article class="ix-prose">
+    <article class="ix-prose ix-prose--ledger">
         <h1 class="ix-h1">What InfoDot does</h1>
         <p class="ix-lede">Everything on this page works today.</p>
 

@@ -51,8 +51,15 @@
 
     @if ($enquiries->isEmpty())
         <div class="ix-empty">
-            <h2>Nothing here</h2>
-            <p>@if ($f['status'] === 'active' && empty($f['who']) && empty($f['q']))No open enquiries. When someone messages {{ $team->name }} from its page, it arrives here and the owner and administrators are told.@else Nothing matches these filters.@endif</p>
+            @if ($f['status'] === 'active' && empty($f['who']) && empty($f['q']))
+                <h2>No open enquiries</h2>
+                <p>When someone messages {{ $team->name }} from its page, it arrives here and the owner and administrators are told.</p>
+                <a href="{{ route('business.show', $team) }}" class="ix-btn">See the page people message from</a>
+            @else
+                <h2>Nothing matches these filters</h2>
+                <p>Try another status, or clear the subject.</p>
+                <a href="{{ route('business.inbox', $team) }}" class="ix-btn">Show open enquiries</a>
+            @endif
         </div>
     @else
         <ul class="ix-threads">

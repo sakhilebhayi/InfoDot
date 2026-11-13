@@ -31,7 +31,7 @@
                 @endif
                 @can('create', Laravel\Jetstream\Jetstream::newTeamModel())
                     <a class="ix-pop__item" href="{{ route('teams.create') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">add</span>{{ __('Create new team') }}
+                        <span class="material-symbols-rounded" aria-hidden="true">add</span>Create a business
                     </a>
                 @endcan
 

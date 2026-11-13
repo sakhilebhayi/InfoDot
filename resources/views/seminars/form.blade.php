@@ -23,7 +23,7 @@
         <div class="ix-field">
             <label class="ix-label" for="description">Details (optional)</label>
             <textarea class="ix-textarea" id="description" name="description" rows="6" maxlength="5000">{{ old('description', $seminar?->description) }}</textarea>
-            @error('description')<p class="ix-error">{{ $message }}</p>@enderror
+            @error('description')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         </div>
 
         <div class="ix-field">
@@ -40,18 +40,18 @@
             <div class="ix-field">
                 <label class="ix-label" for="starts_at">Starts ({{ config('app.timezone') }})</label>
                 <input class="ix-input" id="starts_at" name="starts_at" type="datetime-local" value="{{ old('starts_at', $seminar?->starts_at->timezone(config('app.timezone'))->format('Y-m-d\TH:i')) }}" required>
-                @error('starts_at')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('starts_at')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
             <div class="ix-field">
                 <label class="ix-label" for="duration_minutes">Length in minutes</label>
                 <input class="ix-input" id="duration_minutes" name="duration_minutes" type="number" min="{{ config('seminars.min_duration_minutes') }}" max="{{ config('seminars.max_duration_minutes') }}" value="{{ old('duration_minutes', $seminar?->duration_minutes ?? 60) }}" required>
-                @error('duration_minutes')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('duration_minutes')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
             <div class="ix-field">
                 <label class="ix-label" for="capacity">Places (optional)</label>
                 <input class="ix-input" id="capacity" name="capacity" type="number" min="1" max="{{ config('seminars.max_capacity') }}" value="{{ old('capacity', $seminar?->capacity) }}">
                 <p class="ix-hint">Leave empty for no limit. Extra people join a waiting list.</p>
-                @error('capacity')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('capacity')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
         </div>
 
@@ -65,7 +65,7 @@
                     <p class="ix-label">Ticket price</p>
                     <p class="ix-hint">To charge for a seminar, first <a href="{{ route('seminars.payouts') }}" style="text-decoration: underline;">set up where your earnings are paid</a>.</p>
                 @endif
-                @error('price')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('price')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
         @endif
 
@@ -80,7 +80,7 @@
                     @if ($p2pOn)<label><input type="radio" name="delivery" value="p2p" x-model="delivery"> Small room (video in the browser, no server: the number of people depends on your internet connection)</label>@endif
                     <label><input type="radio" name="delivery" value="link" x-model="delivery"> My own meeting link</label>
                 </div>
-                @error('delivery')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('delivery')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             @endif
 
             <div x-show="delivery === 'link'" @if ($videoOn || $p2pOn) x-cloak @endif>
@@ -89,7 +89,7 @@
                 <p class="ix-hint">Only people who registered are given this link, and only shortly before the start. We check it before you publish; a made-up or mistyped link is refused.</p>
                 <button type="button" class="ix-btn ix-btn--sm" @click="checkLink()" :disabled="linkChecking">Test this link</button>
                 <p class="ix-hint" x-show="linkMsg" role="status" :style="linkStatus === 'bad' ? 'color: var(--ix-danger, #b3261e)' : ''" x-text="linkMsg"></p>
-                @error('join_url')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('join_url')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
 
             @if ($videoOn)
@@ -117,8 +117,8 @@
                             <p class="ix-hint" x-show="plans[quality]?.usable"><b>This seminar can have up to <span x-text="plans[quality]?.capacity"></span> people</b> (your computer feeds <span x-text="plans[quality]?.direct"></span> directly; the rest receive it through other viewers). That figure is a cautious estimate: phones and strict networks can lower it, and anyone beyond it joins the waiting list. Audio only holds the most people.</p>
                         </div>
                     </template>
-                    @error('p2p_uplink_kbps')<p class="ix-error">{{ $message }}</p>@enderror
-                    @error('p2p_quality')<p class="ix-error">{{ $message }}</p>@enderror
+                    @error('p2p_uplink_kbps')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+                    @error('p2p_quality')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
                 </div>
             @endif
         </div>

@@ -32,7 +32,7 @@
     };
 @endphp
 <x-public-layout title="Questions people ask" band="INFO" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, who can see your questions, how answers are trusted, whether AI writes the answers, and how to contact us.">
-    <article class="ix-prose">
+    <article class="ix-prose ix-prose--ledger">
         <h1 class="ix-h1">Questions people ask</h1>
 
         @foreach ($faqs as [$question, $answer])

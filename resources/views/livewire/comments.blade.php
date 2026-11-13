@@ -29,7 +29,7 @@
             <textarea name="comment" id="comment" rows="4" wire:model="newCommentState.body" class="ix-textarea" placeholder="Share what worked, or what you would try next."></textarea>
         </x-mention-box>
         @error('newCommentState.body')
-            <p class="ix-error">{{ $message }}</p>
+            <p class="ix-error" role="alert">{{ $message }}</p>
         @enderror
         @error('mentions')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         @include('attachments._uploader', ['idPrefix' => 'comment', 'payloadModel' => 'attachmentsPayload', 'clearEvent' => 'comment-attachments-clear', 'label' => 'Add supporting files'])

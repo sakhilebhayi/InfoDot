@@ -1,8 +1,9 @@
 @if ($errors->any())
-    <div {{ $attributes->merge(['class' => 'ix-alert']) }} role="alert" style="border-color: var(--ix-danger);">
-        <div style="color: var(--ix-danger); font-weight: 600;">{{ __('Something went wrong.') }}</div>
+    {{-- What needs attention, announced once and worded as something the person can put right (it is a missed field, not a fault). --}}
+    <div {{ $attributes->merge(['class' => 'ix-alert ix-alert--danger']) }} role="alert">
+        <p class="ix-alert__head">{{ __('Check the following and try again.') }}</p>
 
-        <ul class="mt-2 list-inside list-disc" style="color: var(--ix-text-2); font-weight: 400;">
+        <ul>
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
             @endforeach

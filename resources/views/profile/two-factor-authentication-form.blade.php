@@ -18,7 +18,7 @@
 
         <div class="mt-3 max-w-xl text-sm" style="color: var(--ix-text-2);">
             <p>
-                {{ __('When two factor authentication is enabled, you will be prompted for a secure, random token during authentication. You may retrieve this token from your phone\'s Google Authenticator application.') }}
+                When two factor authentication is on, signing in also asks for a six-digit code from an authenticator app on your phone. Any authenticator app works.
             </p>
         </div>
 

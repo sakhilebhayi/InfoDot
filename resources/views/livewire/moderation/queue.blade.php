@@ -43,11 +43,11 @@
     @if ($rows->isEmpty())
         <p class="ix-mod__empty">
             @if ($tab === 'reports')
-                {{ $status === 'open' ? 'No open reports.' : 'No '.$status.' reports.' }}
+                {{ $status === 'open' ? 'No open reports. When a member reports a question, an answer, a solution or a comment, it is listed here for a decision.' : 'No '.$status.' reports.' }}
             @elseif ($tab === 'approvals')
-                No questions are waiting for approval.
+                No questions are waiting for approval. A public question is listed here from the moment it is asked until a moderator approves it.
             @else
-                {{ $status === 'open' ? 'No appeals are waiting.' : 'No '.$status.' appeals.' }}
+                {{ $status === 'open' ? 'No appeals are waiting. When an author asks for hidden content to be looked at again, the request is listed here.' : 'No '.$status.' appeals.' }}
             @endif
         </p>
     @else

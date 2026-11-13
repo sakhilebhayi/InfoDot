@@ -16,13 +16,13 @@
             <div class="ix-field">
                 <label class="ix-label" for="solution_title">Title</label>
                 <input class="ix-input" name="solution_title" id="solution_title" type="text" value="{{ old('solution_title') }}" placeholder="{{ $industry['solution_title'] }}" maxlength="255" required @error('solution_title') aria-invalid="true" @enderror>
-                @error('solution_title')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('solution_title')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
 
             <div class="ix-field">
                 <label class="ix-label" for="solution_description">What it achieves</label>
                 <textarea class="ix-textarea" name="solution_description" id="solution_description" rows="4" placeholder="{{ $industry['solution_description'] }}" required @error('solution_description') aria-invalid="true" @enderror>{{ old('solution_description') }}</textarea>
-                @error('solution_description')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('solution_description')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
 
             @include('partials.similar-panel', ['kind' => 'solution', 'fields' => ['solution_title', 'solution_description']])
@@ -31,7 +31,7 @@
                 <label class="ix-label" for="tags-input">Tags</label>
                 <input class="ix-input" name="tags-input" id="tags-input" type="text" value="{{ old('tags-input') }}" placeholder="{{ $industry['solution_tags'] }}" required @error('tags-input') aria-invalid="true" @enderror>
                 <p class="ix-hint">Separate tags with commas. Specific tags are easier to find than broad ones.</p>
-                @error('tags-input')<p class="ix-error">{{ $message }}</p>@enderror
+                @error('tags-input')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
 
             <div class="ix-field">
@@ -44,7 +44,7 @@
                 <div class="ix-field">
                     <label class="ix-label" for="duration">Time it takes</label>
                     <input class="ix-input" name="duration" id="duration" type="number" min="1" value="{{ old('duration') }}" placeholder="1" required @error('duration') aria-invalid="true" @enderror>
-                    @error('duration')<p class="ix-error">{{ $message }}</p>@enderror
+                    @error('duration')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
                 </div>
                 <div class="ix-field">
                     <label class="ix-label" for="duration_type">Unit</label>
@@ -53,7 +53,7 @@
                             <option value="{{ $v }}" @selected(old('duration_type', 'hours') === $v)>{{ $label }}</option>
                         @endforeach
                     </select>
-                    @error('duration_type')<p class="ix-error">{{ $message }}</p>@enderror
+                    @error('duration_type')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
                 </div>
             </div>
 
@@ -92,9 +92,9 @@
                     </button>
                 </div>
             </fieldset>
-            @error('solution_heading')<p class="ix-error">{{ $message }}</p>@enderror
-            @error('solution_heading.*')<p class="ix-error">{{ $message }}</p>@enderror
-            @error('solution_body.*')<p class="ix-error">{{ $message }}</p>@enderror
+            @error('solution_heading')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            @error('solution_heading.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            @error('solution_body.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
 
             @include('attachments._uploader', ['idPrefix' => 'sol', 'old' => old('attachments'), 'label' => 'Supporting material', ])
             @error('attachments')<p class="ix-error" role="alert">{{ $message }}</p>@enderror

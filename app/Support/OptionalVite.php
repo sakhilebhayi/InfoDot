@@ -18,7 +18,6 @@ class OptionalVite
     public const PRELOADABLE_FONTS = [
         'archivo' => 'node_modules/@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2',
         'stencil' => 'node_modules/@fontsource-variable/big-shoulders-stencil-display/files/big-shoulders-stencil-display-latin-wght-normal.woff2',
-        'dm-sans' => 'node_modules/@fontsource-variable/dm-sans/files/dm-sans-latin-opsz-normal.woff2',
         'icons' => 'resources/fonts/material-symbols-rounded.woff2',
     ];
 

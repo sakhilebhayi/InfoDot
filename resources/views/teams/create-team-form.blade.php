@@ -1,6 +1,6 @@
 <x-jet-form-section submit="createTeam">
     <x-slot name="title">
-        {{ __('Team details') }}
+        Business details
     </x-slot>
 
     <x-slot name="description">
@@ -9,7 +9,7 @@
 
     <x-slot name="form">
         <div class="col-span-6">
-            <x-jet-label value="{{ __('Team owner') }}" />
+            <x-jet-label value="Owner" />
 
             <div class="flex items-center gap-3">
                 <x-ix.avatar :user="$this->user" :size="40" :alt="$this->user->name" />
@@ -22,7 +22,7 @@
         </div>
 
         <div class="col-span-6 sm:col-span-4">
-            <x-jet-label for="name" value="{{ __('Team name') }}" />
+            <x-jet-label for="name" value="Business name" />
             <x-jet-input id="name" type="text" class="block w-full" wire:model.defer="state.name" autofocus />
             <x-jet-input-error for="name" />
         </div>
@@ -58,13 +58,13 @@
                 @endforeach
             </fieldset>
             <x-jet-input-error for="visibility" />
-            <p class="ix-hint">Nothing is chosen for you. InfoDot never shows your team’s own accounts or staff contact details, whatever you pick.</p>
+            <p class="ix-hint">Nothing is chosen for you. InfoDot never shows your people’s own accounts or staff contact details, whatever you pick.</p>
         </div>
     </x-slot>
 
     <x-slot name="actions">
         <x-jet-button>
-            {{ __('Create team') }}
+            Create business
         </x-jet-button>
     </x-slot>
 </x-jet-form-section>

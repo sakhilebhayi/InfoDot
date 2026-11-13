@@ -8,7 +8,7 @@
     </div>
 
     <div id="seminar-room" class="ix-room" data-token-url="{{ route('seminars.room.token', $seminar) }}" data-host="{{ $isHost ? 1 : 0 }}">
-        <noscript><p class="ix-error">The room needs JavaScript. Turn it on in your browser and reload.</p></noscript>
+        <noscript><p class="ix-error" role="alert">The room needs JavaScript. Turn it on in your browser and reload.</p></noscript>
         <p class="ix-hint" role="status" aria-live="polite" data-status>Connecting…</p>
         <div class="ix-room__grid">
             <div class="ix-room__stage" data-stage aria-label="Video"></div>

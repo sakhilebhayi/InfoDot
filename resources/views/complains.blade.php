@@ -1,5 +1,5 @@
 <x-public-layout title="How to complain" band="INFO" crumb="How to complain" description="How to report content or raise a complaint about InfoDot, and what happens next.">
-    <article class="ix-prose">
+    <article class="ix-prose ix-prose--ledger">
         <h1 class="ix-h1">How to complain</h1>
         <p class="ix-lede">Tell us what is wrong and we will answer you.</p>
 
