@@ -3,6 +3,7 @@
 namespace App\Livewire\Teams;
 
 use App\Actions\Jetstream\InviteTeamMember;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Jetstream\Http\Livewire\TeamMemberManager as JetstreamTeamMemberManager;
 
@@ -25,7 +26,7 @@ class TeamMemberManager extends JetstreamTeamMemberManager
         $this->resetErrorBag();
 
         $invitation = $this->team->teamInvitations()->whereKey($invitationId)->firstOrFail();
-        app(InviteTeamMember::class)->resend($this->user, $this->team, $invitation);
+        app(InviteTeamMember::class)->resend(Auth::user(), $this->team, $invitation);
 
         $this->team = $this->team->fresh();
         $this->dispatch('invitation-resent');

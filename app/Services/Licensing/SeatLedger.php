@@ -3,6 +3,7 @@
 namespace App\Services\Licensing;
 
 use App\Models\Team;
+use App\Models\TeamInvitation;
 use App\Models\TeamLicence;
 use App\Models\TeamLicenceEvent;
 use App\Models\User;
@@ -42,7 +43,7 @@ class SeatLedger
         $included = $licence->included_seats ?? (int) config('licensing.included_seats', 3);
         $members = $team->users()->count();
         $people = $members + 1; // the owner holds a seat
-        $reserved = config('licensing.pending_invitations_reserve_a_seat', true) ? $team->teamInvitations()->live()->count() : 0;   // an expired invitation holds no seat
+        $reserved = config('licensing.pending_invitations_reserve_a_seat', true) ? TeamInvitation::live()->where('team_id', $team->getKey())->count() : 0;   // an expired invitation holds no seat
         $capacity = $included + $licence->purchased_seats;
         $used = $people + $reserved;
         $price = $this->price();
@@ -100,7 +101,7 @@ class SeatLedger
                     $s = $this->summary($locked);
                     $holdsThisSeat = $exceptEmail !== null
                         && config('licensing.pending_invitations_reserve_a_seat', true)
-                        && $locked->teamInvitations()->live()->where('email', $exceptEmail)->exists();
+                        && TeamInvitation::live()->where('team_id', $locked->getKey())->where('email', $exceptEmail)->exists();
                     $reserved = $s['reserved'] - ($holdsThisSeat ? 1 : 0);
 
                     if ($s['capacity'] < $s['people'] + $reserved + 1) {

@@ -117,10 +117,10 @@ class CommissionInvoices
         $lines = [];
 
         // One line per sale, read from the sales themselves: a person who bought, was refunded and bought again has two.
-        $sales = SeminarTicketSale::join('seminars', 'seminars.id', '=', 'seminar_ticket_sales.seminar_id')
-            ->where('seminars.host_id', $host->id)->whereBetween('seminar_ticket_sales.paid_at', [$from, $to])
-            ->orderBy('seminar_ticket_sales.paid_at')->orderBy('seminar_ticket_sales.id')
-            ->get(['seminar_ticket_sales.ticket_ref', 'seminar_ticket_sales.amount_cents', 'seminars.title', 'seminar_ticket_sales.paid_at']);
+        $sales = DB::table('seminar_ticket_sales as t')->join('seminars as s', 's.id', '=', 't.seminar_id')
+            ->where('s.host_id', $host->id)->whereBetween('t.paid_at', [$from, $to])
+            ->orderBy('t.paid_at')->orderBy('t.id')
+            ->get(['t.ticket_ref', 't.amount_cents', 's.title', 't.paid_at']);
 
         foreach ($sales as $s) {
             $lines[] = ['type' => 'sale', 'on' => Carbon::parse($s->paid_at)->toDateString(), 'seminar' => $s->title, 'ticket' => $s->ticket_ref, 'amount_cents' => (int) $s->amount_cents, 'fee_cents' => self::fee((int) $s->amount_cents)];

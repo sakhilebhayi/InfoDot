@@ -541,12 +541,6 @@ parameters:
 			path: app/Services/Reputation/ReputationEngine.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\SeminarRegistration\:\:\$title\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Seminars/CommissionInvoices.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Seminar\:\:\$host_points_event_id\.$#'
 			identifier: property.notFound
 			count: 3
