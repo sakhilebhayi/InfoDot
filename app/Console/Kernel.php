@@ -48,6 +48,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('seminars:remind')->everyTenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:award-hosts')->everyThirtyMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('notices:prune')->dailyAt('03:20')->withoutOverlapping(30)->onOneServer();
+        // Launch codes live for a minute and are deleted when redeemed; one that is never redeemed stayed in the table for
+        // good (31 on the live site on 2026-11-13). Expired ones are removed an hour after they lapse.
+        $schedule->command('sanctum:prune-expired --hours=1')->dailyAt('03:25')->withoutOverlapping(30)->onOneServer();
 
         // Interaction signal counts (R-12) are kept for the retention period only.
         $schedule->command('ux:prune')->dailyAt('03:30')->withoutOverlapping(30)->onOneServer();

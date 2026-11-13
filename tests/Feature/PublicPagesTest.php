@@ -20,6 +20,9 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('role="search"', $html);
         $this->assertStringContainsString('name="search"', $html);
         $this->assertStringContainsString('has-motion', $html);
+        // R-49: the timer that shows the page lives in the layout, so a slow or failed motion script cannot leave it blank.
+        $this->assertStringContainsString('__motionFailsafe', $html);
+        $this->assertStringContainsString("classList.add('motion-failsafe')", $html);
         $this->assertStringContainsString('prefers-reduced-motion', $html);
         $this->assertStringContainsString('knowledge base for a business', $html);
         $this->assertStringContainsString(route('register'), $html);
