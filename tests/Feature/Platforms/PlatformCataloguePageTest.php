@@ -232,7 +232,13 @@ class PlatformCataloguePageTest extends PlatformTestCase
         $agents = $this->actingAs($team->owner)->get('/platforms/agents')->assertOk()->getContent();
         $this->assertStringContainsString('data-pricing="approved"', $agents);
         $this->assertStringContainsString('ZAR 250.00 a month', $agents);
-        $this->assertStringContainsString('Paid plans cannot be started yet', $agents);
+        $this->assertStringContainsString('Paid activation is not open yet.', $agents);
+        $this->assertStringContainsString('data-paid-not-open', $agents);
+        $this->assertSame(0, preg_match('/<(a|button)[^>]*>\s*(Buy|Subscribe|Purchase|Pay|Start plan|Checkout)\b/i', $agents), 'no control implies a purchase can be completed');
+        $this->assertSame(0, PlatformEntitlement::where('team_id', $team->id)->count(), 'reading the page asks for nothing');
+        foreach (['PlatformCatalogueController.php' => app_path('Http/Controllers/PlatformCatalogueController.php'), 'EcosystemWidget.php' => app_path('Livewire/EcosystemWidget.php')] as $name => $file) {
+            $this->assertStringNotContainsString('subscribe(', (string) file_get_contents($file), "{$name} never starts a paid plan");
+        }
         $this->assertStringNotContainsString('data-platform-action="switch_on"', $agents, 'nothing here can start a paid plan');
     }
 

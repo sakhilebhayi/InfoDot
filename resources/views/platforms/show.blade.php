@@ -103,9 +103,9 @@
                             <li><strong>{{ $plan->name }}</strong> <span>{{ CompanyCatalogue::priceOf($plan) }}</span></li>
                         @endforeach
                     </ul>
-                    @unless ($plans->contains->isFree())
-                        <p>Paid plans cannot be started yet. Payment will be handled in Dot.Finance, and nothing is charged without the owner agreeing to it first.</p>
-                    @endunless
+                    @if (! $row['held'] && ! $plans->contains->isFree())
+                        <p data-paid-not-open><strong>Paid activation is not open yet.</strong> Payment for a platform runs through Dot.Finance, which is not taking payments yet, so this plan cannot be started and nothing can be charged. The price above is the approved one; it is shown so you know it, not so you can buy it today.</p>
+                    @endif
                 @endif
             </div>
 

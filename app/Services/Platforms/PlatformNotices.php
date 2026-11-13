@@ -99,6 +99,17 @@ class PlatformNotices
             'suspended' => "An InfoDot administrator paused {$company}'s use of {$platform}. Nothing was deleted.",
             'restored' => "{$company}'s use of {$platform} was restored.",
             'access_mode_changed' => "Who may open {$platform} in {$company} was changed.",
+            'complimentary_ended' => "The period in which {$company} had {$platform} at no charge has ended. Nothing was deleted.",
+            'trial_started' => "{$company} started a trial of {$platform}.",
+            'trial_ended' => "{$company}'s trial of {$platform} has ended. What the company made is kept.",
+            'subscription_requested' => "{$company} asked for a paid plan of {$platform}. It opens when the payment is confirmed.",
+            'payment_confirmed' => "The payment for {$platform} was confirmed. {$company} can use it now.",
+            'renewal_confirmed' => "{$company}'s plan for {$platform} was renewed.",
+            'payment_failed' => "A payment for {$platform} did not go through. {$company} keeps access for a short while so it can be settled in Dot.Finance.",
+            'grace_ended' => "{$company}'s access to {$platform} has stopped because the payment was not settled. Nothing was deleted.",
+            'refunded' => "The payment for {$platform} was refunded, and {$company}'s access has ended. Nothing was deleted.",
+            'cancelled' => "{$company}'s plan for {$platform} was cancelled. Nothing was deleted.",
+            'period_ended' => "{$company}'s paid period for {$platform} has ended. Nothing was deleted.",
             default => "{$company}'s access to {$platform} changed.",
         };
 

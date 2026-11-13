@@ -188,7 +188,7 @@ class CompanyCatalogue
             'free_while_pricing_finalised' => $manages
                 ? "No price has been set for {$name}, so it is free for now. You can switch it on for {$company}."
                 : "No price has been set for {$name}, so it is free for now. {$ask} to switch it on.",
-            'available_for_purchase' => "{$name} has a price, and paid plans cannot be started yet. Nothing can be charged from this page.",
+            'available_for_purchase' => "{$name} has an approved price, but paid activation is not open yet: payment runs through Dot.Finance, which is not taking payments yet. Nothing can be charged.",
             'trial_available' => "{$name} has a price and offers a trial. Trials cannot be started from this page yet.",
             'payment_required' => $owns ? "A payment for {$name} has not been confirmed. Payments are handled in Dot.Finance." : "A payment for {$name} has not been confirmed. {$ask} to settle it in Dot.Finance.",
             'subscription_expired' => $owns ? "{$company}'s access to {$name} has ended. Nothing was deleted. Renewing is done in Dot.Finance." : "{$company}'s access to {$name} has ended. Nothing was deleted. {$ask} to renew it.",

@@ -308,4 +308,44 @@ class PlatformCatalogueActionsTest extends PlatformTestCase
         $this->assertSame('Platforms', InAppNotices::label(UserNotice::PLATFORM_ENTITLEMENT));
         $this->actingAs($owner)->get(route('notices'))->assertOk()->assertSee('Dot.Forms was switched on for')->assertSee('paused');
     }
+
+    public function test_every_change_an_administrator_of_infodot_makes_tells_the_company_once(): void
+    {
+        $team = $this->company('Northwind Freight');
+        $admin = $this->memberOf($team, 'admin');
+        $member = $this->memberOf($team);
+        $staff = $this->administrator();
+        $told = fn (User $person) => UserNotice::where('user_id', $person->id)->where('kind', UserNotice::PLATFORM_ENTITLEMENT)->orderBy('id')->pluck('ref')->map(fn (string $ref) => implode(':', array_slice(explode(':', $ref), 2)))->all();
+
+        $this->entitlements()->grantComplimentary($team, 'hr', $staff, now()->addMonth());
+        $this->entitlements()->administerAccessMode($team, 'hr', 'selected', $staff);
+        $this->entitlements()->suspend($team, 'hr', $staff);
+        $this->entitlements()->restore($team, 'hr', $staff);
+        $this->entitlements()->startTrial($team, 'projects', $staff, null, 14);
+        $this->entitlements()->cancel($team, 'hr', $staff);
+
+        $expected = PlatformEntitlementEvent::where('team_id', $team->id)->orderBy('id')->get()->map(fn ($event) => $event->platform_key.':'.$event->type)->all();
+        $this->assertCount(6, $expected);
+        $this->assertSame($expected, $told($team->owner), 'the owner is told of each change, once');
+        $this->assertSame($expected, $told($admin), 'and so is each administrator');
+        $this->assertSame([], $told($member));
+        $this->assertSame([], $told($staff), 'the person who did it is not told');
+
+        // Each has its own sentence, and none names the member of staff.
+        $notices = app(InAppNotices::class);
+        $sentences = UserNotice::where('user_id', $team->owner->id)->where('kind', UserNotice::PLATFORM_ENTITLEMENT)->orderBy('id')->get()->map(fn (UserNotice $notice) => $notices->describe($notice)['text']);
+        $this->assertCount(6, $sentences->unique());
+        foreach ($sentences as $sentence) {
+            $this->assertStringContainsString('Northwind Freight', $sentence);
+            $this->assertStringNotContainsString($staff->name, $sentence);
+            $this->assertStringNotContainsString('access to Dot', $sentence, 'no change falls back to the general sentence');
+        }
+
+        // The company's history shows the same events, signed "InfoDot", never with the name of the member of staff.
+        $history = $this->actingAs($team->owner->fresh())->get('/platforms/hr')->assertOk()->getContent();
+        foreach (['Given at no charge by InfoDot', 'Limited to selected people', 'Paused by InfoDot', 'Restored by InfoDot', 'Plan cancelled'] as $line) {
+            $this->assertStringContainsString($line, $history);
+        }
+        $this->assertStringNotContainsString(e($staff->name), $history);
+    }
 }
