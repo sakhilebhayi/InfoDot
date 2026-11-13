@@ -236,7 +236,8 @@ class ImageIntegrityTest extends TestCase
     public function test_the_site_logo_ships_with_the_build_and_public_img_holds_no_copy(): void
     {
         $this->assertNull($this->builtFromSource('/build/source/resources/img/brand/logo_white.png'));
-        $this->assertFileDoesNotExist(public_path('img/logo_white.png'), 'a second copy under public/ would hide a logo the build no longer ships');
+        // Nothing a page uses lives under public/img (the deploy does not publish it), so the folder is gone and stays gone.
+        $this->assertDirectoryDoesNotExist(public_path('img'), 'public/img is back. A picture kept there never reaches the live web root: put it in resources/img.');
 
         foreach ([[null, '/'], [null, '/login'], [null, '/businesses'], [$this->member, '/home']] as [$viewer, $page]) {
             $html = (string) $this->as($viewer)->get($page)->assertOk()->getContent();
