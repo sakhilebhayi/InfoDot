@@ -8,7 +8,7 @@
 
         <x-jet-validation-errors class="mb-4" />
 
-        <form method="POST" action="{{ route('register') }}">
+        <form method="POST" action="{{ route('register') }}" x-data="{ sending: false }" x-on:submit="sending = true">
             @csrf
 
             <div>
@@ -49,7 +49,7 @@
             @endif
 
             <div class="mt-6">
-                <x-jet-button class="w-full">
+                <x-jet-button class="w-full" x-bind:disabled="sending">
                     {{ __('Sign Up') }}
                 </x-jet-button>
             </div>
