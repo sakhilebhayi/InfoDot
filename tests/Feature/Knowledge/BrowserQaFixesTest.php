@@ -65,7 +65,11 @@ class BrowserQaFixesTest extends TestCase
         $comment->user_id = $asker->id;
         $question->comments()->save($comment);
 
-        $this->actingAs($asker)->get('/questions')->assertOk()->assertSee('aria-label="3 replies"', false);
+        // R-49: the count is announced from the link's own text (the stencil "03" is hidden from a screen reader and the
+        // plain number sits beside it), because an aria-label of "3 replies" over visible text "03 replies" fails WCAG 2.5.3.
+        $this->actingAs($asker)->get('/questions')->assertOk()
+            ->assertSee('<span class="ix-stencil-num" aria-hidden="true">03</span><span class="ix-sr">3</span>', false)
+            ->assertSee('<small>replies</small>', false);
     }
 
     public function test_reporting_an_answer_can_be_cancelled(): void

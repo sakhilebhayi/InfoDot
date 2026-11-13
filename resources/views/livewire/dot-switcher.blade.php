@@ -13,7 +13,7 @@
     $liveCount = collect($all)->filter(fn ($p, $k) => $k !== 'infodot' && ! empty($p['active']))->count();
     $total = collect($all)->except('infodot')->count();
 @endphp
-<div x-data="{ open: @entangle('open'), q: '' }" @click.outside="open = false" @keydown.escape="open = false" class="ix-yardwrap">
+<div x-data="{ open: @entangle('open'), q: '' }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }" class="ix-yardwrap">
     <button type="button" class="ix-btn" @click="open = !open; if (open) $nextTick(() => $refs.f.focus())" :aria-expanded="open" aria-haspopup="true" aria-controls="ix-yardmap" title="Switch Dot platform">
         <span class="material-symbols-rounded" aria-hidden="true">apps</span>
         <span class="hidden sm:inline">Dot Apps</span>

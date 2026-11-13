@@ -77,6 +77,15 @@ document.addEventListener('livewire:init', () => {
     });
 });
 
+// Below 1200px the tabs are a row that scrolls sideways, and it starts at its left edge on every page. Start it at
+// the page the person is on instead, so the lit tab is on screen (on a phone, Platforms and everything after it was not).
+document.querySelectorAll('.ix-tabs [aria-current="page"]').forEach((tab) => {
+    const row = tab.closest('.ix-tabs');
+    if (row.scrollWidth <= row.clientWidth) return;
+    const centred = tab.getBoundingClientRect().left - row.getBoundingClientRect().left + row.scrollLeft - (row.clientWidth - tab.offsetWidth) / 2;
+    row.scrollLeft = Math.max(0, centred);
+});
+
 // The directory's filters (R-33) fold away on a phone unless one is in use. They are open in the
 // markup, so without scripting every filter stays reachable.
 document.querySelectorAll('details[data-fold-on-phone]:not([data-active])').forEach((d) => {
