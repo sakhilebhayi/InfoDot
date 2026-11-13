@@ -124,7 +124,8 @@ class SolutionsController extends Controller
             }
         });
 
-        return redirect()->route('solutions');
+        // The list is where the person lands, so the list says it worked (the question form does the same).
+        return redirect()->route('solutions')->with('status', 'Your solution was saved.');
     }
 
     public function view_solution($id, TopicService $topics)

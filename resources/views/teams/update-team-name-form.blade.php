@@ -43,7 +43,7 @@
 
         <div class="col-span-6 sm:col-span-4">
             <x-jet-label for="industry" value="{{ __('What does the company do?') }}" />
-            <select id="industry" class="ix-input ix-select block w-full" wire:model.defer="state.industry" :disabled="! Gate::check('update', $team)">
+            <select id="industry" class="ix-input ix-select block w-full" wire:model.defer="state.industry" @disabled(! Gate::check('update', $team))>
                 <option value="">{{ __('General business') }}</option>
                 @foreach (\App\Support\Industry::options() as $key => $label)
                     @continue($key === 'general')

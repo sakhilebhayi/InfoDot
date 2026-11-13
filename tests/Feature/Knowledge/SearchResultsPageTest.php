@@ -50,7 +50,8 @@ class SearchResultsPageTest extends TestCase
 
         $html = $this->actingAs($asker)->get('/solution-results?search=register')->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('/ix-stencil-num">01<\/span>\s*<small>reply<\/small>/', $html);
+        // R-49: the stencil "01" is hidden from a screen reader and the plain count sits beside it (WCAG 2.5.3).
+        $this->assertMatchesRegularExpression('/ix-stencil-num" aria-hidden="true">01<\/span><span class="ix-sr">1<\/span>\s*<small>reply<\/small>/', $html);
         $this->assertNotNull(Answer::first());
     }
 

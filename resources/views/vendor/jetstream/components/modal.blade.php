@@ -14,7 +14,9 @@ $maxWidth = [
 
 <div
     x-data="{
-        show: @entangle($attributes->wire('model')).defer,
+        {{-- Livewire 3 has no ".defer" on an entangle: with it "show" was undefined and no dialog ever opened (R-49). --}}
+        show: @entangle($attributes->wire('model')),
+        opener: null,
         focusables() {
             // All focusable element types...
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
@@ -30,12 +32,25 @@ $maxWidth = [
         nextFocusableIndex() { return (this.focusables().indexOf(document.activeElement) + 1) % (this.focusables().length + 1) },
         prevFocusableIndex() { return Math.max(0, this.focusables().indexOf(document.activeElement)) -1 },
     }"
-    x-init="$watch('show', value => {
+    x-init="document.addEventListener('focusin', event => { if (! show && ! $el.contains(event.target)) opener = event.target });
+    $watch('show', value => {
         if (value) {
             document.body.classList.add('overflow-y-hidden');
             {{ $attributes->has('focusable') ? 'setTimeout(() => firstFocusable().focus(), 100)' : '' }}
         } else {
             document.body.classList.remove('overflow-y-hidden');
+            {{-- Closing gives focus back to the button that opened the dialog. Livewire switches that button off while
+                 it tells the server the dialog closed, which drops focus again, so for two seconds focus is put back
+                 whenever it is nowhere. Once the person has moved to something else it is left alone. --}}
+            let tries = 0;
+            const back = () => {
+                if (show || ! opener || ! document.contains(opener)) return;
+                const at = document.activeElement;
+                if (at && at !== document.body && at !== opener && ! $el.contains(at)) return;
+                if (at !== opener) opener.focus();
+                if (tries++ < 20) setTimeout(back, 100);
+            };
+            setTimeout(back, 50);
         }
     })"
     x-on:close.stop="show = false"
