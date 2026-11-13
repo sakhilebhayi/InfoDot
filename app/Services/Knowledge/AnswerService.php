@@ -172,6 +172,14 @@ class AnswerService
         abort_unless($answer->isAccepted() && ($answer->question->user_id === $by->id || $by->isModerator()), 403);
 
         DB::transaction(function () use ($answer, $by): void {
+            // The same order as accept(): the question's row first, then look again. A second request that still saw the acceptance
+            // must not send a second reversal, or reset the question after another answer was accepted.
+            Questions::withoutGlobalScopes()->whereKey($answer->question_id)->lockForUpdate()->first();
+
+            if (! Answer::withoutGlobalScopes()->whereKey($answer->id)->whereNotNull('accepted_at')->exists()) {
+                return;
+            }
+
             $answer->forceFill(['accepted_at' => null, 'accepted_by' => null])->save();
             $answer->question->forceFill(['status' => 0])->save();
             DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($answer->reference(), ['answer_id' => $answer->id, 'author_uuid' => $answer->user?->uuid, 'revoked_by_uuid' => $by->uuid])));
