@@ -174,7 +174,7 @@ All additive; the only data change was Phase 1 moving profiles that had content 
 
 - **The public directory is empty until businesses opt in.** Existing profiles were moved to
   "InfoDot users", as R-29 had promised them. Visitors see only businesses that choose "Anyone".
-- **Paid featuring is not offered.** Billing is not live, and the price is the owner's decision. The
+- **Paid featuring is not offered.** Payments are not live, and the price is the owner's decision. The
   rules page says paid placements would be labelled.
 - **No malware scanning on uploads.** This applies to enquiry files, brochures and report or appeal
   evidence (the R-15 owner decision). Backups also exclude uploads (`uploads=none`).
@@ -200,7 +200,7 @@ All additive; the only data change was Phase 1 moving profiles that had content 
    templates for businesses.
 5. **Verified addresses**, so a real map is possible: confirm a location with a utility bill or a
    site visit, then geocode only confirmed addresses.
-6. **Paid featuring** once billing is live, clearly labelled as paid, with the price on the rules
+6. **Paid featuring** once payments are live, clearly labelled as paid, with the price on the rules
    page.
 7. **Insights export (CSV)** and a monthly emailed summary for business owners.
 8. **Full-text search engine** behind `BusinessDirectory` once the directory grows past a few

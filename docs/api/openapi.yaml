@@ -154,9 +154,9 @@ paths:
         "200": { description: "A page of candidates (shape in App\\Services\\Knowledge\\CandidateFeed)." }
         "401": { description: "Bad or missing signature, or the secret is unset." }
         "422": { description: "{code: invalid_request, message}" }
-  /billing/ticket-events:
+  /finance/ticket-events:
     post:
-      summary: Dot.Billing reports a ticket or host-debt event
+      summary: Dot.Finance reports a ticket or host-debt event
       description: |
         Signed with the callback secret, 300 second window, refused while paid seminars are off. Events `ticket.paid`, `ticket.refunded`,
         `ticket.disputed`, `ticket.dispute_resolved` and `host_debt.opened|reopened|cleared|written_off`. Applied once per event and ticket.

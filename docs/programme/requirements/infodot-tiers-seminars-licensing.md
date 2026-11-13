@@ -161,7 +161,7 @@ Paid seminars must support the complete commercial workflow, including:
 - Fraud prevention and payment reconciliation.
 - Appropriate records for financial reporting.
 
-Inspect Dot.Billing and any existing payment integrations before building payment functionality.
+Inspect Dot.Finance and any existing payment integrations before building payment functionality.
 
 Reuse established billing capabilities where possible. Do not create a second, conflicting payment system inside InfoDot.
 
@@ -262,7 +262,7 @@ Entrepreneur reputation and organisation permissions must remain separate system
 A user's InfoDot Luminary status must never automatically grant administrative privileges over a company.
 
 #### 4.6 Subscription and Billing Integrity
-Integrate with Dot.Billing where available and follow the established payment and subscription architecture.
+Integrate with Dot.Finance where available and follow the established payment and subscription architecture.
 
 Implement: server-side entitlement checks; verified payment webhooks; idempotent billing operations; invoice and transaction records; seat reconciliation; subscription lifecycle handling; auditable changes to licensed capacity; appropriate tenant isolation; protection against unauthorised seat increases; recovery from failed payments and webhook delivery.
 
@@ -300,7 +300,7 @@ Clearly distinguish verified facts, user-submitted claims, community feedback, a
 Do not expose private business information through public profiles, seminar listings, or reputation explanations.
 
 ### 8. Implementation and Acceptance Criteria
-Before coding, inspect the actual InfoDot, Dot.Brains, Dot.Memory, Dot.Dopemine, and Dot.Billing repositories or integration contracts that are available. Map the existing account types, database relationships, payment services, event architecture, reputation mechanisms, and permissions. Then implement the changes incrementally.
+Before coding, inspect the actual InfoDot, Dot.Brains, Dot.Memory, Dot.Dopemine, and Dot.Finance repositories or integration contracts that are available. Map the existing account types, database relationships, payment services, event architecture, reputation mechanisms, and permissions. Then implement the changes incrementally.
 
 The release must not be considered complete until:
 
@@ -313,7 +313,7 @@ The release must not be considered complete until:
 7. Additional seats are priced using the configured billing model.
 8. Concurrent invitations cannot bypass seat limits.
 9. Organisation roles and billing permissions are enforced server-side.
-10. Subscription lifecycle and billing events remain consistent with Dot.Billing.
+10. Subscription lifecycle and billing events remain consistent with Dot.Finance.
 11. The applicable Dot.Brains, Dot.Memory, and Dot.Dopemine integrations work as implemented and documented.
 12. Tenant isolation, privacy, and security tests pass.
 13. Unit, feature, integration, and regression tests cover the new functionality.

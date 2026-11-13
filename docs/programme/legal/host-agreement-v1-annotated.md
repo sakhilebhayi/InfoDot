@@ -1,3 +1,5 @@
+> **Note, 2026-11-13: payments moved to Dot.Finance.** This document was written against the payment system as it stood on 2026-10-29. Wherever it cites that system's own code or documents as checked (`seminar-payments.md`, `docs/host-agreement-draft.md`, its `origin/main`), the check has **not** been repeated against Dot.Finance, and must be before anyone relies on it.
+>
 > **ARCHIVE. This is the annotated working draft of host agreement v1 as it stood on 2026-10-29, with the engineering notes, the adviser questions and the open questions kept in. It is not shown to anyone. The text hosts see is `resources/markdown/host-agreement.md`, which is this wording with the annotations removed (see [host-agreement-approval.md](host-agreement-approval.md)).**
 
 # Host agreement: chargebacks and removal of seminars (DRAFT, version v1)
@@ -6,17 +8,17 @@
 > software does, in plain language. It has not been read by a lawyer and must not be shown to hosts, accepted by
 > anyone or relied on until the owner's adviser has reviewed, corrected and approved it. Everything in square
 > brackets is a placeholder or a question for the adviser. Changing the approved wording means a new version
-> (`BILLING_MARKETPLACE_AGREEMENT_VERSION`), which every host must accept again.
+> (`FINANCE_MARKETPLACE_AGREEMENT_VERSION`), which every host must accept again.
 
 This is the term a host accepts before they can sell paid tickets. InfoDot shows it, records who accepted which
-version and when, and tells Dot.Billing (`POST /api/payout-accounts/{id}/agreement`). Dot.Billing refuses to create a
+version and when, and tells Dot.Finance (`POST /api/payout-accounts/{id}/agreement`). Dot.Finance refuses to create a
 ticket for a host who has not accepted the current version, and takes nothing under it from a host who has not.
 
 **Revised 2026-10-29.** Part B (removal of a seminar by a moderator) was added to match what the software does since
 InfoDot PR #156 and updated the same day for the refund choice and the appeal (owner answers of 2026-10-29). It is still labelled v1. The owner's go-live record has the gate `SEMINARS_HOST_AGREEMENT_APPROVED` off, and
 InfoDot shows the text and records an acceptance only when it is on, so no host should have accepted anything yet
 [owner: confirm in the database before relying on this; `SELECT COUNT(*) FROM seminar_host_agreements`]. Keeping v1
-avoids a mismatch with Dot.Billing's `BILLING_MARKETPLACE_AGREEMENT_VERSION`. If the adviser's approved wording differs from this draft in any way, the owner
+avoids a mismatch with Dot.Finance's `FINANCE_MARKETPLACE_AGREEMENT_VERSION`. If the adviser's approved wording differs from this draft in any way, the owner
 decides the version label and sets the same value in both systems before turning the gate on. Approval is the
 adviser's and the owner's. This file does not approve itself, and nothing here changes while the gate is off.
 

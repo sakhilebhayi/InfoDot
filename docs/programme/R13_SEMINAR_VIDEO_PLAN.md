@@ -20,7 +20,7 @@ Owner decision: build our own video provider for seminars. **Nothing here is bui
 - The server: provider, region and budget. South African data-residency matters for POPIA section 72; a host in South Africa avoids a cross-border transfer for the media itself.
 - Bandwidth plan: a 100-person seminar at 720p is on the order of 100 Mbit/s outbound for the SFU; capacity per seminar must be a configured cap.
 - Recording: whether it exists at all, retention, and consent wording.
-- Whether paid seminars (Dot.Billing) come before or after video.
+- Whether paid seminars (Dot.Finance) come before or after video.
 
 ## Acceptance before it can be called live video
 
