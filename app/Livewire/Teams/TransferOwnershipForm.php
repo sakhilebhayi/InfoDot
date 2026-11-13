@@ -39,9 +39,10 @@ class TransferOwnershipForm extends Component
         $owner = Auth::user();
         Gate::authorize('transferOwnership', $this->team);
 
-        $candidate = $this->team->users()->whereKey((int) $this->newOwner)->first();
+        // Whether this person is in the company is decided by the action, under its lock.
+        $candidate = User::find((int) $this->newOwner);
 
-        if (! $candidate instanceof User) {
+        if ($candidate === null) {
             throw ValidationException::withMessages(['new_owner' => 'Choose who takes over the company.']);
         }
 
