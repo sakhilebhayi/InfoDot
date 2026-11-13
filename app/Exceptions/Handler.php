@@ -6,6 +6,7 @@ use App\Support\UploadLimit;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Exceptions\PostTooLargeException;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route as LaravelRoute;
 use Illuminate\Support\Facades\Route;
 use Sentry\Laravel\Integration;
 use Throwable;
@@ -60,5 +61,33 @@ class Handler extends ExceptionHandler
 
             return $request->expectsJson() ? response()->json(['message' => $message, 'errors' => ['file' => [$message]]], 413) : null;
         });
+    }
+
+    /**
+     * What every logged exception carries besides the exception itself: who was signed in (the id only), which route and which
+     * method. The request id is already on every log line (AssignRequestId). The route is its name, or its pattern
+     * ("question/{qid}") when it has none: never the address that was opened, the query string or anything that was sent.
+     *
+     * @return array<string, mixed>
+     */
+    protected function context()
+    {
+        $context = parent::context();
+
+        try {
+            if (! app()->runningInConsole() || app()->runningUnitTests()) {
+                $request = request();
+                $route = $request->route();
+
+                $context += array_filter([
+                    'route' => $route instanceof LaravelRoute ? ($route->getName() ?? $route->uri()) : null,
+                    'method' => $request->getMethod(),
+                ]);
+            }
+        } catch (Throwable) {
+            // Context is a help, never a reason to lose the log line.
+        }
+
+        return $context;
     }
 }
