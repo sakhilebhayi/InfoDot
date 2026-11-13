@@ -17,7 +17,12 @@
 return [
     'included_seats' => (int) env('LICENCE_INCLUDED_SEATS', 3),
 
-    // true: a pending invitation holds a seat until it is accepted, declined or cancelled.
+    // An invitation can be accepted for this many days after it is sent (or sent again). After that it holds no seat, and
+    // `invitations:prune` removes it once it has been expired for `invitation_prune_days`.
+    'invitation_days' => (int) env('LICENCE_INVITATION_DAYS', 14),
+    'invitation_prune_days' => (int) env('LICENCE_INVITATION_PRUNE_DAYS', 30),
+
+    // true: a pending invitation holds a seat until it is accepted, declined, cancelled or expired.
     'pending_invitations_reserve_a_seat' => (bool) env('LICENCE_INVITATIONS_RESERVE', true),
 
     // The approved price of one extra seat. Both must be set by the owner's pricing decision; they are never defaulted.

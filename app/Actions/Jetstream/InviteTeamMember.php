@@ -38,6 +38,9 @@ class InviteTeamMember implements InvitesTeamMembers
             ])->errorBag('addTeamMember');
         }
 
+        // Inviting an address whose earlier invitation ran out is a new invitation, not "already invited".
+        $team->teamInvitations()->where('email', $email)->whereNotNull('expires_at')->where('expires_at', '<=', now())->delete();
+
         $this->validate($team, $email, $role);
 
         InvitingTeamMember::dispatch($team, $email, $role);
@@ -64,6 +67,37 @@ class InviteTeamMember implements InvitesTeamMembers
 
             throw ValidationException::withMessages([
                 'email' => __('The invitation email could not be sent just now, so nobody was invited. Please try again in a few minutes.'),
+            ])->errorBag('addTeamMember');
+        }
+    }
+
+    /**
+     * Sends an invitation again and starts its life over. One that had run out holds no seat, so it has to fit like a new one;
+     * one that is still live keeps the seat it holds. If the email cannot be sent the invitation is left as it was.
+     *
+     * @param  mixed  $user
+     * @param  mixed  $team
+     */
+    public function resend($user, $team, \App\Models\TeamInvitation $invitation): void
+    {
+        Gate::forUser($user)->authorize('addTeamMember', $team);
+        abort_unless((int) $invitation->team_id === (int) $team->id, 404);
+
+        $before = $invitation->expires_at;
+        $renew = fn () => $invitation->forceFill(['expires_at' => \App\Models\TeamInvitation::freshExpiry()])->save();
+
+        $invitation->isExpired()
+            ? app(SeatLedger::class)->guard($team, $renew, null, $user, 'invited', $invitation->email)
+            : $renew();
+
+        try {
+            Mail::to($invitation->email)->send(new TeamInvitation($invitation));
+        } catch (TransportExceptionInterface $e) {
+            Log::error('team.invitation_mail_failed', ['category' => 'mail', 'team_id' => $team->id, 'exception' => $e::class, 'reason' => mb_substr($e->getMessage(), 0, 300)]);
+            $invitation->forceFill(['expires_at' => $before])->save();
+
+            throw ValidationException::withMessages([
+                'email' => __('The invitation email could not be sent just now, so nothing changed. Please try again in a few minutes.'),
             ])->errorBag('addTeamMember');
         }
     }

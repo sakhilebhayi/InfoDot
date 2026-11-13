@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Teams;
 
+use App\Actions\Jetstream\InviteTeamMember;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Jetstream\Http\Livewire\TeamMemberManager as JetstreamTeamMemberManager;
 
@@ -16,5 +17,17 @@ class TeamMemberManager extends JetstreamTeamMemberManager
         Gate::authorize('removeTeamMember', $this->team);
 
         parent::cancelTeamInvitation($invitationId);
+    }
+
+    /** Sends an invitation again, which starts a new 14 days. Only for people who may invite, and only for this company's invitations. */
+    public function resendTeamInvitation(int $invitationId): void
+    {
+        $this->resetErrorBag();
+
+        $invitation = $this->team->teamInvitations()->whereKey($invitationId)->firstOrFail();
+        app(InviteTeamMember::class)->resend($this->user, $this->team, $invitation);
+
+        $this->team = $this->team->fresh();
+        $this->dispatch('invitation-resent');
     }
 }

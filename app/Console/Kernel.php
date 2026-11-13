@@ -47,6 +47,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('seminars:prune')->dailyAt('03:50')->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:remind')->everyTenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:award-hosts')->everyThirtyMinutes()->withoutOverlapping(30)->onOneServer();
+        // Company invitations live 14 days; one that has been expired for 30 more is removed.
+        $schedule->command('invitations:prune')->dailyAt('03:15')->withoutOverlapping(30)->onOneServer();
         $schedule->command('notices:prune')->dailyAt('03:20')->withoutOverlapping(30)->onOneServer();
         // Launch codes live for a minute and are deleted when redeemed; one that is never redeemed stayed in the table for
         // good (31 on the live site on 2026-11-13). Expired ones are removed an hour after they lapse.

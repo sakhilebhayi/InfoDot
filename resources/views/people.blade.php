@@ -60,7 +60,7 @@
                     @foreach ($invitations as $invitation)
                         <li class="ix-crewrow is-pending">
                             <span class="ix-crewrow__av" aria-hidden="true"><span class="material-symbols-rounded">mail</span></span>
-                            <span class="ix-crewrow__who"><span>{{ $invitation->email }}</span></span>
+                            <span class="ix-crewrow__who"><span>{{ $invitation->email }}</span>@if ($invitation->isExpired()) <span class="ix-chip ix-chip--open">Expired</span>@endif</span>
                             <span class="ix-crewrow__role">{{ \Laravel\Jetstream\Jetstream::findRole($invitation->role)?->name ?? $invitation->role }}</span>
                         </li>
                     @endforeach
