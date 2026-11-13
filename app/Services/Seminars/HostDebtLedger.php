@@ -10,8 +10,8 @@ use App\Services\Knowledge\InAppNotices;
 use Illuminate\Support\Carbon;
 
 /**
- * Keeps a host's view of what they owe after a lost chargeback in step with what Dot.Billing says (opened, cleared, reopened, written off), and
- * tells the host each time. Billing is the record: this only mirrors it. A callback that arrives late or twice never moves a debt backwards.
+ * Keeps a host's view of what they owe after a lost chargeback in step with what Dot.Finance says (opened, cleared, reopened, written off), and
+ * tells the host each time. Finance is the record: this only mirrors it. A callback that arrives late or twice never moves a debt backwards.
  */
 class HostDebtLedger
 {
@@ -43,7 +43,7 @@ class HostDebtLedger
         }
 
         $stamp = Carbon::parse($b[self::STAMPS[$event]] ?? now());
-        $debt = SeminarHostDebt::firstOrNew(['billing_debt_id' => $b['debt_id']]);
+        $debt = SeminarHostDebt::firstOrNew(['finance_debt_id' => $b['debt_id']]);
 
         if ($debt->exists && $debt->last_event_at !== null && $debt->last_event_at->greaterThan($stamp)) {
             return 'stale';
@@ -59,7 +59,7 @@ class HostDebtLedger
         $seminarId = SeminarRegistration::where('ticket_ref', $debt->ticket_ref)->value('seminar_id');
 
         if ($seminarId !== null) {
-            $this->notices->record(self::NOTICES[$event], $host, 'seminar', (int) $seminarId, 'seminar:'.$seminarId.':debt:'.$debt->billing_debt_id.':'.$event.':'.$stamp->timestamp);
+            $this->notices->record(self::NOTICES[$event], $host, 'seminar', (int) $seminarId, 'seminar:'.$seminarId.':debt:'.$debt->finance_debt_id.':'.$event.':'.$stamp->timestamp);
         }
 
         return 'applied';

@@ -30,7 +30,7 @@ class SeatLedger
 
     public function licenceFor(Team $team): TeamLicence
     {
-        return TeamLicence::firstOrCreate(['team_id' => $team->getKey()], ['billing_status' => 'free']);
+        return TeamLicence::firstOrCreate(['team_id' => $team->getKey()], ['payment_status' => 'free']);
     }
 
     /**
@@ -59,10 +59,10 @@ class SeatLedger
             'available' => max(0, $capacity - $used),
             'over_by' => max(0, $people - $capacity),
             'extra_in_use' => max(0, $people - $included),
-            'status' => $licence->billing_status,
+            'status' => $licence->payment_status,
             'grace_until' => $licence->grace_until,
             'price' => $price,
-            'can_buy' => (bool) config('licensing.billing_connected', false),
+            'can_buy' => (bool) config('licensing.finance_connected', false),
         ];
     }
 
@@ -90,7 +90,7 @@ class SeatLedger
         $refusal = null;
 
         // Fresh purchased-seat numbers come first, outside the transaction (it makes an HTTP request; failure changes nothing).
-        app(BillingEntitlements::class)->sync($team);
+        app(FinanceEntitlements::class)->sync($team);
 
         try {
             return DB::transaction(function () use ($team, $change, $exceptEmail, $actor, $type, $subject, &$refusal) {

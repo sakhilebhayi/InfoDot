@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Seat licensing for companies (R-13). `team_licences` holds one row per company: how many seats it has bought beyond the included ones and
- * the state of its billing. `team_licence_events` is the audit trail of every change to who holds or could hold a seat. Both are additive and
+ * the state of its payment. `team_licence_events` is the audit trail of every change to who holds or could hold a seat. Both are additive and
  * guarded so a re-run does nothing twice. No row is needed for a company to work: a missing licence means "the included seats, free".
  */
 return new class extends Migration
@@ -19,8 +19,8 @@ return new class extends Migration
                 $table->foreignId('team_id')->unique();
                 $table->unsignedSmallInteger('included_seats')->nullable(); // null: the configured default
                 $table->unsignedSmallInteger('purchased_seats')->default(0);
-                $table->string('billing_status', 16)->default('free');      // free | active | past_due | cancelled
-                $table->string('billing_ref', 80)->nullable();              // the billing system's subscription reference
+                $table->string('payment_status', 16)->default('free');      // free | active | past_due | cancelled
+                $table->string('payment_ref', 80)->nullable();              // the payment system's subscription reference
                 $table->timestamp('grace_until')->nullable();
                 $table->timestamps();
             });

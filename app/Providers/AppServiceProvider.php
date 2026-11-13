@@ -137,7 +137,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('ecosystem-redeem', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
         // Their own buckets, so a burst of payment or room callbacks cannot lock out sign-in redeems, or the reverse. Verification of the
         // signature happens after the limiter, so the allowance is generous: a 200-person room start sends 200 joins in a minute.
-        RateLimiter::for('billing-callbacks', fn (Request $request) => Limit::perMinute(300)->by($request->ip()));
+        RateLimiter::for('finance-callbacks', fn (Request $request) => Limit::perMinute(300)->by($request->ip()));
         RateLimiter::for('livekit-webhook', fn (Request $request) => Limit::perMinute(600)->by($request->ip()));
 
         Relation::morphMap([

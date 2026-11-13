@@ -10,17 +10,17 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Reads what a company is entitled to from Dot.Billing (GET /api/entitlements/{company_uuid}, signed with this platform's secret) and
+ * Reads what a company is entitled to from Dot.Finance (GET /api/entitlements/{company_uuid}, signed with this platform's secret) and
  * records it as the company's seat licence. The only way purchased seats ever change: a verified server-to-server answer, never a browser
  * redirect and never a value typed into InfoDot.
  *
- * Fail safe in both directions. If Billing is not configured, unreachable, slow or answers something unreadable, the stored licence is left
- * exactly as it was: nobody is locked out and nothing is granted. Billing keeps a past-due company's plan limits (the consuming app decides
+ * Fail safe in both directions. If Finance is not configured, unreachable, slow or answers something unreadable, the stored licence is left
+ * exactly as it was: nobody is locked out and nothing is granted. Finance keeps a past-due company's plan limits (the consuming app decides
  * what to do); InfoDot's decision is to keep them and never remove a person.
  *
  * Never call this inside a database transaction: it makes an HTTP request.
  */
-class BillingEntitlements
+class FinanceEntitlements
 {
     /** Most a smallint column holds; an unlimited plan is stored as this. */
     private const UNLIMITED = 60000;
@@ -29,22 +29,22 @@ class BillingEntitlements
 
     public function configured(): bool
     {
-        return (bool) config('licensing.billing_connected')
-            && filled(config('licensing.billing.url'))
-            && filled(config('licensing.billing.secret'));
+        return (bool) config('licensing.finance_connected')
+            && filled(config('licensing.finance.url'))
+            && filled(config('licensing.finance.secret'));
     }
 
-    /** Refresh the stored licence from Billing if it is due. Returns true when a fresh answer was applied. */
+    /** Refresh the stored licence from Finance if it is due. Returns true when a fresh answer was applied. */
     public function sync(Team $team): bool
     {
         if (! $this->configured() || $team->personal_team || blank($team->uuid)) {
             return false;
         }
 
-        $key = 'licence:billing:'.$team->uuid;
+        $key = 'licence:finance:'.$team->uuid;
 
         // A failed read is remembered briefly too. Without that, every seat screen view and every invitation waited out the 3-second timeout
-        // for as long as Billing was down.
+        // for as long as Finance was down.
         if (Cache::has($key) || Cache::has($key.':failed')) {
             return false;
         }
@@ -52,12 +52,12 @@ class BillingEntitlements
         $payload = $this->fetch((string) $team->uuid);
 
         if ($payload === null) {
-            Cache::put($key.':failed', true, (int) config('licensing.billing.failure_backoff_seconds', 30));
+            Cache::put($key.':failed', true, (int) config('licensing.finance.failure_backoff_seconds', 30));
 
             return false; // the stored licence is untouched; it is tried again after the short back-off
         }
 
-        Cache::put($key, true, (int) config('licensing.billing.cache_seconds', 300));
+        Cache::put($key, true, (int) config('licensing.finance.cache_seconds', 300));
         $this->apply($team, $payload);
 
         return true;
@@ -66,30 +66,30 @@ class BillingEntitlements
     /** @return array<string, mixed>|null */
     private function fetch(string $uuid): ?array
     {
-        $base = rtrim((string) config('licensing.billing.url'), '/');
+        $base = rtrim((string) config('licensing.finance.url'), '/');
 
         try {
             $response = Http::acceptJson()
-                ->timeout((int) config('licensing.billing.timeout_seconds', 3))
-                ->withHeaders(['X-InfoDot-Platform' => (string) config('licensing.billing.platform', 'infodot')] + Signature::headers((string) config('licensing.billing.secret')))
+                ->timeout((int) config('licensing.finance.timeout_seconds', 3))
+                ->withHeaders(['X-InfoDot-Platform' => (string) config('licensing.finance.platform', 'infodot')] + Signature::headers((string) config('licensing.finance.secret')))
                 ->get($base.'/api/entitlements/'.$uuid);
         } catch (Throwable $e) {
-            Log::warning('Billing entitlements unreachable.', ['reason' => class_basename($e)]);
+            Log::warning('Finance entitlements unreachable.', ['reason' => class_basename($e)]);
 
             return null;
         }
 
-        // Billing has no record of this company yet: it has never been opened in Billing, so it is on the free seats. Not a fault, so it is
+        // Finance has no record of this company yet: it has never been opened in Finance, so it is on the free seats. Not a fault, so it is
         // not a warning and, unlike a failure, it is remembered for the usual window instead of asking again on every page.
         if ($response->status() === 404) {
-            Log::info('Billing has no record of this company yet; it keeps the free seats.');
-            Cache::put('licence:billing:'.$uuid, true, (int) config('licensing.billing.cache_seconds', 300));
+            Log::info('Finance has no record of this company yet; it keeps the free seats.');
+            Cache::put('licence:finance:'.$uuid, true, (int) config('licensing.finance.cache_seconds', 300));
 
             return null;
         }
 
         if (! $response->ok()) {
-            Log::warning('Billing entitlements refused or failed.', ['status' => $response->status()]);
+            Log::warning('Finance entitlements refused or failed.', ['status' => $response->status()]);
 
             return null;
         }
@@ -120,12 +120,12 @@ class BillingEntitlements
         };
         $ref = is_array($e['plan'] ?? null) ? mb_substr((string) ($e['plan']['slug'] ?? ''), 0, 80) : null;
 
-        if ($licence->purchased_seats === $purchased && $licence->billing_status === $status && $licence->billing_ref === ($ref ?: null)) {
+        if ($licence->purchased_seats === $purchased && $licence->payment_status === $status && $licence->payment_ref === ($ref ?: null)) {
             return;
         }
 
-        $before = ['purchased' => $licence->purchased_seats, 'status' => $licence->billing_status];
-        $licence->forceFill(['purchased_seats' => $purchased, 'billing_status' => $status, 'billing_ref' => $ref ?: null])->save();
-        $this->ledger->record($team, null, 'capacity_changed', null, ['from' => $before, 'to' => ['purchased' => $purchased, 'status' => $status], 'source' => 'billing']);
+        $before = ['purchased' => $licence->purchased_seats, 'status' => $licence->payment_status];
+        $licence->forceFill(['purchased_seats' => $purchased, 'payment_status' => $status, 'payment_ref' => $ref ?: null])->save();
+        $this->ledger->record($team, null, 'capacity_changed', null, ['from' => $before, 'to' => ['purchased' => $purchased, 'status' => $status], 'source' => 'finance']);
     }
 }

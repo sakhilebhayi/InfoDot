@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use Laravel\Passport\Passport;
 
 /**
- * The failures that used to be silent: events parked after their last retry, deliveries that never went out, refunds Billing never confirmed,
+ * The failures that used to be silent: events parked after their last retry, deliveries that never went out, refunds Finance never confirmed,
  * holds nobody released, and a scheduler that stopped. Counts only: no row, name or address is ever read out.
  *
  * `run()` returns the counts; `alert()` reports each non-zero kind once a day (to the log and, through the exception handler, to Sentry).

@@ -22,7 +22,7 @@ class SeminarDataEraser
 {
     public function __construct(private readonly SeminarService $seminars, private readonly ReputationEngine $reputation) {}
 
-    /** Settles what is live. Call before the account is deleted and outside the delete transaction (it talks to Billing). */
+    /** Settles what is live. Call before the account is deleted and outside the delete transaction (it talks to Finance). */
     public function settle(User $user): void
     {
         foreach (Seminar::where('host_id', $user->id)->where('status', '!=', Seminar::CANCELLED)->get() as $seminar) {

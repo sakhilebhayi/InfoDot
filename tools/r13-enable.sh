@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Switches on the R-13 features in the .env files of InfoDot and Dot.Billing, on the host, by YOU running it.
+# Switches on the R-13 features in the .env files of InfoDot and Dot.Finance, on the host, by YOU running it.
 # It never prints a secret, never changes a key you did not ask for, and backs up each .env first.
 #
-#   tools/r13-enable.sh --infodot /path/to/infodot --billing /path/to/billing --stage reputation [--stage billing-link] [--stage paid-seminars] [--apply]
+#   tools/r13-enable.sh --infodot /path/to/infodot --finance /path/to/finance --stage reputation [--stage finance-link] [--stage paid-seminars] [--apply]
 #
 # Without --apply it only says which keys WOULD change (names only). Stages:
 #   reputation       InfoDot: REPUTATION_ENABLED=true
-#   billing-link     InfoDot reads seat counts from Billing. Creates ONE shared secret (or reuses the one already in Billing's
-#                    BILLING_ENTITLEMENT_SECRET_INFODOT) and writes it to both apps.
-#   paid-seminars    Paid tickets (Paystack through Billing). Needs billing-link. Creates ONE shared callback secret and writes it to both apps.
+#   finance-link     InfoDot reads seat counts from Finance. Creates ONE shared secret (or reuses the one already in Finance's
+#                    FINANCE_ENTITLEMENT_SECRET_INFODOT) and writes it to both apps.
+#   paid-seminars    Paid tickets (Paystack through Finance). Needs finance-link. Creates ONE shared callback secret and writes it to both apps.
 #                    Do this only after the Paystack test-mode run and your adviser's sign-off (docs/programme/R13_GO_LIVE.md).
 #   video            InfoDot seminar rooms on your LiveKit server. Needs --livekit-url wss://... and the key pair in the environment
 #                    (LIVEKIT_API_KEY and LIVEKIT_API_SECRET, typed with `read -rs` so they never appear in a command line). See
@@ -18,24 +18,24 @@
 #   contact          Where the Contact page sends messages: --contact-address you@example.org (without it the page shows the published addresses).
 #   points           Dot Points for seminar hosts (SEMINARS_POINTS_ENABLED). Needs Dot.Dopemine deployed with the seminar rule (it is).
 #   agreement        The host agreement is APPROVED: only with --confirm-agreement-reviewed, after your adviser has edited and approved
-#                    resources/markdown/host-agreement.md. Optional --agreement-version v2 (must equal Billing's BILLING_MARKETPLACE_AGREEMENT_VERSION).
+#                    resources/markdown/host-agreement.md. Optional --agreement-version v2 (must equal Finance's FINANCE_MARKETPLACE_AGREEMENT_VERSION).
 #   badges-backfill  Fills in specialist badges for everyone now (runs `php artisan badges:backfill` in the InfoDot folder; counts only).
-#   company-sync     Tells Dot.Billing about every existing company once (runs `php artisan licence:sync-companies`). Needs billing-link.
-# Optional: --billing-url https://billing.infodot.co.za  --infodot-url https://infodot.co.za
+#   company-sync     Tells Dot.Finance about every existing company once (runs `php artisan licence:sync-companies`). Needs finance-link.
+# Optional: --finance-url https://finance.infodot.co.za  --infodot-url https://infodot.co.za
 #           --issuer-name "..." --issuer-address "..." --issuer-vat 4123456789   (InfoDot's own details for commission invoices)
 #           --cache   run `php artisan config:cache` in each app afterwards.
 set -euo pipefail
 
-INFODOT=""; BILLING=""; APPLY=0; CACHE=0; STAGES=()
-BILLING_URL="https://billing.infodot.co.za"; INFODOT_URL="https://infodot.co.za"
+INFODOT=""; FINANCE=""; APPLY=0; CACHE=0; STAGES=()
+FINANCE_URL="https://finance.infodot.co.za"; INFODOT_URL="https://infodot.co.za"
 ISSUER_NAME=""; ISSUER_ADDRESS=""; ISSUER_VAT=""; LIVEKIT_URL=""; STUN_URLS=""; CONTACT_ADDRESS=""; AGREEMENT_VERSION=""; AGREEMENT_CONFIRMED=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --infodot) INFODOT="$2"; shift 2 ;;
-    --billing) BILLING="$2"; shift 2 ;;
+    --finance) FINANCE="$2"; shift 2 ;;
     --stage) STAGES+=("$2"); shift 2 ;;
-    --billing-url) BILLING_URL="$2"; shift 2 ;;
+    --finance-url) FINANCE_URL="$2"; shift 2 ;;
     --infodot-url) INFODOT_URL="$2"; shift 2 ;;
     --livekit-url) LIVEKIT_URL="$2"; shift 2 ;;
     --stun-urls) STUN_URLS="$2"; shift 2 ;;
@@ -52,14 +52,14 @@ while [ $# -gt 0 ]; do
 done
 
 die() { echo "error: $*" >&2; exit 1; }
-[ "${#STAGES[@]}" -gt 0 ] || die "give at least one --stage (reputation, billing-link, paid-seminars)"
+[ "${#STAGES[@]}" -gt 0 ] || die "give at least one --stage (reputation, finance-link, paid-seminars)"
 has_stage() { local s; for s in "${STAGES[@]}"; do [ "$s" = "$1" ] && return 0; done; return 1; }
-for s in "${STAGES[@]}"; do case "$s" in reputation|billing-link|paid-seminars|video|p2p|contact|points|agreement|badges-backfill|company-sync) ;; *) die "unknown stage: $s" ;; esac; done
+for s in "${STAGES[@]}"; do case "$s" in reputation|finance-link|paid-seminars|video|p2p|contact|points|agreement|badges-backfill|company-sync) ;; *) die "unknown stage: $s" ;; esac; done
 [ -n "$INFODOT" ] && [ -f "$INFODOT/.env" ] || die "--infodot must be a folder that holds .env"
-if has_stage billing-link || has_stage paid-seminars; then
-  [ -n "$BILLING" ] && [ -f "$BILLING/.env" ] || die "--billing must be a folder that holds .env"
+if has_stage finance-link || has_stage paid-seminars; then
+  [ -n "$FINANCE" ] && [ -f "$FINANCE/.env" ] || die "--finance must be a folder that holds .env"
 fi
-has_stage paid-seminars && ! has_stage billing-link && ! grep -q '^LICENCE_BILLING_CONNECTED=true' "$INFODOT/.env" && die "paid-seminars needs billing-link first (run both stages)"
+has_stage paid-seminars && ! has_stage finance-link && ! grep -q '^LICENCE_FINANCE_CONNECTED=true' "$INFODOT/.env" && die "paid-seminars needs finance-link first (run both stages)"
 if has_stage video; then
   [[ "$LIVEKIT_URL" =~ ^wss://[A-Za-z0-9.-]+(:[0-9]+)?$ ]] || die "--livekit-url must look like wss://live.example.org"
   [ -n "${LIVEKIT_API_KEY:-}" ] && [ -n "${LIVEKIT_API_SECRET:-}" ] || die "set LIVEKIT_API_KEY and LIVEKIT_API_SECRET in your shell first (use read -rs, see docs/programme/R13_LIVEKIT_SERVER.md)"
@@ -72,9 +72,9 @@ if has_stage agreement; then
   [ -z "$AGREEMENT_VERSION" ] || [[ "$AGREEMENT_VERSION" =~ ^[A-Za-z0-9._-]{1,24}$ ]] || die "--agreement-version must be letters, digits, dots, dashes (for example v2)"
 fi
 if has_stage company-sync; then
-  [ -n "$BILLING" ] || die "company-sync needs --billing (it reads Billing's .env to confirm the link is on)"
+  [ -n "$FINANCE" ] || die "company-sync needs --finance (it reads Finance's .env to confirm the link is on)"
 fi
-case "$BILLING_URL$INFODOT_URL" in *https://*https://*) ;; *) die "both URLs must be https" ;; esac
+case "$FINANCE_URL$INFODOT_URL" in *https://*https://*) ;; *) die "both URLs must be https" ;; esac
 
 CHANGED=()   # key names only, never values
 get_env() { grep -E "^$2=" "$1/.env" | tail -1 | cut -d= -f2- | tr -d "\"' " || true; }
@@ -101,33 +101,33 @@ backup() {
   [ "$APPLY" = 1 ] || return 0
   cp -p "$1/.env" "$1/.env.bak-r13-$(date +%Y%m%d%H%M%S)"
 }
-backup "$INFODOT"; { has_stage billing-link || has_stage paid-seminars; } && backup "$BILLING"
+backup "$INFODOT"; { has_stage finance-link || has_stage paid-seminars; } && backup "$FINANCE"
 
 if has_stage reputation; then
   set_env "$INFODOT" REPUTATION_ENABLED true
 fi
 
-if has_stage billing-link; then
-  A="$(get_env "$BILLING" BILLING_ENTITLEMENT_SECRET_INFODOT)"
+if has_stage finance-link; then
+  A="$(get_env "$FINANCE" FINANCE_ENTITLEMENT_SECRET_INFODOT)"
   [ -n "$A" ] || A="$(new_secret)"
-  set_env "$BILLING" BILLING_ENTITLEMENT_SECRET_INFODOT "$A"
-  set_env "$INFODOT" BILLING_ENTITLEMENT_SECRET "$A"
-  set_env "$INFODOT" LICENCE_BILLING_URL "$BILLING_URL"
-  set_env "$INFODOT" LICENCE_BILLING_CONNECTED true
+  set_env "$FINANCE" FINANCE_ENTITLEMENT_SECRET_INFODOT "$A"
+  set_env "$INFODOT" FINANCE_ENTITLEMENT_SECRET "$A"
+  set_env "$INFODOT" LICENCE_FINANCE_URL "$FINANCE_URL"
+  set_env "$INFODOT" LICENCE_FINANCE_CONNECTED true
   A=""
 fi
 
 if has_stage paid-seminars; then
-  [ -n "$(get_env "$BILLING" BILLING_ENTITLEMENT_SECRET_INFODOT)" ] || [ "$APPLY" = 0 ] || die "Billing has no BILLING_ENTITLEMENT_SECRET_INFODOT; run billing-link first"
-  B="$(get_env "$BILLING" BILLING_MARKETPLACE_CALLBACK_SECRET)"
+  [ -n "$(get_env "$FINANCE" FINANCE_ENTITLEMENT_SECRET_INFODOT)" ] || [ "$APPLY" = 0 ] || die "Finance has no FINANCE_ENTITLEMENT_SECRET_INFODOT; run finance-link first"
+  B="$(get_env "$FINANCE" FINANCE_MARKETPLACE_CALLBACK_SECRET)"
   [ -n "$B" ] || B="$(new_secret)"
-  set_env "$BILLING" BILLING_MARKETPLACE_CALLBACK_SECRET "$B"
-  set_env "$INFODOT" SEMINARS_BILLING_CALLBACK_SECRET "$B"
+  set_env "$FINANCE" FINANCE_MARKETPLACE_CALLBACK_SECRET "$B"
+  set_env "$INFODOT" SEMINARS_FINANCE_CALLBACK_SECRET "$B"
   B=""
-  set_env "$BILLING" BILLING_MARKETPLACE_PLATFORM_PERCENT 10
-  set_env "$BILLING" BILLING_MARKETPLACE_CALLBACK_URL "${INFODOT_URL%/}/api/billing/ticket-events"
-  set_env "$BILLING" BILLING_MARKETPLACE_RETURN_HOSTS "$(printf '%s' "$INFODOT_URL" | sed -E 's#^https://##; s#/.*$##')"
-  set_env "$BILLING" BILLING_MARKETPLACE_ENABLED true
+  set_env "$FINANCE" FINANCE_MARKETPLACE_PLATFORM_PERCENT 10
+  set_env "$FINANCE" FINANCE_MARKETPLACE_CALLBACK_URL "${INFODOT_URL%/}/api/finance/ticket-events"
+  set_env "$FINANCE" FINANCE_MARKETPLACE_RETURN_HOSTS "$(printf '%s' "$INFODOT_URL" | sed -E 's#^https://##; s#/.*$##')"
+  set_env "$FINANCE" FINANCE_MARKETPLACE_ENABLED true
   set_env "$INFODOT" SEMINARS_PAID_ENABLED true
   if [ -n "$ISSUER_NAME$ISSUER_ADDRESS$ISSUER_VAT" ]; then
     [ -n "$ISSUER_NAME" ] && [ -n "$ISSUER_ADDRESS" ] && [[ "$ISSUER_VAT" =~ ^[0-9]{10}$ ]] || die "give all of --issuer-name, --issuer-address and a 10-digit --issuer-vat"
@@ -164,7 +164,7 @@ if [ "$APPLY" = 1 ]; then echo "Set (names only):"; else echo "Would set (names 
 printf '  %s\n' "${CHANGED[@]}"
 
 if [ "$APPLY" = 1 ] && [ "$CACHE" = 1 ]; then
-  for d in "$INFODOT" ${BILLING:+"$BILLING"}; do (cd "$d" && php artisan config:cache >/dev/null && echo "config cached: $(basename "$d")"); done
+  for d in "$INFODOT" ${FINANCE:+"$FINANCE"}; do (cd "$d" && php artisan config:cache >/dev/null && echo "config cached: $(basename "$d")"); done
 elif [ "$APPLY" = 1 ]; then
   echo "Now run 'php artisan config:cache' in each app (or re-run the deploy) so the new values are read."
 fi

@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Dot.Billing tells InfoDot that a seminar ticket was paid or refunded. Server to server: signed with the callback secret, five minute
+ * Dot.Finance tells InfoDot that a seminar ticket was paid or refunded. Server to server: signed with the callback secret, five minute
  * window, and applied once per (event, ticket). This is the only thing that turns a payment into a registration.
  */
 class SeminarTicketEventsController extends Controller

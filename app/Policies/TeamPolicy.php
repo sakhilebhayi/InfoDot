@@ -103,7 +103,7 @@ class TeamPolicy
     }
 
     /**
-     * Who sees a company's seats, licence and billing: the owner and administrators. An ordinary member does not, and nothing about a person's
+     * Who sees a company's seats, licence and payment state: the owner and administrators. An ordinary member does not, and nothing about a person's
      * InfoDot tier or reputation changes this: organisation permissions and reputation are separate systems.
      */
     public function viewLicence(User $user, Team $team)

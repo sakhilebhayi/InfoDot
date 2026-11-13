@@ -31,7 +31,7 @@ class SeminarDataExporter
         return [
             'person' => $user->email,
             'exported_at' => now()->toIso8601String(),
-            'note' => 'Everything the InfoDot seminar features hold about you. Your bank account number is never stored by InfoDot, so it is not here. Records held by Dot.Billing and Paystack are not included.',
+            'note' => 'Everything the InfoDot seminar features hold about you. Your bank account number is never stored by InfoDot, so it is not here. Records held by Dot.Finance and Paystack are not included.',
             'hosted_seminars' => $hosted->map(fn ($s) => [
                 'title' => $s->title, 'summary' => $s->summary, 'description' => $s->description, 'starts_at' => $iso($s->starts_at), 'duration_minutes' => $s->duration_minutes,
                 'capacity' => $s->capacity, 'status' => $s->status, 'price_cents' => $s->price_cents, 'currency' => $s->currency, 'meeting_link' => $s->join_url,

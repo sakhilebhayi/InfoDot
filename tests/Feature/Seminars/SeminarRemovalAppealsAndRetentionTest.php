@@ -31,8 +31,8 @@ class SeminarRemovalAppealsAndRetentionTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
-        Http::fake(['billing.test/*' => Http::response(['status' => 'ok'])]);
+        config(['licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 'platform-secret', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
+        Http::fake(['finance.test/*' => Http::response(['status' => 'ok'])]);
     }
 
     private function person(string $name = 'Person'): User
@@ -265,7 +265,7 @@ class SeminarRemovalAppealsAndRetentionTest extends TestCase
         $this->ticket($s, $me);
         DB::table('seminar_feedback')->insert(['seminar_id' => $s->id, 'user_id' => $me->id, 'rating' => 4, 'comment' => 'Useful hour']);
         DB::table('p2p_chat')->insert(['seminar_id' => $s->id, 'user_id' => $me->id, 'name' => 'Me Myself', 'body' => 'hello room']);
-        DB::table('seminar_payout_accounts')->insert(['user_id' => $host->id, 'billing_account_id' => 9, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+        DB::table('seminar_payout_accounts')->insert(['user_id' => $host->id, 'finance_account_id' => 9, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
 
         $mine = app(SeminarDataExporter::class)->export($me);
         $this->assertSame('Pricing your first product', $mine['registrations'][0]['seminar']);
@@ -382,7 +382,7 @@ class SeminarRemovalAppealsAndRetentionTest extends TestCase
         $gone = 4343;
         $old = now()->subYears(6);
         DB::table('seminar_seller_profiles')->insert(['user_id' => $gone, 'trading_name' => 'Old Trading', 'created_at' => $old, 'updated_at' => $old]);
-        DB::table('seminar_host_debts')->insert(['user_id' => $gone, 'billing_debt_id' => 1, 'amount_cents' => 100, 'remaining_cents' => 100, 'status' => 'open', 'opened_at' => $old, 'last_event_at' => $old, 'created_at' => $old, 'updated_at' => $old]);
+        DB::table('seminar_host_debts')->insert(['user_id' => $gone, 'finance_debt_id' => 1, 'amount_cents' => 100, 'remaining_cents' => 100, 'status' => 'open', 'opened_at' => $old, 'last_event_at' => $old, 'created_at' => $old, 'updated_at' => $old]);
 
         $this->prune();
         $this->assertSame(1, DB::table('seminar_seller_profiles')->count());
@@ -401,7 +401,7 @@ class SeminarRemovalAppealsAndRetentionTest extends TestCase
     {
         [$s, $host] = $this->removed();
         app(SeminarService::class)->appealRemoval($s, $host, 'The topic is real and the link works.');
-        DB::table('seminar_payout_accounts')->insert(['user_id' => $host->id, 'billing_account_id' => 9, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+        DB::table('seminar_payout_accounts')->insert(['user_id' => $host->id, 'finance_account_id' => 9, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
 
         app(DeleteUser::class)->delete($host);
 

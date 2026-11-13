@@ -194,6 +194,20 @@ jobs:
       - name: Run the fixture test (migrations, casts, dependencies, hosts; no value from any .env.example may reach the output)
         run: bash tools/test-popia-inventory.sh
 
+  finance-env-keys:
+    # TEMPORARY (added 2026-11-13): delete this job with tools/finance-env-keys.sh after the first deploy that ran it.
+    name: payment setting names (fake host)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and lint
+        run: |
+          bash -n tools/finance-env-keys.sh tools/test-finance-env-keys.sh
+          shellcheck -S warning tools/finance-env-keys.sh tools/test-finance-env-keys.sh
+      - name: Run the fake-host test of the one-time .env rename the deploy runs (values kept byte for byte, one mode-600 backup, names only on screen, nothing on a second run)
+        run: bash tools/test-finance-env-keys.sh
+
   backup-pull:
     name: off-host pull (forced command + Mac script)
     runs-on: ubuntu-latest
@@ -284,3 +298,17 @@ jobs:
           DB_PASSWORD: root
           CACHE_DRIVER: file
         run: php tools/mysql-concurrency-test.php
+
+      # Production was created with the old column names. The suite proves the rename on SQLite; this proves it on MySQL: the three tables are
+      # rebuilt as they were first created, the migration runs twice, and values, the default and the unique indexes are checked. Last step on
+      # purpose: it drops and recreates those three tables.
+      - name: Payment-column rename on MySQL (old schema, then the migration)
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: infodot_ci
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          CACHE_DRIVER: file
+        run: php tools/payment-columns-rename-test.php --throwaway-database

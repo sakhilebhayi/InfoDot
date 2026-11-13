@@ -20,7 +20,7 @@ upper() { echo "$1" | tr '[:lower:]' '[:upper:]'; }
 SIGNIN="analytics auction design ehail emall finance hr notify pulse tasks tutor"
 NOTIFY_CALLERS="auction ehail hr tasks"
 ANALYTICS_PUBLISHERS="auction design ehail emall hr notify pulse tasks tutor"
-BILLING_ENTITLEMENT_CALLERS="analytics auction ehail emall hr notify tasks tutor"   # optional: apps that ask Billing "what plan is this company on?"
+FINANCE_ENTITLEMENT_CALLERS="analytics auction ehail emall hr notify tasks tutor"   # optional: apps that ask Finance "what plan is this company on?"
 
 umask 077
 {
@@ -64,9 +64,9 @@ umask 077
   done
   echo
 
-  echo "########## 4. Billing entitlements (optional: app -> Dot.Billing) ##########"
-  for k in $BILLING_ENTITLEMENT_CALLERS; do
-    echo "Dot.billing: BILLING_ENTITLEMENT_SECRET_$(upper $k)=$(secret)    # and the same value in Dot.$k wherever it calls the entitlements API"
+  echo "########## 4. Finance entitlements (optional: app -> Dot.Finance) ##########"
+  for k in $FINANCE_ENTITLEMENT_CALLERS; do
+    echo "Dot.finance: FINANCE_ENTITLEMENT_SECRET_$(upper $k)=$(secret)    # and the same value in Dot.$k wherever it calls the entitlements API"
   done
 } > "$OUT"
 chmod 600 "$OUT"

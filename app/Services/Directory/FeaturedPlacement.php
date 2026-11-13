@@ -17,7 +17,7 @@ use Illuminate\Validation\ValidationException;
  * Featured placements (R-33 §8), under the rules published at /businesses/featured: a business that
  * meets every rule may ask; a reviewer outside it grants a placement of up to 30 days or declines
  * with a reason. Being featured says nothing about quality or verification, and the directory says
- * so beside every featured business. Paid featuring is not offered: billing is not live and its
+ * so beside every featured business. Paid featuring is not offered: payments are not live and its
  * price is the owner's decision.
  */
 final class FeaturedPlacement

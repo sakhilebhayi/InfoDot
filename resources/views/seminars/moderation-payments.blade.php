@@ -28,7 +28,7 @@
         </section>
     @endforeach
     <section>
-        <h2 class="ix-label">Callbacks from Billing that did not match ({{ $odd->count() }})</h2>
+        <h2 class="ix-label">Callbacks from Finance that did not match ({{ $odd->count() }})</h2>
         @if ($odd->isEmpty())
             <p class="ix-hint">None in the last 30 days.</p>
         @else

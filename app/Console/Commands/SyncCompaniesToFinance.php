@@ -3,21 +3,21 @@
 namespace App\Console\Commands;
 
 use App\Models\Team;
-use App\Services\Licensing\BillingCompanies;
-use App\Services\Licensing\BillingEntitlements;
+use App\Services\Licensing\FinanceCompanies;
+use App\Services\Licensing\FinanceEntitlements;
 use Illuminate\Console\Command;
 
-/** Tells Dot.Billing about every existing company once (new ones are sent as they are created). Safe to repeat: Billing treats a repeat as no change. */
-class SyncCompaniesToBilling extends Command
+/** Tells Dot.Finance about every existing company once (new ones are sent as they are created). Safe to repeat: Finance treats a repeat as no change. */
+class SyncCompaniesToFinance extends Command
 {
     protected $signature = 'licence:sync-companies {--dry-run : count only}';
 
-    protected $description = 'Tell Dot.Billing about every existing company';
+    protected $description = 'Tell Dot.Finance about every existing company';
 
-    public function handle(BillingCompanies $companies, BillingEntitlements $entitlements): int
+    public function handle(FinanceCompanies $companies, FinanceEntitlements $entitlements): int
     {
         if (! $entitlements->configured()) {
-            $this->warn('The Billing link is not switched on (LICENCE_BILLING_CONNECTED, LICENCE_BILLING_URL, BILLING_ENTITLEMENT_SECRET); nothing sent.');
+            $this->warn('The Finance link is not switched on (LICENCE_FINANCE_CONNECTED, LICENCE_FINANCE_URL, FINANCE_ENTITLEMENT_SECRET); nothing sent.');
 
             return self::SUCCESS;
         }

@@ -12,10 +12,10 @@ use App\Models\Team;
 use App\Models\Topic;
 use App\Models\User;
 use App\Models\UserNotice;
-use App\Services\Licensing\BillingEntitlements;
+use App\Services\Licensing\FinanceEntitlements;
 use App\Services\Ops\OpsCheck;
 use App\Services\Points\RewardOutbox;
-use App\Services\Seminars\BillingMarketplace;
+use App\Services\Seminars\FinanceMarketplace;
 use App\Services\Seminars\MeetingLinkCheck;
 use App\Services\Seminars\SeminarService;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -48,8 +48,8 @@ class FinalFixesTest extends TestCase
 
     public function test_pausing_ticket_sales_stops_new_checkouts_but_not_refunds_or_callbacks(): void
     {
-        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 's', 'seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => 'cb', 'seminars.paid.checkout_enabled' => false]);
-        Http::fake(['billing.test/*' => Http::response(['status' => 'ok'])]);
+        config(['licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 's', 'seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => 'cb', 'seminars.paid.checkout_enabled' => false]);
+        Http::fake(['finance.test/*' => Http::response(['status' => 'ok'])]);
         $host = $this->person('Host');
         $buyer = $this->person('Buyer');
         $s = $this->seminar($host)->forceFill(['price_cents' => 1000, 'currency' => 'ZAR', 'status' => 'published']);
@@ -62,9 +62,9 @@ class FinalFixesTest extends TestCase
             $this->assertStringContainsString('paused', $e->errors()['seminar'][0]);
         }
 
-        $this->assertSame(0, Http::recorded()->count(), 'nothing reached Billing');
-        $this->assertTrue(app(BillingMarketplace::class)->configured(), 'the Billing client stays on, so refunds still work');
-        $this->post('/api/billing/ticket-events', [])->assertStatus(401);   // refused for the bad signature, not because the endpoint is off
+        $this->assertSame(0, Http::recorded()->count(), 'nothing reached Finance');
+        $this->assertTrue(app(FinanceMarketplace::class)->configured(), 'the Finance client stays on, so refunds still work');
+        $this->post('/api/finance/ticket-events', [])->assertStatus(401);   // refused for the bad signature, not because the endpoint is off
     }
 
     // ---- A-11, A-12, B-11 ------------------------------------------------------------------------------------------------
@@ -175,23 +175,23 @@ class FinalFixesTest extends TestCase
         $this->assertSame(['22222222-2222-2222-2222-222222222222', '44444444-4444-4444-4444-444444444444'], $order);
     }
 
-    // ---- C-19 Billing down -----------------------------------------------------------------------------------------------
+    // ---- C-19 Finance down -----------------------------------------------------------------------------------------------
 
-    public function test_a_failed_read_of_billing_is_not_repeated_on_every_view(): void
+    public function test_a_failed_read_of_finance_is_not_repeated_on_every_view(): void
     {
-        config(['licensing.billing_connected' => true, 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 's']);
+        config(['licensing.finance_connected' => true, 'licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 's']);
         $owner = $this->person('Owner');
         $team = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
-        $service = app(BillingEntitlements::class);
+        $service = app(FinanceEntitlements::class);
 
         $this->assertTrue($service->configured());
 
-        Http::fake(['billing.test/*' => Http::response([], 503)]);
+        Http::fake(['finance.test/*' => Http::response([], 503)]);
         $service->sync($team);
         $service->sync($team);
         $service->sync($team);
 
-        $this->assertSame(1, Http::recorded()->count(), 'three views while Billing is down made one call, not three');
+        $this->assertSame(1, Http::recorded()->count(), 'three views while Finance is down made one call, not three');
     }
 
     // ---- C-18 link check outside the transaction -------------------------------------------------------------------------
@@ -222,8 +222,8 @@ class FinalFixesTest extends TestCase
 
     public function test_cancelling_twice_asks_for_each_refund_once(): void
     {
-        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 's', 'seminars.paid.enabled' => true]);
-        Http::fake(['billing.test/*' => Http::response(['status' => 'ok'])]);
+        config(['licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 's', 'seminars.paid.enabled' => true]);
+        Http::fake(['finance.test/*' => Http::response(['status' => 'ok'])]);
         $s = $this->seminar($this->person('Host'));
         $s->forceFill(['price_cents' => 1000, 'currency' => 'ZAR'])->save();
         SeminarRegistration::create(['seminar_id' => $s->id, 'user_id' => $this->person('A')->id, 'status' => 'registered', 'payment_status' => 'paid', 'ticket_ref' => 'ta', 'amount_cents' => 1000, 'currency' => 'ZAR', 'paid_at' => now()]);

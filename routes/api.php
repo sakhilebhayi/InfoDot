@@ -37,10 +37,10 @@ Route::get('/knowledge/candidates', KnowledgeCandidatesController::class)
     ->middleware(['throttle:knowledge-candidates', 'knowledge.signed'])
     ->name('api.knowledge.candidates');
 
-// Dot.Billing reports a paid or refunded seminar ticket. Signed with the callback secret; see SeminarTicketEventsController.
-Route::post('/billing/ticket-events', SeminarTicketEventsController::class)
-    ->middleware('throttle:billing-callbacks')
-    ->name('api.billing.ticket-events');
+// Dot.Finance reports a paid or refunded seminar ticket. Signed with the callback secret; see SeminarTicketEventsController.
+Route::post('/finance/ticket-events', SeminarTicketEventsController::class)
+    ->middleware('throttle:finance-callbacks')
+    ->name('api.finance.ticket-events');
 
 // LiveKit tells InfoDot who connected to a seminar room. Signed with the LiveKit API secret; see SeminarRoomWebhookController.
 Route::post('/seminars/livekit-webhook', SeminarRoomWebhookController::class)

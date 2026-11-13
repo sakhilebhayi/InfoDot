@@ -6,7 +6,7 @@ use App\Models\SeminarHostAgreement;
 use App\Models\SeminarHostDebt;
 use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarSellerProfile;
-use App\Services\Seminars\BillingMarketplace;
+use App\Services\Seminars\FinanceMarketplace;
 use App\Services\Seminars\MarketplaceUnavailable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -14,16 +14,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * Where a host says where their ticket earnings are paid. The account number goes straight to Dot.Billing (and on to Paystack) and is
- * not stored, flashed or logged here: only Billing's id for the account and the last four digits are kept.
+ * Where a host says where their ticket earnings are paid. The account number goes straight to Dot.Finance (and on to Paystack) and is
+ * not stored, flashed or logged here: only Finance's id for the account and the last four digits are kept.
  */
 class SeminarPayoutsController extends Controller
 {
-    public function __construct(private readonly BillingMarketplace $billing) {}
+    public function __construct(private readonly FinanceMarketplace $finance) {}
 
     private function switchedOn(): void
     {
-        abort_unless($this->billing->configured(), 404);
+        abort_unless($this->finance->configured(), 404);
     }
 
     public function index(Request $request): View
@@ -31,7 +31,7 @@ class SeminarPayoutsController extends Controller
         $this->switchedOn();
 
         try {
-            $banks = $this->billing->banks();
+            $banks = $this->finance->banks();
         } catch (MarketplaceUnavailable) {
             $banks = [];
         }
@@ -58,21 +58,21 @@ class SeminarPayoutsController extends Controller
         ]);
 
         try {
-            $result = $this->billing->createPayoutAccount('u'.$request->user()->id, $data['business_name'], $data['settlement_bank'], $data['account_number']);
+            $result = $this->finance->createPayoutAccount('u'.$request->user()->id, $data['business_name'], $data['settlement_bank'], $data['account_number']);
         } catch (MarketplaceUnavailable $e) {
             return back()->withInput($request->except('account_number'))->withErrors(['account_number' => $e->getMessage()]);
         }
 
         SeminarPayoutAccount::updateOrCreate(['user_id' => $request->user()->id], [
-            'billing_account_id' => $result['id'], 'bank_code' => $result['bank_code'], 'account_last4' => $result['last4'], 'status' => $result['status'] === 'active' ? 'active' : 'disabled',
+            'finance_account_id' => $result['id'], 'bank_code' => $result['bank_code'], 'account_last4' => $result['last4'], 'status' => $result['status'] === 'active' ? 'active' : 'disabled',
         ]);
 
-        // A host who already accepted the current agreement does not have to accept it again for a new payout account: tell Billing.
+        // A host who already accepted the current agreement does not have to accept it again for a new payout account: tell Finance.
         $accepted = SeminarHostAgreement::where('user_id', $request->user()->id)->where('version', config('seminars.paid.agreement_version', 'v1'))->exists();
 
         if ($accepted) {
             try {
-                $this->billing->acceptAgreement($result['id'], (string) config('seminars.paid.agreement_version', 'v1'), 'u'.$request->user()->id);
+                $this->finance->acceptAgreement($result['id'], (string) config('seminars.paid.agreement_version', 'v1'), 'u'.$request->user()->id);
             } catch (MarketplaceUnavailable) {
                 // The next time they open this page they can accept again.
             }
@@ -98,7 +98,7 @@ class SeminarPayoutsController extends Controller
         return redirect()->route('seminars.payouts')->with('seminar_notice', 'Your seller details are saved.');
     }
 
-    /** The host accepts the current version of the agreement. Recorded here and sent to Billing. */
+    /** The host accepts the current version of the agreement. Recorded here and sent to Finance. */
     public function agreement(Request $request): RedirectResponse
     {
         $this->switchedOn();
@@ -113,7 +113,7 @@ class SeminarPayoutsController extends Controller
         $version = (string) config('seminars.paid.agreement_version', 'v1');
 
         try {
-            $this->billing->acceptAgreement((int) $account->billing_account_id, $version, 'u'.$request->user()->id);
+            $this->finance->acceptAgreement((int) $account->finance_account_id, $version, 'u'.$request->user()->id);
         } catch (MarketplaceUnavailable $e) {
             return back()->withErrors(['accept' => $e->getMessage()]);
         }

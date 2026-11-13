@@ -20,7 +20,7 @@ use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/** The host agreement (shown and accepted only once approved), the price gate that depends on it, and the mirror of chargeback debts Billing reports. */
+/** The host agreement (shown and accepted only once approved), the price gate that depends on it, and the mirror of chargeback debts Finance reports. */
 class HostAgreementAndDebtsTest extends TestCase
 {
     use RefreshDatabase;
@@ -29,7 +29,7 @@ class HostAgreementAndDebtsTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => 'cb', 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret',
+        config(['seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => 'cb', 'licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 'platform-secret',
             'seminars.paid.agreement_approved' => false, 'seminars.paid.agreement_version' => 'v1']);
     }
 
@@ -38,7 +38,7 @@ class HostAgreementAndDebtsTest extends TestCase
         $h = User::factory()->create(['name' => 'Host', 'email_verified_at' => Carbon::now()]);
 
         if ($withAccount) {
-            SeminarPayoutAccount::create(['user_id' => $h->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+            SeminarPayoutAccount::create(['user_id' => $h->id, 'finance_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
         }
 
         return $h;
@@ -49,12 +49,12 @@ class HostAgreementAndDebtsTest extends TestCase
         return app(SeminarService::class)->save($host, null, ['title' => 'Pricing', 'summary' => 'A practical hour.', 'starts_at' => now()->addDays(3)->format('Y-m-d\TH:i'), 'duration_minutes' => 60, 'join_url' => 'https://meet.example.test/room', 'price' => $price], true);
     }
 
-    private function billingCallback(array $body): TestResponse
+    private function financeCallback(array $body): TestResponse
     {
         $raw = json_encode($body);
         $h = Signature::headers('cb', $raw);
 
-        return $this->call('POST', '/api/billing/ticket-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => $h['X-InfoDot-Timestamp'], 'HTTP_X_INFODOT_SIGNATURE' => $h['X-InfoDot-Signature']], $raw);
+        return $this->call('POST', '/api/finance/ticket-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => $h['X-InfoDot-Timestamp'], 'HTTP_X_INFODOT_SIGNATURE' => $h['X-InfoDot-Signature']], $raw);
     }
 
     private function debt(array $over = []): array
@@ -106,7 +106,7 @@ class HostAgreementAndDebtsTest extends TestCase
     public function test_the_page_does_not_show_the_agreement_text_before_it_is_approved(): void
     {
         $host = $this->host();
-        Http::fake(['billing.test/*' => Http::response(['banks' => []])]);
+        Http::fake(['finance.test/*' => Http::response(['banks' => []])]);
 
         $page = $this->actingAs($host)->get('/seminars/payouts')->assertOk()->getContent();
 
@@ -127,15 +127,15 @@ class HostAgreementAndDebtsTest extends TestCase
         $this->assertStringContainsString('Part B. If a moderator removes your seminar', $text);
 
         config(['seminars.paid.agreement_approved' => true]);
-        Http::fake(['billing.test/*' => Http::response(['banks' => []])]);
+        Http::fake(['finance.test/*' => Http::response(['banks' => []])]);
         $this->actingAs($this->host())->get('/seminars/payouts')->assertOk()->assertSee('If a moderator removes your seminar')->assertSee('support@infodot.co.za');
     }
 
-    public function test_once_approved_the_host_reads_and_accepts_it_and_billing_is_told(): void
+    public function test_once_approved_the_host_reads_and_accepts_it_and_finance_is_told(): void
     {
         config(['seminars.paid.agreement_approved' => true]);
         $host = $this->host();
-        Http::fake(['billing.test/api/payout-banks' => Http::response(['banks' => []]), 'billing.test/api/payout-accounts/77/agreement' => Http::response(['status' => 'accepted'], 201)]);
+        Http::fake(['finance.test/api/payout-banks' => Http::response(['banks' => []]), 'finance.test/api/payout-accounts/77/agreement' => Http::response(['status' => 'accepted'], 201)]);
 
         $this->actingAs($host)->get('/seminars/payouts')->assertOk()->assertSee('Chargebacks on your tickets')->assertSee('Accept the agreement');
         $this->actingAs($host)->post('/seminars/payouts/agreement', [])->assertSessionHasErrors('accept');
@@ -149,16 +149,16 @@ class HostAgreementAndDebtsTest extends TestCase
         $this->actingAs($host)->get('/seminars/payouts')->assertSee('Accepted')->assertDontSee('Accept the agreement');
     }
 
-    public function test_the_agreement_needs_a_payout_account_and_billing_must_confirm_it(): void
+    public function test_the_agreement_needs_a_payout_account_and_finance_must_confirm_it(): void
     {
         config(['seminars.paid.agreement_approved' => true]);
         $nobody = $this->host(false);
         $host = $this->host();
-        Http::fake(['billing.test/*' => Http::response([], 500)]);
+        Http::fake(['finance.test/*' => Http::response([], 500)]);
 
         $this->actingAs($nobody)->post('/seminars/payouts/agreement', ['accept' => '1'])->assertSessionHasErrors('accept');
         $this->actingAs($host)->post('/seminars/payouts/agreement', ['accept' => '1'])->assertSessionHasErrors('accept');
-        $this->assertSame(0, SeminarHostAgreement::count(), 'nothing is recorded as accepted if Billing was not told');
+        $this->assertSame(0, SeminarHostAgreement::count(), 'nothing is recorded as accepted if Finance was not told');
     }
 
     public function test_a_lost_chargeback_debt_is_mirrored_and_the_host_is_told_once(): void
@@ -167,8 +167,8 @@ class HostAgreementAndDebtsTest extends TestCase
         $s = $this->save($host, null);
         SeminarRegistration::create(['seminar_id' => $s->id, 'user_id' => User::factory()->create()->id, 'status' => 'registered', 'ticket_ref' => 'sem1-u2-abc']);
 
-        $this->billingCallback($this->debt(['host_ref' => 'u'.$host->id]))->assertOk()->assertJson(['status' => 'applied']);
-        $this->billingCallback($this->debt(['host_ref' => 'u'.$host->id]))->assertOk();
+        $this->financeCallback($this->debt(['host_ref' => 'u'.$host->id]))->assertOk()->assertJson(['status' => 'applied']);
+        $this->financeCallback($this->debt(['host_ref' => 'u'.$host->id]))->assertOk();
 
         $d = SeminarHostDebt::first();
         $this->assertSame([$host->id, 10000, 10000, 'open'], [$d->user_id, $d->amount_cents, $d->remaining_cents, $d->status]);
@@ -178,19 +178,19 @@ class HostAgreementAndDebtsTest extends TestCase
         $this->assertStringNotContainsString('sem1-u2-abc', $page);
     }
 
-    public function test_the_debt_follows_billing_through_recovery_clearing_reopening_and_write_off(): void
+    public function test_the_debt_follows_finance_through_recovery_clearing_reopening_and_write_off(): void
     {
         $host = $this->host();
         $ref = 'u'.$host->id;
 
-        $this->billingCallback($this->debt(['host_ref' => $ref]))->assertJson(['status' => 'applied']);
-        $this->billingCallback($this->debt(['host_ref' => $ref, 'event' => 'host_debt.cleared', 'recovered_cents' => 10000, 'remaining_cents' => 0, 'cleared_at' => '2026-10-29T12:00:00+00:00']))->assertJson(['status' => 'applied']);
+        $this->financeCallback($this->debt(['host_ref' => $ref]))->assertJson(['status' => 'applied']);
+        $this->financeCallback($this->debt(['host_ref' => $ref, 'event' => 'host_debt.cleared', 'recovered_cents' => 10000, 'remaining_cents' => 0, 'cleared_at' => '2026-10-29T12:00:00+00:00']))->assertJson(['status' => 'applied']);
         $this->assertSame(['cleared', 0], [SeminarHostDebt::first()->status, SeminarHostDebt::first()->remaining_cents]);
 
-        $this->billingCallback($this->debt(['host_ref' => $ref, 'event' => 'host_debt.reopened', 'recovered_cents' => 9000, 'remaining_cents' => 1000, 'reopened_at' => '2026-10-29T13:00:00+00:00']))->assertJson(['status' => 'applied']);
+        $this->financeCallback($this->debt(['host_ref' => $ref, 'event' => 'host_debt.reopened', 'recovered_cents' => 9000, 'remaining_cents' => 1000, 'reopened_at' => '2026-10-29T13:00:00+00:00']))->assertJson(['status' => 'applied']);
         $this->assertSame(['open', 1000], [SeminarHostDebt::first()->status, SeminarHostDebt::first()->remaining_cents]);
 
-        $this->billingCallback($this->debt(['host_ref' => $ref, 'event' => 'host_debt.written_off', 'recovered_cents' => 9000, 'remaining_cents' => 1000, 'written_off_at' => '2026-10-29T14:00:00+00:00', 'note' => 'Goodwill, first offence.']))->assertJson(['status' => 'applied']);
+        $this->financeCallback($this->debt(['host_ref' => $ref, 'event' => 'host_debt.written_off', 'recovered_cents' => 9000, 'remaining_cents' => 1000, 'written_off_at' => '2026-10-29T14:00:00+00:00', 'note' => 'Goodwill, first offence.']))->assertJson(['status' => 'applied']);
         $d = SeminarHostDebt::first();
         $this->assertSame(['written_off', 'Goodwill, first offence.'], [$d->status, $d->note]);
         $this->assertSame(1, SeminarHostDebt::count());
@@ -200,31 +200,31 @@ class HostAgreementAndDebtsTest extends TestCase
     {
         $host = $this->host();
         $ref = 'u'.$host->id;
-        $this->billingCallback($this->debt(['host_ref' => $ref, 'event' => 'host_debt.cleared', 'recovered_cents' => 10000, 'remaining_cents' => 0, 'cleared_at' => '2026-10-29T12:00:00+00:00']));
+        $this->financeCallback($this->debt(['host_ref' => $ref, 'event' => 'host_debt.cleared', 'recovered_cents' => 10000, 'remaining_cents' => 0, 'cleared_at' => '2026-10-29T12:00:00+00:00']));
 
-        $this->billingCallback($this->debt(['host_ref' => $ref, 'opened_at' => '2026-10-29T10:00:00+00:00']))->assertJson(['status' => 'stale']);
+        $this->financeCallback($this->debt(['host_ref' => $ref, 'opened_at' => '2026-10-29T10:00:00+00:00']))->assertJson(['status' => 'stale']);
 
         $this->assertSame('cleared', SeminarHostDebt::first()->status);
     }
 
     public function test_debt_callbacks_for_an_unknown_host_or_with_a_bad_reference_are_ignored(): void
     {
-        $this->billingCallback($this->debt(['host_ref' => 'u999999']))->assertJson(['status' => 'unknown']);
-        $this->billingCallback($this->debt(['host_ref' => 'someone']))->assertJson(['status' => 'ignored']);
-        $this->billingCallback($this->debt(['debt_id' => 'nine']))->assertJson(['status' => 'ignored']);
+        $this->financeCallback($this->debt(['host_ref' => 'u999999']))->assertJson(['status' => 'unknown']);
+        $this->financeCallback($this->debt(['host_ref' => 'someone']))->assertJson(['status' => 'ignored']);
+        $this->financeCallback($this->debt(['debt_id' => 'nine']))->assertJson(['status' => 'ignored']);
         $this->assertSame(0, SeminarHostDebt::count());
     }
 
     public function test_debt_callbacks_need_the_signature_like_every_other_callback(): void
     {
-        $this->postJson('/api/billing/ticket-events', $this->debt())->assertUnauthorized();
+        $this->postJson('/api/finance/ticket-events', $this->debt())->assertUnauthorized();
     }
 
     public function test_the_payouts_page_shows_a_host_what_they_owe_and_how_it_is_taken(): void
     {
         $host = $this->host();
-        $this->billingCallback($this->debt(['host_ref' => 'u'.$host->id, 'recovered_cents' => 4000, 'remaining_cents' => 6000]));
-        Http::fake(['billing.test/*' => Http::response(['banks' => []])]);
+        $this->financeCallback($this->debt(['host_ref' => 'u'.$host->id, 'recovered_cents' => 4000, 'remaining_cents' => 6000]));
+        Http::fake(['finance.test/*' => Http::response(['banks' => []])]);
 
         $page = $this->actingAs($host)->get('/seminars/payouts')->assertOk()->getContent();
 
@@ -236,12 +236,12 @@ class HostAgreementAndDebtsTest extends TestCase
         $this->actingAs($other)->get('/seminars/payouts')->assertOk()->assertDontSee('What you owe InfoDot');
     }
 
-    public function test_a_new_payout_account_reuses_an_accepted_agreement_by_telling_billing(): void
+    public function test_a_new_payout_account_reuses_an_accepted_agreement_by_telling_finance(): void
     {
         config(['seminars.paid.agreement_approved' => true]);
         $host = $this->host(false);
         SeminarHostAgreement::create(['user_id' => $host->id, 'version' => 'v1', 'accepted_at' => now()]);
-        Http::fake(['billing.test/api/payout-accounts' => Http::response(['id' => 88, 'status' => 'active', 'last4' => '1111', 'bank_code' => '058'], 201), 'billing.test/api/payout-accounts/88/agreement' => Http::response(['status' => 'accepted'], 200)]);
+        Http::fake(['finance.test/api/payout-accounts' => Http::response(['id' => 88, 'status' => 'active', 'last4' => '1111', 'bank_code' => '058'], 201), 'finance.test/api/payout-accounts/88/agreement' => Http::response(['status' => 'accepted'], 200)]);
 
         $this->actingAs($host)->post('/seminars/payouts', ['business_name' => 'Host', 'settlement_bank' => '058', 'account_number' => '1234561111'])->assertRedirect();
 

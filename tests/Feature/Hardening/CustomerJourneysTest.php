@@ -108,13 +108,13 @@ class CustomerJourneysTest extends TestCase
 
     public function test_a_host_sells_a_ticket_and_the_money_trail_is_complete(): void
     {
-        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
+        config(['licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 'platform-secret', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
         Http::fake([
-            'billing.test/api/payout-accounts' => Http::response(['id' => 77, 'bank_code' => '058', 'last4' => '7890', 'status' => 'active'], 201),
-            'billing.test/api/payout-accounts/77/agreement' => Http::response(['status' => 'accepted'], 201),
-            'billing.test/api/payout-banks' => Http::response(['banks' => []]),
-            'billing.test/api/seminar-tickets' => Http::response(['reference' => 'ps_ref', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201),
-            'billing.test/*' => Http::response(['status' => 'ok']),
+            'finance.test/api/payout-accounts' => Http::response(['id' => 77, 'bank_code' => '058', 'last4' => '7890', 'status' => 'active'], 201),
+            'finance.test/api/payout-accounts/77/agreement' => Http::response(['status' => 'accepted'], 201),
+            'finance.test/api/payout-banks' => Http::response(['banks' => []]),
+            'finance.test/api/seminar-tickets' => Http::response(['reference' => 'ps_ref', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201),
+            'finance.test/*' => Http::response(['status' => 'ok']),
         ]);
 
         // The host sets up payouts, accepts the agreement, prices a seminar.
@@ -131,10 +131,10 @@ class CustomerJourneysTest extends TestCase
         $reg = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $buyer->id)->firstOrFail();
         $this->assertSame('pending', $reg->payment_status);
 
-        // Billing's signed callback is the only thing that makes it a ticket.
+        // Finance's signed callback is the only thing that makes it a ticket.
         $body = json_encode(['event' => 'ticket.paid', 'ticket_ref' => $reg->ticket_ref, 'reference' => 'ps_ref', 'amount_cents' => 20000, 'currency' => 'ZAR']);
         $h = Signature::headers('cb', $body);
-        $this->call('POST', '/api/billing/ticket-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => $h['X-InfoDot-Timestamp'], 'HTTP_X_INFODOT_SIGNATURE' => $h['X-InfoDot-Signature']], $body)->assertOk();
+        $this->call('POST', '/api/finance/ticket-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => $h['X-InfoDot-Timestamp'], 'HTTP_X_INFODOT_SIGNATURE' => $h['X-InfoDot-Signature']], $body)->assertOk();
         $this->assertSame('paid', $reg->fresh()->payment_status);
 
         // The buyer holds a receipt; the host sees the sale and InfoDot's share.

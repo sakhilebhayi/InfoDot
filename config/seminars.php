@@ -2,7 +2,7 @@
 
 /*
 | Seminars (R-13). Any signed-in, verified person may host one: no tier or reputation is needed. Seminars are FREE for now; paid
-| seminars wait on the Dot.Billing payment flow. InfoDot has no video server: the host supplies a link to a meeting room they run
+| seminars wait on the Dot.Finance payment flow. InfoDot has no video server: the host supplies a link to a meeting room they run
 | elsewhere, and InfoDot only shows that link to people who registered, inside the time window. No live video is claimed.
 */
 return [
@@ -28,10 +28,10 @@ return [
 
     /*
     | Paid seminars. OFF until SEMINARS_PAID_ENABLED. The host sets the ticket price; InfoDot keeps `platform_percent` of it and the host
-    | carries Paystack's processing fee. All money moves through Dot.Billing's Paystack split payments (InfoDot never touches a card or a bank
-    | number beyond passing a host's account details once to Billing, which keeps only Paystack's subaccount code and the last four digits).
-    | A ticket counts only when Billing's verified callback says it was paid, never when the attendee's browser comes back.
-    | `platform_percent` here is for showing the host their share; the amount actually taken is set in Dot.Billing (BILLING_MARKETPLACE_PLATFORM_PERCENT).
+    | carries Paystack's processing fee. All money moves through Dot.Finance's Paystack split payments (InfoDot never touches a card or a bank
+    | number beyond passing a host's account details once to Finance, which keeps only Paystack's subaccount code and the last four digits).
+    | A ticket counts only when Finance's verified callback says it was paid, never when the attendee's browser comes back.
+    | `platform_percent` here is for showing the host their share; the amount actually taken is set in Dot.Finance (FINANCE_MARKETPLACE_PLATFORM_PERCENT).
     */
     'paid' => [
         'enabled' => (bool) env('SEMINARS_PAID_ENABLED', false),
@@ -40,16 +40,16 @@ return [
         'min_price_cents' => (int) env('SEMINARS_MIN_PRICE_CENTS', 500),
         'max_price_cents' => (int) env('SEMINARS_MAX_PRICE_CENTS', 5000000),
         'hold_minutes' => 30,                                   // a place is held this long while the attendee pays
-        'callback_secret' => env('SEMINARS_BILLING_CALLBACK_SECRET'),
+        'callback_secret' => env('SEMINARS_FINANCE_CALLBACK_SECRET'),
         'return_path' => '/seminars',                          // where Paystack sends the attendee back to (UI only)
 
         // Refunds when an attendee cancels: full refund up to this many hours before the start, none after. A host cancelling always refunds in full.
         // The host agreement for chargeback recovery. Nothing takes money from a host until the owner's adviser has approved the wording in
-        // resources/markdown/host-agreement.md and the owner sets APPROVED to true. The version must equal Dot.Billing's
-        // BILLING_MARKETPLACE_AGREEMENT_VERSION; changing the wording means a new version that every host must accept again.
+        // resources/markdown/host-agreement.md and the owner sets APPROVED to true. The version must equal Dot.Finance's
+        // FINANCE_MARKETPLACE_AGREEMENT_VERSION; changing the wording means a new version that every host must accept again.
         'agreement_version' => env('SEMINARS_HOST_AGREEMENT_VERSION', 'v1'),
         'agreement_approved' => (bool) env('SEMINARS_HOST_AGREEMENT_APPROVED', false),
-        // Pauses NEW ticket sales only. Refunds, Billing's callbacks and tickets already paid keep working. Set false to stop sales in an incident
+        // Pauses NEW ticket sales only. Refunds, Finance's callbacks and tickets already paid keep working. Set false to stop sales in an incident
         // without the side effects of SEMINARS_PAID_ENABLED=false.
         'checkout_enabled' => (bool) env('SEMINARS_CHECKOUT_ENABLED', true),
 

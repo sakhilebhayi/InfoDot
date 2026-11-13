@@ -32,11 +32,11 @@ class SeminarRefundsAndTaxTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['seminars.paid.agreement_approved' => true, 'seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => 'cb', 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret',
+        config(['seminars.paid.agreement_approved' => true, 'seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => 'cb', 'licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 'platform-secret',
             'seminars.paid.issuer' => ['name' => 'InfoDot (Pty) Ltd', 'address' => '1 Test Street, Cape Town', 'vat_number' => '4123456789']]);
         Http::fake([
-            'billing.test/api/seminar-tickets' => Http::response(['reference' => 'ref_1', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201),
-            'billing.test/api/seminar-tickets/*' => Http::response(['status' => 'ok']),
+            'finance.test/api/seminar-tickets' => Http::response(['reference' => 'ref_1', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201),
+            'finance.test/api/seminar-tickets/*' => Http::response(['status' => 'ok']),
         ]);
     }
 
@@ -48,7 +48,7 @@ class SeminarRefundsAndTaxTest extends TestCase
     private function host(): User
     {
         $h = $this->person('Host');
-        SeminarPayoutAccount::create(['user_id' => $h->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+        SeminarPayoutAccount::create(['user_id' => $h->id, 'finance_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
         SeminarHostAgreement::create(['user_id' => $h->id, 'version' => 'v1', 'accepted_at' => now()]);
 
         return $h;
@@ -65,7 +65,7 @@ class SeminarRefundsAndTaxTest extends TestCase
         $body = json_encode(['event' => $event, 'ticket_ref' => $ref, 'reference' => 'ref_1', 'amount_cents' => $amount, 'currency' => 'ZAR'] + $extra);
         $h = Signature::headers('cb', $body);
 
-        return $this->call('POST', '/api/billing/ticket-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => $h['X-InfoDot-Timestamp'], 'HTTP_X_INFODOT_SIGNATURE' => $h['X-InfoDot-Signature']], $body);
+        return $this->call('POST', '/api/finance/ticket-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => $h['X-InfoDot-Timestamp'], 'HTTP_X_INFODOT_SIGNATURE' => $h['X-InfoDot-Signature']], $body);
     }
 
     private function paidTicket(Seminar $s, ?User $u = null): SeminarRegistration

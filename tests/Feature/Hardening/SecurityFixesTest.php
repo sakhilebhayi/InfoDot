@@ -178,11 +178,11 @@ class SecurityFixesTest extends TestCase
 
     public function test_callbacks_have_their_own_limiters(): void
     {
-        foreach (['billing-callbacks', 'livekit-webhook', 'ecosystem-redeem'] as $name) {
+        foreach (['finance-callbacks', 'livekit-webhook', 'ecosystem-redeem'] as $name) {
             $this->assertNotNull(RateLimiter::limiter($name), $name);
         }
 
-        $this->assertSame('throttle:billing-callbacks', collect(app('router')->getRoutes()->getByName('api.billing.ticket-events')->gatherMiddleware())->first(fn ($m) => str_starts_with((string) $m, 'throttle:')));
+        $this->assertSame('throttle:finance-callbacks', collect(app('router')->getRoutes()->getByName('api.finance.ticket-events')->gatherMiddleware())->first(fn ($m) => str_starts_with((string) $m, 'throttle:')));
         $this->assertSame('throttle:livekit-webhook', collect(app('router')->getRoutes()->getByName('api.seminars.livekit-webhook')->gatherMiddleware())->first(fn ($m) => str_starts_with((string) $m, 'throttle:')));
     }
 

@@ -15,7 +15,7 @@ use Tests\TestCase;
 
 /**
  * Who may do what with a paid seminar, route by route: the host, a ticket holder, a stranger and a moderator. Each denied case also checks that
- * nothing changed and that Billing was never called, because a refusal that still did the work would be worse than none.
+ * nothing changed and that Finance was never called, because a refusal that still did the work would be worse than none.
  */
 class SeminarAccessMatrixTest extends TestCase
 {
@@ -37,24 +37,24 @@ class SeminarAccessMatrixTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 's', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
-        Http::fake(['billing.test/*' => Http::response(['banks' => [], 'status' => 'ok'])]);
+        config(['licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 's', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
+        Http::fake(['finance.test/*' => Http::response(['banks' => [], 'status' => 'ok'])]);
 
         foreach (['host', 'buyer', 'stranger', 'otherHost'] as $who) {
             $this->$who = User::factory()->create(['name' => ucfirst($who).' Person', 'email_verified_at' => Carbon::now()]);
         }
 
-        DB::table('seminar_payout_accounts')->insert(['user_id' => $this->host->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+        DB::table('seminar_payout_accounts')->insert(['user_id' => $this->host->id, 'finance_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
         $this->seminar = app(SeminarService::class)->save($this->host, null, ['title' => 'Matrix seminar', 'summary' => 'An hour.', 'description' => 'Secret agenda text.', 'starts_at' => now()->addDays(2)->format('Y-m-d\TH:i'),
             'duration_minutes' => 60, 'join_url' => 'https://meet.example.test/private-room-abc'], true);
         $this->seminar->forceFill(['price_cents' => 20000, 'currency' => 'ZAR'])->save();
         $this->ticket = SeminarRegistration::create(['seminar_id' => $this->seminar->id, 'user_id' => $this->buyer->id, 'status' => 'registered', 'payment_status' => 'paid', 'ticket_ref' => 'tk1', 'amount_cents' => 20000, 'currency' => 'ZAR', 'paid_at' => now()]);
         DB::table('seminar_feedback')->insert(['seminar_id' => $this->seminar->id, 'user_id' => $this->buyer->id, 'rating' => 2, 'comment' => 'PRIVATE-NOTE-TO-HOST']);
         DB::table('seminar_commission_invoices')->insert(['host_id' => $this->host->id, 'period' => '2026-09', 'year' => 2026, 'seq' => 1, 'number' => 'INV-2026-0001', 'kind' => 'invoice', 'fee_cents' => 2000, 'vat_cents' => 261, 'excl_vat_cents' => 1739, 'lines' => '[]', 'issuer' => json_encode(['name' => 'InfoDot (Pty) Ltd', 'address' => '1 Test Street', 'vat_number' => '4123456789', 'vat_rate_percent' => 15, 'commission_includes_vat' => true]), 'issued_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
-        DB::table('seminar_host_debts')->insert(['user_id' => $this->host->id, 'billing_debt_id' => 5, 'amount_cents' => 777700, 'remaining_cents' => 777700, 'status' => 'open', 'opened_at' => now(), 'last_event_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('seminar_host_debts')->insert(['user_id' => $this->host->id, 'finance_debt_id' => 5, 'amount_cents' => 777700, 'remaining_cents' => 777700, 'status' => 'open', 'opened_at' => now(), 'last_event_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
     }
 
-    private function billingCalls(): int
+    private function financeCalls(): int
     {
         return Http::recorded(fn ($r) => str_contains($r->url(), '/api/seminar-tickets'))->count();
     }
@@ -75,7 +75,7 @@ class SeminarAccessMatrixTest extends TestCase
         $this->assertSame('published', $this->seminar->fresh()->status);
         $this->assertSame('Matrix seminar', $this->seminar->fresh()->title);
         $this->assertSame('paid', $this->ticket->fresh()->payment_status);
-        $this->assertSame(0, $this->billingCalls(), 'a refused cancel must not have refunded anyone');
+        $this->assertSame(0, $this->financeCalls(), 'a refused cancel must not have refunded anyone');
     }
 
     public function test_only_the_host_can_mark_attendance_or_refund_a_ticket(): void
@@ -90,7 +90,7 @@ class SeminarAccessMatrixTest extends TestCase
 
         $this->assertNull($this->ticket->fresh()->attended_at);
         $this->assertNull($this->ticket->fresh()->refund_requested_at);
-        $this->assertSame(0, $this->billingCalls());
+        $this->assertSame(0, $this->financeCalls());
     }
 
     public function test_a_host_cannot_refund_or_mark_a_person_on_another_hosts_seminar(): void
@@ -102,7 +102,7 @@ class SeminarAccessMatrixTest extends TestCase
         $this->actingAs($this->otherHost)->post("/seminars/{$mine->id}/attendance/{$this->buyer->id}", ['attended' => 1]);   // answers with a message; what matters is that nothing changed
 
         $this->assertNull($this->ticket->fresh()->refund_requested_at);
-        $this->assertSame(0, $this->billingCalls());
+        $this->assertSame(0, $this->financeCalls());
     }
 
     // ---- what each person is shown ---------------------------------------------------------------------------------------
@@ -206,7 +206,7 @@ class SeminarAccessMatrixTest extends TestCase
         }
 
         $this->assertNull($this->seminar->fresh()->removed_at);
-        $this->assertSame(0, $this->billingCalls());
+        $this->assertSame(0, $this->financeCalls());
     }
 
     // ---- signed out ------------------------------------------------------------------------------------------------------
@@ -221,6 +221,6 @@ class SeminarAccessMatrixTest extends TestCase
 
         $this->post("/seminars/$id/cancel")->assertRedirect();
         $this->post("/seminars/$id/refund/{$this->buyer->id}", ['amount' => '1.00'])->assertRedirect();
-        $this->assertSame(0, $this->billingCalls());
+        $this->assertSame(0, $this->financeCalls());
     }
 }

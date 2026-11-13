@@ -22,7 +22,8 @@ name: Deploy to Production
 #   2. Builds the frontend on the runner (the host has no Node) and syncs it to
 #      public/build.incoming on the host.
 #   3. On the host: rollback copy, maintenance mode, code to origin/main,
-#      composer install, production invariants (APP_DEBUG forced false; APP_ENV
+#      composer install, a one-time rename of the payment setting names in .env
+#      (temporary, 2026-11-13), production invariants (APP_DEBUG forced false; APP_ENV
 #      forced to production; a warning, not a change, for an http APP_URL), swap in the
 #      new public/build, keep the docroot's build/ in step, migrations, caches,
 #      back up.
@@ -259,6 +260,14 @@ jobs:
             $PHP artisan passport:keys
             chmod 600 storage/oauth-private.key
           fi
+
+          # ---- TEMPORARY (added 2026-11-13): delete this block, tools/finance-env-keys.sh, its test and its CI job
+          # once ONE deploy has run it. Payments moved to Dot.Finance and the code reads new setting names
+          # (LICENCE_FINANCE_URL and five more). This host's .env was written with the old names, and the config
+          # cache built below would read the licence link as "not set" without any error. The script rewrites the
+          # NAMES only (values kept byte for byte) after copying .env to a mode-600 file beside it, prints names
+          # only, and changes nothing on a second run (tools/test-finance-env-keys.sh proves each of those in CI).
+          bash tools/finance-env-keys.sh "$DEPLOY_PATH"
 
           # ---- production invariants
           # APP_DEBUG=true makes any error, even a harmless 405, answer every

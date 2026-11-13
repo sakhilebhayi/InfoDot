@@ -9,8 +9,8 @@
 | are bought. A seat is used by the owner and by every member who accepted; a pending invitation reserves a seat (so concurrent invitations
 | cannot promise more places than exist) until it is accepted or cancelled.
 |
-| NOTHING HERE INVENTS A PRICE. `price` stays empty until the owner approves one; seats cannot be bought until a price is set AND billing is
-| connected (Dot.Billing has no payment processing yet: see docs/programme/R13_INSPECTION.md). Until then a company with all its free seats used is
+| NOTHING HERE INVENTS A PRICE. `price` stays empty until the owner approves one; seats cannot be bought until a price is set AND Dot.Finance is
+| connected (see docs/programme/R13_INSPECTION.md). Until then a company with all its free seats used is
 | told so plainly and nothing is charged.
 */
 
@@ -27,20 +27,20 @@ return [
         'periods' => ['month', 'year'],
     ],
 
-    // Dot.Billing is the only place seats are bought and paid for (Paystack lives there). InfoDot only READS what a company is entitled to,
-    // over Billing's signed server-to-server API, and never from a checkout redirect. Without a URL and a secret nothing is read and the
+    // Dot.Finance is the only place seats are bought and paid for (Paystack lives there). InfoDot only READS what a company is entitled to,
+    // over Finance's signed server-to-server API, and never from a checkout redirect. Without a URL and a secret nothing is read and the
     // included seats apply.
-    'billing' => [
-        'url' => env('LICENCE_BILLING_URL'),
-        'platform' => env('LICENCE_BILLING_PLATFORM', 'infodot'),
-        'secret' => env('BILLING_ENTITLEMENT_SECRET'),
+    'finance' => [
+        'url' => env('LICENCE_FINANCE_URL'),
+        'platform' => env('LICENCE_FINANCE_PLATFORM', 'infodot'),
+        'secret' => env('FINANCE_ENTITLEMENT_SECRET'),
         'timeout_seconds' => 3,
         'cache_seconds' => 300,
-        'failure_backoff_seconds' => (int) env('LICENCE_BILLING_FAILURE_BACKOFF', 30),   // after a failed read, do not ask again for this long
+        'failure_backoff_seconds' => (int) env('LICENCE_FINANCE_FAILURE_BACKOFF', 30),   // after a failed read, do not ask again for this long
     ],
 
-    // Whether a real payment backend is connected for seat purchases. Off until Dot.Billing (or the chosen provider) can charge and confirm.
-    'billing_connected' => (bool) env('LICENCE_BILLING_CONNECTED', false),
+    // Whether a real payment backend is connected for seat purchases. Off until Dot.Finance (or the chosen provider) can charge and confirm.
+    'finance_connected' => (bool) env('LICENCE_FINANCE_CONNECTED', false),
 
     // After a failed payment, how long a company keeps its seats before anything changes. Nobody is deleted either way.
     'grace_days' => (int) env('LICENCE_GRACE_DAYS', 14),

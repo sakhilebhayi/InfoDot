@@ -6,7 +6,7 @@ use App\Actions\Jetstream\InviteTeamMember;
 use App\Models\Team;
 use App\Models\TeamLicence;
 use App\Models\User;
-use App\Services\Licensing\BillingEntitlements;
+use App\Services\Licensing\FinanceEntitlements;
 use App\Services\Licensing\SeatLedger;
 use App\Support\Knowledge\Signature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,8 +18,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
-/** Purchased seats come only from Dot.Billing's signed answer; any failure leaves the licence untouched. */
-class BillingEntitlementsTest extends TestCase
+/** Purchased seats come only from Dot.Finance's signed answer; any failure leaves the licence untouched. */
+class FinanceEntitlementsTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -34,8 +34,8 @@ class BillingEntitlementsTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['licensing.included_seats' => 3, 'licensing.billing_connected' => true, 'licensing.billing.url' => 'https://billing.test',
-            'licensing.billing.secret' => 'shh-secret', 'licensing.billing.platform' => 'infodot']);
+        config(['licensing.included_seats' => 3, 'licensing.finance_connected' => true, 'licensing.finance.url' => 'https://finance.test',
+            'licensing.finance.secret' => 'shh-secret', 'licensing.finance.platform' => 'infodot']);
     }
 
     private function answer(array $over = []): array
@@ -46,12 +46,12 @@ class BillingEntitlementsTest extends TestCase
     public function test_a_signed_answer_sets_the_purchased_seats_and_is_audited(): void
     {
         $team = $this->company();
-        Http::fake(['billing.test/*' => Http::response($this->answer())]);
+        Http::fake(['finance.test/*' => Http::response($this->answer())]);
 
-        $this->assertTrue(app(BillingEntitlements::class)->sync($team));
+        $this->assertTrue(app(FinanceEntitlements::class)->sync($team));
 
         $licence = TeamLicence::where('team_id', $team->id)->first();
-        $this->assertSame([5, 'active', 'team'], [$licence->purchased_seats, $licence->billing_status, $licence->billing_ref]);
+        $this->assertSame([5, 'active', 'team'], [$licence->purchased_seats, $licence->payment_status, $licence->payment_ref]);
         $this->assertSame(8, app(SeatLedger::class)->summary($team)['capacity']);
         $this->assertDatabaseHas('team_licence_events', ['team_id' => $team->id, 'type' => 'capacity_changed']);
     }
@@ -59,15 +59,15 @@ class BillingEntitlementsTest extends TestCase
     public function test_the_request_is_signed_with_the_platform_secret_and_names_the_company(): void
     {
         $team = $this->company();
-        Http::fake(['billing.test/*' => Http::response($this->answer())]);
+        Http::fake(['finance.test/*' => Http::response($this->answer())]);
 
-        app(BillingEntitlements::class)->sync($team);
+        app(FinanceEntitlements::class)->sync($team);
 
         Http::assertSent(function (Request $r) use ($team) {
             $ts = $r->header('X-InfoDot-Timestamp')[0] ?? null;
             $sig = $r->header('X-InfoDot-Signature')[0] ?? null;
 
-            return $r->url() === 'https://billing.test/api/entitlements/'.$team->uuid
+            return $r->url() === 'https://finance.test/api/entitlements/'.$team->uuid
                 && ($r->header('X-InfoDot-Platform')[0] ?? null) === 'infodot'
                 && Signature::valid('shh-secret', $ts, $sig, '', 300);
         });
@@ -76,9 +76,9 @@ class BillingEntitlementsTest extends TestCase
     public function test_the_free_seats_are_a_floor_and_past_due_keeps_the_seats(): void
     {
         $team = $this->company();
-        Http::fake(['billing.test/*' => Http::response($this->answer(['seat_limit' => 2, 'status' => 'past_due']))]);
+        Http::fake(['finance.test/*' => Http::response($this->answer(['seat_limit' => 2, 'status' => 'past_due']))]);
 
-        app(BillingEntitlements::class)->sync($team);
+        app(FinanceEntitlements::class)->sync($team);
 
         $s = app(SeatLedger::class)->summary($team);
         $this->assertSame(3, $s['capacity'], 'never below the three free seats');
@@ -88,9 +88,9 @@ class BillingEntitlementsTest extends TestCase
     public function test_an_unlimited_plan_is_stored_as_a_large_capacity(): void
     {
         $team = $this->company();
-        Http::fake(['billing.test/*' => Http::response($this->answer(['seat_limit' => null]))]);
+        Http::fake(['finance.test/*' => Http::response($this->answer(['seat_limit' => null]))]);
 
-        app(BillingEntitlements::class)->sync($team);
+        app(FinanceEntitlements::class)->sync($team);
 
         $this->assertGreaterThan(1000, app(SeatLedger::class)->summary($team)['capacity']);
     }
@@ -98,45 +98,45 @@ class BillingEntitlementsTest extends TestCase
     public function test_a_failure_leaves_the_stored_licence_untouched(): void
     {
         $team = $this->company();
-        TeamLicence::create(['team_id' => $team->id, 'purchased_seats' => 4, 'billing_status' => 'active']);
+        TeamLicence::create(['team_id' => $team->id, 'purchased_seats' => 4, 'payment_status' => 'active']);
 
         foreach ([Http::response([], 500), Http::response(['error' => 'invalid_request'], 401), Http::response(['seat_limit' => 'lots', 'status' => 'active']), Http::response('not json', 200)] as $reply) {
             Cache::flush();
-            Http::fake(['billing.test/*' => $reply]);
-            app(BillingEntitlements::class)->sync($team);
+            Http::fake(['finance.test/*' => $reply]);
+            app(FinanceEntitlements::class)->sync($team);
             $this->assertSame(4, TeamLicence::where('team_id', $team->id)->value('purchased_seats'));
         }
 
         Cache::flush();
-        Http::fake(['billing.test/*' => fn () => throw new ConnectionException('down')]);
-        $this->assertFalse(app(BillingEntitlements::class)->sync($team));
+        Http::fake(['finance.test/*' => fn () => throw new ConnectionException('down')]);
+        $this->assertFalse(app(FinanceEntitlements::class)->sync($team));
         $this->assertSame(4, TeamLicence::where('team_id', $team->id)->value('purchased_seats'));
     }
 
-    public function test_nothing_is_called_unless_billing_is_connected_and_configured(): void
+    public function test_nothing_is_called_unless_finance_is_connected_and_configured(): void
     {
         Http::fake();
         $team = $this->company();
 
-        config(['licensing.billing_connected' => false]);
-        $this->assertFalse(app(BillingEntitlements::class)->sync($team));
-        config(['licensing.billing_connected' => true, 'licensing.billing.secret' => null]);
-        $this->assertFalse(app(BillingEntitlements::class)->sync($team));
+        config(['licensing.finance_connected' => false]);
+        $this->assertFalse(app(FinanceEntitlements::class)->sync($team));
+        config(['licensing.finance_connected' => true, 'licensing.finance.secret' => null]);
+        $this->assertFalse(app(FinanceEntitlements::class)->sync($team));
 
         $personal = User::factory()->withPersonalTeam()->create()->currentTeam;
-        config(['licensing.billing.secret' => 'shh-secret']);
-        $this->assertFalse(app(BillingEntitlements::class)->sync($personal), 'personal workspaces are never sent to billing');
+        config(['licensing.finance.secret' => 'shh-secret']);
+        $this->assertFalse(app(FinanceEntitlements::class)->sync($personal), 'personal workspaces are never sent to finance');
 
         Http::assertNothingSent();
     }
 
-    public function test_answers_are_cached_so_pages_do_not_call_billing_every_time(): void
+    public function test_answers_are_cached_so_pages_do_not_call_finance_every_time(): void
     {
         $team = $this->company();
-        Http::fake(['billing.test/*' => Http::response($this->answer())]);
+        Http::fake(['finance.test/*' => Http::response($this->answer())]);
 
-        $this->assertTrue(app(BillingEntitlements::class)->sync($team));
-        $this->assertFalse(app(BillingEntitlements::class)->sync($team));
+        $this->assertTrue(app(FinanceEntitlements::class)->sync($team));
+        $this->assertFalse(app(FinanceEntitlements::class)->sync($team));
 
         Http::assertSentCount(1);
     }
@@ -145,7 +145,7 @@ class BillingEntitlementsTest extends TestCase
     {
         $team = $this->company();
         $owner = $team->owner;
-        Http::fake(['billing.test/*' => Http::response($this->answer(['seat_limit' => 5]))]);
+        Http::fake(['finance.test/*' => Http::response($this->answer(['seat_limit' => 5]))]);
         Mail::fake();
 
         foreach (['a', 'b', 'c', 'd'] as $n) {
@@ -155,29 +155,29 @@ class BillingEntitlementsTest extends TestCase
         $this->assertSame(4, $team->teamInvitations()->count(), 'five paid seats allow the owner plus four invitations');
     }
 
-    public function test_a_company_billing_has_not_met_yet_is_free_not_a_fault_and_is_not_asked_about_again_at_once(): void
+    public function test_a_company_finance_has_not_met_yet_is_free_not_a_fault_and_is_not_asked_about_again_at_once(): void
     {
         $team = $this->company();
-        Http::fake(['billing.test/*' => Http::response(['error' => 'not_found'], 404)]);
+        Http::fake(['finance.test/*' => Http::response(['error' => 'not_found'], 404)]);
         Log::spy();
 
-        $this->assertFalse(app(BillingEntitlements::class)->sync($team));
-        $this->assertFalse(app(BillingEntitlements::class)->sync($team));
+        $this->assertFalse(app(FinanceEntitlements::class)->sync($team));
+        $this->assertFalse(app(FinanceEntitlements::class)->sync($team));
 
         Http::assertSentCount(1);
         Log::shouldNotHaveReceived('warning');
         $this->assertSame(3, app(SeatLedger::class)->summary($team)['capacity']);
     }
 
-    public function test_the_seats_panel_links_the_owner_to_billing_through_the_signed_in_handoff(): void
+    public function test_the_seats_panel_links_the_owner_to_finance_through_the_signed_in_handoff(): void
     {
-        config(['licensing.billing_connected' => true]);
+        config(['licensing.finance_connected' => true]);
         $owner = User::factory()->create(['email_verified_at' => now()]);
         $team = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
         $member = User::factory()->create(['email_verified_at' => now()]);
         $team->users()->attach($member, ['role' => 'admin']);
 
-        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Add or change seats in Dot.Billing')->assertSee('/go/finance?redirect=%2Fseats', false);
-        $this->actingAs($member)->get('/teams/'.$team->id)->assertOk()->assertDontSee('Add or change seats in Dot.Billing');
+        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Add or change seats in Dot.Finance')->assertSee('/go/finance?redirect=%2Fseats', false);
+        $this->actingAs($member)->get('/teams/'.$team->id)->assertOk()->assertDontSee('Add or change seats in Dot.Finance');
     }
 }
