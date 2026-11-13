@@ -95,18 +95,22 @@ class SignedInUiTest extends TestCase
             ->assertSee('Ask the first question');
     }
 
-    public function test_the_dot_apps_menu_only_offers_live_platforms_as_buttons(): void
+    public function test_the_dot_apps_menu_only_offers_what_can_be_opened(): void
     {
+        // R-50: Dot Apps holds what the person can open now. Files is in the free core and live; Tasks is in the core
+        // but switched off in the registry; Dot.HR is live but this person's workspace does not hold it.
         config(['ecosystem.platforms' => [
-            'agents' => ['name' => 'Dot.Agents', 'url' => 'https://agents.infodot.co.za', 'icon' => 'smart_toy', 'active' => true],
-            'hr' => ['name' => 'Dot.HR', 'url' => 'https://hr.infodot.co.za', 'icon' => 'badge', 'active' => false],
+            'files' => ['name' => 'Dot.Files', 'url' => 'https://files.infodot.co.za', 'icon' => 'folder', 'active' => true],
+            'tasks' => ['name' => 'Dot.Tasks', 'url' => 'https://tasks.infodot.co.za', 'icon' => 'task', 'active' => false],
+            'hr' => ['name' => 'Dot.HR', 'url' => 'https://hr.infodot.co.za', 'icon' => 'badge', 'active' => true],
         ]]);
 
         $html = $this->actingAs($this->member())->get('/questions')->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('/wire:click="switchTo\(\'agents\'\)"/', $html);
+        $this->assertMatchesRegularExpression('/wire:click="switchTo\(\'files\'\)"/', $html);
+        $this->assertDoesNotMatchRegularExpression('/switchTo\(\'tasks\'\)/', $html);
         $this->assertDoesNotMatchRegularExpression('/switchTo\(\'hr\'\)/', $html);
-        $this->assertStringContainsString('Dot.HR is not live yet', $html);
+        $this->assertStringContainsString('data-all-platforms', $html, 'the rest is one link away, on the Platforms page');
     }
 
     public function test_search_finds_questions_and_solutions_by_any_field(): void

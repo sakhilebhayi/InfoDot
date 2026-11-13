@@ -78,9 +78,10 @@ class InternalPlatformsTest extends TestCase
     {
         $html = $this->actingAs($this->member())->get('/platforms')->assertOk()->getContent();
 
-        // files is live, ehail is coming: two visible platforms besides InfoDot, one live.
-        $this->assertMatchesRegularExpression('#Live</span><span class="ix-fig"[^>]*>1<#', $html);
-        $this->assertMatchesRegularExpression('#Coming</span><span class="ix-fig"[^>]*>1<#', $html);
+        // R-50: the page counts what the company has and what the catalogue offers it. Files is in the free core;
+        // ehail is the only other platform in this registry. The bridge services are in neither count.
+        $this->assertMatchesRegularExpression('#Your company has</span><span class="ix-fig"[^>]*>1<#', $html);
+        $this->assertMatchesRegularExpression('#In the catalogue</span><span class="ix-fig"[^>]*>2<#', $html);
     }
 
     public function test_a_hand_made_request_cannot_open_one(): void

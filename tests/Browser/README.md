@@ -53,7 +53,7 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 
 | Project | Browser and size | Runs |
 |---|---|---|
-| `desktop-chromium` | Chromium, 1440 x 900 | everything except E (A to D, F to K) |
+| `desktop-chromium` | Chromium, 1440 x 900 | everything except E (A to D, F to L) |
 | `desktop-firefox` | Firefox, 1440 x 900 | A, B, D, G |
 | `desktop-webkit` | WebKit, 1440 x 900 | A, B, D, G |
 | `phone-webkit` | WebKit, iPhone 14 | E |
