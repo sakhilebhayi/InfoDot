@@ -2366,6 +2366,15 @@ button.ix-dir__item:hover:not([disabled]) {
     color: #4a555a;
 }
 
+.ix-yardmap__all {
+    display: inline-block;
+    margin-left: 4px;
+    color: #1b2124;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
 .ix-yardmap__filter {
     position: relative;
     display: block;
@@ -2633,27 +2642,7 @@ button.ix-dir__item:hover:not([disabled]) {
     padding: 0;
 }
 
-.ix-regrow {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 112px minmax(0, 1fr) 110px 150px;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 8px;
-    border: 0;
-    border-bottom: 1px solid var(--ix-rule);
-    background: none;
-    color: var(--ix-text);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-button.ix-regrow:hover:not([disabled]),
-button.ix-regrow:focus-visible {
-    background: var(--ix-hover);
-}
-
+/* The logo plate: the platform's own artwork on its light ground, in both themes. The artwork is never altered. */
 .ix-regrow__logo {
     display: flex;
     align-items: center;
@@ -2683,63 +2672,222 @@ button.ix-regrow:focus-visible {
     font-size: 24px;
 }
 
-.ix-regrow__name {
+/* Platforms, the catalogue (R-50): one platform per ledger row. What it is, the company's state in words, one action. */
+.ix-catrow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 232px 136px;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.ix-catrow__what {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+    color: var(--ix-text);
+}
+
+.ix-catrow__name {
     min-width: 0;
     font-weight: 700;
     font-size: 16px;
 }
 
-.ix-regrow__name small {
+.ix-catrow__what:hover .ix-catrow__name {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.ix-catrow__name small {
     display: block;
     margin-top: 2px;
+    color: var(--ix-text-2);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.4;
+    text-wrap: pretty;
+}
+
+.ix-catrow__what:hover .ix-catrow__name small {
+    text-decoration: none;
+    display: block;
+}
+
+.ix-catrow__state {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+}
+
+/* A state can be a whole phrase ("Free while pricing is being finalised"): the chip wraps instead of being cut. */
+.ix-catrow__state .ix-chip,
+.ix-plat__state .ix-chip {
+    height: auto;
+    min-height: 22px;
+    padding: 3px 9px;
+    border-radius: 11px;
+    white-space: normal;
+    line-height: 1.3;
+}
+
+.ix-catrow__state .ix-chip::before,
+.ix-plat__state .ix-chip::before {
+    flex-shrink: 0;
+}
+
+.ix-catrow__state small {
     color: var(--ix-text-3);
-    font-weight: 500;
     font-size: 13px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
 }
 
-.ix-regrow__live,
-.ix-regrow__soon {
-    display: inline-block;
-    padding: 2px 8px 1px;
-    font-family: var(--ix-stencil-font);
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.ix-regrow__live {
-    background: var(--ix-documents);
-    color: #fff;
-}
-
-.ix-regrow__soon {
-    border: 1px solid var(--ix-rule-strong);
-    color: var(--ix-text-3);
-}
-
-.ix-regrow__go {
-    display: inline-flex;
-    align-items: center;
+.ix-catrow__act {
+    display: flex;
     justify-content: flex-end;
-    gap: 6px;
-    font-weight: 600;
+}
+
+.ix-catrow__act .ix-btn {
+    min-width: 104px;
+    white-space: nowrap;
+}
+
+/* Search and the two filters, in one line above the ledger. */
+.ix-cat__tools {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 248px 248px;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.ix-cat__tools label {
+    display: block;
+    min-width: 0;
+}
+
+.ix-cat__search {
+    position: relative;
+}
+
+.ix-cat__search .material-symbols-rounded {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: var(--ix-text-3);
+    pointer-events: none;
+}
+
+.ix-cat__search .ix-input {
+    padding-left: 38px;
+}
+
+.ix-cat__tools .ix-select {
+    height: 36px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.ix-cat__count {
+    margin: 0 0 16px;
+    color: var(--ix-text-2);
     font-size: 14px;
 }
 
-.ix-regrow__go .material-symbols-rounded {
-    font-size: 18px;
+.ix-cat__clear {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ix-text);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
 }
 
-.ix-regrow.is-soon .ix-regrow__logo,
-.ix-regrow.is-soon .ix-regrow__name {
-    opacity: 0.5;
+/* A personal workspace: one line that says why the rest is closed, and the way out. */
+.ix-cat__personal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-bottom: 24px;
+    padding: 14px 0;
+    border-top: 3px solid var(--ix-platforms);
+    border-bottom: 1px solid var(--ix-rule);
 }
 
-.ix-regrow.is-soon {
-    cursor: default;
+.ix-cat__personal p {
+    flex: 1 1 420px;
+    max-width: 72ch;
+    margin: 0;
+    text-wrap: pretty;
+}
+
+/* Suggestions: a short ledger under a mustard rule. Each row is the platform, the reason in a sentence, and two ways to answer. */
+.ix-cat__suggest {
+    margin-bottom: 28px;
+    border-top: 3px solid var(--ix-platforms);
+}
+
+.ix-cat__suggest h2 {
+    margin: 0;
+    padding: 10px 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ix-cat__suggest ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--ix-rule);
+}
+
+.ix-cat__suggest li {
+    display: grid;
+    grid-template-columns: 84px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.ix-cat__suggest .ix-regrow__logo {
+    height: 48px;
+}
+
+.ix-cat__suggest p {
+    margin: 0;
+    min-width: 0;
+}
+
+.ix-cat__suggest p a {
+    display: block;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.ix-cat__suggest p a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ix-cat__suggest p span {
+    display: block;
+    max-width: 78ch;
+    color: var(--ix-text-2);
+    font-size: 14px;
+    text-wrap: pretty;
 }
 
 @media (max-width: 899px) {
@@ -2757,24 +2905,254 @@ button.ix-regrow:focus-visible {
     }
 
     .ix-register__index a {
+        position: relative;
         flex-shrink: 0;
         border-bottom: 0;
-        grid-template-columns: auto auto;
+        grid-template-columns: auto;
     }
 
-    .ix-register__idxname,
+    /* The plate alone is shown; the section's name stays in the link for a screen reader. */
+    .ix-register__idxname {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
     .ix-register__idxn {
         display: none;
     }
-}
 
-@media (max-width: 639px) {
-    .ix-regrow {
-        grid-template-columns: 88px minmax(0, 1fr) auto;
+    .ix-cat__tools {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 
-    .ix-regrow__go {
-        display: none;
+    .ix-cat__search {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 719px) {
+    .ix-catrow {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px 12px;
+        padding: 14px 0;
+    }
+
+    .ix-catrow__what {
+        grid-column: 1 / -1;
+        grid-template-columns: 88px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+    }
+
+    .ix-cat__suggest li {
+        grid-template-columns: 64px minmax(0, 1fr);
+    }
+
+    .ix-cat__suggest li .ix-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 479px) {
+    .ix-cat__tools {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* One platform (R-50): the logo and name beside the company's state, then a ledger of what it is and who may open it. */
+.ix-plat__head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    gap: 28px 48px;
+    align-items: start;
+    margin-bottom: 36px;
+}
+
+.ix-plat__id {
+    display: grid;
+    grid-template-columns: 176px minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+}
+
+.ix-plat__logo {
+    height: 120px;
+    padding: 12px;
+}
+
+.ix-plat__id .ix-h1 {
+    font-size: clamp(28px, 3.2vw, 38px);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.ix-plat__id .ix-lede {
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+.ix-plat__state {
+    padding-top: 14px;
+    border-top: 3px solid var(--ix-platforms);
+}
+
+.ix-plat__state p {
+    margin: 0 0 10px;
+}
+
+.ix-plat__for {
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.ix-plat__why {
+    max-width: 52ch;
+    color: var(--ix-text-2);
+    text-wrap: pretty;
+}
+
+.ix-plat__state .ix-actions {
+    margin-top: 16px;
+}
+
+.ix-plat__body > div > :last-child,
+.ix-plat__body .ix-form {
+    margin-bottom: 0;
+}
+
+.ix-plat__links a,
+.ix-plat__body .ix-hint a {
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.ix-plat__body > ul:not(.ix-plat__plans) {
+    padding-left: 20px;
+    list-style: disc;
+}
+
+.ix-plat__body > ul:not(.ix-plat__plans) li {
+    margin-bottom: 4px;
+}
+
+.ix-plat__body .ix-actions .ix-btn {
+    width: auto;
+}
+
+.ix-plat--confirm .ix-lede {
+    max-width: none;
+}
+
+.ix-plat__plans {
+    padding: 0;
+    list-style: none;
+}
+
+.ix-plat__plans li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ix-rule);
+    font-variant-numeric: tabular-nums;
+}
+
+/* The checked option is marked by its border alone here, never by a stripe down one side. */
+.ix-plat .ix-choice__opt:has(input:checked) {
+    box-shadow: none;
+    border-color: var(--ix-text);
+}
+
+.ix-plat .ix-choice,
+.ix-plat__roster {
+    margin-bottom: 0;
+}
+
+.ix-plat .ix-choice__opt strong {
+    font-size: 15px;
+}
+
+.ix-plat__roster {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.ix-plat__roster legend {
+    padding: 0;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.ix-plat__roster ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 0 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-plat__roster li {
+    margin: 0;
+    font-size: 14px;
+}
+
+.ix-plat__roster small {
+    color: var(--ix-text-3);
+    font-size: 13px;
+}
+
+.ix-plat__body .ix-table td,
+.ix-plat__body .ix-table th {
+    font-size: 14px;
+}
+
+/* The confirmation page: the question, then what will happen as a ruled list, then the two buttons. */
+.ix-plat--confirm {
+    max-width: 760px;
+}
+
+.ix-plat__terms {
+    margin: 24px 0 28px;
+    padding: 0;
+    list-style: none;
+    border-top: 3px solid var(--ix-platforms);
+}
+
+.ix-plat__terms li {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--ix-rule);
+    font-size: 16px;
+    line-height: 1.55;
+    text-wrap: pretty;
+}
+
+@media (max-width: 1023px) {
+    .ix-plat__head {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 559px) {
+    .ix-plat__id {
+        grid-template-columns: 104px minmax(0, 1fr);
+        gap: 14px;
+        align-items: start;
+    }
+
+    .ix-plat__logo {
+        height: 76px;
+        padding: 8px;
     }
 }
 
@@ -8100,15 +8478,13 @@ body {
     }
 }
 
-/* Analytics, platform coverage: one compact plate per platform, its name and whether it is live. Not links. */
+/* Analytics, the company's platforms: one compact plate per platform the company holds, its name and its state in words. */
 .ixa-cover {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-    gap: 1px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     margin: 0;
     padding: 0;
     list-style: none;
-    background: var(--ix-rule);
     border-top: 1px solid var(--ix-rule);
 }
 
@@ -8119,44 +8495,38 @@ body {
     gap: 10px;
     min-width: 0;
     padding: 10px 14px;
-    background: var(--ix-panel);
+    border-right: 1px solid var(--ix-rule);
+    border-bottom: 1px solid var(--ix-rule);
     font-weight: 600;
     font-size: 14px;
 }
 
-.ixa-cover li span:first-child {
+.ixa-cover li a {
     min-width: 0;
     overflow-wrap: anywhere;
 }
 
-/* LIVE in the stencil face on green; NOT LIVE YET set quietly in words. */
-.ixa-cover__live {
-    flex-shrink: 0;
-    padding: 3px 7px 1px;
-    background: var(--ix-ok);
-    color: #fff;
-    font-family: var(--ix-stencil-font);
-    font-weight: 800;
-    font-size: 13px;
-    letter-spacing: 0.08em;
-    line-height: 1.2;
-    border-radius: var(--ix-radius-sm);
+.ixa-cover li a:hover,
+.ixa-cover__more a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
 }
 
-.ixa-cover__soon {
+.ixa-cover__state {
     flex-shrink: 0;
     color: var(--ix-text-3);
     font-weight: 500;
     font-size: 13px;
 }
 
-@media (prefers-color-scheme: dark) {
-    .ixa-cover__live {
-        color: #06140d;
-    }
+.ixa-cover__more {
+    margin: 0;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
-/* The count beside a panel heading ("22 live / 23 registered"). */
+/* The count beside a panel heading ("5 of the 20 in the catalogue"). */
 .ixa-stamp {
     color: var(--ix-text-3);
     font-weight: 600;
