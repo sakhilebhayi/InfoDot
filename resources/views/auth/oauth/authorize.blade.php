@@ -8,7 +8,8 @@
         <p class="ix-entry__lede">{{ $client->name }} is asking to confirm your identity through your InfoDot account.</p>
 
         @if (count($scopes) > 0)
-            <ul>
+            <p class="ix-entry__asks" id="asks-h">If you authorise it, {{ $client->name }} will be able to:</p>
+            <ul class="ix-entry__scopes" aria-labelledby="asks-h">
                 @foreach ($scopes as $scope)
                     <li>{{ $scope->description }}</li>
                 @endforeach

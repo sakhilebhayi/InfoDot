@@ -57,40 +57,6 @@
         <p class="ix-hint">A moderator put this seminar back on after your appeal: {{ $appeal->resolution_note }}</p>
     @endif
 
-    @if ($canReportPerson)
-        <details class="ix-hint" id="report-person" style="margin-bottom: 12px;">
-            <summary>Report someone in this seminar</summary>
-            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
-                <label class="ix-label" for="rp-name">Their name as it shows in the room or chat</label>
-                <input class="ix-input" id="rp-name" name="about_name" type="text" maxlength="60" required>
-                <label class="ix-label" for="rp-reason">What happened</label>
-                <select class="ix-input" id="rp-reason" name="reason" required>
-                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
-                </select>
-                <label class="ix-label" for="rp-detail">Tell the moderators more (optional)</label>
-                <textarea class="ix-textarea" id="rp-detail" name="detail" rows="3" maxlength="1000"></textarea>
-                <p class="ix-hint">A moderator reads it. The person is not told who reported them. As host you can also remove someone from the room yourself.</p>
-                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
-            </form>
-        </details>
-    @endif
-
-    @if (! $isHost && $seminar->status === 'published')
-        <details class="ix-hint" style="margin-bottom: 12px;">
-            <summary>Report this seminar</summary>
-            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
-                <label class="ix-label" for="report-reason">What is wrong with it</label>
-                <select class="ix-input" id="report-reason" name="reason" required>
-                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
-                </select>
-                <label class="ix-label" for="report-detail">Tell the moderators more (optional)</label>
-                <textarea class="ix-textarea" id="report-detail" name="detail" rows="3" maxlength="1000"></textarea>
-                <p class="ix-hint">A moderator reads it. The host is not told who reported.</p>
-                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
-            </form>
-        </details>
-    @endif
-
     @if (! $isHost && $seminar->status === 'published')
         <section class="ix-notices__pref" aria-label="Your registration">
             @if ($reg && $reg->status === 'registered')
@@ -115,7 +81,7 @@
                     </form>
                 @endif
                 @if ($seminar->isPaid() && $reg->paid_at)
-                    <p class="ix-hint"><a href="{{ route('seminars.receipt', $seminar) }}" style="text-decoration: underline;">View your receipt</a>@if ($reg->refunded_cents > 0) · refunded {{ \App\Models\Seminar::money($reg->refunded_cents) }}@endif</p>
+                    <p class="ix-hint"><a class="ix-link" href="{{ route('seminars.receipt', $seminar) }}">View your receipt</a>@if ($reg->refunded_cents > 0) · refunded {{ \App\Models\Seminar::money($reg->refunded_cents) }}@endif</p>
                 @endif
             @elseif ($reg && $reg->status === 'waitlist')
                 <p><span class="ix-chip">Waiting list</span> You will be registered automatically if a place opens.</p>
@@ -154,6 +120,41 @@
                 </form>
             @endif
         </section>
+    @endif
+
+    {{-- Reporting comes after the person's own place: it is the rare action, not the first thing under the description. --}}
+    @if ($canReportPerson)
+        <details class="ix-disclose" id="report-person">
+            <summary>Report someone in this seminar</summary>
+            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
+                <label class="ix-label" for="rp-name">Their name as it shows in the room or chat</label>
+                <input class="ix-input" id="rp-name" name="about_name" type="text" maxlength="60" required>
+                <label class="ix-label" for="rp-reason">What happened</label>
+                <select class="ix-input" id="rp-reason" name="reason" required>
+                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                </select>
+                <label class="ix-label" for="rp-detail">Tell the moderators more (optional)</label>
+                <textarea class="ix-textarea" id="rp-detail" name="detail" rows="3" maxlength="1000"></textarea>
+                <p class="ix-hint">A moderator reads it. The person is not told who reported them. As host you can also remove someone from the room yourself.</p>
+                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
+            </form>
+        </details>
+    @endif
+
+    @if (! $isHost && $seminar->status === 'published')
+        <details class="ix-disclose">
+            <summary>Report this seminar</summary>
+            <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
+                <label class="ix-label" for="report-reason">What is wrong with it</label>
+                <select class="ix-input" id="report-reason" name="reason" required>
+                    @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+                </select>
+                <label class="ix-label" for="report-detail">Tell the moderators more (optional)</label>
+                <textarea class="ix-textarea" id="report-detail" name="detail" rows="3" maxlength="1000"></textarea>
+                <p class="ix-hint">A moderator reads it. The host is not told who reported.</p>
+                <button class="ix-btn ix-btn--sm" type="submit">Send report</button>
+            </form>
+        </details>
     @endif
 
     @if ($isHost)

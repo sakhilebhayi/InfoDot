@@ -13,7 +13,7 @@
             <tbody>
                 @foreach ($invoices as $i)
                     <tr>
-                        <td><a href="{{ route('seminars.invoice', $i) }}" style="text-decoration: underline;">{{ $i->number }}</a></td>
+                        <td><a class="ix-link" href="{{ route('seminars.invoice', $i) }}">{{ $i->number }}</a></td>
                         <td>{{ $i->period }}</td>
                         <td>{{ $i->kind === 'credit_note' ? 'Credit note' : 'Tax invoice' }}</td>
                         <td>{{ \App\Models\Seminar::money(abs($i->fee_cents), $i->currency) }}{{ $i->fee_cents < 0 ? ' credit' : '' }}</td>

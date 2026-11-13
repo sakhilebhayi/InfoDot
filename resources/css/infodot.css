@@ -8571,3 +8571,87 @@ body {
 .ix-prose--ledger > .ix-form {
     max-width: 520px;
 }
+
+/* R-49, the pages the design pass had not opened: a seminar and its money pages, the consent page, moderation cases. */
+
+/* A disclosure that is not a button (report a seminar, read the agreement again): reads as a link, opens in place. */
+.ix-disclose {
+    margin-top: 12px;
+    max-width: 68ch;
+    font-size: 14px;
+    color: var(--ix-text-2);
+}
+
+.ix-disclose > summary {
+    width: fit-content;
+    padding: 4px 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ix-disclose > summary:hover {
+    color: var(--ix-text);
+}
+
+.ix-disclose[open] > summary {
+    color: var(--ix-text);
+    font-weight: 600;
+}
+
+/* Moderation cases: a link in a side card, a status line or a file list looks like one. */
+.ix-convo__rail .ix-biz__card a:not(.ix-btn),
+.ix-trust__line a,
+.ix-trust__checks a,
+.ix-msg__files a,
+.ix-vgap > a,
+.ix-pagehead .ix-lede > a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* The consent page: what the platform is asking for, as a short ruled list. */
+.ix-entry__asks {
+    margin: 16px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ix-entry__scopes {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--ix-rule);
+    font-size: 14px;
+}
+
+.ix-entry__scopes li {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.ix-actions > form {
+    margin: 0;
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+    .ix-disclose > summary {
+        padding: 12px 0;
+    }
+
+    .ix-convo__rail .ix-biz__card a:not(.ix-btn),
+    .ix-trust__line a,
+    .ix-trust__checks a,
+    .ix-msg__files a,
+    .ix-vgap > a,
+    .ix-pagehead .ix-lede > a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+    }
+
+    .ix-vchecks label {
+        align-items: center;
+        min-height: 44px;
+    }
+}

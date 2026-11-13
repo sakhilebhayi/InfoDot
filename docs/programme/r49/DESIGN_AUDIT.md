@@ -182,3 +182,38 @@ What remains, and what it is:
 - **Not read by eye:** most pages at 1024 and 768 (those widths were measured, and the only layout change in that range is the tab row); the dark scheme at 375 for the public pages other than register and 404; every state of every moderation desk.
 - **Not opened at all:** a seminar's own page, its room and its invoices; `/progress`; the OIDC consent page (restyled with the other way-in pages, never rendered here); the moderation pages for one verification, one identity conflict and one trust report; the library with entries in a browser (the two demonstration entries are covered by a test, the scratch data here was installed before that change).
 - **Not tested:** a screen reader; a real phone (touch was emulated in Chromium, and the browser suite adds WebKit at iPhone and iPad sizes); hover and focus states were checked in the stylesheet and by the keyboard spec, not photographed.
+
+## The pages that had not been opened (added later on 2026-11-13, branch `r49/remaining-items`)
+
+The first pass listed these as not opened. They were opened here on a local copy (`127.0.0.1:8136`, scratch SQLite, `demo:install --with-moderator`, then scratch accounts and records made through the application's own form endpoints and services: a free and a paid seminar with a registered buyer, a sale and an issued commission invoice, a small room and an InfoDot room inside their opening window, a verified business and a second application under the same registration number, two reports, an investigation and an appeal). Paid seminars, both room kinds, `/progress` and the Dot.Finance address were switched on in the local `.env` only.
+
+Each page below was opened at 1440 and 375 pixels wide in the light and the dark scheme (104 renders before, the same after) and measured the same way as above: sideways scroll, text contrast against the colour actually behind it, and, at 375, every control under 44 by 44. Checkboxes were counted with their label: a tick box passes when the line that holds it is 44px.
+
+| No. | Page | Width | Theme | What was wrong | Sev. | Status |
+|---|---|---|---|---|---|---|
+| D-43 | `/seminars/{id}` (registered, ticket holder, visitor, host) | all | both | The person's own place (registered, the join button, cancel, the receipt) came last, under two "Report" disclosures that sat straight under the description with the browser's bare styling. | P2 | **fixed.** The place comes first; reporting follows it as `ix-disclose`, a disclosure that reads as a link. |
+| D-44 | `/seminars/{id}`, `/seminars/payouts` | 375 | both | The disclosures were 20 to 22px tall; "View your receipt" 14px. | P1 | **fixed.** 44px on touch (`ix-disclose`, `ix-link`). |
+| D-45 | `/seminars/payouts` | all | both | Three forms ran together under small label headings; one save button was full width and the other not; the link to the invoices floated centred under a form; tick boxes were 16px targets. | P2 | **fixed.** Titled sections under rules (the settings section pattern), one button row per form, tick-box lines of 44px. |
+| D-46 | `/seminars/invoices` | 375 | both | The invoice number, the only way into an invoice, was a 15px target. | P1 | **fixed** (`ix-link`). |
+| D-47 | `/moderation/verifications/{id}`, `/moderation/identity/{id}`, `/moderation/trust/reports/{id}`, `/investigations/{id}`, `/appeals/{id}` | all | both | Links in the side cards, status lines and file lists ("Business page", the business's name, "Open investigation #1", an attached file) had no underline and nothing else to mark them: they read as plain text. At 375 they were 15 to 22px targets, and the "what you confirmed" tick boxes 16px. | P1 | **fixed.** Underlined; 44px on touch; the tick-box lines are 44px. |
+| D-48 | `/progress` | all | both | The two buttons under "Your data" touched each other. | P3 | **fixed** (one action row). |
+| D-49 | The consent page (`auth.oauth.authorize`) | all | both | What the platform asks for was three bare lines with no introduction. Reached only by a client that is not an active Dot platform (asked for here with `prompt=consent`). | P3 | **fixed.** "If you authorise it, … will be able to:" over a ruled list. |
+| D-50 | `/seminars/{id}/room` (InfoDot room) | all | light | "Send" in the chat is 3.35:1 while the room is not connected. | P3 | **left.** It is the disabled state of the button (the room cannot connect on a local copy: no LiveKit server), which WCAG 1.4.3 exempts. Not seen connected. |
+
+No finding on: the receipt, an invoice, the small room before anyone joins, the moderators' seminar payments list.
+
+**Measured, these 26 page states (the 18 above plus Home, company and account settings, ask, write, the business editor, People and contact), 104 renders each time:**
+
+| Measure | Before | After |
+|---|---|---|
+| Renders that scroll sideways | 0 | 0 |
+| Text below its contrast target (per render) | 2 | 2 (D-50, the disabled button) |
+| Controls under 44 by 44 at 375 (per render) | 210 | 2 |
+
+The two that remain are "the inbox", a link inside a sentence on the business editor (exempt, as in the first pass). Of the 210, 162 were tick boxes on the ask, write and business-editor forms, whose lines are now 44px.
+
+**The detector** (`impeccable detect` on the HTML the local server sent, 26 pages): 4 findings before on 3 pages, 4 after on the same 3, none added. They are the two crop-dialog images without a `src` on the business editor and `flat-type-hierarchy` on company settings (both explained above), and `em-dash-overuse` on the verification case page, which counts the "—" that stands for an empty field in the two columns of facts.
+
+**Read by eye:** before, at 1440 light: a ticket holder's seminar page, the InfoDot room, `/progress`, the consent page, a verification case, an investigation, payouts. After: Home at 1440 light and 375 dark (the gate), payouts at 1440 light, a ticket holder's seminar page at 375 dark, the business editor at 375 light part-way down and at its index. **Measured but not read by eye:** every other render, the small room, the receipt, invoices, the identity conflict, the report and the appeal. **Not seen:** either room with people in it (no second browser was joined, and there is no LiveKit server locally); a real payment page.
+
+**Kept covered:** `tests/Browser/specs/j-case-pages.spec.ts` opens a seminar's own page and the five moderation case pages in both schemes (axe, contrast, heading, images) and at 375 (no sideways scroll, the disclosure's size and that the person's place comes first). The paid-seminar pages, the rooms, `/progress` and the consent page are not in the browser suite: each needs a switch the browser run leaves off.

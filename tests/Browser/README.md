@@ -53,7 +53,7 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 
 | Project | Browser and size | Runs |
 |---|---|---|
-| `desktop-chromium` | Chromium, 1440 x 900 | everything except E |
+| `desktop-chromium` | Chromium, 1440 x 900 | everything except E (A to D, F to J) |
 | `desktop-firefox` | Firefox, 1440 x 900 | A, B, D, G |
 | `desktop-webkit` | WebKit, 1440 x 900 | A, B, D, G |
 | `phone-webkit` | WebKit, iPhone 14 | E |
@@ -72,6 +72,7 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 | `f-investor-walkthrough.spec.ts` | One continuous visit through the labelled demonstration content (`php artisan demo:install --with-moderator`, which the run installs), as its owner and then its moderator: fails on any console error, script error, failed request to the app, 4xx/5xx or broken image. Saves a full-page picture of every page at desktop and phone size in `screens/`. |
 | `g-failure-paths.spec.ts` | Wrong password, an email already registered, a business with fields missing, uploads that are too large or the wrong type: each gets a clear message and no server error. |
 | `h-accessibility.spec.ts` | axe-core, WCAG 2.0/2.1/2.2 A and AA, light and dark colour schemes. Fails on serious or critical violations and writes `docs/programme/r49/ACCESSIBILITY_SCAN.md` when the whole scan has run. Text contrast is asserted in a test of its own, marked as a known failure (U-02 to U-06). |
+| `j-case-pages.spec.ts` | The pages no demonstration content reaches: a seminar's own page and the moderators' case pages (a verification application, an identity conflict, a report about a business, its investigation, the appeal). Each answers, has a heading and no broken image, passes axe in both schemes with no contrast finding, and does not scroll sideways at 375px. |
 | `i-keyboard.spec.ts` | Sign-in, registration and business creation with the keyboard only; tab order, visible focus, Ctrl/Cmd+K, and menus and dialogs that close with Escape and give focus back. |
 
 ## Known failures
