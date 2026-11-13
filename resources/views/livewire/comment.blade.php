@@ -1,5 +1,5 @@
 <div class="ix-comment">
-    <span class="ix-avatar ix-avatar--sq" aria-hidden="true">{{ strtoupper(substr($comment->user->name ?? '?', 0, 1)) }}</span>
+    <x-ix.avatar :user="$comment->user" square aria-hidden="true" />
     <div>
         <div class="ix-comment__by">
             {{ $comment->user->name ?? 'Former member' }}

@@ -216,7 +216,7 @@
                                 <li>
                                     <div class="ixa-row ixa-row--av">
                                         <span class="ixa-rank">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
-                                        <span class="ix-avatar"><img src="https://www.gravatar.com/avatar/{{ md5($user->email) }}?d=mp&amp;s=56" width="28" height="28" alt="" loading="lazy"></span>
+                                        <x-ix.avatar :user="$user" />
                                         <span class="ixa-name">{{ $user->name }}</span>
                                         <span class="ixa-cnt"><x-ix.figure :value="$user->questions_count" :digits="2" /></span>
                                     </div>

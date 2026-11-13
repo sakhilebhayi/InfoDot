@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Cashier\Billable;
@@ -155,6 +156,53 @@ class User extends Authenticatable implements MustVerifyEmail
             .'<text x="32" y="42" text-anchor="middle" font-family="sans-serif" font-size="28" fill="#dae2fd">'.e($initial).'</text></svg>';
 
         return 'data:image/svg+xml;base64,'.base64_encode($svg);
+    }
+
+    /** The first letter of the person's name: what stands in for a picture wherever a person is shown. */
+    public function initial(): string
+    {
+        return mb_strtoupper(mb_substr(trim((string) $this->name) ?: '?', 0, 1));
+    }
+
+    /**
+     * The address of the person's profile picture, or null when there is none to show: no picture was saved, or the
+     * saved file is no longer on the disk (a restore without the storage folder leaves the row behind). Callers
+     * show the initial instead, so a page never carries a picture that cannot load.
+     */
+    public function photoUrl(): ?string
+    {
+        $path = $this->profile_photo_path;
+        if (! $path) {
+            return null;
+        }
+        // Asked once per request however many times the person appears on the page.
+        $key = 'photo-present:'.$path;
+        if (! request()->attributes->has($key)) {
+            request()->attributes->set($key, Storage::disk($this->profilePhotoDisk())->exists($path));
+        }
+
+        return request()->attributes->get($key) ? (string) $this->getAttribute('profile_photo_url') : null;
+    }
+
+    /**
+     * Whether the viewer may open this person's profile page: their own, or a person they share a company with.
+     * The page answers 404 for anyone else, so a name is a link only where this is true.
+     */
+    public function profileOpenTo(?self $viewer): bool
+    {
+        if (! $viewer) {
+            return false;
+        }
+        if ($viewer->id === $this->id) {
+            return true;
+        }
+        // Asked once per request: the same author is often named several times on one page.
+        $key = 'profile-open:'.$viewer->id.':'.$this->id;
+        if (! request()->attributes->has($key)) {
+            request()->attributes->set($key, $this->allTeams()->pluck('id')->intersect($viewer->allTeams()->pluck('id'))->isNotEmpty());
+        }
+
+        return (bool) request()->attributes->get($key);
     }
 
     public function likes()

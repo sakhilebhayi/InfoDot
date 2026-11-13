@@ -82,9 +82,9 @@
             <section class="ix-facts">
                 <h2>Details</h2>
                 <dl>
-                    <div><dt>Written by</dt><dd><a href="{{ route('profile.show', ['id' => $solution->user->id]) }}">{{ $solution->user->name }}</a>@if ($solution->user->isOfficialAccount()) <span class="ix-chip ix-chip--info">Official</span>@endif</dd></div>
+                    <div><dt>Written by</dt><dd><x-ix.person :user="$solution->user" />@if ($solution->user->isOfficialAccount()) <span class="ix-chip ix-chip--info">Official</span>@endif</dd></div>
                     @if (($improvers ?? collect())->isNotEmpty())
-                        <div><dt>Improved by</dt><dd>@foreach ($improvers as $improver)<a href="{{ route('profile.show', ['id' => $improver->id]) }}">{{ $improver->name }}</a>@if (! $loop->last), @endif @endforeach</dd></div>
+                        <div><dt>Improved by</dt><dd>@foreach ($improvers as $improver)<x-ix.person :user="$improver" />@if (! $loop->last), @endif @endforeach</dd></div>
                     @endif
                     <div><dt>Added</dt><dd>{{ $solution->created_at->diffForHumans() }}</dd></div>
                     <div><dt>Time it takes</dt><dd>@if ($solution->duration_type === 'infinite') Unknown @else {{ $solution->duration }} {{ Str::plural(rtrim($solution->duration_type, 's'), $solution->duration) }} @endif</dd></div>

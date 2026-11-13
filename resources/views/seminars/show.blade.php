@@ -25,7 +25,7 @@
 
     @if ($seminar->description)<p style="white-space: pre-line; max-width: 70ch;">{{ $seminar->description }}</p>@endif
 
-    <p class="ix-hint">Hosted by @if ($host->exists)<a href="{{ route('profile.show', ['id' => $host->id]) }}">{{ $host->name }}</a>@else{{ $host->name }}@endif.
+    <p class="ix-hint">Hosted by <x-ix.person :user="$host" />.
         @if ($stats['hosted'] > 0)
             They have hosted {{ $stats['hosted'] }} {{ $stats['hosted'] === 1 ? 'seminar' : 'seminars' }} with {{ $stats['attendees'] }} {{ $stats['attendees'] === 1 ? 'person' : 'people' }} attending{{ $stats['average'] !== null ? ', rated '.$stats['average'].' out of 5 by '.$stats['ratings'].' people' : '' }}.
         @else
@@ -164,7 +164,7 @@
             @if ($seminar->status === 'published')
                 <div class="ix-field">
                     <label class="ix-label" for="share-link">Share this seminar</label>
-                    <input class="ix-input" id="share-link" type="text" readonly value="{{ $seminar->shareUrl() }}" onfocus="this.select()">
+                    <input class="ix-input" id="share-link" type="text" readonly value="{{ $seminar->shareUrl() }}" x-data @focus="$el.select()">
                     <p class="ix-hint">This InfoDot link always opens the seminar page (people sign in first if they need to). Share it instead of the meeting link, which stays private to the people who registered.</p>
                 </div>
             @endif

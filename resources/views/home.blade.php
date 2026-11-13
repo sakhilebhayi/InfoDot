@@ -81,7 +81,7 @@
                     <div class="ix-roster">
                         @foreach ($people as $person)
                             <a href="{{ route('profile.show', ['id' => $person->id]) }}">
-                                <span class="ix-avatar">{{ strtoupper(substr($person->name, 0, 1)) }}</span>
+                                <x-ix.avatar :user="$person" />
                                 <span>{{ $person->name }}</span>
                             </a>
                         @endforeach

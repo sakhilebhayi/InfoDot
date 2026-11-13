@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attachment;
 use App\Models\BusinessRelationship;
 use App\Models\IdentityConflict;
 use App\Services\Identity\IdentityProtection;
@@ -38,10 +39,10 @@ class IdentityDeskController extends Controller
         return view('moderation.identity-conflict', [
             'c' => $conflict,
             'canDecide' => $this->identity->canReview($request->user(), $conflict),
-            'subjectLogo' => $conflict->subject->currentMedia('logo'),
-            'subjectCover' => $conflict->subject->currentMedia('cover'),
-            'protectedLogo' => $conflict->protected->currentMedia('logo'),
-            'protectedCover' => $conflict->protected->currentMedia('cover'),
+            'subjectLogo' => Attachment::shown($conflict->subject->currentMedia('logo')),
+            'subjectCover' => Attachment::shown($conflict->subject->currentMedia('cover')),
+            'protectedLogo' => Attachment::shown($conflict->protected->currentMedia('logo')),
+            'protectedCover' => Attachment::shown($conflict->protected->currentMedia('cover')),
             'kinds' => BusinessRelationship::KINDS,
         ]);
     }
