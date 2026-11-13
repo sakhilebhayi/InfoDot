@@ -97,7 +97,7 @@
                     <form method="post" action="{{ route('business.media', $team) }}" enctype="multipart/form-data" class="ix-form" data-crop-form data-crop-aspect="1">
                         @csrf
                         <input type="hidden" name="role" value="logo">
-                        <input type="file" name="file" accept="image/jpeg,image/png,image/webp,image/gif" required class="ix-input" data-crop-file>
+                        <input type="file" name="file" accept="image/jpeg,image/png,image/webp,image/gif" required class="ix-input" data-crop-file aria-label="Logo picture">
                         <div class="ix-crop" data-crop-frame hidden>
                             <div class="ix-crop__window" style="aspect-ratio: 1 / 1"><img alt="" data-crop-img draggable="false"></div>
                             <label class="ix-crop__zoom">Zoom <input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom></label>
@@ -117,7 +117,7 @@
                 <form method="post" action="{{ route('business.media', $team) }}" enctype="multipart/form-data" class="ix-form" data-crop-form data-crop-aspect="3.2">
                     @csrf
                     <input type="hidden" name="role" value="cover">
-                    <input type="file" name="file" accept="image/jpeg,image/png,image/webp,image/gif" required class="ix-input" data-crop-file>
+                    <input type="file" name="file" accept="image/jpeg,image/png,image/webp,image/gif" required class="ix-input" data-crop-file aria-label="Cover photograph">
                     <div class="ix-crop" data-crop-frame hidden>
                         <div class="ix-crop__window" style="aspect-ratio: 16 / 5"><img alt="" data-crop-img draggable="false"></div>
                         <label class="ix-crop__zoom">Zoom <input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom></label>

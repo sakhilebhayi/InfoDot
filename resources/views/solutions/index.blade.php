@@ -14,6 +14,8 @@
         </a>
     </div>
 
+    @if (session('status'))<p class="ix-alert" role="status">{{ session('status') }}</p>@endif
+
     @include('topics._filter', ['route' => route('solutions')])
     @include('attachments._haspills', ['route' => route('solutions'), 'filterSlug' => $filterSlug, 'filterHas' => $filterHas])
 

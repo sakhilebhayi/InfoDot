@@ -13,6 +13,8 @@
         </div>
     </div>
 
+    @if (session('status'))<p class="ix-alert" role="status">{{ session('status') }}</p>@endif
+
     <form class="ix-askbar" action="{{ route('seek') }}" method="GET" role="search">
         <label for="askbar-q" class="ix-askbar__label">Ask</label>
         <input id="askbar-q" name="question" type="text" maxlength="255" class="ix-askbar__input" placeholder="{{ $industry['ask_title'] }}" autocomplete="off">
@@ -44,8 +46,8 @@
                         @php($replies = $question->comments_count + $question->answers_count)
                         <li class="ix-q {{ $isSolved ? 'is-solved' : '' }}"
                             x-show="(show === 'all' || show === '{{ $isSolved ? 'done' : 'open' }}') && (q === '' || @js(strtolower($question->question.' '.$question->description)).includes(q.toLowerCase()))">
-                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-q__count" aria-label="{{ $replies }} {{ Str::plural('reply', $replies) }}">
-                                <span class="ix-stencil-num">{{ str_pad((string) min($replies, 99), 2, '0', STR_PAD_LEFT) }}</span>
+                            <a href="{{ route('questions.view', ['qid' => $question->id]) }}" class="ix-q__count">
+                                <span class="ix-stencil-num" aria-hidden="true">{{ str_pad((string) min($replies, 99), 2, '0', STR_PAD_LEFT) }}</span><span class="ix-sr">{{ $replies }}</span>
                                 <small>{{ Str::plural('reply', $replies) }}</small>
                             </a>
                             <div class="ix-q__body">
