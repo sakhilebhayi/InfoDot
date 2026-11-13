@@ -272,7 +272,7 @@ class Team extends JetstreamTeam
 
         return match (true) {
             in_array('restricted', $listing['missing'], true) => 'Saved. '.$this->name.' stays out of the directory while InfoDot reviews it.',
-            $listing['audience'] === TeamProfile::PRIVATE => 'Saved. '.$this->name.' is not listed; its page is for your own team.',
+            $listing['audience'] === TeamProfile::PRIVATE => 'Saved. '.$this->name.' is not listed; its page is for people in your company.',
             in_array('description', $listing['missing'], true) => 'Saved. Not listed yet: say what the business does and '.$this->name.' will be listed for '.$audience.'.',
             $listing['audience'] === TeamProfile::PUBLIC => 'Saved. '.$this->name.' is listed for anyone, and its page opens without signing in.',
             default => 'Saved. '.$this->name.' is listed for people signed in to InfoDot.',

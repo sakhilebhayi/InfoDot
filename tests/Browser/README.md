@@ -65,7 +65,7 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 | File | What it proves |
 |---|---|
 | `a-new-user.spec.ts` | A visitor walks the public pages, registers, verifies by email, edits the profile, uploads a 4032 x 3024 photo, moves through the signed-in areas, signs out and in. |
-| `b-business.spec.ts` | "Create team", logo and cover through the crop frame, profile, found in the directory by search, an enquiry from another person, the owner's reply, an edit that shows on the public page. |
+| `b-business.spec.ts` | "Create a company", logo and cover through the crop frame, profile, found in the directory by search, an enquiry from another person, the owner's reply, an edit that shows on the public page. |
 | `c-knowledge.spec.ts` | Library and an existing solution, a question with a picture, an answer from a colleague, 404 for an outsider, a solution with steps, a report, and a moderator hiding the reported item. |
 | `d-permissions.spec.ts` | Private business pages, another person's attachment, the moderation area and another business's edit page are refused with 403/404 or the sign-in page, never a server error. |
 | `e-mobile.spec.ts` | The main journey on a phone and a tablet, with no sideways scrolling on any page. A second test checks that primary buttons are 44 x 44; it is marked as a known failure (see `docs/programme/r49/UX_FINDINGS.md`, U-01). |

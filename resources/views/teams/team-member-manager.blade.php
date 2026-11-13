@@ -3,17 +3,17 @@
         <!-- Add Team Member -->
         <x-jet-form-section submit="addTeamMember">
             <x-slot name="title">
-                {{ __('Add team member') }}
+                {{ __('Add a person') }}
             </x-slot>
 
             <x-slot name="description">
-                {{ __('Add a new team member to your team, allowing them to collaborate with you.') }}
+                {{ __('Invite someone to your company so they can work in it with you.') }}
             </x-slot>
 
             <x-slot name="form">
                 <div class="col-span-6">
                     <div class="max-w-xl text-sm" style="color: var(--ix-text-2);">
-                        {{ __('Please provide the email address of the person you would like to add to this team.') }}
+                        {{ __('Enter the email address of the person you want to add to this company.') }}
                     </div>
                 </div>
 
@@ -75,11 +75,11 @@
         <!-- Team Member Invitations -->
         <x-jet-action-section>
             <x-slot name="title">
-                {{ __('Pending team invitations') }}
+                {{ __('Invitations not yet answered') }}
             </x-slot>
 
             <x-slot name="description">
-                {{ __('These people have been invited to your team and have been sent an invitation email. They may join the team by accepting the email invitation.') }}
+                {{ __('These people have been sent an invitation email. They join the company by accepting it.') }}
             </x-slot>
 
             <x-slot name="content">
@@ -124,11 +124,11 @@
         <!-- Manage Team Members -->
         <x-jet-action-section>
             <x-slot name="title">
-                {{ __('Team members') }}
+                {{ __('People in the company') }}
             </x-slot>
 
             <x-slot name="description">
-                {{ __('All of the people that are part of this team.') }}
+                {{ __('Everyone who is part of this company.') }}
             </x-slot>
 
             <!-- Team Member List -->
@@ -221,11 +221,11 @@
     <!-- Leave Team Confirmation Modal -->
     <x-jet-confirmation-modal wire:model="confirmingLeavingTeam">
         <x-slot name="title">
-            {{ __('Leave team') }}
+            {{ __('Leave company') }}
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you would like to leave this team?') }}
+            {{ __('Are you sure you would like to leave this company?') }}
         </x-slot>
 
         <x-slot name="footer">
@@ -242,11 +242,11 @@
     <!-- Remove Team Member Confirmation Modal -->
     <x-jet-confirmation-modal wire:model="confirmingTeamMemberRemoval">
         <x-slot name="title">
-            {{ __('Remove team member') }}
+            {{ __('Remove person') }}
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you would like to remove this person from the team?') }}
+            {{ __('Are you sure you would like to remove this person from the company?') }}
         </x-slot>
 
         <x-slot name="footer">

@@ -123,8 +123,8 @@ class EnterpriseShellTest extends TestCase
         $owner = $this->owner();
         $editor = $this->editorIn($owner->currentTeam);
 
-        $this->actingAs($owner)->get('/home')->assertSee('Team settings');
-        $this->actingAs($editor)->get('/home')->assertOk()->assertDontSee('Team settings')->assertDontSee('API tokens');
+        $this->actingAs($owner)->get('/home')->assertSee('Company settings');
+        $this->actingAs($editor)->get('/home')->assertOk()->assertDontSee('Company settings')->assertDontSee('API tokens');
     }
 
     public function test_people_lists_only_the_companys_members_with_their_roles(): void

@@ -55,7 +55,7 @@ class TeamProfile extends Model
     public const VISIBILITY = [
         self::PUBLIC => 'Anyone — listed in the directory, and the page opens without signing in',
         self::MEMBERS => 'InfoDot users — listed for people signed in to InfoDot',
-        self::PRIVATE => 'Only this business — not listed; the page is for your own team',
+        self::PRIVATE => 'Only this business — not listed; the page is for people in your company',
     ];
 
     public const BUSINESS_TYPES = [

@@ -5,7 +5,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">People</h1>
-            <p class="ix-lede">@if ($team && $team->personal_team)This is your personal workspace, so you are the only person in it. Create a business and you can invite the people you work with.@else Everyone working under <b>{{ $team->name ?? 'your workspace' }}</b>. Roles decide who can invite, change settings and see company-private knowledge.@endif</p>
+            <p class="ix-lede">@if ($team && $team->personal_team)This is your personal workspace, so you are the only person in it. Create a company and you can invite the people you work with.@else Everyone working under <b>{{ $team->name ?? 'your workspace' }}</b>. Roles decide who can invite, change settings and see company-private knowledge.@endif</p>
         </div>
         @if ($team && ! $team->personal_team)
             <a href="{{ route('business.show', $team) }}" class="ix-btn ix-btn--ghost">
@@ -15,7 +15,7 @@
         @if ($team && $team->personal_team)
             {{-- A personal workspace is one person's; people are invited into a business. --}}
             <a href="{{ route('teams.create') }}" class="ix-btn ix-btn--primary">
-                <span class="material-symbols-rounded" aria-hidden="true">add</span>Set up a business to invite people
+                <span class="material-symbols-rounded" aria-hidden="true">add</span>Create a company to invite people
             </a>
         @elseif ($canManage && $team)
             <a href="{{ route('teams.show', $team->id) }}" class="ix-btn ix-btn--primary">

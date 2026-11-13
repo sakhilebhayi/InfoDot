@@ -46,15 +46,15 @@ test.describe('G. When something goes wrong', () => {
         await page.goto('/teams/create');
 
         // Nothing filled in.
-        await page.getByRole('button', { name: 'Create business' }).click();
+        await page.getByRole('button', { name: 'Create company' }).click();
         await expect(page.getByText('The name field is required.')).toBeVisible();
         await expect(page.getByText('Choose who can see the business.')).toBeVisible();
         await expect(page).toHaveURL(/\/teams\/create$/);
 
         // A name, but still no choice of who can see it.
         const name = `Half Made ${unique()}`;
-        await page.getByLabel('Business name').fill(name);
-        await page.getByRole('button', { name: 'Create business' }).click();
+        await page.getByLabel('Company name').fill(name);
+        await page.getByRole('button', { name: 'Create company' }).click();
         await expect(page.getByText('Choose who can see the business.')).toBeVisible();
         await expect(page.getByText('The name field is required.')).toHaveCount(0);
         expect(rows('teams', { name })).toHaveLength(0);
@@ -112,9 +112,9 @@ test.describe('G. When something goes wrong', () => {
         // A business logo.
         const name = `Logo Trouble ${unique()}`;
         await page.goto('/teams/create');
-        await page.getByLabel('Business name').fill(name);
+        await page.getByLabel('Company name').fill(name);
         await page.getByRole('radio', { name: /^Only this business/ }).check();
-        await page.getByRole('button', { name: 'Create business' }).click();
+        await page.getByRole('button', { name: 'Create company' }).click();
         await expect(page).toHaveURL(/\/business\/[0-9a-f-]{36}\/edit/);
         const logo = page.locator('#logo form[data-crop-form]');
         await logo.locator('[data-crop-file]').setInputFiles(fixture('not-a-picture.txt'));

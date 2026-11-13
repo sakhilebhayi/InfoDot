@@ -115,12 +115,12 @@ test.describe('E. On a phone or tablet', () => {
         // A business: created, then managed.
         const name = `Zanele Spaza ${unique()}`;
         await page.getByRole('button', { name: 'Company menu' }).click();
-        await page.getByRole('link', { name: 'Create a business' }).click();
+        await page.getByRole('link', { name: 'Create a company' }).click();
         await check(page, findings);
-        await page.getByLabel('Business name').fill(name);
+        await page.getByLabel('Company name').fill(name);
         await page.getByLabel('What the business does').fill('A spaza shop selling groceries, airtime and prepaid electricity in Soshanguve.');
         await page.getByRole('radio', { name: /^Anyone/ }).check();
-        await page.getByRole('button', { name: 'Create business' }).click();
+        await page.getByRole('button', { name: 'Create company' }).click();
         await expect(page).toHaveURL(/\/business\/[0-9a-f-]{36}\/edit/);
         await check(page, findings);
         const team = rows('teams', { name })[0];

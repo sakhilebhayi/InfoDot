@@ -16,7 +16,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">What InfoDot is doing for {{ $team->name }}</h1>
-            <p class="ix-lede">Counted from what actually happened{{ $r['since'] ? ' since '.$r['since']->format('j M Y') : '' }}. A view is one visitor in a day; your own team, reviewers and previews are not counted, and nothing about who visited is kept.</p>
+            <p class="ix-lede">Counted from what actually happened{{ $r['since'] ? ' since '.$r['since']->format('j M Y') : '' }}. A view is one visitor in a day; people in your company, reviewers and previews are not counted, and nothing about who visited is kept.</p>
         </div>
         <div class="ix-filters" role="group" aria-label="Period">
             <a class="ix-pill" href="{{ route('business.insights', [$team, 'days' => 30]) }}" @if($r['days'] === 30) aria-current="true" @endif>30 days</a>

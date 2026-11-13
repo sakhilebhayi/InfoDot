@@ -12,7 +12,7 @@
     @endphp
     <div class="ix-pagehead">
         <div>
-            <h1 class="ix-h1">Team settings</h1>
+            <h1 class="ix-h1">Company settings</h1>
             <p class="ix-lede">{{ $team->name }}@if($team->code) &middot; owner code <span class="ix-ref">{{ $team->code }}</span>@endif</p>
         </div>
         @if (! $team->personal_team)

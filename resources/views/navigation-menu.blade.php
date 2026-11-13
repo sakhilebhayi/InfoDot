@@ -20,7 +20,7 @@
                     </a>
                     @if (\App\Support\NavSection::administersTeam(Auth::user()))
                         <a class="ix-pop__item" href="{{ route('teams.show', $company->id) }}">
-                            <span class="material-symbols-rounded" aria-hidden="true">settings</span>{{ __('Team settings') }}
+                            <span class="material-symbols-rounded" aria-hidden="true">settings</span>{{ __('Company settings') }}
                         </a>
                         @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
                             <a class="ix-pop__item" href="{{ route('api-tokens.index') }}">
@@ -31,7 +31,7 @@
                 @endif
                 @can('create', Laravel\Jetstream\Jetstream::newTeamModel())
                     <a class="ix-pop__item" href="{{ route('teams.create') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">add</span>Create a business
+                        <span class="material-symbols-rounded" aria-hidden="true">add</span>Create a company
                     </a>
                 @endcan
 

@@ -118,8 +118,8 @@ class NavSection
             request()->routeIs('business.inbox.*') => [['Businesses', route('businesses.index')], [self::title(Team::class, 'name', request()->route('team')?->id), route('business.show', request()->route('team'))], ['Inbox', route('business.inbox', request()->route('team'))], ['Enquiry', null]],
             request()->routeIs('business.show') => [['Businesses', route('businesses.index')], [self::title(Team::class, 'name', request()->route('team')?->id), null]],
             request()->routeIs('business.edit', 'business.update', 'business.media', 'business.media.remove') => [['Businesses', route('businesses.index')], ['Edit profile', null]],
-            request()->routeIs('teams.show') => [['Administration', null], ['Team settings', null]],
-            request()->routeIs('teams.create') => [['Administration', null], ['New business', null]],
+            request()->routeIs('teams.show') => [['Administration', null], ['Company settings', null]],
+            request()->routeIs('teams.create') => [['Administration', null], ['New company', null]],
             request()->routeIs('api-tokens.*') => [['Administration', null], ['API tokens', null]],
             default => [['InfoDot', null]],
         };

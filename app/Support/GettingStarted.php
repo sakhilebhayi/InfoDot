@@ -122,11 +122,11 @@ final class GettingStarted
         if ($business === null) {
             return [
                 'key' => 'business',
-                'title' => 'Create your business and list it',
-                'note' => 'A business gets its own four-letter owner code, a page and a place in the directory.',
+                'title' => 'Create your company and list its business page',
+                'note' => 'A company gets its own four-letter owner code, and its business page a place in the directory.',
                 'done' => false,
                 'url' => route('teams.create'),
-                'action' => 'Set up a business',
+                'action' => 'Create a company',
             ];
         }
 
@@ -135,7 +135,7 @@ final class GettingStarted
             $listing['listed'] => null,
             in_array('restricted', $listing['missing'], true) => 'It stays out of the directory while InfoDot reviews it.',
             in_array('visibility', $listing['missing'], true) && in_array('description', $listing['missing'], true) => 'Not listed yet: say what the business does and choose who may see it.',
-            in_array('visibility', $listing['missing'], true) => 'Not listed yet: its page is for your own team until you choose who may see it.',
+            in_array('visibility', $listing['missing'], true) => 'Not listed yet: its page is for people in your company until you choose who may see it.',
             default => 'Not listed yet: say what the business does.',
         };
 

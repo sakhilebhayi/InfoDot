@@ -3,7 +3,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Add a solution</h1>
-            <p class="ix-lede">Write a repeatable, step-by-step answer someone else on the team can follow without asking you.</p>
+            <p class="ix-lede">Write a repeatable, step-by-step answer someone else in the company can follow without asking you.</p>
         </div>
     </div>
 
