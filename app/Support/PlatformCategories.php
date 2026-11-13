@@ -21,4 +21,35 @@ final class PlatformCategories
         'operations_industry' => 'Operations and Industry',
         'automation_ai' => 'Automation and AI',
     ];
+
+    /**
+     * How a category is plated wherever platforms are grouped (the Platforms page, Dot Apps): the stencilled code
+     * and the container colour of its plate. Every key of ALL has one; a test pins that.
+     *
+     * @var array<string, array{0: string, 1: string}> key => [code, tone]
+     */
+    public const PLATES = [
+        'business_management' => ['BSNS', 'people'],
+        'finance_administration' => ['FINA', 'files'],
+        'productivity_collaboration' => ['WORK', 'knowledge'],
+        'sales_commerce' => ['SALE', 'platforms'],
+        'marketing_design' => ['MRKT', 'documents'],
+        'data_intelligence' => ['DATA', 'analytics'],
+        'human_resources' => ['CREW', 'people'],
+        'learning_development' => ['LEARN', 'documents'],
+        'operations_industry' => ['OPER', 'files'],
+        'automation_ai' => ['AUTO', 'analytics'],
+    ];
+
+    /** The first category a platform names that the catalogue knows: where it is listed when a list shows it once. */
+    public static function primary(mixed $categories): ?string
+    {
+        foreach ((array) $categories as $key) {
+            if (is_string($key) && isset(self::ALL[$key])) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
 }
