@@ -435,8 +435,19 @@ body.ix {
 .ix-gate__who {
     min-width: 0;
     padding: 24px 0 8px;
-    border-left: 6px solid var(--ix-stencil);
-    padding-left: 20px;
+}
+
+/* The owner code, stencilled in gold at the far end of the gate: Home's one mark. No stripe beside the name. */
+.ix-gate__code {
+    margin: 0 0 4px;
+    font-family: var(--ix-stencil-font);
+    font-weight: 800;
+    font-size: clamp(56px, 11vw, 132px);
+    line-height: 0.82;
+    letter-spacing: 0.04em;
+    color: var(--ix-stencil);
+    white-space: nowrap;
+    user-select: all;
 }
 
 .ix-gate__who h1 {
