@@ -66,16 +66,40 @@ final class BusinessInsights
         }
         session()->put($key, true);
 
+        // One statement per table for the whole page, not two or three per business on it (measured: 96 writes for
+        // a page of 24). The unique keys on both tables make the add-or-insert a single upsert.
         $day = now()->toDateString();
+        $stats = [];
+        $terms = [];
         foreach ($teams as $team) {
-            $this->upsert('business_stats_daily', ['team_id' => $team->id, 'day' => $day, 'metric' => 'search'], 1);
+            $stats[] = ['team_id' => $team->id, 'day' => $day, 'metric' => 'search', 'count' => 1];
             if ($query !== '') {
-                $this->upsert('business_search_terms_daily', ['team_id' => $team->id, 'day' => $day, 'term' => mb_substr($query, 0, 80)], 1);
+                $terms[] = ['team_id' => $team->id, 'day' => $day, 'term' => mb_substr($query, 0, 80), 'count' => 1];
             }
-            foreach ($serviceHits[$team->id] ?? [] as $serviceId) {
-                $this->upsert('business_stats_daily', ['team_id' => $team->id, 'day' => $day, 'metric' => 'service:'.$serviceId], 1);
+            foreach (array_unique($serviceHits[$team->id] ?? []) as $serviceId) {
+                $stats[] = ['team_id' => $team->id, 'day' => $day, 'metric' => 'service:'.$serviceId, 'count' => 1];
             }
         }
+
+        $this->addAll('business_stats_daily', $stats, ['team_id', 'day', 'metric']);
+        $this->addAll('business_search_terms_daily', $terms, ['team_id', 'day', 'term']);
+    }
+
+    /**
+     * Add one to each row's count, inserting the rows that do not exist yet, in a single statement.
+     *
+     * @param  list<array<string, int|string>>  $rows
+     * @param  list<string>  $uniqueBy
+     */
+    private function addAll(string $table, array $rows, array $uniqueBy): void
+    {
+        if ($rows === []) {
+            return;
+        }
+
+        $count = DB::getQueryGrammar()->wrap($table.'.count');
+
+        DB::table($table)->upsert($rows, $uniqueBy, ['count' => DB::raw($count.' + 1')]);
     }
 
     /**
