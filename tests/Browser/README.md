@@ -53,7 +53,7 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 
 | Project | Browser and size | Runs |
 |---|---|---|
-| `desktop-chromium` | Chromium, 1440 x 900 | everything except E (A to D, F to J) |
+| `desktop-chromium` | Chromium, 1440 x 900 | everything except E (A to D, F to K) |
 | `desktop-firefox` | Firefox, 1440 x 900 | A, B, D, G |
 | `desktop-webkit` | WebKit, 1440 x 900 | A, B, D, G |
 | `phone-webkit` | WebKit, iPhone 14 | E |
@@ -73,6 +73,7 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 | `g-failure-paths.spec.ts` | Wrong password, an email already registered, a business with fields missing, uploads that are too large or the wrong type: each gets a clear message and no server error. |
 | `h-accessibility.spec.ts` | axe-core, WCAG 2.0/2.1/2.2 A and AA, light and dark colour schemes. Fails on serious or critical violations and writes `docs/programme/r49/ACCESSIBILITY_SCAN.md` when the whole scan has run. Text contrast is asserted in a test of its own, marked as a known failure (U-02 to U-06). |
 | `j-case-pages.spec.ts` | The pages no demonstration content reaches: a seminar's own page and the moderators' case pages (a verification application, an identity conflict, a report about a business, its investigation, the appeal). Each answers, has a heading and no broken image, passes axe in both schemes with no contrast finding, and does not scroll sideways at 375px. |
+| `k-platform-access.spec.ts` | A platform the company has not switched on (R-50): the launch answers 403 with the reason, an employee is told whom to ask, the owner switches a free platform on. axe and contrast in both schemes, no sideways scroll at 1440 and 375, a picture of each in `screens/`. |
 | `i-keyboard.spec.ts` | Sign-in, registration and business creation with the keyboard only; tab order, visible focus, Ctrl/Cmd+K, and menus and dialogs that close with Escape and give focus back. |
 
 ## Known failures

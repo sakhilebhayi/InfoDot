@@ -26,6 +26,8 @@ use App\Services\Attachments\TeamMediaService;
 use App\Services\Enquiries\EnquiryService;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Knowledge\InAppNotices;
+use App\Services\Platforms\EntitlementRefused;
+use App\Services\Platforms\Entitlements;
 use App\Services\Profile\ProfilePhoto;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -58,6 +60,9 @@ class DemoInstaller
     /** @var array<string, Team> */
     private array $companies = [];
 
+    /** The platforms the first demonstration company has switched on (R-50). */
+    public const ACTIVATED_PLATFORMS = ['projects', 'hr'];
+
     /** @var array<string, Solutions> */
     private array $solutions = [];
 
@@ -72,6 +77,7 @@ class DemoInstaller
         private readonly AnswerService $answers,
         private readonly EnquiryService $enquiries,
         private readonly InAppNotices $notices,
+        private readonly Entitlements $entitlements,
     ) {}
 
     /**
@@ -218,6 +224,8 @@ class DemoInstaller
             $this->companies[$key] = $this->company($company);
         }
 
+        $this->activatePlatforms();
+
         foreach ($content['solutions'] as $key => $solution) {
             $this->solutions[$key] = $this->solution($solution);
         }
@@ -228,6 +236,29 @@ class DemoInstaller
 
         $this->confirm($content['confirmation']);
         $this->enquire($content['enquiry']);
+    }
+
+    /**
+     * The first demonstration company switches on two platforms beyond the free core (R-50), through the same service
+     * its owner would use, so the demonstration shows an activated state. The other companies keep the core only,
+     * like every new company. A platform that cannot be switched on for free here is skipped, never forced.
+     */
+    private function activatePlatforms(): void
+    {
+        $company = array_values($this->companies)[0] ?? null;
+        $owner = $company?->owner;
+
+        if ($company === null || ! $owner instanceof User) {
+            return;
+        }
+
+        foreach (self::ACTIVATED_PLATFORMS as $key) {
+            try {
+                $this->entitlements->activate($company, $key, $owner);
+            } catch (EntitlementRefused) {
+                continue;
+            }
+        }
     }
 
     /** @param array<string, mixed> $person */
