@@ -27,9 +27,15 @@ if (input && !reduce) {
     input.addEventListener('input', () => { if (timer && input.value !== '') window.clearInterval(timer); }, { once: true });
 }
 
-if (root.classList.contains('has-motion') && !reduce) {
+// The layout's own timer shows the page if this file is late. If it has already fired, the visitor is looking at the finished
+// page: hiding it again to animate it in would be a flicker, so the motion is skipped altogether.
+const shownAlready = root.classList.contains('motion-failsafe');
+
+if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
+    window.clearTimeout(window.__motionFailsafe);
+
     // If anything below fails to run, show the page rather than leave it blank.
-    const failsafe = window.setTimeout(() => root.classList.add('motion-failsafe'), 3500);
+    const failsafe = window.setTimeout(() => root.classList.add('motion-failsafe'), 1500);
 
     // The failsafe only matters if the animation never starts (a script error, a throttled tab); once it has started it is not needed.
     const hero = gsap.timeline({ defaults: { ease: 'expo.out' }, onStart: () => window.clearTimeout(failsafe) });
