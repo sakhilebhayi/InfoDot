@@ -4,13 +4,13 @@ namespace App\Providers;
 
 use App\Listeners\RecordSeatReleased;
 use App\Listeners\SendMembershipChange;
+use App\Listeners\SendVerificationEmailSafely;
 use App\Listeners\Sso\PropagateCentralLogout;
 use App\Listeners\Sso\RecordPlatformSession;
 use App\Listeners\SyncCompanyToBilling;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Laravel\Jetstream\Events\TeamCreated;
@@ -29,7 +29,7 @@ class EventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         Registered::class => [
-            SendEmailVerificationNotification::class,
+            SendVerificationEmailSafely::class,
         ],
         // Platforms that copy a company's membership are told at once (see MembershipWebhook).
         TeamMemberRemoved::class => [[SendMembershipChange::class, 'handleRemoved'], RecordSeatReleased::class],
@@ -49,6 +49,15 @@ class EventServiceProvider extends ServiceProvider
      * @return void
      */
     public function boot()
+    {
+        //
+    }
+
+    /**
+     * The framework adds its own verification-mail listener whenever its class is not in $listen. That listener lets
+     * a mail failure fail the sign-up request, and would send a second copy beside SendVerificationEmailSafely.
+     */
+    protected function configureEmailVerification()
     {
         //
     }
