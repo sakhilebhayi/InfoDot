@@ -40,7 +40,7 @@ Switch-on after verification: run `php artisan sso:platform register central` on
 
 ## R-20.3 Platform Migration Waves
 
-After Dot.Central succeeds, migrate every remaining platform in controlled waves (Mines, Analytics, Brain, Memory, Docs, Tasks, Projects, Design, Billing, Notify, Pulse, Farms, HR, Plug, Charts, Emall, Ehail, Agents, Auction, any additional deployed platform). Each must verify: registration redirects, login redirects, secure callback, local session creation, logout, token validation, authorization, tenant isolation, subscription enforcement, error handling. No platform may retain an alternative login after migration.
+After Dot.Central succeeds, migrate every remaining platform in controlled waves (Mines, Analytics, Brain, Memory, Docs, Tasks, Projects, Design, Notify, Pulse, HR, Charts, Emall, Ehail, Agents, Auction, any additional deployed platform). Each must verify: registration redirects, login redirects, secure callback, local session creation, logout, token validation, authorization, tenant isolation, subscription enforcement, error handling. No platform may retain an alternative login after migration.
 
 ## R-20.4 Remove Legacy Authentication
 

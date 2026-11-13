@@ -3,7 +3,7 @@
 ## 2026-10-18 (before this programme document set)
 - Merged and deployed the 13-platform completion work; deployed Dot.Analytics; InfoDot marks all 14 active
   (InfoDot PRs #35, #36, #37, #38; Dot.Analytics PR #22). Details: `docs/platform-completion-register.md`.
-- Host dropped SSH connections during 9 failed deploy attempts (Emall 2, Tutor 2, Analytics 2, HR, Pulse, Plug; exit 255 / "exec request failed"); each deploy passed on a later attempt.
+- Host dropped SSH connections during 8 failed deploy attempts (Emall 2, Tutor 2, Analytics 2, HR, Pulse; exit 255 / "exec request failed"); each deploy passed on a later attempt.
 
 ## 2026-10-19: baseline increment
 - Inventoried 27 Dot repositories, probed every host, read CI and PR state (ECOSYSTEM_INVENTORY.md).
@@ -13,8 +13,8 @@
 
 ## 2026-10-19: R-1 diagnosis
 - Added the read-only Host Health workflow (InfoDot PR #40); ran it twice. Found the process-limit burst (`fork: Resource temporarily unavailable`, 57 artisan processes at t+7 s).
-- Opened 13 cron-spread PRs (see REMEDIATION_ROADMAP.md R-1). Not merged, not deployed.
-- Merged the 13 cron-spread PRs and deployed the 13 platforms one at a time (Tasks needed one re-run: the host killed `composer install` after maintenance mode started, site down about 7 minutes; Emall and several others needed retries after SSH drops; a GitHub Actions incident queued Finance for about 25 minutes and hung Farms' post-run cleanup). All 13 end healthy (/ /login /up 200, POST /up 405).
+- Opened 11 cron-spread PRs (see REMEDIATION_ROADMAP.md R-1). Not merged, not deployed.
+- Merged the 11 cron-spread PRs and deployed the 11 platforms one at a time (Tasks needed one re-run: the host killed `composer install` after maintenance mode started, site down about 7 minutes; Emall and several others needed retries after SSH drops; a GitHub Actions incident queued Finance for about 25 minutes). All 11 end healthy (/ /login /up 200, POST /up 405).
 - Re-ran Host Health: burst still reaches the process limit (51 artisan processes at t+7 s). R-1 is open; next step is the bounded-concurrency runner.
 - Rollout step 1: merged the runner, installed it (two failed installs were rolled back by the read-back check: the host shell has no /dev/fd), merged the 13 runner-mode pipeline PRs, migrated tasks, notify, pulse. Pilot result: scheduler commands killed (rc 137 / 125) in most minutes while the 39 other lines still burst at second 0. The other 10 new apps and the older apps are NOT migrated. See REMEDIATION_ROADMAP.md R-1.
 - Migrated the 10 other new apps (13 on the runner), merged the diagnostics (#46), the second-30 start and the pilot docs (#47, #48), refreshed the runner. Failure counts: see REMEDIATION_ROADMAP.md R-1.
@@ -74,7 +74,7 @@ Written 2026-10-23 from the pull-request lists, deploy and workflow histories an
 
 ## 2026-10-28 evening: deploy wave, InfoDot, Dopemine collusion safeguard
 
-- **Deploy wave.** All 22 manual-deploy apps (Plug to Charts) deployed one at a time from `main`, each checked from outside (`/up` 200, `/login` same as before, built assets 200, `POST /up` 405); 22 of 22 PASS, none failed. Mines, Central and docs had passed earlier the same day.
+- **Deploy wave.** All 22 manual-deploy apps deployed one at a time from `main`, each checked from outside (`/up` 200, `/login` same as before, built assets 200, `POST /up` 405); 22 of 22 PASS, none failed. Mines, Central and docs had passed earlier the same day.
 - **InfoDot.** Fresh backup first (`Backups` mode `run`, key `infodot`: ok), then deploy of `b383a7d`: PASS. `/`, `/contact`, `/login`, `/up` 200; `POST /up` 405; `/main/` `.env`, `.git`, `composer.json`, logs, `artisan`, `vendor` 403. The sign-in handoff check from outside still needs the owner.
 - **Dopemine (#46, pair-decay collusion safeguard).** Merged, then deployed (`f41dffe`); the code is live and `/up` and `/login` answer as before, but the run is **red**: the post-deploy app-folder probe saw HTTP 200 on all nine paths at 17:28Z, and 403/404 20 s and 25 min later. Evidence: the nine requests are not in the Dopemine or main-domain access logs (the 17:15 probe is), no sensitive path was answered with a body in any log, and an unknown host on the same address answers 404, not 200. Cause **not found**; no evidence that a file was served. `Access Log Window` (#115) was added to look at one site and one window (status, bytes, category only). Dopemine #47 makes its probe record the size and type of a first 200 and retry once; the other apps still use the old probe.
 - **R-12 first increment.** Dot.Brain #40 (merged): `services/ux-interactions`, `schemas/ux-interaction-event.schema.json`, ADR-0025 (proposed; owner decisions D1 to D3 open). A contract only: no product emits an event and nothing measures anything.

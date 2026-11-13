@@ -34,8 +34,8 @@ proprietary cross-app handoff that R-20 supersedes:
   that uuid is now the OIDC subject.
 - Deploy reality: ~18 platforms live on `*.infodot.co.za` (InfoDot, mines, central, doc, engage,
   forms, pres, sheets, memory, dopemine, charts, agents, emall, ehail, auction, projects, tasks,
-  tutor…); mines/central/doc deploy on merge, the rest manually; the 7 older satellites
-  (Analytics, Pulse, Plug, Notify, Billing, Farms, HR) have **no deploy pipeline** (dev-only).
+  tutor…); mines/central/doc deploy on merge, the rest manually; the 4 older satellites
+  (Analytics, Pulse, Notify, HR) have **no deploy pipeline** (dev-only).
   Many `.env.example`/README domain values still say the dead `*.infodot.app` — ignore them.
 - Special cases: Dot.Charts is API-first (bearer token in localStorage — flagged), Dot.Press is
   Inertia/Vue with a real Sanctum API that must keep working, Dot.Agents has Socialite for social

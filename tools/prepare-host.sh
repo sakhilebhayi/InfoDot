@@ -20,7 +20,7 @@ SSH_BIN="${SSH_BIN:-ssh}"
 cap() { case "$1" in hr) echo HR;; *) echo "$(tr '[:lower:]' '[:upper:]' <<<"${1:0:1}")${1:1}";; esac; }
 
 for K in "$@"; do
-  case "$K" in analytics|tasks|auction|ehail|notify|farms|finance|emall|billing|hr|tutor|design|pulse|plug) ;; *) echo "unknown platform $K" >&2; exit 2;; esac
+  case "$K" in analytics|tasks|auction|ehail|notify|finance|emall|hr|tutor|design|pulse) ;; *) echo "unknown platform $K" >&2; exit 2;; esac
   HOST="$K.$BASE_DOMAIN"; REPO="$REPO_BASE/Dot.$(cap "$K").git"
   BRANCH=main; [ "$K" = analytics ] && BRANCH=feature/ecosystem-sso   # Dot.Analytics has no main: its trunk is its default branch
   # secrets for this platform: lines "Dot.<k>:  NAME=value" from the generated file

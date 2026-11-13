@@ -2,13 +2,13 @@
     $all = $this->platforms;
     // code, area colour variable, members
     $groups = [
-        'Workspace' => ['WORK', 'knowledge', ['files', 'docs', 'forms', 'sheet', 'projects', 'tasks', 'hr', 'plug']],
+        'Workspace' => ['WORK', 'knowledge', ['files', 'docs', 'forms', 'sheet', 'projects', 'tasks', 'hr']],
         'AI & Automation' => ['AUTO', 'analytics', ['agents', 'analytics']],
         'Community & Engagement' => ['COMM', 'platforms', ['pulse', 'engage', 'press']],
-        'Commerce & Finance' => ['FINA', 'files', ['finance', 'emall', 'auction', 'billing', 'charts']],
+        'Commerce & Finance' => ['FINA', 'files', ['finance', 'emall', 'auction', 'charts']],
         'Services & Learning' => ['LEARN', 'documents', ['ehail', 'tutor', 'design']],
         'Infrastructure' => ['INFRA', 'people', ['central', 'notify']],
-        'Industry Verticals' => ['VERT', 'knowledge', ['mines', 'farms']],
+        'Industry Verticals' => ['VERT', 'knowledge', ['mines']],
     ];
     $liveCount = collect($all)->filter(fn ($p, $k) => $k !== 'infodot' && ! empty($p['active']))->count();
     $total = collect($all)->except('infodot')->count();

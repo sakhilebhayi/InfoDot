@@ -27,11 +27,11 @@ Everything below the previous "Upgrade Phases" section described a migration pla
 
 ## What changed 2026-08-02: platform registry reconciled against the real Dot Ecosystem
 
-`config/ecosystem.php` previously listed 18 platforms, overlapping only partially with the actual 20-platform Dot Ecosystem tracked in `Dot.Brain/os/Appendix.md` (which itself is the authoritative registry — every one of those 20 platforms is a real, built Laravel/Jetstream app with its own `EcosystemAuthController` implementing the exact same token contract InfoDot expects, byte-for-byte verified). Nine real, built platforms were missing entirely: **Dot.Memory, Dot.Plug, Dot.Mines, Dot.Notify, Dot.Billing, Dot.Charts, Dot.Farms, Dot.HR, Dot.Dopemine**. All nine were added to `config/ecosystem.php` and grouped into `EcosystemWidget::groups()` (a new "Industry Verticals" category was added for Mines/Farms; the rest joined existing categories by domain fit).
+`config/ecosystem.php` previously listed 18 platforms, overlapping only partially with the actual 17-platform Dot Ecosystem tracked in `Dot.Brain/os/Appendix.md` (which itself is the authoritative registry — every one of those 17 platforms is a real, built Laravel/Jetstream app with its own `EcosystemAuthController` implementing the exact same token contract InfoDot expects, byte-for-byte verified). Six real, built platforms were missing entirely: **Dot.Memory, Dot.Mines, Dot.Notify, Dot.Charts, Dot.HR, Dot.Dopemine**. All six were added to `config/ecosystem.php` and grouped into `EcosystemWidget::groups()` (a new "Industry Verticals" category was added for Mines; the rest joined existing categories by domain fit).
 
-The registry now has 27 entries: the 20 real Dot Ecosystem platforms, plus 7 (`Dot.Files`, `Dot.Docs`, `Dot.Forms`, `Dot.Sheet`, `Dot.Engage`, `Dot.Press`, `Dot.Tutor`) that are real separate repos from InfoDot's original, older plan but were never part of the Dot Ecosystem's build-out this session — kept in place rather than removed, per an explicit decision not to unilaterally drop them.
+The registry then had 24 entries: the 17 real Dot Ecosystem platforms, plus 7 (`Dot.Files`, `Dot.Docs`, `Dot.Forms`, `Dot.Sheet`, `Dot.Engage`, `Dot.Press`, `Dot.Tutor`) that are real separate repos from InfoDot's original, older plan but were never part of the Dot Ecosystem's build-out this session — kept in place rather than removed, per an explicit decision not to unilaterally drop them.
 
-**Not yet verified:** whether those 7 repos actually implement the `/auth/ecosystem` receiving endpoint the way all 20 real Dot Ecosystem platforms do — they were never reviewed as part of this update. Treat their entries in the registry as aspirational until checked.
+**Not yet verified:** whether those 7 repos actually implement the `/auth/ecosystem` receiving endpoint the way all 17 real Dot Ecosystem platforms do — they were never reviewed as part of this update. Treat their entries in the registry as aspirational until checked.
 
 ---
 
@@ -57,7 +57,7 @@ public function handle(Request $request): RedirectResponse
     return redirect()->route('dashboard');
 }
 ```
-Verified identical (modulo the final redirect route) between InfoDot's own copy and Dot.Billing's — this is the real, working contract every satellite app implements.
+Verified identical (modulo the final redirect route) between InfoDot's own copy and a satellite app's — this is the real, working contract every satellite app implements.
 
 ### Ecosystem SSO — issuing end (InfoDot only)
 ```php
@@ -94,7 +94,7 @@ class ExampleComponent extends Component
 
 ## Database
 
-- **Driver:** PostgreSQL 16, `DB_DATABASE=infodot` — confirmed identical across InfoDot and every checked satellite app's `.env.example` (Dot.Billing, Dot.Ehail, Dot.Auction), so the shared-database assumption the SSO scheme depends on is structurally consistent, not just documented intent.
+- **Driver:** PostgreSQL 16, `DB_DATABASE=infodot` — confirmed identical across InfoDot and every checked satellite app's `.env.example` (Dot.Ehail, Dot.Auction), so the shared-database assumption the SSO scheme depends on is structurally consistent, not just documented intent.
 - **Shared tables:** `users`, `teams`, `team_user`, `personal_access_tokens`.
 - Each satellite keeps its own domain tables but points at the same DB instance.
 - **Caveat:** this confirms the *configuration* is consistent, not that a real shared Postgres instance has ever been stood up and migrated — no PHP/Postgres runtime existed in the environment that wrote this update. See `Dot.Brain/os/13-Engineering-State.md` §4.
@@ -123,7 +123,7 @@ php artisan test               # Run test suite
 1. Actually stand up the shared PostgreSQL instance and run `composer install && php artisan migrate && php artisan test` for InfoDot and every satellite — nothing in this ecosystem has ever been executed against a real environment (see `os/13-Engineering-State.md` §4, ecosystem-wide, not InfoDot-specific).
 2. Verify whether Dot.Files/Dot.Docs/Dot.Forms/Dot.Sheet/Dot.Engage/Dot.Press/Dot.Tutor actually implement the `/auth/ecosystem` receiving contract — currently just asserted, not checked.
 3. Dot.Files integration (original Phase 5): shared-DB pointing, PR triage, `/auth/ecosystem` endpoint — still not started, still out of scope until someone reviews that repo directly.
-4. None of the 20 real Dot Ecosystem platforms publish real DKP Knowledge Packs to Dot.Brain yet (`Dot.Brain/os/19-Knowledge-Packs.md`) — InfoDot itself has no DKP integration either; not this file's problem to solve, but worth knowing InfoDot inherits the same gap as everything else in the ecosystem.
+4. None of the 17 real Dot Ecosystem platforms publish real DKP Knowledge Packs to Dot.Brain yet (`Dot.Brain/os/19-Knowledge-Packs.md`) — InfoDot itself has no DKP integration either; not this file's problem to solve, but worth knowing InfoDot inherits the same gap as everything else in the ecosystem.
 
 ===
 

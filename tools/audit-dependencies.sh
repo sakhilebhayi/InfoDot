@@ -6,7 +6,7 @@
 #   tools/audit-dependencies.sh [Repo ...]      default: every repository below
 set -uo pipefail
 OWNER="${OWNER:-sakhilebhayi}"
-REPOS=("$@"); [ ${#REPOS[@]} -gt 0 ] || REPOS=(Agents Analytics Auction Billing Central Charts Design Dopemine Ehail Emall Engage Farms Files Finance Forms HR Memory Mines Notify Plug Press Projects Pulse Sheet Tasks Tutor docs InfoDot)
+REPOS=("$@"); [ ${#REPOS[@]} -gt 0 ] || REPOS=(Agents Analytics Auction Central Charts Design Dopemine Ehail Emall Engage Files Finance Forms HR Memory Mines Notify Press Projects Pulse Sheet Tasks Tutor docs InfoDot)
 W="$(mktemp -d)"; trap 'rm -rf "$W"' EXIT
 FOUND=0
 OUT="| Repo | composer advisories | npm (prod) high/critical |\n|---|---|---|\n"

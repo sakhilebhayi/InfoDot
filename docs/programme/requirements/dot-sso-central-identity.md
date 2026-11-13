@@ -46,12 +46,9 @@ The following platforms must be included in the discovery and implementation pro
 
 - Dot.Analytics
 - Dot.Pulse
-- Dot.Plug
 - Dot.Mines
 - Dot.Notify
-- Dot.Billing
 - Dot.Charts
-- Dot.Farms
 - Dot.HR
 - Dot.Memory
 - Dot.Brain

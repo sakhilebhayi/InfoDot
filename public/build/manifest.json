@@ -16,10 +16,6 @@
     "file": "assets/auction--cADeQ4I.png",
     "src": "resources/img/apps/auction.png"
   },
-  "resources/img/apps/billing.png": {
-    "file": "assets/billing-CRxAxdor.png",
-    "src": "resources/img/apps/billing.png"
-  },
   "resources/img/apps/central.png": {
     "file": "assets/central-BrMFoXSS.png",
     "src": "resources/img/apps/central.png"
@@ -52,10 +48,6 @@
     "file": "assets/engage-HYxVbBnq.png",
     "src": "resources/img/apps/engage.png"
   },
-  "resources/img/apps/farms.png": {
-    "file": "assets/farms-BzF6XX9g.png",
-    "src": "resources/img/apps/farms.png"
-  },
   "resources/img/apps/files.png": {
     "file": "assets/files-Dd9w1SP3.png",
     "src": "resources/img/apps/files.png"
@@ -87,10 +79,6 @@
   "resources/img/apps/notify.png": {
     "file": "assets/notify-Da2rWmGN.png",
     "src": "resources/img/apps/notify.png"
-  },
-  "resources/img/apps/plug.png": {
-    "file": "assets/plug-Odky6UQT.png",
-    "src": "resources/img/apps/plug.png"
   },
   "resources/img/apps/press.png": {
     "file": "assets/press-BIsUqciq.png",
@@ -148,10 +136,6 @@
     "file": "assets/auction-BF_stMNO.png",
     "src": "resources/img/landing/platforms/auction.png"
   },
-  "resources/img/landing/platforms/billing.png": {
-    "file": "assets/billing-DGyqV9MQ.png",
-    "src": "resources/img/landing/platforms/billing.png"
-  },
   "resources/img/landing/platforms/central.png": {
     "file": "assets/central-CbCyW9DJ.png",
     "src": "resources/img/landing/platforms/central.png"
@@ -184,10 +168,6 @@
     "file": "assets/engage-DOG71cIe.png",
     "src": "resources/img/landing/platforms/engage.png"
   },
-  "resources/img/landing/platforms/farms.png": {
-    "file": "assets/farms-5nEfnWlq.png",
-    "src": "resources/img/landing/platforms/farms.png"
-  },
   "resources/img/landing/platforms/files.png": {
     "file": "assets/files-Bjxd4wjB.png",
     "src": "resources/img/landing/platforms/files.png"
@@ -219,10 +199,6 @@
   "resources/img/landing/platforms/notify.png": {
     "file": "assets/notify-DcKMoG35.png",
     "src": "resources/img/landing/platforms/notify.png"
-  },
-  "resources/img/landing/platforms/plug.png": {
-    "file": "assets/plug-CTlziqYU.png",
-    "src": "resources/img/landing/platforms/plug.png"
   },
   "resources/img/landing/platforms/press.png": {
     "file": "assets/press-ChbIus8y.png",

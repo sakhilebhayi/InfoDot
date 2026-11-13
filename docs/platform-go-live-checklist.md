@@ -11,21 +11,21 @@ tickets or commits.
 ## 0. The short way (scripts, run on your machine)
 1. DNS + the cPanel subdomain + AutoSSL for each `<key>.infodot.co.za` (still yours).
 2. `DEPLOY_HOST=... DEPLOY_USER=... DEPLOY_KEY_FILE=~/.ssh/<key> tools/set-deploy-secrets.sh` sets the five
-   GitHub deploy secrets on all 13 platform repos (names only are printed).
+   GitHub deploy secrets on all 10 platform repos (names only are printed).
 3. `SSH_TARGET=user@host tools/prepare-host.sh tasks auction ...` does the first install per platform
    (docroot layout, code clone, production `.env` on SQLite, `APP_KEY`, composer packages, and the
    shared secrets from `~/dot-ecosystem-secrets.env`). Use `DRY_RUN=1` to read what it will run.
 4. `SSH_TARGET=user@host tools/apply-secrets.sh infodot` writes the `ECOSYSTEM_SECRET_<KEY>` lines from the same file
    into InfoDot's host `.env` (idempotent; keeps `.env.bak-secrets`). The same tool refreshes any other app's
-   secrets, for example `tools/apply-secrets.sh billing`. Use `DRY_RUN=1` to see which names it would write.
+   secrets, for example `tools/apply-secrets.sh finance`. Use `DRY_RUN=1` to see which names it would write.
 5. `gh workflow run deploy.yml --repo sakhilebhayi/Dot.<Name> -f confirm=adopt`, then `-f confirm=deploy`.
 The sections below explain each step and the by-hand alternative.
 
 ## 1. Hosting (cPanel)
 1. DNS: an A record for `<host>` to the shared host (198.38.92.233). Seven names currently serve only a
-   Coming Soon page and seven have no DNS at all (see the register, section 1).
+   Coming Soon page and four have no DNS at all (see the register, section 1).
 2. cPanel: create the subdomain and its docroot, then a database and user for the app (SQLite also works
-   for small apps: Dot.Farms has only ever run on SQLite). Create the app folder with a production
+   for small apps). Create the app folder with a production
    `.env` (`APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://<host>`, database credentials,
    SMTP, `APP_KEY` from `php artisan key:generate --show`). **Back up `APP_KEY`: Notify, HR, Ehail and
    Analytics encrypt data with it.**
@@ -53,7 +53,7 @@ The sections below explain each step and the by-hand alternative.
 - Analytics (secrets block 3): try `php artisan <app>:publish-metrics --dry-run` first.
 - A queue worker is required for both (the deploy installs the cron-driven one).
 
-## 4. Paystack (Billing, Emall, Auction, Ehail), TEST MODE ONLY
+## 4. Paystack (Emall, Auction, Ehail), TEST MODE ONLY
 Nothing in the code has made a real Paystack call yet. One real test payment per app is the
 acceptance test. Give each app its own Paystack business: a business has one webhook URL per mode, so
 apps sharing one would receive each other's events (recorded as `unmatched`, harmless but useless).
@@ -65,7 +65,6 @@ apps sharing one would receive each other's events (recorded as `unmatched`, har
    (default ZAR) once its currency PR is merged.
 3. Paystack, test webhook URL: `https://<host>/webhooks/paystack`.
 4. Run one payment with a test card from Paystack's documentation:
-   - Billing: open an invoice, "Pay now".
    - Emall: place an order and pay.
    - Auction: win an auction (or buy now) and "Pay now" on the settlement.
    - Ehail: complete a ride with a fare and "Pay fare".
@@ -75,7 +74,7 @@ apps sharing one would receive each other's events (recorded as `unmatched`, har
    splits, KYC, saved cards, tips.
 
 ## 5. Operators
-`users.is_platform_operator` gates the operator pages (Ehail, Design, Tutor, Emall, Analytics, Billing,
+`users.is_platform_operator` gates the operator pages (Ehail, Design, Tutor, Emall, Analytics,
 Auction once its flag PR is merged). Grant it from the server console of that app, e.g.
 `php artisan analytics:operator you@example.com` (Analytics) or the equivalent command in the PR notes.
 

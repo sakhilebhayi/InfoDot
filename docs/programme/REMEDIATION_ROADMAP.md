@@ -42,14 +42,14 @@ the occasional 503/timeout. Host load average was about 6 on 32 cores and `artis
 0.3 s, so CPU is not the constraint; process count is. The account's exact process limit is not readable from
 inside the shell (`ulimit -u` shows the kernel maximum, the limit is applied by the host).
 
-**Fix (PRs open, nothing deployed).** In the 13 deploy pipelines that were added on 2026-10-18 (Dot.Tasks #18,
-Auction #19, Ehail #18, Notify #15, Farms #16, Finance #18, Emall #17, Billing #15, HR #13, Tutor #12, Design #15,
+**Fix (PRs open, nothing deployed).** In the 11 deploy pipelines that were added on 2026-10-18 (Dot.Tasks #18,
+Auction #19, Ehail #18, Notify #15, Finance #18, Emall #17, HR #13, Tutor #12, Design #15,
 Pulse #14, Analytics #24): `exec` before `php` (one process per line instead of two) and the queue worker on alternate
 minutes by marker parity. Estimate, not measured: lines starting in one minute drop from 43 to about 36 and each line is one process instead of two, so the peak falls from roughly 100 processes to roughly 36. Takes effect per app on its next
 deploy. The 20 older cron lines (Mines, Agents, Central, Press, Forms, Engage, Sheet, Projects, Memory, Dopemine,
 docs, Charts) are unchanged and are the next step if the failure rate stays above target.
 
-**Result of the first fix (verified 2026-10-19 16:57 UTC, Host Health run 39289886705, after all 13 deploys).**
+**Result of the first fix (verified 2026-10-19 16:57 UTC, Host Health run 39289886705, after all 11 deploys).**
 Crontab lines that fire every minute fell from 43 to 31 (12 queue workers now run every second minute).
 The burst sample still shows 51 `artisan` processes alive 7 s after the minute boundary and the sampler itself
 still gets `bash: fork: retry: Resource temporarily unavailable`. **The peak was reduced, not removed; R-1 is
@@ -90,7 +90,7 @@ counts are a lower bound.
 | Period | Setup | Failures | Pass length |
 |---|---|---|---|
 | 17:40 to 17:51 (11 min) | runner for 3 apps; 39 other crontab lines at second 0 | 13 | 22 to 26 s |
-| 17:52 to 18:05 (14 min) | runner for all 13 new apps at second 0; 20 older lines at second 0 | 1 (billing, 17:56) | 29 to 34 s |
+| 17:52 to 18:05 (14 min) | runner for all 13 new apps at second 0; 20 older lines at second 0 | 1 (17:56) | 29 to 34 s |
 | 18:06 to 18:16 (10 min) | same, runner started at second 30 | 0 | 18 to 19 s |
 | 18:36 to 18:46 (10 min) | batch 1 of the older apps moved (memory, dopemine, docs, projects, charts, central; mines moved by its own deploy) | 0 | 46 to 48 s |
 | 18:46 to 18:55 (9 min) | batch 2 moved (agents, press, forms, engage, sheet): the crontab holds only the runner line and the Charts analytics keepalive | 0 | 49 s |
@@ -111,8 +111,8 @@ workflow. **Done 2026-10-19: that target is reached** (25 `schedule:run` and 18 
 
 **Done 2026-10-19 evening: all PRs merged and the 19 apps deployed one at a time (Pulse and Charts first); every site 200 afterwards, and the Dependency Audit script reports no advisories in any of the 27 repositories.** One runner failure was logged during the deploy wave (Notify, exit 255 at 19:47Z, while its code was being replaced). Original status: one PR per repository updates only the advised packages and their
 dependencies (`composer.json` unchanged), `composer audit --locked` clean afterwards, CI green on all of them:
-Pulse #16 (the high Guzzle advisory), Auction #21, Billing #17, Design #17, Dopemine #22, Ehail #20, Emall #19,
-Farms #18, Files #97, Finance #20, HR #15, Memory #26, Notify #17, Plug #12, Projects #18, Tasks #20, Tutor #14
+Pulse #16 (the high Guzzle advisory), Auction #21, Design #17, Dopemine #22, Ehail #20, Emall #19,
+Files #97, Finance #20, HR #15, Memory #26, Notify #17, Projects #18, Tasks #20, Tutor #14
 (all `Dot.<Name>`); axios 1.18.1 to 1.20.0 in Analytics #26 and Files #96 (`npm audit` 0, build passes).
 
 **Correction to the baseline:** Dot.Charts keeps its Laravel app in `backend/`, so the first audit skipped it. Its
@@ -167,8 +167,8 @@ accepted and shown. Acceptance: one visible metric from each publisher.
 
 ## R-5 Real sign-in and workflow verification (product, high)
 
-Browser end-to-end run from InfoDot into each of the 13 platforms, then each platform's primary workflow
-(including one Paystack test payment in Billing, Emall, Auction, Ehail). Acceptance: recorded pass per platform.
+Browser end-to-end run from InfoDot into each of the 10 platforms, then each platform's primary workflow
+(including one Paystack test payment in Emall, Auction, Ehail). Acceptance: recorded pass per platform.
 
 **Status (2026-10-23): partly done.** Done (PR and deploy history, plus a live check on 2026-10-23):
 - Signed InfoDot sign-in (the receiver asks InfoDot to prove the handoff token) is ported to Agents (#15), Central (#60), Engage (#45),

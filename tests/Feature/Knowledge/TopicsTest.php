@@ -46,7 +46,7 @@ class TopicsTest extends TestCase
         return $this->actingAs($as)->post('/questions/add', $overrides + [
             'question' => 'How do I set up a recurring invoice?',
             'description' => 'I send the same invoice every month and want it automatic.',
-            'topics' => [$this->topic('billing')->id],
+            'topics' => [$this->topic('finance')->id],
             'publish' => '1',
         ]);
     }
@@ -85,7 +85,7 @@ class TopicsTest extends TestCase
     {
         $mod = $this->moderator();
         $service = app(TopicService::class);
-        $service->rename($this->topic('billing'), $mod, 'Money in and out');
+        $service->rename($this->topic('finance'), $mod, 'Money in and out');
         $service->setActive($this->topic('tasks'), $mod, false);
         $before = Topic::orderBy('id')->get(['id', 'slug', 'name', 'active', 'sort_order'])->toArray();
 
@@ -99,10 +99,10 @@ class TopicsTest extends TestCase
 
     public function test_a_question_can_have_each_topic_once_and_the_links_go_when_the_question_does(): void
     {
-        $question = $this->file($this->question($this->person()), 'billing');
+        $question = $this->file($this->question($this->person()), 'finance');
 
         try {
-            DB::table('question_topic')->insert(['question_id' => $question->id, 'topic_id' => $this->topic('billing')->id]);
+            DB::table('question_topic')->insert(['question_id' => $question->id, 'topic_id' => $this->topic('finance')->id]);
             $this->fail('the same pair was stored twice');
         } catch (QueryException) {
             $this->assertSame(1, DB::table('question_topic')->count());
@@ -114,13 +114,13 @@ class TopicsTest extends TestCase
 
     public function test_a_topic_that_is_in_use_cannot_be_deleted_but_an_unused_one_can(): void
     {
-        $this->file($this->question($this->person()), 'billing');
+        $this->file($this->question($this->person()), 'finance');
 
         try {
-            $this->topic('billing')->delete();
+            $this->topic('finance')->delete();
             $this->fail('a topic in use was deleted');
         } catch (\LogicException) {
-            $this->assertTrue(Topic::where('slug', 'billing')->exists());
+            $this->assertTrue(Topic::where('slug', 'finance')->exists());
         }
 
         $this->assertTrue($this->topic('integrations')->delete());
@@ -173,18 +173,18 @@ class TopicsTest extends TestCase
     public function test_renaming_keeps_the_address_records_the_change_and_repeating_it_does_nothing(): void
     {
         $mod = $this->moderator();
-        $billing = $this->topic('billing');
+        $finance = $this->topic('finance');
 
         Livewire::actingAs($mod)->test(TopicDesk::class)
-            ->set('names.'.$billing->id, 'Money in and out')->call('save', $billing->id)->assertHasNoErrors();
+            ->set('names.'.$finance->id, 'Money in and out')->call('save', $finance->id)->assertHasNoErrors();
 
-        $fresh = $billing->fresh();
-        $this->assertSame(['billing', 'Money in and out'], [$fresh->slug, $fresh->name]);
-        $this->assertStringContainsString('“Dot.Billing” to “Money in and out”', ModerationAction::firstOrFail()->reason);
+        $fresh = $finance->fresh();
+        $this->assertSame(['finance', 'Money in and out'], [$fresh->slug, $fresh->name]);
+        $this->assertStringContainsString('“Dot.Finance” to “Money in and out”', ModerationAction::firstOrFail()->reason);
 
         $this->assertFalse(app(TopicService::class)->rename($fresh, $mod, 'Money in and out', $fresh->description));
         $this->assertSame(1, ModerationAction::count());
-        $this->actingAs($this->person())->get('/topics/billing')->assertOk()->assertSee('Money in and out');
+        $this->actingAs($this->person())->get('/topics/finance')->assertOk()->assertSee('Money in and out');
     }
 
     public function test_switching_a_topic_off_and_on_is_recorded_once_each_and_the_last_one_cannot_be_switched_off(): void
@@ -211,8 +211,8 @@ class TopicsTest extends TestCase
 
         foreach ([
             fn () => $service->create($member, 'Anything'),
-            fn () => $service->rename($this->topic('billing'), $member, 'Renamed'),
-            fn () => $service->setActive($this->topic('billing'), $member, false),
+            fn () => $service->rename($this->topic('finance'), $member, 'Renamed'),
+            fn () => $service->setActive($this->topic('finance'), $member, false),
         ] as $attempt) {
             try {
                 $attempt();
@@ -223,7 +223,7 @@ class TopicsTest extends TestCase
         }
 
         $this->assertSame(0, ModerationAction::count());
-        $this->assertSame('Dot.Billing', $this->topic('billing')->name);
+        $this->assertSame('Dot.Finance', $this->topic('finance')->name);
     }
 
     public function test_a_demoted_moderator_loses_the_desk_at_once(): void
@@ -244,19 +244,19 @@ class TopicsTest extends TestCase
     {
         app(TopicService::class)->setActive($this->topic('integrations'), $this->moderator(), false);
 
-        $html = $this->actingAs($this->person())->get('/questions/ask?topic=billing')->assertOk()->getContent();
+        $html = $this->actingAs($this->person())->get('/questions/ask?topic=finance')->assertOk()->getContent();
 
         $this->assertStringContainsString('name="topics[]"', $html);
         $this->assertStringContainsString('Billing &amp; payments', $html);
         $this->assertStringNotContainsString('Integrations', $html);
-        $this->assertMatchesRegularExpression('/value="'.$this->topic('billing')->id.'"/', $html);
+        $this->assertMatchesRegularExpression('/value="'.$this->topic('finance')->id.'"/', $html);
     }
 
     public function test_asking_files_the_question_under_one_to_three_topics(): void
     {
         $asker = $this->person();
 
-        foreach ([['billing'], ['billing', 'tasks'], ['billing', 'tasks', 'hr']] as $i => $slugs) {
+        foreach ([['finance'], ['finance', 'tasks'], ['finance', 'tasks', 'hr']] as $i => $slugs) {
             $this->ask($asker, ['question' => "Question number $i for the topics", 'topics' => array_map(fn ($s) => $this->topic($s)->id, $slugs)])->assertRedirect('questions');
 
             $this->assertEqualsCanonicalizing($slugs, Questions::where('question', "Question number $i for the topics")->firstOrFail()->topics->pluck('slug')->all());
@@ -273,11 +273,11 @@ class TopicsTest extends TestCase
         foreach ([
             'none chosen' => [[], 'topics'],
             'missing' => [null, 'topics'],
-            'four chosen' => [$ids('billing', 'tasks', 'hr', 'files'), 'topics'],
+            'four chosen' => [$ids('finance', 'tasks', 'hr', 'files'), 'topics'],
             'unknown id' => [[999999], 'topics.0'],
             'switched off' => [[$inactive->id], 'topics.0'],
-            'not a number' => [['billing'], 'topics.0'],
-            'the same twice' => [$ids('billing', 'billing'), 'topics.0'],
+            'not a number' => [['finance'], 'topics.0'],
+            'the same twice' => [$ids('finance', 'finance'), 'topics.0'],
         ] as $label => [$topics, $errorOn]) {
             $payload = ['question' => 'A question that should not be saved', 'description' => 'Details that are long enough.'];
             if ($topics !== null) {
@@ -312,11 +312,11 @@ class TopicsTest extends TestCase
 
         $this->actingAs($author)->get('/solution/create?topic=tasks')->assertOk()->assertSee('name="topics[]"', false);
         $this->actingAs($author)->post('/solution/add', $base)->assertSessionHasErrors('topics');
-        $this->actingAs($author)->post('/solution/add', $base + ['topics' => [$this->topic('billing')->id, $this->topic('tasks')->id, $this->topic('hr')->id, $this->topic('files')->id]])->assertSessionHasErrors('topics');
+        $this->actingAs($author)->post('/solution/add', $base + ['topics' => [$this->topic('finance')->id, $this->topic('tasks')->id, $this->topic('hr')->id, $this->topic('files')->id]])->assertSessionHasErrors('topics');
         $this->assertSame(0, Solutions::withoutGlobalScopes()->count());
 
-        $this->actingAs($author)->post('/solution/add', $base + ['topics' => [$this->topic('billing')->id]])->assertRedirect(route('solutions'));
-        $this->assertSame(['billing'], Solutions::firstOrFail()->topics->pluck('slug')->all());
+        $this->actingAs($author)->post('/solution/add', $base + ['topics' => [$this->topic('finance')->id]])->assertRedirect(route('solutions'));
+        $this->assertSame(['finance'], Solutions::firstOrFail()->topics->pluck('slug')->all());
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -337,7 +337,7 @@ class TopicsTest extends TestCase
 
     public function test_a_moderator_corrects_the_topics_of_a_question_and_the_trail_says_what_changed(): void
     {
-        $question = $this->file($this->question($this->person()), 'billing');
+        $question = $this->file($this->question($this->person()), 'finance');
         $mod = $this->moderator('Sorter');
 
         $this->actingAs($mod)->get('/question/view/'.$question->id)->assertOk()->assertSee('Correct topics');
@@ -350,7 +350,7 @@ class TopicsTest extends TestCase
 
         $row = ModerationAction::firstOrFail();
         $this->assertSame([$mod->id, 'topics_set', $question->getMorphClass(), $question->id], [$row->actor_id, $row->action, $row->subject_type, $row->subject_id]);
-        $this->assertSame('From: Dot.Billing. To: Dot.HR, Dot.Tasks. This is about work, not money.', $row->reason);
+        $this->assertSame('From: Dot.Finance. To: Dot.HR, Dot.Tasks. This is about work, not money.', $row->reason);
 
         // Repeating it is a no-op: nothing is written.
         $this->actingAs($mod)->post(route('questions.topics', ['qid' => $question->id]), ['topics' => [$this->topic('tasks')->id, $this->topic('hr')->id]])
@@ -363,16 +363,16 @@ class TopicsTest extends TestCase
         $solution = $this->solution($this->person());
         $mod = $this->moderator();
 
-        $this->actingAs($mod)->post(route('solutions.topics', ['id' => $solution->id]), ['topics' => [$this->topic('billing')->id]])->assertRedirect();
+        $this->actingAs($mod)->post(route('solutions.topics', ['id' => $solution->id]), ['topics' => [$this->topic('finance')->id]])->assertRedirect();
 
-        $this->assertSame(['billing'], $solution->fresh()->topics->pluck('slug')->all());
-        $this->assertSame('From: none. To: Dot.Billing.', ModerationAction::firstOrFail()->reason);
+        $this->assertSame(['finance'], $solution->fresh()->topics->pluck('slug')->all());
+        $this->assertSame('From: none. To: Dot.Finance.', ModerationAction::firstOrFail()->reason);
     }
 
     public function test_corrections_are_refused_for_members_for_own_work_for_other_companies_and_for_bad_choices(): void
     {
         $author = $this->person('Author');
-        $question = $this->file($this->question($author), 'billing');
+        $question = $this->file($this->question($author), 'finance');
         $payload = ['topics' => [$this->topic('tasks')->id]];
 
         // A member and the question's own author: no.
@@ -381,7 +381,7 @@ class TopicsTest extends TestCase
 
         // A moderator, but it is their own question: another moderator has to.
         $ownMod = $this->moderator('Own');
-        $own = $this->file($this->question($ownMod), 'billing');
+        $own = $this->file($this->question($ownMod), 'finance');
         $this->actingAs($ownMod)->post(route('questions.topics', ['qid' => $own->id]), $payload)->assertForbidden();
         $this->actingAs($ownMod)->get('/question/view/'.$own->id)->assertOk()->assertDontSee('Correct topics');
 
@@ -392,10 +392,10 @@ class TopicsTest extends TestCase
         // Bad choices.
         $mod = $this->moderator('Checker');
         $this->actingAs($mod)->post(route('questions.topics', ['qid' => $question->id]), ['topics' => []])->assertSessionHasErrors('topics');
-        $this->actingAs($mod)->post(route('questions.topics', ['qid' => $question->id]), ['topics' => array_map(fn ($s) => $this->topic($s)->id, ['billing', 'tasks', 'hr', 'files'])])->assertSessionHasErrors('topics');
+        $this->actingAs($mod)->post(route('questions.topics', ['qid' => $question->id]), ['topics' => array_map(fn ($s) => $this->topic($s)->id, ['finance', 'tasks', 'hr', 'files'])])->assertSessionHasErrors('topics');
         $this->actingAs($mod)->post(route('questions.topics', ['qid' => $question->id]), ['topics' => [999999]])->assertSessionHasErrors('topics');
 
-        $this->assertSame(['billing'], $question->fresh()->topics->pluck('slug')->all());
+        $this->assertSame(['finance'], $question->fresh()->topics->pluck('slug')->all());
         $this->assertSame(0, ModerationAction::count());
     }
 
@@ -406,7 +406,7 @@ class TopicsTest extends TestCase
         app(TopicService::class)->setActive($this->topic('integrations'), $mod, false);
         $service = app(TopicService::class);
 
-        $this->assertTrue($service->correct($question, $mod, [$this->topic('integrations')->id, $this->topic('billing')->id]), 'kept, with one more');
+        $this->assertTrue($service->correct($question, $mod, [$this->topic('integrations')->id, $this->topic('finance')->id]), 'kept, with one more');
 
         $other = $this->question($this->person());
         $this->expectException(ValidationException::class);
@@ -418,7 +418,7 @@ class TopicsTest extends TestCase
         $mod = $this->moderator();
         $author = $this->person();
         $untagged = $this->question($author, 'public', 'Untagged and waiting');
-        $this->file($this->question($author, 'public', 'Already filed away'), 'billing');
+        $this->file($this->question($author, 'public', 'Already filed away'), 'finance');
         $this->question($mod, 'public', 'The moderator wrote this one');
         $this->question($this->person('Other company'), 'company', 'Private to another company');
         $solution = $this->solution($author, 'public', 'An untagged procedure');
@@ -433,8 +433,8 @@ class TopicsTest extends TestCase
         $this->assertEqualsCanonicalizing(['tasks', 'hr'], $untagged->fresh()->topics->pluck('slug')->all());
 
         $desk->set('kind', 'solution')->assertSee('An untagged procedure')
-            ->set('picks.s-'.$solution->id, [(string) $this->topic('billing')->id])->call('assign', 's-'.$solution->id)->assertHasNoErrors();
-        $this->assertSame(['billing'], $solution->fresh()->topics->pluck('slug')->all());
+            ->set('picks.s-'.$solution->id, [(string) $this->topic('finance')->id])->call('assign', 's-'.$solution->id)->assertHasNoErrors();
+        $this->assertSame(['finance'], $solution->fresh()->topics->pluck('slug')->all());
         $this->assertSame(2, ModerationAction::where('action', 'topics_set')->count());
     }
 
@@ -448,7 +448,7 @@ class TopicsTest extends TestCase
         // The browser sends a single tick as true/false until the property is an array; the desk starts each row as one.
         $this->assertSame([], $desk->get('picks')['q-'.$question->id]);
         $desk->set('picks.q-'.$question->id, false)->call('assign', 'q-'.$question->id)->assertHasErrors('picks.q-'.$question->id);
-        $desk->set('picks.q-'.$question->id, array_map(fn ($s) => (string) $this->topic($s)->id, ['billing', 'tasks', 'hr', 'files']))
+        $desk->set('picks.q-'.$question->id, array_map(fn ($s) => (string) $this->topic($s)->id, ['finance', 'tasks', 'hr', 'files']))
             ->call('assign', 'q-'.$question->id)->assertHasErrors('picks.q-'.$question->id);
         $this->assertSame(0, $question->topics()->count());
     }
@@ -460,7 +460,7 @@ class TopicsTest extends TestCase
     public function test_the_questions_list_filters_by_topic_and_by_untagged(): void
     {
         $asker = $this->person();
-        $this->file($this->question($asker, 'public', 'Invoice question'), 'billing');
+        $this->file($this->question($asker, 'public', 'Invoice question'), 'finance');
         $this->file($this->question($asker, 'public', 'Task question'), 'tasks');
         $this->question($asker, 'public', 'Old untagged question');
         $reader = $this->outsider();
@@ -468,7 +468,7 @@ class TopicsTest extends TestCase
         // The header search also lists the newest questions, so the lists are read from what the page was given.
         $titles = fn (string $url) => $this->actingAs($reader)->get($url)->assertOk()->viewData('questions')->pluck('question')->sort()->values()->all();
 
-        $this->assertSame(['Invoice question'], $titles('/questions?topic=billing'));
+        $this->assertSame(['Invoice question'], $titles('/questions?topic=finance'));
         $this->assertSame(['Old untagged question'], $titles('/questions?topic=none'));
         $this->assertSame(['Invoice question', 'Old untagged question', 'Task question'], $titles('/questions'));
         $this->assertSame([], $titles('/questions?topic=no-such-topic'));
@@ -479,13 +479,13 @@ class TopicsTest extends TestCase
     public function test_the_solutions_list_filters_by_topic(): void
     {
         $author = $this->person();
-        $this->file($this->solution($author, 'public', 'Invoice procedure'), 'billing');
+        $this->file($this->solution($author, 'public', 'Invoice procedure'), 'finance');
         $this->solution($author, 'public', 'Untagged procedure');
 
         $reader = $this->outsider();
         $titles = fn (string $url) => $this->actingAs($reader)->get($url)->assertOk()->viewData('solutions')->pluck('solution_title')->all();
 
-        $this->assertSame(['Invoice procedure'], $titles('/solutions?topic=billing'));
+        $this->assertSame(['Invoice procedure'], $titles('/solutions?topic=finance'));
         $this->assertSame(['Untagged procedure'], $titles('/solutions?topic=none'));
         $this->actingAs($this->outsider())->get('/solutions?topic=hr')->assertOk()->assertSee('No solutions under Dot.HR yet');
     }
@@ -494,28 +494,28 @@ class TopicsTest extends TestCase
     {
         $asker = $this->person('Asker');
         $mod = $this->moderator();
-        $private = $this->file($this->question($asker, 'company', 'Our private supplier question'), 'billing');
-        $hidden = $this->file($this->question($asker, 'public', 'A hidden question'), 'billing');
+        $private = $this->file($this->question($asker, 'company', 'Our private supplier question'), 'finance');
+        $hidden = $this->file($this->question($asker, 'public', 'A hidden question'), 'finance');
         app(ModerationService::class)->hide($hidden, $mod, 'Hidden for the test.');
         $reader = $this->outsider();
 
-        $this->assertSame([], $this->actingAs($reader)->get('/questions?topic=billing')->viewData('questions')->all());
-        $this->assertSame([], $this->actingAs($reader)->get('/topics/billing')->viewData('questions')->all());
-        $this->assertSame([], $this->actingAs($reader)->get('/solution-results?topic=billing')->viewData('results')['questions']->items());
+        $this->assertSame([], $this->actingAs($reader)->get('/questions?topic=finance')->viewData('questions')->all());
+        $this->assertSame([], $this->actingAs($reader)->get('/topics/finance')->viewData('questions')->all());
+        $this->assertSame([], $this->actingAs($reader)->get('/solution-results?topic=finance')->viewData('results')['questions']->items());
 
         // The author still sees their own, in the lists; nobody else's company ever does.
         $mine = fn ($url) => $this->actingAs($asker)->get($url)->viewData('questions')->pluck('question')->sort()->values()->all();
-        $this->assertSame(['A hidden question', 'Our private supplier question'], $mine('/topics/billing'));
-        $this->assertSame(['A hidden question', 'Our private supplier question'], $mine('/questions?topic=billing'));
+        $this->assertSame(['A hidden question', 'Our private supplier question'], $mine('/topics/finance'));
+        $this->assertSame(['A hidden question', 'Our private supplier question'], $mine('/questions?topic=finance'));
         $this->assertNotNull($private);
     }
 
     public function test_search_accepts_a_topic_as_a_filter(): void
     {
         $author = $this->person();
-        $this->file($this->question($author, 'public', 'How do I register a billing address?'), 'billing');
+        $this->file($this->question($author, 'public', 'How do I register a billing address?'), 'finance');
         $this->file($this->question($author, 'public', 'How do I register a task board?'), 'tasks');
-        $this->file($this->solution($author, 'public', 'Register a billing contact'), 'billing');
+        $this->file($this->solution($author, 'public', 'Register a billing contact'), 'finance');
         $reader = $this->outsider();
 
         $found = function (string $url) use ($reader) {
@@ -525,7 +525,7 @@ class TopicsTest extends TestCase
         };
 
         $this->assertSame([['How do I register a billing address?', 'How do I register a task board?'], ['Register a billing contact']], $found('/solution-results?search=register'));
-        $this->assertSame([['How do I register a billing address?'], ['Register a billing contact']], $found('/solution-results?search=register&topic=billing'));
+        $this->assertSame([['How do I register a billing address?'], ['Register a billing contact']], $found('/solution-results?search=register&topic=finance'));
         // A topic and no words lists the whole topic.
         $this->assertSame([['How do I register a task board?'], []], $found('/solution-results?topic=tasks'));
         $this->assertSame([[], []], $found('/solution-results?search=register&topic=nonsense'));
@@ -538,29 +538,29 @@ class TopicsTest extends TestCase
         $mod = $this->moderator();
         $helper = $this->person('Helper');
 
-        $open = $this->file($this->question($asker, 'public', 'Open public one'), 'billing');
-        $answered = $this->file($this->question($asker, 'public', 'Answered public one'), 'billing');
+        $open = $this->file($this->question($asker, 'public', 'Open public one'), 'finance');
+        $answered = $this->file($this->question($asker, 'public', 'Answered public one'), 'finance');
         $this->answer($answered, $helper);
-        $this->file($this->question($asker, 'company', 'Company only one'), 'billing');
-        $hidden = $this->file($this->question($asker, 'public', 'Hidden public one'), 'billing');
+        $this->file($this->question($asker, 'company', 'Company only one'), 'finance');
+        $hidden = $this->file($this->question($asker, 'public', 'Hidden public one'), 'finance');
         app(ModerationService::class)->hide($hidden, $mod, 'Hidden for the test.');
-        $this->file($this->solution($asker, 'public', 'Public procedure'), 'billing');
-        $this->file($this->solution($asker, 'company', 'Company procedure'), 'billing');
+        $this->file($this->solution($asker, 'public', 'Public procedure'), 'finance');
+        $this->file($this->solution($asker, 'company', 'Company procedure'), 'finance');
         $this->assertNotNull($open);
 
         $expected = ['questions' => 2, 'answered' => 1, 'unanswered' => 1, 'solutions' => 1];
-        $this->assertSame($expected, TopicStats::forTopic($this->topic('billing')->id));
+        $this->assertSame($expected, TopicStats::forTopic($this->topic('finance')->id));
 
         // Same numbers whether the reader is the author (who can see more), a moderator or a stranger.
         foreach ([$asker, $mod, $this->outsider()] as $reader) {
             $this->actingAs($reader);
-            $this->assertSame($expected, TopicStats::forTopic($this->topic('billing')->id));
-            $html = $this->get('/topics')->assertOk()->assertSee('Dot.Billing')->getContent();
-            $this->assertMatchesRegularExpression('/Dot\.Billing.*?data-label="Questions">2<.*?data-label="Answered">1<.*?data-label="Unanswered">1<.*?data-label="Solutions">1</s', $html);
+            $this->assertSame($expected, TopicStats::forTopic($this->topic('finance')->id));
+            $html = $this->get('/topics')->assertOk()->assertSee('Dot.Finance')->getContent();
+            $this->assertMatchesRegularExpression('/Dot\.Finance.*?data-label="Questions">2<.*?data-label="Answered">1<.*?data-label="Unanswered">1<.*?data-label="Solutions">1</s', $html);
         }
 
-        $this->actingAs($asker)->get('/topics/billing')->assertOk()->assertSee('Public questions')->assertSee('can also include work that is not public');
-        $page = $this->actingAs($this->outsider())->get('/topics/billing')->assertOk()->assertDontSee('can also include work that is not public');
+        $this->actingAs($asker)->get('/topics/finance')->assertOk()->assertSee('Public questions')->assertSee('can also include work that is not public');
+        $page = $this->actingAs($this->outsider())->get('/topics/finance')->assertOk()->assertDontSee('can also include work that is not public');
         $this->assertEqualsCanonicalizing(['Open public one', 'Answered public one'], $page->viewData('questions')->pluck('question')->all());
     }
 
@@ -583,7 +583,7 @@ class TopicsTest extends TestCase
     public function test_the_topic_pages_need_a_signed_in_person_and_an_unknown_topic_is_not_found(): void
     {
         $this->get('/topics')->assertRedirect();
-        $this->get('/topics/billing')->assertRedirect();
+        $this->get('/topics/finance')->assertRedirect();
         $this->actingAs($this->person())->get('/topics/not-a-topic')->assertNotFound();
         $this->actingAs($this->person())->get('/topics')->assertOk()->assertSee('Older work stays untagged');
     }
@@ -591,11 +591,11 @@ class TopicsTest extends TestCase
     public function test_question_lists_and_pages_show_their_topics_as_links(): void
     {
         $asker = $this->person();
-        $question = $this->file($this->question($asker), 'billing', 'tasks');
+        $question = $this->file($this->question($asker), 'finance', 'tasks');
 
         $html = $this->actingAs($asker)->get('/question/view/'.$question->id)->assertOk()->getContent();
-        $this->assertStringContainsString('href="'.url('/topics/billing').'"', $html);
+        $this->assertStringContainsString('href="'.url('/topics/finance').'"', $html);
         $this->assertStringContainsString('href="'.url('/topics/tasks').'"', $html);
-        $this->actingAs($asker)->get('/questions')->assertOk()->assertSee('Dot.Billing')->assertSee('Dot.Tasks');
+        $this->actingAs($asker)->get('/questions')->assertOk()->assertSee('Dot.Finance')->assertSee('Dot.Tasks');
     }
 }

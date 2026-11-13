@@ -177,7 +177,7 @@ class BillingEntitlementsTest extends TestCase
         $member = User::factory()->create(['email_verified_at' => now()]);
         $team->users()->attach($member, ['role' => 'admin']);
 
-        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Add or change seats in Dot.Billing')->assertSee('redirect=%2Fseats', false);
+        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Add or change seats in Dot.Billing')->assertSee('/go/finance?redirect=%2Fseats', false);
         $this->actingAs($member)->get('/teams/'.$team->id)->assertOk()->assertDontSee('Add or change seats in Dot.Billing');
     }
 }
