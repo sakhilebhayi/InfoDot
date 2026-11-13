@@ -47,7 +47,7 @@ skipped). Pint passes; PHPStan reports no errors and the baseline is unchanged a
 | L-07 | P3 | 1 Seminars | Host can move or cancel a seminar that has already ended | Left: owner decision | Read |
 | L-08 | P3 | 1 Seminars | Link checker reads the whole response body | Left: small, untested | Read |
 | L-09 | P3 | 5 Accounts | Team invitations never expire; the link adds the invited address whoever opens it | Expiry fixed later (14 days, resend, daily prune). The link still adds the invited address whoever opens it | `TeamInvitationExpiryTest` |
-| L-10 | P3 | 5 Accounts | Two-factor is switched on before the person has proved the authenticator works | Left: needs the view | Read |
+| L-10 | P3 | 5 Accounts | Two-factor is switched on before the person has proved the authenticator works | Fixed later (Fortify `confirm`, the form asks for one code) | `TwoFactorAuthenticationSettingsTest` |
 | L-11 | P3 | 8 Database | `teams.user_id`, `questions.user_id`, `comments`, `likes`, `attachments.user_id` have no foreign key | Left: schema change | Read |
 | L-12 | P3 | 8 Database | `associates` has no uniqueness on (person, associate) | Left: soft deletes | Read |
 | L-13 | P2 (conditional) | 7 Scheduler | With `CACHE_DRIVER=database` the scheduler's locks have no table | Left: not the configured driver | Read |

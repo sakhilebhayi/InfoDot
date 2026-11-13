@@ -137,7 +137,10 @@ return [
         Features::emailVerification(),
         Features::updateProfileInformation(),
         Features::updatePasswords(),
+        // `confirm`: two-factor becomes active only after the person enters one code from their authenticator, so a
+        // mistyped or unfinished setup cannot lock them out of their account.
         Features::twoFactorAuthentication([
+            'confirm' => true,
             'confirmPassword' => true,
         ]),
     ],
