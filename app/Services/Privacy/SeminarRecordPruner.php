@@ -86,6 +86,7 @@ class SeminarRecordPruner
             foreach ($rows->chunk(500) as $chunk) {
                 DB::table('seminar_ticket_events')->whereIn('ticket_ref', $chunk->pluck('ticket_ref')->all())->delete();
                 DB::table('seminar_refund_lines')->whereIn('registration_id', $chunk->pluck('id')->all())->delete();
+                DB::table('seminar_ticket_sales')->whereIn('registration_id', $chunk->pluck('id')->all())->delete();
             }
         }
 

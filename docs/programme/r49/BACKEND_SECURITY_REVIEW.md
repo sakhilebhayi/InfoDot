@@ -40,7 +40,7 @@ skipped). Pint passes; PHPStan reports no errors and the baseline is unchanged a
 | B-14 | P3 | 2 Points | An acceptance could be reversed twice; a late request could reset a question | Fixed | Test |
 | L-01 | P2 | 5 Accounts | Deleting an owner's account deletes their businesses for every member, without warning | Left: owner decision | Test (probe) |
 | L-02 | P2 | 4 Visibility | Any business can be named in a mention by its id, including private and restricted ones | Left: owner decision | Read |
-| L-03 | P2 | 1 Seminars | One row per person per seminar: a second purchase overwrites the first sale's record | Left: large | Read |
+| L-03 | P2 | 1 Seminars | One row per person per seminar: a second purchase overwrites the first sale's record | Fixed later (`seminar_ticket_sales`, one row per paid checkout) | `SeminarTicketSalesTest` |
 | L-04 | P3 | 1 Seminars | Refund callback: stated amount is not compared with the computed amount | Left: contract | Read |
 | L-05 | P3 | 1 Seminars | Raising capacity lets a newcomer pass the waiting list | Left: owner decision | Read |
 | L-06 | P3 | 1 Seminars | Host can edit attendance after the end, which changes whose rating counts | Left: owner decision | Read |

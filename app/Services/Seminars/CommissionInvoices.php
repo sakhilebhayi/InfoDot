@@ -4,7 +4,7 @@ namespace App\Services\Seminars;
 
 use App\Models\Seminar;
 use App\Models\SeminarCommissionInvoice;
-use App\Models\SeminarRegistration;
+use App\Models\SeminarTicketSale;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
@@ -43,7 +43,7 @@ class CommissionInvoices
 
         $n = 0;
         [$from, $to] = $this->bounds($month);
-        $hosts = Seminar::whereIn('id', SeminarRegistration::whereNotNull('paid_at')->whereBetween('paid_at', [$from, $to])->select('seminar_id'))->pluck('host_id')
+        $hosts = Seminar::whereIn('id', SeminarTicketSale::whereBetween('paid_at', [$from, $to])->select('seminar_id'))->pluck('host_id')
             ->merge(DB::table('seminar_refund_lines')->whereBetween('created_at', [$from, $to])->pluck('host_id'))->unique();
 
         foreach ($hosts as $hostId) {
@@ -116,16 +116,21 @@ class CommissionInvoices
     {
         $lines = [];
 
-        $sales = SeminarRegistration::join('seminars', 'seminars.id', '=', 'seminar_registrations.seminar_id')
-            ->where('seminars.host_id', $host->id)->whereNotNull('seminar_registrations.paid_at')->whereBetween('seminar_registrations.paid_at', [$from, $to])
-            ->orderBy('seminar_registrations.paid_at')->get(['seminar_registrations.ticket_ref', 'seminar_registrations.amount_cents', 'seminars.title', 'seminar_registrations.paid_at']);
+        // One line per sale, read from the sales themselves: a person who bought, was refunded and bought again has two.
+        $sales = SeminarTicketSale::join('seminars', 'seminars.id', '=', 'seminar_ticket_sales.seminar_id')
+            ->where('seminars.host_id', $host->id)->whereBetween('seminar_ticket_sales.paid_at', [$from, $to])
+            ->orderBy('seminar_ticket_sales.paid_at')->orderBy('seminar_ticket_sales.id')
+            ->get(['seminar_ticket_sales.ticket_ref', 'seminar_ticket_sales.amount_cents', 'seminars.title', 'seminar_ticket_sales.paid_at']);
 
         foreach ($sales as $s) {
             $lines[] = ['type' => 'sale', 'on' => Carbon::parse($s->paid_at)->toDateString(), 'seminar' => $s->title, 'ticket' => $s->ticket_ref, 'amount_cents' => (int) $s->amount_cents, 'fee_cents' => self::fee((int) $s->amount_cents)];
         }
 
-        $refunds = DB::table('seminar_refund_lines as r')->join('seminar_registrations as g', 'g.id', '=', 'r.registration_id')->join('seminars as s', 's.id', '=', 'r.seminar_id')
-            ->where('r.host_id', $host->id)->whereBetween('r.created_at', [$from, $to])->orderBy('r.created_at')->get(['r.amount_cents', 'r.reason', 'r.created_at', 'g.ticket_ref', 's.title']);
+        // Each refund names the sale it was made against; a line from before sales were recorded falls back to its registration's reference.
+        $refunds = DB::table('seminar_refund_lines as r')->leftJoin('seminar_ticket_sales as t', 't.id', '=', 'r.sale_id')
+            ->leftJoin('seminar_registrations as g', 'g.id', '=', 'r.registration_id')->join('seminars as s', 's.id', '=', 'r.seminar_id')
+            ->where('r.host_id', $host->id)->whereBetween('r.created_at', [$from, $to])->orderBy('r.created_at')->orderBy('r.id')
+            ->get(['r.amount_cents', 'r.reason', 'r.created_at', DB::raw('coalesce(t.ticket_ref, g.ticket_ref) as ticket_ref'), 's.title']);
 
         foreach ($refunds as $r) {
             $lines[] = ['type' => $r->reason, 'on' => Carbon::parse($r->created_at)->toDateString(), 'seminar' => $r->title, 'ticket' => $r->ticket_ref, 'amount_cents' => -(int) $r->amount_cents, 'fee_cents' => -self::fee((int) $r->amount_cents)];

@@ -11,6 +11,7 @@ use App\Models\SeminarRegistration;
 use App\Models\SeminarRemovalAppeal;
 use App\Models\SeminarReport;
 use App\Models\SeminarTicketEvent;
+use App\Models\SeminarTicketSale;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Demo\DemoRegistry;
@@ -181,6 +182,7 @@ class SeminarService
         // (a PHP time limit), the rest are already marked and `seminars:sweep-payments` asks Finance for them. Marked afterwards, they would be
         // forgotten: paid, with no refund requested.
         SeminarRegistration::whereIn('id', $refundable->pluck('id'))->whereNull('refund_requested_at')->update(['refund_requested_at' => now()]);
+        SeminarTicketSale::whereIn('ticket_ref', $refundable->pluck('ticket_ref')->filter()->all())->whereNull('refund_requested_at')->update(['refund_requested_at' => now()]);
 
         foreach ($regs as $reg) {
             if ($reg->payment_status !== 'pending') {
@@ -250,6 +252,7 @@ class SeminarService
             if ($held && in_array($reg->payment_status, ['paid', 'partially_refunded'], true) && $reg->dispute_status === null
                 && $reg->refundableCents() > 0 && $this->refundWindowOpen($locked)) {
                 $reg->forceFill(['refund_requested_at' => now(), 'refund_pending_cents' => $reg->refundableCents()])->save();
+                $this->saleOf($reg)?->forceFill(['refund_requested_at' => now()])->save();
                 $refund = $reg;
             }
 
@@ -764,7 +767,17 @@ class SeminarService
 
             // Money arrived for a reference InfoDot issued but no longer holds (the checkout was started again and replaced it).
             // There is no ticket to give, so it goes back. The event is recorded below, so a repeat does not ask twice.
-            if (! $reg && $event === 'ticket.paid' && preg_match('/^sem\d+-u\d+-[a-z0-9]{10}$/', $ticketRef) === 1) {
+            // A reference the registration no longer carries, but which was a sale: the person bought again after it was refunded. What
+            // Finance says about it now belongs to that sale alone and never touches the person's current place.
+            $earlier = $reg ? null : SeminarTicketSale::where('ticket_ref', $ticketRef)->lockForUpdate()->first();
+
+            if ($earlier) {
+                $outcome = $amountCents !== (int) $earlier->amount_cents || strtoupper($currency) !== strtoupper((string) $earlier->currency)
+                    ? 'mismatch'
+                    : $this->applyToEarlierSale($earlier, $event, $extra);
+            }
+
+            if (! $reg && ! $earlier && $event === 'ticket.paid' && preg_match('/^sem\d+-u\d+-[a-z0-9]{10}$/', $ticketRef) === 1) {
                 Log::warning('Seminar payment arrived for a ticket reference that was replaced; asking for it to be refunded.', ['ticket_ref' => $ticketRef]);
 
                 DB::afterCommit(function () use ($ticketRef) {
@@ -809,8 +822,10 @@ class SeminarService
             return 'mismatch';
         }
 
-        DB::table('seminar_refund_lines')->insert(['registration_id' => $reg->id, 'seminar_id' => $seminar->id, 'host_id' => $seminar->host_id, 'amount_cents' => $now, 'reason' => 'refund', 'created_at' => now()]);
+        $sale = $this->saleOf($reg);
+        DB::table('seminar_refund_lines')->insert(['registration_id' => $reg->id, 'sale_id' => $sale?->id, 'seminar_id' => $seminar->id, 'host_id' => $seminar->host_id, 'amount_cents' => $now, 'reason' => 'refund', 'created_at' => now()]);
         $full = $total >= (int) $reg->amount_cents;
+        $sale?->forceFill(['refunded_cents' => $total, 'refunded_at' => now(), 'state' => $full ? SeminarTicketSale::REFUNDED : SeminarTicketSale::PARTIALLY_REFUNDED])->save();
         $reg->forceFill(array_filter([
             'refunded_cents' => $total, 'refunded_at' => now(), 'refund_pending_cents' => null, 'hold_expires_at' => null,
             'payment_status' => $full ? 'refunded' : 'partially_refunded', 'status' => $full ? SeminarRegistration::CANCELLED : null,
@@ -836,9 +851,13 @@ class SeminarService
         $reg->dispute_status = $outcome;
 
         if ($outcome === 'lost') {
+            $sale = $this->saleOf($reg);
+
             if ($reg->refundableCents() > 0) {
-                DB::table('seminar_refund_lines')->insert(['registration_id' => $reg->id, 'seminar_id' => $seminar->id, 'host_id' => $seminar->host_id, 'amount_cents' => $reg->refundableCents(), 'reason' => 'chargeback', 'created_at' => now()]);
+                DB::table('seminar_refund_lines')->insert(['registration_id' => $reg->id, 'sale_id' => $sale?->id, 'seminar_id' => $seminar->id, 'host_id' => $seminar->host_id, 'amount_cents' => $reg->refundableCents(), 'reason' => 'chargeback', 'created_at' => now()]);
             }
+
+            $sale?->forceFill(['state' => SeminarTicketSale::CHARGEBACK])->save();
 
             $reg->payment_status = 'chargeback';
             $reg->status = SeminarRegistration::CANCELLED;
@@ -857,6 +876,12 @@ class SeminarService
 
         $reg->forceFill(['payment_status' => 'paid', 'paid_at' => now()])->save();
 
+        // The sale itself: one row per checkout that was paid, which the registration row (reused when a person buys again) cannot be.
+        $sale = SeminarTicketSale::firstOrCreate(['ticket_ref' => (string) $reg->ticket_ref], [
+            'registration_id' => $reg->id, 'seminar_id' => $seminar->id, 'user_id' => $reg->user_id, 'amount_cents' => (int) $reg->amount_cents,
+            'currency' => (string) ($reg->currency ?: config('seminars.paid.currency', 'ZAR')), 'state' => SeminarTicketSale::PAID, 'paid_at' => $reg->paid_at,
+        ]);
+
         $taken = SeminarRegistration::where('seminar_id', $seminar->id)->where('status', SeminarRegistration::REGISTERED)->where('id', '!=', $reg->id)->count();
         $roomLeft = $seminar->capacity === null || $taken < $seminar->capacity;
 
@@ -868,6 +893,7 @@ class SeminarService
 
         // Paid after the seminar was cancelled or ended, or after the place went to someone else: the money goes back.
         $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'refund_requested_at' => now()])->save();
+        $sale->forceFill(['refund_requested_at' => now()])->save();
         DB::afterCommit(fn () => $this->requestRefund($reg));
 
         return 'applied';
@@ -875,13 +901,62 @@ class SeminarService
 
     private function requestRefund(SeminarRegistration $reg): void
     {
+        $this->askFinanceToRefund((string) $reg->ticket_ref, (int) $reg->refunded_cents, $reg->refundableCents(), (int) $reg->id);
+    }
+
+    /** A full refund when nothing has gone back yet; otherwise the rest, keyed so a repeat is the same request. */
+    private function askFinanceToRefund(string $ticketRef, int $refundedCents, int $refundableCents, int $registrationId): void
+    {
         try {
-            $reg->refunded_cents > 0
-                ? $this->finance->refund((string) $reg->ticket_ref, $reg->refundableCents(), 'rest-'.$reg->id)
-                : $this->finance->refund((string) $reg->ticket_ref);
+            $refundedCents > 0
+                ? $this->finance->refund($ticketRef, $refundableCents, 'rest-'.$registrationId)
+                : $this->finance->refund($ticketRef);
         } catch (MarketplaceUnavailable) {
             // Left marked as requested; seminars:sweep-payments asks again.
         }
+    }
+
+    /** The sale behind the ticket a registration holds now, or null (a free place, or a payment not confirmed yet). */
+    private function saleOf(SeminarRegistration $reg): ?SeminarTicketSale
+    {
+        return $reg->ticket_ref === null ? null : SeminarTicketSale::where('ticket_ref', $reg->ticket_ref)->first();
+    }
+
+    /**
+     * A callback about a sale the person has since replaced by buying again. Only the sale's own money record changes: a refund that adds
+     * up, or a lost dispute. @param  array<string, mixed>  $extra
+     */
+    private function applyToEarlierSale(SeminarTicketSale $sale, string $event, array $extra): string
+    {
+        $hostId = Seminar::whereKey($sale->seminar_id)->value('host_id');
+
+        if ($event === 'ticket.refunded') {
+            $total = (int) ($extra['refunded_total_cents'] ?? $sale->amount_cents);
+            $adds = $total - (int) $sale->refunded_cents;
+
+            if ($adds < 1 || $total > (int) $sale->amount_cents || $hostId === null) {
+                Log::warning('Seminar refund callback for an earlier sale did not add up.', ['ticket_ref' => $sale->ticket_ref]);
+
+                return 'mismatch';
+            }
+
+            DB::table('seminar_refund_lines')->insert(['registration_id' => $sale->registration_id, 'sale_id' => $sale->id, 'seminar_id' => $sale->seminar_id, 'host_id' => $hostId, 'amount_cents' => $adds, 'reason' => 'refund', 'created_at' => now()]);
+            $sale->forceFill(['refunded_cents' => $total, 'refunded_at' => now(), 'state' => $total >= (int) $sale->amount_cents ? SeminarTicketSale::REFUNDED : SeminarTicketSale::PARTIALLY_REFUNDED])->save();
+
+            return 'applied';
+        }
+
+        if ($event === 'ticket.dispute_resolved' && ($extra['outcome'] ?? null) === 'lost' && $hostId !== null) {
+            if ($sale->refundableCents() > 0) {
+                DB::table('seminar_refund_lines')->insert(['registration_id' => $sale->registration_id, 'sale_id' => $sale->id, 'seminar_id' => $sale->seminar_id, 'host_id' => $hostId, 'amount_cents' => $sale->refundableCents(), 'reason' => 'chargeback', 'created_at' => now()]);
+            }
+
+            $sale->forceFill(['state' => SeminarTicketSale::CHARGEBACK])->save();
+
+            return 'applied';
+        }
+
+        return 'ignored';
     }
 
     /** Places held for payment that ran out of time are given back, and Finance is told not to take a late payment. */
@@ -912,13 +987,13 @@ class SeminarService
         return $n;
     }
 
-    /** Asks again for refunds that were requested but not yet confirmed. Finance treats a repeat as the same request. */
+    /** Asks again for refunds that were requested but not yet confirmed, sale by sale. Finance treats a repeat as the same request. */
     public function retryRefunds(): int
     {
         $n = 0;
 
-        foreach (SeminarRegistration::whereIn('payment_status', ['paid', 'partially_refunded'])->whereNotNull('refund_requested_at')->where('refund_requested_at', '<', now()->subMinutes(10))->get() as $reg) {
-            $this->requestRefund($reg);
+        foreach (SeminarTicketSale::whereIn('state', SeminarTicketSale::HOLDING)->whereNotNull('refund_requested_at')->where('refund_requested_at', '<', now()->subMinutes(10))->get() as $sale) {
+            $this->askFinanceToRefund($sale->ticket_ref, (int) $sale->refunded_cents, $sale->refundableCents(), (int) $sale->registration_id);
             $n++;
         }
 
@@ -928,7 +1003,7 @@ class SeminarService
     /** @return array{tickets: int, gross_cents: int, platform_cents: int, host_cents: int} what the host has taken, before Paystack's fee */
     public function hostRevenue(Seminar $seminar): array
     {
-        $kept = SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'partially_refunded'])->whereNull('refund_requested_at')
+        $kept = SeminarTicketSale::where('seminar_id', $seminar->id)->whereIn('state', SeminarTicketSale::HOLDING)->whereNull('refund_requested_at')
             ->get(['amount_cents', 'refunded_cents'])->map(fn ($r) => (int) $r->amount_cents - (int) $r->refunded_cents);
         $pct = (int) config('seminars.paid.platform_percent', 10);
         $platform = (int) $kept->sum(fn ($c) => (int) floor($c * $pct / 100 + 0.5));

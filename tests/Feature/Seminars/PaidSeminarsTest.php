@@ -6,6 +6,7 @@ use App\Models\Seminar;
 use App\Models\SeminarHostAgreement;
 use App\Models\SeminarPayoutAccount;
 use App\Models\SeminarRegistration;
+use App\Models\SeminarTicketSale;
 use App\Models\User;
 use App\Services\Seminars\SeminarService;
 use App\Support\Knowledge\Signature;
@@ -254,6 +255,8 @@ class PaidSeminarsTest extends TestCase
         $reg = $this->buy($s, $this->person());
         $this->financeCallback('ticket.paid', $reg->ticket_ref);
         $reg->forceFill(['refund_requested_at' => now()->subMinutes(30)])->save();
+        // The sweep reads the sale (one per paid checkout), not the registration row.
+        SeminarTicketSale::where('ticket_ref', $reg->ticket_ref)->update(['refund_requested_at' => now()->subMinutes(30)]);
 
         $this->assertSame(1, app(SeminarService::class)->retryRefunds());
     }

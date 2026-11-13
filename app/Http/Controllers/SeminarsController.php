@@ -9,6 +9,7 @@ use App\Models\SeminarRegistration;
 use App\Models\SeminarRemovalAppeal;
 use App\Models\SeminarReport;
 use App\Models\SeminarSellerProfile;
+use App\Models\SeminarTicketSale;
 use App\Models\Topic;
 use App\Models\User;
 use App\Services\Privacy\SeminarDataExporter;
@@ -166,17 +167,24 @@ class SeminarsController extends Controller
         return back()->with('seminar_notice', 'The refund was sent to our payment partner. The ticket updates when it is confirmed.');
     }
 
-    /** The buyer's receipt: who the seller is, what was paid and refunded. Only the person who bought the ticket. */
+    /**
+     * The buyer's receipt: who the seller is, what was paid and refunded. Only the person who bought the ticket. One receipt per sale:
+     * the latest by default, an earlier one (bought, refunded, bought again) by its number.
+     */
     public function receipt(Request $request, Seminar $seminar): View
     {
-        $reg = SeminarRegistration::where('seminar_id', $seminar->id)->where('user_id', $request->user()->id)->whereNotNull('paid_at')->firstOrFail();
+        $sales = SeminarTicketSale::where('seminar_id', $seminar->id)->where('user_id', $request->user()->id)->orderByDesc('paid_at')->orderByDesc('id')->get();
+        $sale = $request->filled('sale') ? $sales->firstWhere('id', (int) $request->query('sale')) : $sales->first();
+        abort_if($sale === null, 404);
+
         $profile = SeminarSellerProfile::where('user_id', $seminar->host_id)->first();
         $taxInvoice = config('seminars.paid.issue_tax_invoices') && $profile?->vat_number && $profile->authorises_receipts;
         $rate = (int) config('seminars.paid.vat_rate_percent', 15);
 
         return view('seminars.receipt', [
-            'seminar' => $seminar, 'reg' => $reg, 'buyer' => $request->user(), 'seller' => $profile?->trading_name ?: $seminar->host->name, 'vatNumber' => $taxInvoice ? $profile->vat_number : null,
-            'taxInvoice' => $taxInvoice, 'vatIncluded' => $taxInvoice ? (int) floor(((int) $reg->amount_cents) * $rate / (100 + $rate) + 0.5) : null, 'rate' => $rate,
+            'seminar' => $seminar, 'sale' => $sale, 'others' => $sales->where('id', '!=', $sale->id)->values(), 'buyer' => $request->user(),
+            'seller' => $profile?->trading_name ?: $seminar->host->name, 'vatNumber' => $taxInvoice ? $profile->vat_number : null,
+            'taxInvoice' => $taxInvoice, 'vatIncluded' => $taxInvoice ? (int) floor(((int) $sale->amount_cents) * $rate / (100 + $rate) + 0.5) : null, 'rate' => $rate,
         ]);
     }
 
