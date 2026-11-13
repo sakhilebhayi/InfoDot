@@ -659,6 +659,14 @@ class SeminarService
                 throw ValidationException::withMessages(['seminar' => 'You already have a ticket.']);
             }
 
+            // One row holds a person's ticket for a seminar. While money from an earlier ticket is still held or on its way back, a new
+            // checkout would overwrite the reference Finance confirms against and the record of what was paid.
+            if ($existing && in_array($existing->payment_status, ['paid', 'partially_refunded'], true)) {
+                throw ValidationException::withMessages(['seminar' => $existing->refund_requested_at !== null || $existing->refund_pending_cents !== null
+                    ? 'The refund for your earlier ticket is still on its way. You can buy a new ticket once it has arrived.'
+                    : 'You already paid for a ticket to this seminar and gave up your place after the refund deadline, so a new ticket cannot be bought.']);
+            }
+
             if ($existing && $existing->status === SeminarRegistration::PENDING_PAYMENT && $existing->hold_expires_at?->isFuture()) {
                 if ($existing->checkout_url) {
                     return [$existing, true];
@@ -685,6 +693,8 @@ class SeminarService
                 'amount_cents' => $locked->price_cents, 'currency' => $locked->currency, 'checkout_url' => null,
                 'hold_expires_at' => now()->addMinutes((int) config('seminars.paid.hold_minutes', 30)),
                 'paid_at' => null, 'refund_requested_at' => null, 'refunded_at' => null,
+                // A new ticket starts clean: what was refunded or disputed belonged to the earlier, fully refunded one.
+                'refunded_cents' => 0, 'refund_pending_cents' => null, 'dispute_status' => null, 'disputed_at' => null,
             ]);
 
             return [$reg, false];
