@@ -124,7 +124,7 @@ class OpsAlert
 
         $collect = function (array $entry) use (&$state, &$new) {
             // ops:check logs each failing check once a day; those reach the email through the checks section, not as errors.
-            if (str_starts_with($entry['message'], 'ops.check') || str_starts_with($entry['message'], 'Operations check:')) {
+            if ($this->log->writtenByOpsCheck($entry)) {
                 return;
             }
 

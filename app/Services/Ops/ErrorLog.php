@@ -66,11 +66,22 @@ class ErrorLog
 
         for ($day = $since->copy()->startOfDay(); $day->lessThanOrEqualTo(now()); $day = $day->addDay()) {
             $this->read($this->path($day), 0, function (array $entry) use (&$count, $from) {
-                $count += $entry['time'] >= $from ? 1 : 0;
+                $count += $entry['time'] >= $from && ! $this->writtenByOpsCheck($entry) ? 1 : 0;
             });
         }
 
         return $count;
+    }
+
+    /**
+     * `ops:check` logs each failing check once a day (twice: the line and the reported exception). Those are the check's own report,
+     * not new errors: counting them would make a failing check look like a failing application, and its count feed itself.
+     *
+     * @param  array{time: string, level: string, class: ?string, message: string}  $entry
+     */
+    public function writtenByOpsCheck(array $entry): bool
+    {
+        return str_starts_with($entry['message'], 'ops.check') || str_starts_with($entry['message'], 'Operations check:');
     }
 
     /**

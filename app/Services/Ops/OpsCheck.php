@@ -11,7 +11,8 @@ use Laravel\Passport\Passport;
 
 /**
  * The failures that used to be silent: events parked after their last retry, deliveries that never went out, refunds Billing never confirmed,
- * holds nobody released, and a scheduler that stopped. Counts only: no row, name or address is ever read out.
+ * holds nobody released, a scheduler that stopped, a folder the application cannot write to and a disk that is nearly full. Counts
+ * only: no row, name or address is ever read out.
  *
  * `run()` returns the counts; `alert()` reports each non-zero kind once a day (to the log and, through the exception handler, to Sentry).
  * The scheduler heartbeat is separate because a dead scheduler cannot run this check: /ready exposes it to an outside monitor.
@@ -21,6 +22,8 @@ class OpsCheck
     public const HEARTBEAT_KEY = 'ops:scheduler-heartbeat';
 
     private const OUTBOXES = ['reward_outbox' => 'points', 'participation_outbox' => 'memory', 'library_outcomes' => 'library'];
+
+    public function __construct(private readonly ErrorLog $log) {}
 
     /** @return array<string, int> */
     public function run(): array
@@ -50,7 +53,64 @@ class OpsCheck
         // R-20: without the OIDC signing keys every platform sign-in fails; deploy generates them once.
         $found['sso_signing_keys_missing'] = is_file(Passport::keyPath('oauth-private.key')) ? 0 : 1;
 
+        // The host conditions behind uploads and sign-ups failing: a folder the web user cannot write to, and a full disk.
+        foreach ($this->writablePaths() as $label => $path) {
+            $found["{$label}_not_writable"] = $this->canWrite($path) ? 0 : 1;
+        }
+
+        if (($free = $this->freeBytes()) !== null) {
+            $found['disk_space_low'] = $free < (float) config('ops.min_free_bytes') ? 1 : 0;
+        }
+
         return $found;
+    }
+
+    /**
+     * What is worth a look but is not a failure of its own: the command prints these as "warn", they do not change its exit code and
+     * `alert()` never sees them. Errors in the log are reported by `ops:alert`; counted here as a problem, each day's report would
+     * write an error line that the next day's count finds again.
+     *
+     * @return array<string, int>
+     */
+    public function warnings(): array
+    {
+        return ['errors_logged_24h' => $this->log->countSince(now()->subDay())];
+    }
+
+    /** @return array<string, string> */
+    private function writablePaths(): array
+    {
+        return [
+            'storage_app' => storage_path('app'),
+            'profile_photos' => storage_path('app/public/profile-photos'),
+            'storage_framework' => storage_path('framework'),
+            'bootstrap_cache' => app()->bootstrapPath('cache'),
+        ];
+    }
+
+    /**
+     * Report only: nothing is created or written. A folder that does not exist yet (profile-photos before the first picture) is ok
+     * when the nearest folder above it that does exist is writable, because the first upload creates it.
+     */
+    private function canWrite(string $path): bool
+    {
+        while (! file_exists($path) && dirname($path) !== $path) {
+            $path = dirname($path);
+        }
+
+        return is_dir($path) && is_writable($path);
+    }
+
+    /** Free bytes on the disk that holds storage/, or null when PHP cannot tell (the function is disabled on some shared hosts). */
+    protected function freeBytes(): ?float
+    {
+        try {
+            $free = function_exists('disk_free_space') ? @disk_free_space(storage_path()) : false;
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $free === false ? null : (float) $free;
     }
 
     private function securityTxtExpiring(): bool
