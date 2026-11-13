@@ -23,12 +23,19 @@ class RegistrationResilienceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const PASSWORD = 'Str0ng-passw0rd!x';
+    /** Made per test; a literal here reads as a committed secret to scanners. */
+    private string $password;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->password = Str::random(20).'aA1!';
+    }
 
     /** @return array<string, string> */
     private function form(string $email = 'new@example.com'): array
     {
-        return ['name' => 'Pat Example', 'email' => $email, 'password' => self::PASSWORD, 'password_confirmation' => self::PASSWORD, 'terms' => 'on'];
+        return ['name' => 'Pat Example', 'email' => $email, 'password' => $this->password, 'password_confirmation' => $this->password, 'terms' => 'on'];
     }
 
     /**
@@ -61,7 +68,7 @@ class RegistrationResilienceTest extends TestCase
 
     public function test_a_second_tap_on_register_signs_the_person_in_instead_of_failing(): void
     {
-        $this->anotherRequestWinsTheRace('new@example.com', self::PASSWORD);
+        $this->anotherRequestWinsTheRace('new@example.com', $this->password);
 
         $response = $this->post('/register', $this->form());
 
@@ -73,7 +80,7 @@ class RegistrationResilienceTest extends TestCase
 
     public function test_a_lost_race_against_someone_elses_password_is_an_ordinary_validation_error(): void
     {
-        $this->anotherRequestWinsTheRace('new@example.com', 'a-completely-different-password');
+        $this->anotherRequestWinsTheRace('new@example.com', Str::random(24));
 
         $response = $this->from('/register')->post('/register', $this->form());
 
@@ -85,7 +92,7 @@ class RegistrationResilienceTest extends TestCase
 
     public function test_an_account_that_already_existed_is_never_signed_in_by_the_sign_up_form(): void
     {
-        $existing = User::factory()->create(['email' => 'old@example.com', 'password' => Hash::make(self::PASSWORD), 'created_at' => now()->subDay()]);
+        $existing = User::factory()->create(['email' => 'old@example.com', 'password' => Hash::make($this->password), 'created_at' => now()->subDay()]);
 
         $response = $this->from('/register')->post('/register', $this->form('old@example.com'));
 
