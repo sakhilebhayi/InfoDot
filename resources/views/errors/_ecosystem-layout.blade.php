@@ -69,7 +69,12 @@
         <header style="background: var(--charcoal);">
             <nav style="max-width: 1400px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;">
                 <a href="/" class="press" style="display: flex; align-items: center; gap: 10px;">
-                    <img src="{{ asset('img/logo_white.png') }}" alt="InfoDot" style="height: 40px; width: auto;">
+                    {{-- An error page must open even when the build is missing, so the logo falls back to the name. --}}
+                    @if ($logo = \App\Support\OptionalVite::asset('resources/img/brand/logo_white.png'))
+                        <img src="{{ $logo }}" alt="InfoDot" style="height: 40px; width: auto;">
+                    @else
+                        <span style="color: #fff; font-weight: 700; font-size: 20px;">InfoDot</span>
+                    @endif
                 </a>
                 <div style="display: flex; align-items: center; gap: 12px;">
                     @auth

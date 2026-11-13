@@ -39,7 +39,7 @@
         <header @class(['ix-top', 'ix-top--public', 'is-landing' => $landing])>
             <div class="ix-top__inner">
                 <a href="{{ url('/') }}" class="ix-brand" aria-label="InfoDot home">
-                    <img src="{{ asset('img/logo_white.png') }}" alt="InfoDot" width="64" height="26">
+                    <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/brand/logo_white.png') }}" alt="InfoDot" width="64" height="26">
                 </a>
 
                 @unless ($landing)

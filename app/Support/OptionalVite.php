@@ -11,6 +11,23 @@ use Throwable;
  */
 class OptionalVite
 {
+    /**
+     * The address of one built file, or null when the build does not hold it. For the logo on error pages and in emails, which must
+     * still be produced when the build is missing or stale: the caller shows the name instead.
+     */
+    public static function asset(string $path): ?string
+    {
+        try {
+            $url = (string) Vite::asset($path);
+
+            return $url !== '' ? $url : null;
+        } catch (Throwable $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
     public static function tags(string ...$entries): string
     {
         try {

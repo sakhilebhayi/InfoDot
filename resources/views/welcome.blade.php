@@ -21,7 +21,7 @@
     <script type="application/ld+json">{!! json_encode([
         '@context' => 'https://schema.org',
         '@graph' => [
-            ['@type' => 'Organization', 'name' => 'InfoDot', 'url' => route('welcome'), 'logo' => asset('img/logo1.png')],
+            ['@type' => 'Organization', 'name' => 'InfoDot', 'url' => route('welcome'), 'logo' => asset('icon-512.png')],
             ['@type' => 'WebSite', 'name' => 'InfoDot', 'url' => route('welcome')],
         ],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>

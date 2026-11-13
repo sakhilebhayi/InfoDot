@@ -3,7 +3,7 @@
 <header class="ix-top">
     <div class="ix-top__inner">
         <a href="{{ url('/') }}" class="ix-brand" aria-label="InfoDot home">
-            <img src="{{ asset('img/logo_white.png') }}" alt="InfoDot" width="64" height="26">
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/brand/logo_white.png') }}" alt="InfoDot" width="64" height="26">
         </a>
         <nav class="ix-tabs" aria-label="Primary">
             <a href="{{ route('businesses.index') }}" class="ix-tab" data-area="people" @if(request()->routeIs('businesses.*', 'business.show')) aria-current="page" @endif>Businesses</a>

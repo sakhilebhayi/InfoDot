@@ -4,9 +4,9 @@ import './mentions';
 import './business-media';
 import Alpine from 'alpinejs';
 
-// Platform logos are emitted into the build (public/build is the one folder every host serves from),
+// The site logo, platform logos and landing photographs are emitted into the build (public/build is the one folder every host serves from),
 // so Blade can reach them with Vite::asset().
-import.meta.glob(['../img/platforms/*.png', '../img/apps/*.png', '../img/landing/*.jpg', '../img/landing/platforms/*.png', '../img/arrow-mask.png']);
+import.meta.glob(['../img/platforms/*.png', '../img/apps/*.png', '../img/landing/*.jpg', '../img/landing/platforms/*.png', '../img/arrow-mask.png', '../img/brand/logo_white.png']);
 
 // Livewire 3 bundles and starts its own Alpine on every page that loads it. Starting a second one
 // makes them fight, so this bundle starts Alpine only on pages that do not have Livewire
