@@ -306,8 +306,10 @@ jobs:
           # ---- static files the docroot serves as its own physical copies (not through PHP):
           # refresh the repo-owned ones, or edits to them never reach the browser (robots.txt
           # sat at its June copy until R-17). index.php is deliberately untouched — on this
-          # host it carries the docroot-to-app path bootstrap.
-          for F in robots.txt .well-known/security.txt; do
+          # host it carries the docroot-to-app path bootstrap. The tab and home-screen icons (R-49)
+          # are here because browsers ask for them at fixed root addresses; every other image,
+          # font, script and stylesheet goes through the Vite build.
+          for F in robots.txt .well-known/security.txt favicon.ico apple-touch-icon.png icon-192.png icon-512.png site.webmanifest; do
             if [ -f "public/$F" ] && [ ! -L "$DOCROOT/$F" ]; then
               mkdir -p "$(dirname "$DOCROOT/$F")"
               cp -f "public/$F" "$DOCROOT/$F"

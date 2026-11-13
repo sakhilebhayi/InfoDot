@@ -56,13 +56,6 @@ class InteractionSweepTest extends TestCase
      */
     private const VISITOR_SIGN_IN_WALLS = ['/questions/ask', '/solutions', '/question/view/{id}', '/solution/view/{id}', '/solution/create', '/topics', '/topics/*', '/business/{uuid}/message', '/business/{uuid}/report', '/j/*'];
 
-    /**
-     * public/favicon.ico has been a zero-byte file since the first commit, so the app and public pages have no tab
-     * icon. Which mark becomes the icon is the owner's choice (docs/programme/r49/IMAGE_AUDIT.md, decision 1); until
-     * then this one empty file is named here rather than passed over in silence. Any other empty file fails.
-     */
-    private const EMPTY_ON_PURPOSE_UNTIL_DECIDED = ['/favicon.ico'];
-
     /** @var array<string, mixed> */
     private static array $report = [];
 
@@ -399,7 +392,7 @@ class InteractionSweepTest extends TestCase
         }
         if (is_file(public_path(ltrim($path, '/')))) {
             $resources[$local] = 'static '.$kind;
-            if (filesize(public_path(ltrim($path, '/'))) === 0 && ! in_array($path, self::EMPTY_ON_PURPOSE_UNTIL_DECIDED, true)) {
+            if (filesize(public_path(ltrim($path, '/'))) === 0) {
                 $note($pagePath, "loads the {$kind} {$path}, which is an empty file");
             }
 

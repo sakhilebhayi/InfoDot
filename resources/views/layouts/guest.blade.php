@@ -3,9 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f6f7f9" />
-    <link rel="shortcut icon" href="{{ asset('img/icons/icon.png') }}" />
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('img/icons/icon.png') }}" />
+    @include('partials.head-icons')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ? $title.' · InfoDot' : 'InfoDot' }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -34,7 +34,7 @@ class ImageIntegrityTest extends TestCase
      * are served from copies already on the host. The list is closed: a NEW picture goes in resources/img and is
      * named with Vite::asset, or it will be missing on the live site.
      */
-    private const LEGACY_PUBLIC_FILES = ['favicon.ico', 'img/icons/icon.png', 'img/logo1.png', 'img/logo_white.png'];
+    private const LEGACY_PUBLIC_FILES = ['apple-touch-icon.png', 'favicon.ico', 'icon-192.png', 'img/logo1.png', 'img/logo_white.png', 'site.webmanifest'];
 
     protected function setUp(): void
     {

@@ -6,7 +6,7 @@
         <title>{{ $code }} — @yield('title') · InfoDot</title>
         <meta name="robots" content="noindex">
 
-        <link rel="icon" href="{{ asset('favicon.ico') }}">
+        @include('partials.head-icons')
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
