@@ -19,6 +19,17 @@ class Comment extends Model
         'body',
     ];
 
+    /**
+     * Only the words are indexed. Without this the whole model was sent to the index, relations included: a comment
+     * saved with its author attached (as the comment box does) handed TNTSearch an array and failed with a TypeError.
+     *
+     * @return array{id: mixed, body: string}
+     */
+    public function toSearchableArray(): array
+    {
+        return ['id' => $this->getKey(), 'body' => (string) $this->body];
+    }
+
     public function scopeParent(Builder $builder)
     {
         $builder->whereNull('parent_id');

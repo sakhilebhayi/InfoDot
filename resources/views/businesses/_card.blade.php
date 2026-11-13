@@ -16,6 +16,7 @@
         <div class="ix-bizcard__name">
             <h3><a href="{{ route('business.show', $team) }}">{{ $team->name }}</a></h3>
             <x-business-badge :team="$team" />
+            <x-demo-mark :of="$team" />
         </div>
         <p class="ix-bizcard__meta">
             @if ($team->code)<span class="ix-ref">{{ $team->code }}</span>@endif

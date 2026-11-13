@@ -19,6 +19,7 @@
             <p class="ix-detail__kind" x-data="{ chip: @js($solution->isVerified() ? 'Verified by moderator' : '') }" @solution-verification.window="chip = $event.detail.label">
                 <span class="ix-q__state is-open" style="background:#1b2124;color:var(--ix-stencil)">Solution</span>
                 <span class="ix-q__state is-done" x-show="chip" x-text="chip" @unless ($solution->isVerified()) x-cloak @endunless>@if ($solution->isVerified()) Verified by moderator @endif</span>
+                <x-demo-mark :of="$solution" />
             </p>
             <h1 class="ix-detail__title">{{ $solution->solution_title }}</h1>
 

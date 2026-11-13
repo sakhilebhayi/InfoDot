@@ -13,6 +13,7 @@ use App\Models\SeminarReport;
 use App\Models\SeminarTicketEvent;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Demo\DemoRegistry;
 use App\Services\Knowledge\InAppNotices;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
@@ -642,6 +643,11 @@ class SeminarService
 
         if ($seminar->host_id === $user->id) {
             throw ValidationException::withMessages(['seminar' => 'You are hosting this seminar.']);
+        }
+
+        // A demonstration account (R-49) is a fictional person: no payment is ever started for it.
+        if (app(DemoRegistry::class)->isDemoUser($user)) {
+            throw ValidationException::withMessages(['seminar' => 'Demonstration accounts cannot buy tickets.']);
         }
 
         $account = SeminarPayoutAccount::where('user_id', $seminar->host_id)->where('status', 'active')->first();

@@ -2,6 +2,7 @@
 
 namespace App\Services\Points;
 
+use App\Services\Demo\DemoRegistry;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,11 @@ class RewardOutbox
     /** @param array<string, mixed> $envelope */
     public function enqueue(array $envelope): void
     {
+        // A demonstration account (R-49) earns nothing: Dot Points can be redeemed, and nothing is paid out for fictional work.
+        if (app(DemoRegistry::class)->isDemoUserUuid($envelope['user_uuid'] ?? null)) {
+            return;
+        }
+
         DB::table('reward_outbox')->insertOrIgnore([
             'event_id' => $envelope['event_id'],
             'type' => $envelope['type'],

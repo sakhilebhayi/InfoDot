@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Team;
+use App\Services\Demo\DemoRegistry;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 
@@ -38,7 +39,8 @@ class SitemapController extends Controller
             }
 
             // Business pages listed for everyone (R-33): the only businesses a visitor or crawler can open.
-            Team::query()->listedFor(null)->with('profile:id,team_id,updated_at')->select(['id', 'uuid', 'updated_at'])
+            // Demonstration businesses (R-49) are listed for people but are not real: a crawler is never pointed at them.
+            Team::query()->listedFor(null)->whereNotIn('id', app(DemoRegistry::class)->ids(Team::class))->with('profile:id,team_id,updated_at')->select(['id', 'uuid', 'updated_at'])
                 ->orderBy('id')->limit(5000)->get()
                 ->each(function (Team $team) use (&$lines) {
                     $modified = max($team->updated_at?->getTimestamp() ?? 0, $team->profile?->updated_at?->getTimestamp() ?? 0);
