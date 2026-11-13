@@ -646,7 +646,7 @@ class SeminarService
 
         $account = SeminarPayoutAccount::where('user_id', $seminar->host_id)->where('status', 'active')->first();
 
-        [$reg, $reuse] = DB::transaction(function () use ($seminar, $user) {
+        [$reg, $reuse, $replaced] = DB::transaction(function () use ($seminar, $user) {
             $locked = Seminar::whereKey($seminar->id)->lockForUpdate()->firstOrFail();
 
             if (! $locked->isPublished() || $locked->hasEnded() || ! $locked->isPaid()) {
@@ -669,7 +669,7 @@ class SeminarService
 
             if ($existing && $existing->status === SeminarRegistration::PENDING_PAYMENT && $existing->hold_expires_at?->isFuture()) {
                 if ($existing->checkout_url) {
-                    return [$existing, true];
+                    return [$existing, true, null];
                 }
 
                 // The first request is still asking Finance for the payment page. A second one now would make a second ticket reference and
@@ -687,6 +687,9 @@ class SeminarService
                 throw ValidationException::withMessages(['seminar' => 'This seminar is full.']);
             }
 
+            // An earlier, unpaid checkout whose reference is about to be replaced: its payment page may still be open.
+            $replaced = $existing && in_array($existing->payment_status, ['pending', 'free'], true) ? $existing->ticket_ref : null;
+
             $reg = SeminarRegistration::updateOrCreate(['seminar_id' => $locked->id, 'user_id' => $user->id], [
                 'status' => SeminarRegistration::PENDING_PAYMENT, 'payment_status' => 'pending', 'attended_at' => null,
                 'ticket_ref' => 'sem'.$locked->id.'-u'.$user->id.'-'.Str::lower(Str::random(10)),
@@ -697,11 +700,19 @@ class SeminarService
                 'refunded_cents' => 0, 'refund_pending_cents' => null, 'dispute_status' => null, 'disputed_at' => null,
             ]);
 
-            return [$reg, false];
+            return [$reg, false, $replaced];
         });
 
         if ($reuse) {
             return $reg->checkout_url;
+        }
+
+        if ($replaced !== null) {
+            try {
+                $this->finance->cancel((string) $replaced);
+            } catch (MarketplaceUnavailable) {
+                // A payment still made on the old page is sent back when Finance reports it (applyTicketEvent).
+            }
         }
 
         try {
@@ -744,6 +755,20 @@ class SeminarService
             $seminar = $seminarId ? Seminar::whereKey($seminarId)->lockForUpdate()->first() : null;
             $reg = $seminar ? SeminarRegistration::where('ticket_ref', $ticketRef)->lockForUpdate()->first() : null;
             $outcome = 'unknown';
+
+            // Money arrived for a reference InfoDot issued but no longer holds (the checkout was started again and replaced it).
+            // There is no ticket to give, so it goes back. The event is recorded below, so a repeat does not ask twice.
+            if (! $reg && $event === 'ticket.paid' && preg_match('/^sem\d+-u\d+-[a-z0-9]{10}$/', $ticketRef) === 1) {
+                Log::warning('Seminar payment arrived for a ticket reference that was replaced; asking for it to be refunded.', ['ticket_ref' => $ticketRef]);
+
+                DB::afterCommit(function () use ($ticketRef) {
+                    try {
+                        $this->finance->refund($ticketRef);
+                    } catch (MarketplaceUnavailable $e) {
+                        Log::error('Seminar payment for a replaced ticket reference could not be sent back; refund it by hand.', ['ticket_ref' => $ticketRef, 'reason' => mb_substr($e->getMessage(), 0, 200)]);
+                    }
+                });
+            }
 
             if ($reg) {
                 if ($amountCents !== (int) $reg->amount_cents || strtoupper($currency) !== strtoupper((string) $reg->currency)) {
