@@ -8,6 +8,12 @@ import Alpine from 'alpinejs';
 // so Blade can reach them with Vite::asset().
 import.meta.glob(['../img/platforms/*.png', '../img/apps/*.png', '../img/landing/*.jpg', '../img/landing/platforms/*.png', '../img/arrow-mask.png', '../img/brand/logo_white.png']);
 
+// The Analytics trend chart. The charting library is large, so it is fetched only on a page that has a chart to draw.
+const trendChart = document.getElementById('activityChart');
+if (trendChart) {
+    import('./analytics-chart').then(({ draw }) => draw(trendChart));
+}
+
 // Livewire 3 bundles and starts its own Alpine on every page that loads it. Starting a second one
 // makes them fight, so this bundle starts Alpine only on pages that do not have Livewire
 // (the public home page and the error pages).

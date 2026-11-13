@@ -19,10 +19,7 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary">
     @include('partials.head-icons')
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Big+Shoulders+Stencil+Display:wght@700;800;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet">
+    @include('partials.head-fonts', ['fonts' => ['archivo', 'stencil', 'icons']])
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @if ($landing)
         {{-- Motion is added on top of a page that is complete without it: the flag is set before first paint only when the visitor has not asked for reduced motion. --}}

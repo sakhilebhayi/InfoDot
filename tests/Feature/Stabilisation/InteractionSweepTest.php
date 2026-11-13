@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Feature\Stabilisation\Support\BuildsTheYard;
+use Tests\Feature\Stabilisation\Support\IconFont;
 use Tests\Feature\Stabilisation\Support\PageInspector;
 use Tests\TestCase;
 
@@ -276,6 +277,9 @@ class InteractionSweepTest extends TestCase
             $found = $inspector->inspect((string) $response->getContent(), $final);
             foreach ($found['problems'] as $problem) {
                 $note($page, $problem);
+            }
+            foreach (IconFont::notInTheFont((string) $response->getContent()) as $icon) {
+                $note($page, "shows the icon \"{$icon}\", which the icon font the site ships does not hold: it would appear as the word. Add it to resources/fonts/material-symbols-rounded.txt and run tools/build-icon-font.py");
             }
             foreach ($found['counts'] as $type => $n) {
                 $counts[$type] = ($counts[$type] ?? 0) + $n;

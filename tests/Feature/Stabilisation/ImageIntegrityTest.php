@@ -320,54 +320,38 @@ class ImageIntegrityTest extends TestCase
         }
     }
 
-    public function test_every_outside_host_a_page_loads_from_is_allowed_by_the_content_security_policy(): void
+    public function test_no_page_loads_a_file_from_another_host(): void
     {
-        $policy = (string) $this->as(null)->get('/')->headers->get('Content-Security-Policy');
-        $allowed = function (string $directive, string $host) use ($policy): bool {
-            foreach (explode(';', $policy) as $part) {
-                $words = preg_split('/\s+/', trim($part)) ?: [];
-                if (array_shift($words) === $directive) {
-                    return in_array('https://'.$host, $words, true) || in_array('https:', $words, true);
-                }
-            }
-
-            return false;
-        };
-
+        // Since R-49 the fonts, the icon font, the charting library and every picture come from this site, and the
+        // Content-Security-Policy names no other host for them. A view that names one would simply be blocked.
         $found = [];
         foreach ($this->sources() as $file => $source) {
             if (! str_ends_with($file, '.blade.php') || str_contains($file, '/vendor/mail/') || str_contains($file, '/emails/')) {
                 continue; // an email is opened in a mail program, which this site's policy does not govern
             }
-            preg_match_all('#<(img|script|iframe|source|video|audio)\b[^>]*\ssrc="https?://([^/"]+)#i', $source, $tags, PREG_SET_ORDER);
-            foreach ($tags as $t) {
-                $found[] = [match (strtolower($t[1])) {
-                    'script' => 'script-src', 'iframe' => 'frame-src', 'video', 'audio', 'source' => 'media-src', default => 'img-src'
-                }, $t[2], $file];
-            }
-            preg_match_all('#<link\b[^>]*\brel="stylesheet"[^>]*\shref="https?://([^/"]+)|<link\b[^>]*\shref="https?://([^/"]+)[^>]*\brel="stylesheet"#i', $source, $links, PREG_SET_ORDER);
-            foreach ($links as $l) {
-                $found[] = ['style-src', $l[1] ?: $l[2], $file];
-            }
-            preg_match_all('#url\([\'"]?https?://([^/\'")]+)#i', $source, $urls);
-            foreach ($urls[1] as $host) {
-                $found[] = ['img-src', $host, $file];
+            preg_match_all('#<(?:img|script|iframe|source|video|audio)\b[^>]*\ssrc="(?:https?:)?//([^/"]+)#i', $source, $tags);
+            preg_match_all('#<link\b[^>]*\brel="(?:stylesheet|preload|preconnect|modulepreload|icon)"[^>]*\shref="(?:https?:)?//([^/"]+)|<link\b[^>]*\shref="(?:https?:)?//([^/"]+)[^>]*\brel="(?:stylesheet|preload|preconnect|modulepreload|icon)"#i', $source, $links);
+            preg_match_all('#url\([\'"]?(?:https?:)?//([^/\'")]+)#i', $source, $urls);
+            foreach (array_filter(array_merge($tags[1], $links[1], $links[2], $urls[1])) as $host) {
+                $found[] = "{$file} loads from {$host}";
             }
         }
-        // The stylesheets the fonts come from name their font files on these hosts.
-        foreach (['fonts.gstatic.com', 'cdnjs.cloudflare.com'] as $fontHost) {
-            $found[] = ['font-src', $fontHost, 'the Google Fonts and Font Awesome stylesheets'];
-        }
-        foreach ((new Finder)->files()->in(resource_path('css'))->name('*.css') as $css) {
-            preg_match_all('#(?:url\(|@import\s+)[\'"]?https?://([^/\'")]+)#i', $css->getContents(), $urls);
+        foreach ($this->frontendSources() as $file => $source) {
+            if (! str_ends_with($file, '.css')) {
+                continue;
+            }
+            preg_match_all('#(?:url\(|@import\s+)[\'"]?(?:https?:)?//([^/\'")]+)#i', (string) preg_replace('#/\*.*?\*/#s', '', $source), $urls);
             foreach ($urls[1] as $host) {
-                $found[] = [str_contains($host, 'font') ? 'font-src' : 'img-src', $host, $css->getRelativePathname()];
+                $found[] = "{$file} loads from {$host}";
             }
         }
 
-        $this->assertNotEmpty($found);
-        foreach ($found as [$directive, $host, $file]) {
-            $this->assertTrue($allowed($directive, $host), "{$file} loads from {$host}, which the Content-Security-Policy {$directive} does not allow");
+        $this->assertSame([], $found, 'Serve the file from this site instead: put it in resources/ (or install its npm package) so the build ships it.');
+
+        $policy = (string) $this->as(null)->get('/')->headers->get('Content-Security-Policy');
+        foreach (['script-src', 'style-src', 'font-src', 'img-src', 'media-src', 'frame-src'] as $directive) {
+            $this->assertSame(1, preg_match('/(?:^|;\s*)'.$directive.' ([^;]+)/', $policy, $m), $directive);
+            $this->assertSame(0, preg_match('#https?:#', $m[1]), "{$directive} allows another host: {$m[1]}");
         }
     }
 

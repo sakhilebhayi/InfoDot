@@ -101,6 +101,8 @@ jobs:
         run: npm audit --audit-level=high
       - name: Production build
         run: npm run build
+      - name: The build serves its own fonts and names no other host
+        run: node tools/check-built-assets.mjs
 
   coverage:
     name: test coverage (measured, not yet gating)
