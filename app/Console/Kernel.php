@@ -19,6 +19,8 @@ class Kernel extends ConsoleKernel
         // Proof that the scheduler is running (read by /ready), and a check for failures that used to be silent.
         $schedule->call(fn () => app(OpsCheck::class)->beat())->name('ops-heartbeat')->everyMinute();
         $schedule->command('ops:check')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
+        // The host has no error tracker: this emails OPS_ALERT_ADDRESS when the log gains errors or a check fails (one email an hour at most).
+        $schedule->command('ops:alert')->everyTenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('attachments:prune')->dailyAt('03:35')->withoutOverlapping(30)->onOneServer();
         $schedule->command('business:verifications')->dailyAt('03:45')->withoutOverlapping(30)->onOneServer();
         $schedule->command('business:enquiry-follow-ups')->dailyAt('07:30')->withoutOverlapping(30)->onOneServer();

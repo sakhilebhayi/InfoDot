@@ -4,6 +4,7 @@ namespace App\Actions\Jetstream;
 
 use App\Services\Participation\ParticipationClient;
 use App\Services\Privacy\SeminarDataEraser;
+use App\Services\Sso\BackchannelLogoutService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Laravel\Jetstream\Contracts\DeletesTeams;
@@ -40,6 +41,7 @@ class DeleteUser implements DeletesUsers
         $this->eraseFromMemory($user);
         // Upcoming seminars are cancelled and tickets refunded first: that talks to Finance, so it runs outside the transaction.
         app(SeminarDataEraser::class)->settle($user);
+        $this->endSessionsElsewhere($user);
 
         DB::transaction(function () use ($user) {
             app(SeminarDataEraser::class)->erase($user);
@@ -67,6 +69,23 @@ class DeleteUser implements DeletesUsers
             app(ParticipationClient::class)->erase($user);
         } catch (Throwable $e) {
             Log::warning('participation.erase_on_account_deletion_failed', ['exception' => $e::class]);
+        }
+    }
+
+    /**
+     * The Dot platforms the person is signed in to are told to end their sessions and the provider tokens are revoked,
+     * the same way a central sign-out does it. It runs before the row goes (the platforms are told who by the account's
+     * stable id) and never stands in the way of deleting the account.
+     *
+     * @param  mixed  $user
+     * @return void
+     */
+    protected function endSessionsElsewhere($user)
+    {
+        try {
+            app(BackchannelLogoutService::class)->propagate($user);
+        } catch (Throwable $e) {
+            Log::warning('sso.logout_on_account_deletion_failed', ['exception' => $e::class]);
         }
     }
 

@@ -18,6 +18,11 @@ class UserinfoController extends Controller
         /** @var User $user */
         $user = $request->user('oidc');
 
+        // A suspended account's claims are not released, even on a token issued before the suspension.
+        if ($user->isSuspended()) {
+            return response()->json(['error' => 'invalid_token'], 401, ['WWW-Authenticate' => 'Bearer error="invalid_token"']);
+        }
+
         // The User model carries Sanctum's HasApiTokens; Passport's guard attaches the access
         // token through the same withAccessToken() hook, so it is read back via currentAccessToken().
         $token = $user->currentAccessToken();

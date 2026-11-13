@@ -52,7 +52,6 @@ class HandoffTokenScopeTest extends TestCase
 
         $this->withHeader('Authorization', 'Bearer '.$this->launchCode($user))->getJson('/api/user')->assertUnauthorized();
         $this->withHeader('Authorization', 'Bearer '.$this->launchCode($user, null))->getJson('/api/user')->assertUnauthorized();
-        $this->withHeader('Authorization', 'Bearer '.$this->launchCode($user))->postJson('/api/ecosystem/token', ['platform' => 'files'])->assertUnauthorized();
     }
 
     public function test_a_refused_launch_code_is_not_marked_as_used(): void

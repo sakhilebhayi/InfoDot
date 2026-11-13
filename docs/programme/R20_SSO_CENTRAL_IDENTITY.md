@@ -64,9 +64,12 @@ Endpoints (all enforced by tests in `tests/Feature/Oidc/`):
 - `/oauth/userinfo` — bearer-guarded; `sub` = uuid; claims filtered by granted scopes.
 - `/oauth/end-session` — RP-initiated logout: id_token_hint verified by signature, central session
   ended, back-channel sent to the user's *other* platforms, redirect only to an exactly-registered
-  post-logout URI (forged URIs land on `/`).
-- Back-channel logout (§10): on central logout, password reset (and via the same service, any
-  future suspension/deletion hook) every signed-in platform gets a short-lived signed logout token
+  post-logout URI (forged URIs land on `/`). The session ends at once only when the hint was issued
+  for the person who is signed in; any other request (a bare link, somebody else's hint) gets a
+  confirmation page whose button posts through the CSRF check.
+- Back-channel logout (§10): on central logout, password reset, a signed-in password change, account
+  deletion and account suspension (`account:suspend`, see `App\Services\Accounts\AccountSuspension`;
+  a suspended account is also refused at authorize, token, refresh and userinfo) every signed-in platform gets a short-lived signed logout token
   (`events` claim, `sub` = uuid, jti, no nonce), provider-side tokens are revoked and the session
   registry cleared. Tested end to end with a faked platform endpoint.
 - **Registry** (§2): `dot_platforms` (domain, environment, exact redirect URIs, post-logout URIs,
