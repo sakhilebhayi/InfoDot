@@ -76,13 +76,17 @@ class PlatformSubscriptionEventsTest extends AdminCentreTestCase
         $raw = (string) json_encode($event);
         $now = time();
 
+        // The other Finance callback has a key of its own; it opens nothing here.
+        $seminarKey = Str::random(48);
+        config(['seminars.paid.callback_secret' => $seminarKey, 'seminars.paid.enabled' => true]);
+
         $attempts = [
             'another key' => $this->deliver($event, Str::random(48)),
             'no signature' => $this->call('POST', '/api/finance/platform-subscription-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => (string) $now], $raw),
             'no timestamp' => $this->call('POST', '/api/finance/platform-subscription-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_SIGNATURE' => Signature::sign($this->key, $now, $raw)], $raw),
             'signature of another body' => $this->deliver($event, $this->key, $now, Signature::sign($this->key, $now, str_replace('24900', '1', $raw))),
             'signature without the prefix' => $this->deliver($event, $this->key, $now, substr(Signature::sign($this->key, $now, $raw), 7)),
-            'the seminar callback key' => tap(Str::random(48), fn ($other) => config(['seminars.paid.callback_secret' => $other, 'seminars.paid.enabled' => true])) === null ? null : $this->deliver($event, (string) config('seminars.paid.callback_secret')),
+            'the seminar callback key' => $this->deliver($event, $seminarKey),
             'unsigned form post' => $this->post('/api/finance/platform-subscription-events', $event),
         ];
 
