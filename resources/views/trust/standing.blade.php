@@ -83,7 +83,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="ix-form__row"><label class="ix-label" for="body">Why it is wrong</label><textarea class="ix-input" id="body" name="body" rows="6" minlength="30" maxlength="3000" required placeholder="What the reviewer missed. If you share branding with a related business (a franchise, a branch), say so and how.">{{ old('body') }}</textarea></div>
+                    <div class="ix-form__row"><label class="ix-label" for="body">Why it is wrong</label><textarea class="ix-textarea" id="body" name="body" rows="6" minlength="30" maxlength="3000" required placeholder="What the reviewer missed. If you share branding with a related business (a franchise, a branch), say so and how.">{{ old('body') }}</textarea></div>
                     <div class="ix-form__row"><label class="ix-label" for="files">Evidence <span class="ix-hint">optional; up to {{ \App\Services\Trust\BusinessTrustService::MAX_FILES }} files. Only reviewers see them.</span></label><input class="ix-input" type="file" id="files" name="files[]" multiple accept="image/jpeg,image/png,image/webp,application/pdf"></div>
                     <div><button type="submit" class="ix-btn ix-btn--primary">Send the appeal</button></div>
                 </form>
