@@ -31,10 +31,10 @@
                     <div class="ix-panel__head"><h2 id="act-h">Act</h2></div>
                     <div class="ix-panel__body ix-vactions">
                         <details><summary class="ix-btn">Add a note</summary>
-                            <form method="post" action="{{ route('moderation.trust.act', [$inv, 'note']) }}" class="ix-form ix-vgap">@csrf<div class="ix-field"><label class="ix-label" for="t-note">Note (reviewers only)</label><textarea id="t-note" name="text" class="ix-input" rows="2" minlength="10" maxlength="3000" required></textarea></div><div><button class="ix-btn">Add</button></div></form>
+                            <form method="post" action="{{ route('moderation.trust.act', [$inv, 'note']) }}" class="ix-form ix-vgap">@csrf<div class="ix-field"><label class="ix-label" for="t-note">Note (reviewers only)</label><textarea id="t-note" name="text" class="ix-textarea" rows="2" minlength="10" maxlength="3000" required></textarea></div><div><button class="ix-btn">Add</button></div></form>
                         </details>
                         <details><summary class="ix-btn">Write to the business</summary>
-                            <form method="post" action="{{ route('moderation.trust.act', [$inv, 'message']) }}" class="ix-form ix-vgap">@csrf<div class="ix-field"><label class="ix-label" for="t-msg">Message (the business’s owner and administrators read it on their standing page)</label><textarea id="t-msg" name="text" class="ix-input" rows="3" minlength="10" maxlength="3000" required>{{ $inv->message_to_business }}</textarea></div><div><button class="ix-btn">Send</button></div></form>
+                            <form method="post" action="{{ route('moderation.trust.act', [$inv, 'message']) }}" class="ix-form ix-vgap">@csrf<div class="ix-field"><label class="ix-label" for="t-msg">Message (the business’s owner and administrators read it on their standing page)</label><textarea id="t-msg" name="text" class="ix-textarea" rows="3" minlength="10" maxlength="3000" required>{{ $inv->message_to_business }}</textarea></div><div><button class="ix-btn">Send</button></div></form>
                         </details>
                         @if ($inv->restricted)
                             <form method="post" action="{{ route('moderation.trust.act', [$inv, 'lift']) }}">@csrf<button class="ix-btn">Return it to the directory</button></form>
@@ -48,7 +48,7 @@
                                         <label class="ix-choice__opt"><input type="radio" name="outcome" value="{{ $o }}" required><span><b>{{ \App\Models\BusinessInvestigation::STATUSES[$o] }}</b>@if (in_array($o, \App\Models\BusinessInvestigation::CONFIRMED, true))<span class="ix-hint">Keeps it out of the directory and withdraws any verification. The business can appeal to another reviewer.</span>@else<span class="ix-hint">Returns it to the directory.</span>@endif</span></label>
                                     @endforeach
                                 </fieldset>
-                                <div class="ix-field"><label class="ix-label" for="t-out">What to tell the business</label><textarea id="t-out" name="text" class="ix-input" rows="3" minlength="20" maxlength="3000" required></textarea></div>
+                                <div class="ix-field"><label class="ix-label" for="t-out">What to tell the business</label><textarea id="t-out" name="text" class="ix-textarea" rows="3" minlength="20" maxlength="3000" required></textarea></div>
                                 <div><button class="ix-btn ix-btn--primary">Record the outcome</button></div>
                             </form>
                         </details>

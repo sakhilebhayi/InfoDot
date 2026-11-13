@@ -29,7 +29,7 @@
                             <details><summary class="ix-btn {{ $class }}">{{ $label }}</summary>
                                 <form method="post" action="{{ route('moderation.trust.appeal.decide', [$appeal, $decision]) }}" class="ix-form ix-vgap">@csrf
                                     <p class="ix-hint">{{ $hint }}</p>
-                                    <div class="ix-field"><label class="ix-label" for="n-{{ $decision }}">What to tell the business</label><textarea id="n-{{ $decision }}" name="note" class="ix-input" rows="3" minlength="20" maxlength="3000" required></textarea></div>
+                                    <div class="ix-field"><label class="ix-label" for="n-{{ $decision }}">What to tell the business</label><textarea id="n-{{ $decision }}" name="note" class="ix-textarea" rows="3" minlength="20" maxlength="3000" required></textarea></div>
                                     <div><button class="ix-btn {{ $class }}">{{ $label }}</button></div>
                                 </form>
                             </details>

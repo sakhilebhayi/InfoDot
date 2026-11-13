@@ -68,7 +68,7 @@
                     <summary class="ix-btn">Different businesses — dismiss</summary>
                     <form method="post" action="{{ route('moderation.identity.resolve', [$c, 'dismiss']) }}" class="ix-form ix-vgap">
                         @csrf
-                        <div class="ix-field"><label class="ix-label" for="note-dismiss">Why (reviewers only)</label><textarea id="note-dismiss" name="note" class="ix-input" rows="2" minlength="10" maxlength="2000" required></textarea></div>
+                        <div class="ix-field"><label class="ix-label" for="note-dismiss">Why (reviewers only)</label><textarea id="note-dismiss" name="note" class="ix-textarea" rows="2" minlength="10" maxlength="2000" required></textarea></div>
                         <div><button type="submit" class="ix-btn">Dismiss</button></div>
                     </form>
                 </details>
@@ -80,7 +80,7 @@
                             <label class="ix-label" for="kind">“{{ $c->subject?->name }}” is a…</label>
                             <select id="kind" name="kind" class="ix-input">@foreach ($kinds as $key => $label)<option value="{{ $key }}">{{ $label }}</option>@endforeach</select>
                         </div>
-                        <div class="ix-field"><label class="ix-label" for="note-relate">How you know (reviewers only)</label><textarea id="note-relate" name="note" class="ix-input" rows="2" minlength="10" maxlength="2000" required></textarea></div>
+                        <div class="ix-field"><label class="ix-label" for="note-relate">How you know (reviewers only)</label><textarea id="note-relate" name="note" class="ix-textarea" rows="2" minlength="10" maxlength="2000" required></textarea></div>
                         <div><button type="submit" class="ix-btn ix-btn--primary">Record as related</button></div>
                     </form>
                 </details>
@@ -95,7 +95,7 @@
                         <summary class="ix-btn ix-btn--danger">Escalate for investigation</summary>
                         <form method="post" action="{{ route('moderation.identity.resolve', [$c, 'escalate']) }}" class="ix-form ix-vgap">
                             @csrf
-                            <div class="ix-field"><label class="ix-label" for="note-escalate">What needs investigating (reviewers only)</label><textarea id="note-escalate" name="note" class="ix-input" rows="2" minlength="10" maxlength="2000" required></textarea></div>
+                            <div class="ix-field"><label class="ix-label" for="note-escalate">What needs investigating (reviewers only)</label><textarea id="note-escalate" name="note" class="ix-textarea" rows="2" minlength="10" maxlength="2000" required></textarea></div>
                             <div><button type="submit" class="ix-btn ix-btn--danger">Escalate</button></div>
                         </form>
                     </details>

@@ -391,12 +391,13 @@ Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_s
 
 // Liveness probe used by the deploy's smoke check and by monitoring. GET only, so
 // a POST answers a small 405 instead of reaching a controller. One `select 1`: with the database down this is a
-// 500 (the exception text is not shown with APP_DEBUG=false), not a green "OK".
+// 500 (the exception text is not shown with APP_DEBUG=false), not a green "OK". Limited per address like /ready,
+// because it runs a query for anyone who asks.
 Route::get('/up', function () {
     DB::select('select 1');
 
     return response('OK', 200, ['Content-Type' => 'text/plain']);
-})->name('up');
+})->middleware('throttle:60,1,up')->name('up');
 
 // A short link to a seminar that always opens (it goes to the seminar page, signing in first when needed).
 Route::get('/j/{code}', [SeminarsController::class, 'short'])->where('code', '[A-Za-z0-9]{6,12}')->middleware('throttle:60,1,seminar-short')->name('seminars.short');

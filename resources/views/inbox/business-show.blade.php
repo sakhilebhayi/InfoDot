@@ -16,7 +16,7 @@
 
             <form method="post" action="{{ route('business.inbox.reply', [$team, $enquiry]) }}" enctype="multipart/form-data" class="ix-form ix-compose ix-vgap">
                 @csrf
-                <div class="ix-form__row"><label class="ix-label" for="body">Write</label><textarea class="ix-input" id="body" name="body" rows="5" maxlength="{{ config('enquiries.max_length') }}" required>{{ old('body') }}</textarea></div>
+                <div class="ix-form__row"><label class="ix-label" for="body">Write</label><textarea class="ix-textarea" id="body" name="body" rows="5" maxlength="{{ config('enquiries.max_length') }}" required>{{ old('body') }}</textarea></div>
                 <div class="ix-form__row"><label class="ix-label" for="files">Files <span class="ix-hint">optional, up to {{ config('enquiries.max_files') }}</span></label><input class="ix-input" type="file" id="files" name="files[]" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4"></div>
                 <div class="ix-compose__send">
                     <button type="submit" class="ix-btn ix-btn--primary" @if(! $enquiry->customer) disabled @endif><span class="material-symbols-rounded" aria-hidden="true">send</span>Reply to {{ $enquiry->customer?->name ?? 'the customer' }}</button>
