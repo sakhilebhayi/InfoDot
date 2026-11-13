@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\EcosystemHandoff;
+use App\Support\GettingStarted;
 use App\Support\Platforms;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,8 @@ class PlatformLaunchController extends Controller
 
         // A platform with its own sign-in has no receiver for a token: send the person to its front door.
         if (EcosystemHandoff::hasNoReceiver($platform) && ($plain = EcosystemHandoff::plainUrl($platform)) !== null) {
+            GettingStarted::notePlatformOpened($user);
+
             return redirect()->away($plain);
         }
 
@@ -37,6 +40,8 @@ class PlatformLaunchController extends Controller
         if ($form === null) {
             return response()->view('resources.unavailable', ['platform' => config('ecosystem.platforms.'.$platform.'.name', $platform)], 503);
         }
+
+        GettingStarted::notePlatformOpened($user);
 
         $nonce = Str::random(24);
 

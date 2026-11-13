@@ -1,5 +1,8 @@
 <x-app-layout>
-    @php($first = \Illuminate\Support\Str::before(auth()->user()->name, ' '))
+    @php
+        $first = \Illuminate\Support\Str::before(auth()->user()->name, ' ');
+        $doneCount = collect($gettingStarted)->where('done', true)->count();
+    @endphp
 
     <section class="ix-gate" aria-label="Your company">
         <div class="ix-gate__inner">
@@ -13,6 +16,43 @@
     </section>
 
     <div class="ix-home">
+        @if (request()->boolean('verified'))
+            <p class="ix-alert" role="status">Your email address is confirmed. You are in.</p>
+        @endif
+        @if (session('getting-started-status'))
+            <p class="ix-alert" role="status">{{ session('getting-started-status') }}</p>
+        @endif
+
+        {{-- First steps (R-49): shown while something is left to do and the person has not put it away. Every row is
+             read from the database when the page is drawn (App\Support\GettingStarted); nothing here is a saved tick. --}}
+        @if ($gettingStarted !== [])
+            <section class="ix-start" aria-labelledby="start-h">
+                <div class="ix-start__head">
+                    <div>
+                        <h2 id="start-h">Getting started</h2>
+                        <p>{{ $doneCount }} of {{ count($gettingStarted) }} done. Each line opens the page where it is done.</p>
+                    </div>
+                    <form method="POST" action="{{ route('getting-started.dismiss') }}">
+                        @csrf
+                        <button type="submit" class="ix-btn ix-btn--ghost ix-btn--sm">Put this away</button>
+                    </form>
+                </div>
+                <ol class="ix-start__steps">
+                    @foreach ($gettingStarted as $i => $step)
+                        <li @class(['is-done' => $step['done']]) data-step="{{ $step['key'] }}">
+                            <span class="ix-start__no" aria-hidden="true">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
+                            <span class="ix-start__what"><strong>{{ $step['title'] }}</strong><span>{{ $step['note'] }}</span></span>
+                            @if ($step['done'])
+                                <span class="ix-start__done">Done</span>
+                            @else
+                                <a href="{{ $step['url'] }}" class="ix-btn ix-btn--sm">{{ $step['action'] }}</a>
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
+        @endif
+
         <div class="ix-fields">
             <section class="ix-fieldblock" aria-labelledby="needs">
                 <div class="ix-fieldblock__head">
@@ -53,7 +93,7 @@
                     <a href="{{ route('solutions') }}" class="ix-btn ix-btn--sm ix-btn--ghost">All solutions</a>
                 </div>
                 @if ($solutions->isEmpty())
-                    <div class="ix-empty" style="padding:28px 24px"><p style="margin:0">No solutions yet. Write the first one when you work something out.</p></div>
+                    <div class="ix-empty ix-empty--slim"><p>No solutions yet. A solution is a procedure written as steps, so a problem is only solved once.</p><a href="{{ route('add') }}" class="ix-btn">Write the first solution</a></div>
                 @else
                     <div class="ix-tablewrap">
                         <table class="ix-table">
@@ -63,7 +103,7 @@
                                 <tr>
                                     <td><span class="ix-ref">{{ \App\Support\Reference::for($s) }}</span></td>
                                     <td><a class="title" href="{{ route('solutions.view', ['id' => $s->id]) }}">{{ $s->solution_title }}</a></td>
-                                    <td class="num">{{ $s->steps ?? 0 }}</td>
+                                    <td class="num">{{ $s->steps ?? 0 }}<span class="ix-sr"> {{ \Illuminate\Support\Str::plural('step', (int) ($s->steps ?? 0)) }}</span></td>
                                 </tr>
                             @endforeach
                             </tbody>

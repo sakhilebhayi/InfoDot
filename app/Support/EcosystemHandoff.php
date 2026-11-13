@@ -47,7 +47,12 @@ final class EcosystemHandoff
 
         // A platform with its own sign-in is opened at its own login page: no launch page, no token.
         if (self::hasNoReceiver($key)) {
-            return self::plainUrl($key);
+            // The launch page is skipped on this path, so the first open is noted here (every caller redirects to what this returns).
+            if (($plain = self::plainUrl($key)) !== null) {
+                GettingStarted::notePlatformOpened($user);
+            }
+
+            return $plain;
         }
 
         $safe = self::safeRedirect($redirect);
