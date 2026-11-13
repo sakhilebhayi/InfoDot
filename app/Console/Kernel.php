@@ -59,6 +59,9 @@ class Kernel extends ConsoleKernel
 
         // What moderators decided about Dot.Brain's library recommendations, waiting to be reported to Dot.Memory (retried with growing delays).
         $schedule->command('library:flush-outcomes')->everyMinute()->withoutOverlapping(30)->onOneServer();
+
+        // Entitlement changes waiting to be told to their platform (R-50; retried with growing delays, see EntitlementOutbox).
+        $schedule->command('platforms:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
     }
 
     /**

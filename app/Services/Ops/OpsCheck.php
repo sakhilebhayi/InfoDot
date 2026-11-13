@@ -21,7 +21,7 @@ class OpsCheck
 {
     public const HEARTBEAT_KEY = 'ops:scheduler-heartbeat';
 
-    private const OUTBOXES = ['reward_outbox' => 'points', 'participation_outbox' => 'memory', 'library_outcomes' => 'library'];
+    private const OUTBOXES = ['reward_outbox' => 'points', 'participation_outbox' => 'memory', 'library_outcomes' => 'library', 'entitlement_outbox' => 'entitlements'];
 
     public function __construct(private readonly ErrorLog $log) {}
 
