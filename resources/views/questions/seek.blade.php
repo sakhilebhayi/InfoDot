@@ -16,6 +16,13 @@
             @error('question')<p class="ix-error" id="question-error">{{ $message }}</p>@enderror
         </div>
 
+        {{-- Topics are compulsory, so they come straight after the question, not below the attachments (U-13). --}}
+        <div class="ix-field">
+            @include('topics._picker', ['choices' => $topicChoices, 'selected' => old('topics', $preselectedTopic ? [$preselectedTopic] : []), 'idPrefix' => 'ask-topic'])
+            @error('topics')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            @error('topics.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+        </div>
+
         <div class="ix-field">
             <label class="ix-label" for="description">Details</label>
             <x-mention-box name="mentions">
@@ -32,12 +39,6 @@
         @error('attachments')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
         @error('attachments.*.uuid')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
 
-
-        <div class="ix-field">
-            @include('topics._picker', ['choices' => $topicChoices, 'selected' => old('topics', $preselectedTopic ? [$preselectedTopic] : []), 'idPrefix' => 'ask-topic'])
-            @error('topics')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
-            @error('topics.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
-        </div>
 
         <div class="ix-field">
             <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">

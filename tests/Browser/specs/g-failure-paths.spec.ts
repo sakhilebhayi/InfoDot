@@ -68,18 +68,23 @@ test.describe('G. When something goes wrong', () => {
         await page.goto('/user/profile/edit');
         const profile = page.locator('form').filter({ has: page.locator('#photo') });
 
-        // Over the limit: the form says so when it is saved, and keeps the old picture.
+        // Over the limit: the browser says so at once, before any of the file is uploaded (U-12). The server
+        // check stays behind it (ProfilePhotoTest).
+        const uploads: string[] = [];
+        page.on('request', (request) => {
+            if (request.url().includes('/livewire/upload-file')) uploads.push(request.url());
+        });
         await profile.locator('#photo').setInputFiles(fixture('too-large.png'));
-        await expect(profile.getByRole('button', { name: 'Save' })).toBeEnabled({ timeout: 60_000 });
-        await profile.getByRole('button', { name: 'Save' }).click();
-        await expect(profile.getByText('That picture is over 10 MB. Choose a smaller one.')).toBeVisible({ timeout: 30_000 });
+        await expect(profile.getByRole('alert').filter({ hasText: 'The limit is 10 MB. Choose a smaller one.' })).toBeVisible();
 
         // Not a picture at all.
-        await page.reload();
         await profile.locator('#photo').setInputFiles(fixture('not-a-picture.txt'));
-        await expect(profile.getByRole('button', { name: 'Save' })).toBeEnabled({ timeout: 30_000 });
+        await expect(profile.getByRole('alert').filter({ hasText: 'Choose a picture: JPG, PNG or WebP.' })).toBeVisible();
+        expect(uploads, 'a refused file is never sent').toEqual([]);
+
+        // Saving the form after a refusal changes no picture.
         await profile.getByRole('button', { name: 'Save' }).click();
-        await expect(profile.getByText('Choose a picture: JPG, PNG or WebP.')).toBeVisible({ timeout: 30_000 });
+        await expect(profile.getByText('Saved.')).toBeVisible({ timeout: 30_000 });
 
         expect(rows('users', { email: person.email })[0].profile_photo_path).toBeNull();
         expect(serverErrors(record.problems)).toEqual([]);

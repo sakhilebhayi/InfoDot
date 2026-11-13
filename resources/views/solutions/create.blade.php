@@ -19,6 +19,13 @@
                 @error('solution_title')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
 
+            {{-- Topics are compulsory, so they come straight after the title (U-13). --}}
+            <div class="ix-field">
+                @include('topics._picker', ['choices' => $topicChoices, 'selected' => old('topics', $preselectedTopic ? [$preselectedTopic] : []), 'idPrefix' => 'sol-topic'])
+                @error('topics')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+                @error('topics.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
+            </div>
+
             <div class="ix-field">
                 <label class="ix-label" for="solution_description">What it achieves</label>
                 <textarea class="ix-textarea" name="solution_description" id="solution_description" rows="4" placeholder="{{ $industry['solution_description'] }}" required @error('solution_description') aria-invalid="true" @enderror>{{ old('solution_description') }}</textarea>
@@ -32,12 +39,6 @@
                 <input class="ix-input" name="tags-input" id="tags-input" type="text" value="{{ old('tags-input') }}" placeholder="{{ $industry['solution_tags'] }}" required @error('tags-input') aria-invalid="true" @enderror>
                 <p class="ix-hint">Separate tags with commas. Specific tags are easier to find than broad ones.</p>
                 @error('tags-input')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
-            </div>
-
-            <div class="ix-field">
-                @include('topics._picker', ['choices' => $topicChoices, 'selected' => old('topics', $preselectedTopic ? [$preselectedTopic] : []), 'idPrefix' => 'sol-topic'])
-                @error('topics')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
-                @error('topics.*')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
             </div>
 
             <div class="ix-form__row">

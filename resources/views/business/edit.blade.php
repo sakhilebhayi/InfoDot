@@ -21,7 +21,7 @@
     @endif
 
     <div class="ix-settings">
-        <nav class="ix-settings__index" aria-label="Profile sections">
+        <nav class="ix-settings__index" id="sections" aria-label="Profile sections">
             @foreach ([['directory', 'Directory listing'], ['logo', 'Logo'], ['cover', 'Cover photograph'], ['about', 'About the business'], ['facts', 'Registry facts'], ['contact', 'Contact and links'], ['services', 'Services and products'], ['portfolio', 'Portfolio'], ['locations', 'Locations'], ['announcements', 'Announcements'], ['gallery', 'Gallery'], ['brochures', 'Brochures'], ['managers', 'Who manages this'], ['changes', 'Recent changes'], ['standing', 'Standing and appeals'], ['featured', 'Featured placement']] as $i => [$id, $label])
                 <a href="#{{ $id }}"><span class="ix-settings__no">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>{{ $label }}</a>
             @endforeach
@@ -429,5 +429,7 @@
                 @endif
             </section>
         </div>
+        {{-- Phones only (U-18): fourteen sections make a long page, so the way back to the index stays in reach at the foot of the screen. --}}
+        <a class="ix-settings__up" href="#sections">Sections</a>
     </div>
 </x-app-layout>

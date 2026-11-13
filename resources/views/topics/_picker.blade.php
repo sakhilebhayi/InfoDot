@@ -10,7 +10,7 @@
 @endphp
 <fieldset class="ix-topicpick" @unless ($live) x-data="{ picked: @js($selected), max: {{ \App\Models\Topic::MAX_PER_ITEM }} }" @endunless>
     <legend class="ix-label">{{ $legend }}</legend>
-    <p class="ix-hint" id="{{ $idPrefix }}-hint">Choose 1 to {{ \App\Models\Topic::MAX_PER_ITEM }}. People who know the subject look here first.
+    <p class="ix-hint" id="{{ $idPrefix }}-hint">Required: choose 1 to {{ \App\Models\Topic::MAX_PER_ITEM }}. People who know the subject look here first.
         @unless ($live)<span class="ix-topicpick__count" aria-live="polite" x-text="picked.length + ' of ' + max + ' chosen'">{{ count($selected) }} of {{ \App\Models\Topic::MAX_PER_ITEM }} chosen</span>@endunless
     </p>
     <div class="ix-topicpick__grid" aria-describedby="{{ $idPrefix }}-hint">
