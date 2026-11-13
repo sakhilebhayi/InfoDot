@@ -22,7 +22,7 @@
             </fieldset>
             <div class="ix-form__row">
                 <label class="ix-label" for="detail">What you saw</label>
-                <textarea class="ix-input" id="detail" name="detail" rows="6" minlength="20" maxlength="2000" required placeholder="What is wrong, where on the page, and how you know. If another business is being copied, name it.">{{ old('detail') }}</textarea>
+                <textarea class="ix-textarea" id="detail" name="detail" rows="6" minlength="20" maxlength="2000" required placeholder="What is wrong, where on the page, and how you know. If another business is being copied, name it.">{{ old('detail') }}</textarea>
             </div>
             <div class="ix-form__row">
                 <label class="ix-label" for="files">Supporting files <span class="ix-hint">optional; up to {{ \App\Services\Trust\BusinessTrustService::MAX_FILES }} screenshots or PDFs. Only reviewers see them.</span></label>

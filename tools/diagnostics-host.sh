@@ -78,23 +78,27 @@ sec "log files"
 ls -la --time-style=long-iso storage/logs 2>&1 | tail -30
 
 LOGS="$(ls -1t storage/logs/laravel*.log 2>/dev/null | head -"$DAYS")"
+# The same files oldest first, so the newest lines come last. Reversed with awk: `tac` is not on every system (macOS has none).
+LOGS_OLDEST_FIRST="$(printf '%s\n' "$LOGS" | awk '{ a[NR] = $0 } END { for (i = NR; i > 0; i--) print a[i] }')"
 LEVELS='^\[[0-9-]+ [0-9:]+\] [A-Za-z]+\.(ERROR|CRITICAL|ALERT|EMERGENCY)'
 
+# Every grep over a log uses -a. A log line can hold a NUL byte (a serialised PHP value inside an SQL error is the usual
+# source). grep then calls the whole file binary: -c still counts its lines, but without -c it prints "binary file matches"
+# in place of every matching line, which left the error-lines section empty while the counts above it were right. The NULs
+# are removed from what is printed so the bundle stays plain text.
 sec "errors per log file (newest first)"
-for f in $LOGS; do printf '%6s  %s\n' "$(grep -c -E "$LEVELS" "$f")" "$f"; done
+for f in $LOGS; do printf '%6s  %s\n' "$(grep -a -c -E "$LEVELS" "$f")" "$f"; done
 
 sec "exceptions by class, last $DAYS files"
 # shellcheck disable=SC2086
-[ -z "$LOGS" ] || cat $LOGS | grep -oE '\[object\] \([A-Za-z0-9_\\]+' | sort | uniq -c | sort -rn | head -40
+[ -z "$LOGS" ] || cat $LOGS | grep -a -oE '\[object\] \([A-Za-z0-9_\\]+' | sort | uniq -c | sort -rn | head -40
 
 sec "error lines, last 200 (message and first exception line, cut at 1500 characters)"
-# shellcheck disable=SC2086
-[ -z "$LOGS" ] || for f in $(echo $LOGS | tr ' ' '\n' | tac); do grep -E "$LEVELS" "$f" | cut -c1-1500; done | tail -200
+[ -z "$LOGS" ] || for f in $LOGS_OLDEST_FIRST; do grep -a -E "$LEVELS" "$f" | tr -d '\000' | cut -c1-1500; done | tail -200
 
 sec "stack tops for the last 30 errors"
-# shellcheck disable=SC2086
-[ -z "$LOGS" ] || for f in $(echo $LOGS | tr ' ' '\n' | tac); do
-  awk -v re="$LEVELS" '$0 ~ re { n = 14 } n > 0 { print substr($0, 1, 400); n--; if (n == 0) print "--" }' "$f"
+[ -z "$LOGS" ] || for f in $LOGS_OLDEST_FIRST; do
+  tr -d '\000' < "$f" | awk -v re="$LEVELS" '$0 ~ re { n = 14 } n > 0 { print substr($0, 1, 400); n--; if (n == 0) print "--" }'
 done | tail -480
 
 sec "php and web server error logs"
@@ -117,6 +121,17 @@ $q = [
   'businesses_by_day_30d' => fn () => DB::table('teams')->where('personal_team', 0)->where('created_at', '>=', now()->subDays(30))->selectRaw('date(created_at) d, count(*) c')->groupBy('d')->orderBy('d')->get(),
   'businesses_without_profile_row' => fn () => DB::table('teams')->where('personal_team', 0)->whereNotExists(fn ($s) => $s->from('team_profiles')->whereColumn('team_profiles.team_id', 'teams.id'))->count(),
   'businesses_whose_owner_is_missing' => fn () => DB::table('teams')->whereNotExists(fn ($s) => $s->from('users')->whereColumn('users.id', 'teams.user_id'))->count(),
+  'teams_with_no_owner_account' => fn () => DB::table('teams')->where(fn ($w) => $w->whereNull('user_id')->orWhereNotExists(fn ($s) => $s->from('users')->whereColumn('users.id', 'teams.user_id')))->selectRaw('personal_team, count(*) c')->groupBy('personal_team')->get(),
+  'users_whose_current_team_is_missing' => fn () => DB::table('users')->whereNotNull('current_team_id')->whereNotExists(fn ($s) => $s->from('teams')->whereColumn('teams.id', 'users.current_team_id'))->count(),
+  'memberships_whose_user_is_missing' => fn () => DB::table('team_user')->whereNotExists(fn ($s) => $s->from('users')->whereColumn('users.id', 'team_user.user_id'))->count(),
+  'memberships_whose_team_is_missing' => fn () => DB::table('team_user')->whereNotExists(fn ($s) => $s->from('teams')->whereColumn('teams.id', 'team_user.team_id'))->count(),
+  'profiles_whose_team_is_missing' => fn () => DB::table('team_profiles')->whereNotExists(fn ($s) => $s->from('teams')->whereColumn('teams.id', 'team_profiles.team_id'))->count(),
+  'attachments_whose_user_is_missing' => fn () => DB::table('attachments')->whereNotExists(fn ($s) => $s->from('users')->whereColumn('users.id', 'attachments.user_id'))->count(),
+  'invitations_older_than_30d' => fn () => DB::table('team_invitations')->where('created_at', '<', now()->subDays(30))->count(),
+  'sessions_whose_user_is_missing' => fn () => DB::table('sessions')->whereNotNull('user_id')->whereNotExists(fn ($s) => $s->from('users')->whereColumn('users.id', 'sessions.user_id'))->count(),
+  'access_tokens_ecosystem_handoff' => fn () => DB::table('personal_access_tokens')->where('name', 'like', 'ecosystem-handoff%')->count(),
+  'access_tokens_other' => fn () => DB::table('personal_access_tokens')->where('name', 'not like', 'ecosystem-handoff%')->count(),
+  'access_tokens_other_last_used_on' => fn () => ($d = DB::table('personal_access_tokens')->where('name', 'not like', 'ecosystem-handoff%')->max('last_used_at')) === null ? null : substr((string) $d, 0, 10),
   'profiles_by_visibility' => fn () => DB::table('team_profiles')->join('teams', 'teams.id', '=', 'team_profiles.team_id')->where('teams.personal_team', 0)->selectRaw("visibility, count(*) c, sum(case when description is null or description = '' then 1 else 0 end) without_description, sum(case when restricted_at is not null then 1 else 0 end) restricted")->groupBy('visibility')->get(),
   'businesses_a_visitor_can_see' => fn () => DB::table('team_profiles')->join('teams', 'teams.id', '=', 'team_profiles.team_id')->where('teams.personal_team', 0)->where('visibility', 'public')->whereNotNull('description')->where('description', '<>', '')->whereNull('restricted_at')->count(),
   'verifications_by_status' => fn () => DB::table('business_verifications')->selectRaw('status, count(*) c')->groupBy('status')->get(),

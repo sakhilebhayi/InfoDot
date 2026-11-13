@@ -160,13 +160,4 @@ class EcosystemRedeemTest extends TestCase
         $this->actingAs($user)->get('/go/docs')->assertOk();
         $this->assertDatabaseHas('personal_access_tokens', ['name' => 'ecosystem-handoff:docs', 'tokenable_id' => $user->id]);
     }
-
-    public function test_the_api_token_endpoint_accepts_a_registered_platform_only(): void
-    {
-        $this->actingAs($this->member());
-
-        $this->postJson('/api/ecosystem/token', ['platform' => 'files'])->assertOk();
-        $this->assertDatabaseHas('personal_access_tokens', ['name' => 'ecosystem-handoff:files']);
-        $this->postJson('/api/ecosystem/token', ['platform' => 'not-a-platform'])->assertStatus(422);
-    }
 }

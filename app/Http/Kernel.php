@@ -6,6 +6,7 @@ use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CanonicalRedirects;
 use App\Http\Middleware\EncryptCookies;
+use App\Http\Middleware\EndSuspendedSession;
 use App\Http\Middleware\EnsureModerator;
 use App\Http\Middleware\Oidc\EnforceOidcRules;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -69,6 +70,7 @@ class Kernel extends HttpKernel
             AddQueuedCookiesToResponse::class,
             StartSession::class,
             AuthenticateSession::class,
+            EndSuspendedSession::class, // a suspended account's open session ends on its next request
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
