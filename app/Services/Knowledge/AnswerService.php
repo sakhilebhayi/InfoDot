@@ -130,7 +130,7 @@ class AnswerService
 
             foreach ($previous as $old) {
                 $old->forceFill(['accepted_at' => null, 'accepted_by' => null])->save();
-                DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($old->reference(), ['answer_id' => $old->id, 'author_uuid' => $old->user->uuid, 'revoked_by_uuid' => $by->uuid])));
+                DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($old->reference(), ['answer_id' => $old->id, 'author_uuid' => $old->user?->uuid, 'revoked_by_uuid' => $by->uuid])));
             }
 
             $answer->forceFill(['accepted_at' => now(), 'accepted_by' => $by->id])->save();
@@ -139,7 +139,7 @@ class AnswerService
             DB::afterCommit(fn () => event(new AnswerAccepted($answer->reference(), [
                 'answer_id' => $answer->id,
                 'question_id' => $answer->question_id,
-                'author_uuid' => $answer->user->uuid,
+                'author_uuid' => $answer->user?->uuid,
                 'accepted_by_uuid' => $by->uuid,
                 'by_moderator' => $by->isModerator() && $answer->question->user_id !== $by->id,
                 'tenant_team_id' => $answer->question->team_id,
@@ -157,7 +157,7 @@ class AnswerService
         DB::transaction(function () use ($answer, $by): void {
             $answer->forceFill(['accepted_at' => null, 'accepted_by' => null])->save();
             $answer->question->forceFill(['status' => 0])->save();
-            DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($answer->reference(), ['answer_id' => $answer->id, 'author_uuid' => $answer->user->uuid, 'revoked_by_uuid' => $by->uuid])));
+            DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($answer->reference(), ['answer_id' => $answer->id, 'author_uuid' => $answer->user?->uuid, 'revoked_by_uuid' => $by->uuid])));
         });
 
         return $answer->refresh();
@@ -214,7 +214,7 @@ class AnswerService
                 'reason' => $reason,
                 'report_id' => $report->id,
                 // Who wrote it and where it lives, for the points ledger. The reporter is deliberately not part of the event's facts.
-                'author_uuid' => $item->user->uuid,
+                'author_uuid' => $item->user?->uuid,
                 'tenant_team_id' => $question->team_id,
                 'visibility' => $question->visibility,
             ]));
