@@ -55,6 +55,14 @@ class OpsCheckHostTest extends TestCase
         parent::tearDown();
     }
 
+    /** Root can write to a read-only folder, so the permission cases prove nothing there. */
+    private function skipWhenRoot(): void
+    {
+        if (function_exists('posix_geteuid') && posix_geteuid() === 0) {
+            $this->markTestSkipped('Folder permissions do not bind root.');
+        }
+    }
+
     /** @return array<string, int> */
     private function found(): array
     {
@@ -72,6 +80,7 @@ class OpsCheckHostTest extends TestCase
 
     public function test_a_folder_that_cannot_be_written_is_a_problem(): void
     {
+        $this->skipWhenRoot();
         File::chmod($this->storage.'/app/public/profile-photos', 0555);
         File::chmod($this->storage.'/framework', 0555);
 
@@ -84,6 +93,7 @@ class OpsCheckHostTest extends TestCase
 
     public function test_a_missing_profile_photo_folder_is_reported_by_whether_it_could_be_made_and_is_never_made(): void
     {
+        $this->skipWhenRoot();
         File::deleteDirectory($this->storage.'/app/public/profile-photos');
 
         $this->assertSame(0, $this->found()['profile_photos_not_writable'], 'the first upload creates it');
@@ -147,6 +157,7 @@ class OpsCheckHostTest extends TestCase
 
     public function test_the_command_says_ok_for_a_clean_log_and_problem_for_a_folder(): void
     {
+        $this->skipWhenRoot();
         File::chmod($this->storage.'/framework', 0555);
 
         $this->artisan('ops:check')
