@@ -1,18 +1,34 @@
 name: Server Logs
 
-# Read-only: tail the newest Laravel log so failures are diagnosable without
-# shell access. Fixed command on purpose -- this workflow must never become a
-# general remote shell.
+# Read-only: collect the application's recent errors and the host facts needed to explain them, so failures are
+# diagnosable without shell access. Fixed script on purpose (tools/diagnostics-host.sh) -- this workflow must never
+# become a general remote shell.
+#
+# This repository is PUBLIC, and application errors can hold personal information, so NOTHING from the host is printed
+# here. The bundle is encrypted to tools/diagnostics-public-key.pem and only the ciphertext is uploaded; the job log
+# shows sizes and section names. Whoever holds the matching private key reads it:
+#
+#   gh run download <run-id> -n diagnostics -D out && cd out
+#   openssl pkeyutl -decrypt -inkey <private-key.pem> -pkeyopt rsa_padding_mode:oaep -in key.enc -out key
+#   openssl enc -d -aes-256-cbc -pbkdf2 -in diagnostics.enc -out diagnostics.txt -pass file:key && rm key
+#
+# Before this change the workflow tailed the newest file in storage/logs to the public job log. The newest file is
+# always cron-scheduler.log (rewritten every minute), so it never showed an application error.
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   logs:
-    name: Tail latest Laravel log
+    name: Collect encrypted diagnostics
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -45,21 +61,38 @@ jobs:
             )"
           fi
           echo "APP_PATH=$APP" >> "$GITHUB_ENV"
-          echo "App directory: ${APP#/home/}"
 
-      - name: Tail log
+      - name: Collect (nothing is printed)
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+          set -uo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/diag"
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o BatchMode=yes \
               "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-              DEPLOY_PATH="$APP_PATH" \
-              'bash -s' <<'LOGS'
+              DEPLOY_PATH="$APP_PATH" 'bash -s' < tools/diagnostics-host.sh > "$RUNNER_TEMP/diag/diagnostics.txt" 2>&1
+          echo "collector exit status: $?"
+          echo "bundle: $(wc -l < "$RUNNER_TEMP/diag/diagnostics.txt") lines, $(wc -c < "$RUNNER_TEMP/diag/diagnostics.txt") bytes"
+          echo "sections: $(grep -c '^===== ' "$RUNNER_TEMP/diag/diagnostics.txt")"
+          grep -q '^===== end =====$' "$RUNNER_TEMP/diag/diagnostics.txt" || { echo "::error::the collector did not finish (no end marker)"; exit 1; }
+
+      - name: Encrypt
+        run: |
           set -euo pipefail
-          cd "$DEPLOY_PATH"
-          latest=$(ls -1t storage/logs/*.log 2>/dev/null | head -1 || true)
-          if [ -z "$latest" ]; then
-            echo "No log files in storage/logs."
-            exit 0
-          fi
-          echo "== $latest (last 120 lines)"
-          tail -120 "$latest"
-          LOGS
+          umask 077
+          cd "$RUNNER_TEMP/diag"
+          openssl rand -hex 32 > key
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in diagnostics.txt -out diagnostics.enc -pass file:key
+          openssl pkeyutl -encrypt -pubin -inkey "$GITHUB_WORKSPACE/tools/diagnostics-public-key.pem" \
+              -pkeyopt rsa_padding_mode:oaep -in key -out key.enc
+          rm -f key diagnostics.txt
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          mv diagnostics.enc key.enc "$GITHUB_WORKSPACE/out/"
+          ls -l "$GITHUB_WORKSPACE/out"
+
+      - name: Upload the ciphertext
+        uses: actions/upload-artifact@v4
+        with:
+          name: diagnostics
+          path: out/
+          retention-days: 3
+          if-no-files-found: error
