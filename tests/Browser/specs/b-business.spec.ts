@@ -28,7 +28,7 @@ test.describe('B. A business', () => {
         // Create the business from the company menu.
         await signIn(page, owner.email);
         await page.getByRole('button', { name: 'Company menu' }).click();
-        await page.getByRole('link', { name: 'Create a company' }).click();
+        await page.locator('.ix-pop__panel').getByRole('link', { name: 'Create a company' }).click();   // the company menu's link; Getting started on Home offers the same
         await expect(page).toHaveURL(/\/teams\/create$/);
         await page.getByLabel('Company name').fill(name);
         await page.getByLabel('What the business does').fill('Borehole drilling, pump installation and water testing for farms and homes in Mpumalanga.');

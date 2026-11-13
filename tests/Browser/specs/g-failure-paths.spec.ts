@@ -48,14 +48,14 @@ test.describe('G. When something goes wrong', () => {
         // Nothing filled in.
         await page.getByRole('button', { name: 'Create company' }).click();
         await expect(page.getByText('The name field is required.')).toBeVisible();
-        await expect(page.getByText('Choose who can see the business.')).toBeVisible();
+        await expect(page.getByText('Choose who can see the business page.')).toBeVisible();
         await expect(page).toHaveURL(/\/teams\/create$/);
 
         // A name, but still no choice of who can see it.
         const name = `Half Made ${unique()}`;
         await page.getByLabel('Company name').fill(name);
         await page.getByRole('button', { name: 'Create company' }).click();
-        await expect(page.getByText('Choose who can see the business.')).toBeVisible();
+        await expect(page.getByText('Choose who can see the business page.')).toBeVisible();
         await expect(page.getByText('The name field is required.')).toHaveCount(0);
         expect(rows('teams', { name })).toHaveLength(0);
         expect(serverErrors(record.problems)).toEqual([]);

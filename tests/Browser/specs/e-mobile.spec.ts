@@ -115,7 +115,7 @@ test.describe('E. On a phone or tablet', () => {
         // A business: created, then managed.
         const name = `Zanele Spaza ${unique()}`;
         await page.getByRole('button', { name: 'Company menu' }).click();
-        await page.getByRole('link', { name: 'Create a company' }).click();
+        await page.locator('.ix-pop__panel').getByRole('link', { name: 'Create a company' }).click();   // the company menu's link; Getting started on Home offers the same
         await check(page, findings);
         await page.getByLabel('Company name').fill(name);
         await page.getByLabel('What the business does').fill('A spaza shop selling groceries, airtime and prepaid electricity in Soshanguve.');
