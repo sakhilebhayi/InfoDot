@@ -26,6 +26,7 @@ use App\Http\Controllers\LibraryEntryController;
 use App\Http\Controllers\NoticesController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformAccessController;
+use App\Http\Controllers\PlatformCatalogueController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
 use App\Http\Controllers\ProfilePhotoController;
@@ -135,6 +136,16 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Why a platform did not open, and (for an owner or administrator) the button that switches a free one on (R-50).
     Route::get('/platforms/{platform}/access', [PlatformAccessController::class, 'show'])->name('platform.access');
     Route::post('/platforms/{platform}/activate', [PlatformAccessController::class, 'activate'])->middleware('throttle:20,1,platform.activate')->name('platform.activate');
+
+    // R-50, the catalogue: one platform as the current company sees it, switching a free or unpriced one on and off
+    // (each behind a page that says what will happen), who in the company may open it, and dismissing a suggestion.
+    Route::get('/platforms/{platform}', [PlatformCatalogueController::class, 'show'])->name('platforms.show');
+    Route::get('/platforms/{platform}/switch-on', [PlatformCatalogueController::class, 'confirm'])->name('platforms.switch-on.confirm');
+    Route::post('/platforms/{platform}/switch-on', [PlatformCatalogueController::class, 'switchOn'])->middleware('throttle:20,1,platforms.switch')->name('platforms.switch-on');
+    Route::get('/platforms/{platform}/switch-off', [PlatformCatalogueController::class, 'confirm'])->name('platforms.switch-off.confirm');
+    Route::post('/platforms/{platform}/switch-off', [PlatformCatalogueController::class, 'switchOff'])->middleware('throttle:20,1,platforms.switch')->name('platforms.switch-off');
+    Route::put('/platforms/{platform}/people', [PlatformCatalogueController::class, 'people'])->middleware('throttle:30,1,platforms.people')->name('platforms.people');
+    Route::post('/platforms/{platform}/recommendation/dismiss', [PlatformCatalogueController::class, 'dismiss'])->middleware('throttle:30,1,platforms.dismiss')->name('platforms.recommendation.dismiss');
 
     // -------------------------------------------------------
     // People: the members of the company the person is acting for

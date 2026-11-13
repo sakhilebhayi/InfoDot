@@ -52,7 +52,7 @@
             <a href="{{ route('seminars') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('seminars*')) aria-current="page" @endif>Seminars</a>
             <livewire:platform-link platform="files" label="Files" icon="folder" variant="tab" />
             <livewire:platform-link platform="docs" label="Documents" icon="description" variant="tab" />
-            <a href="{{ route('ecosystem.widget') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('ecosystem.widget')) aria-current="page" @endif>Platforms</a>
+            <a href="{{ route('ecosystem.widget') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('ecosystem.widget', 'platforms.*', 'platform.access')) aria-current="page" @endif>Platforms</a>
             <a href="{{ route('businesses.index') }}" class="ix-tab" data-area="people" @if(request()->routeIs('businesses.*', 'business.show')) aria-current="page" @endif>Businesses</a>
             <a href="{{ route('people') }}" class="ix-tab" data-area="people" @if(request()->routeIs('people', 'teams.*', 'api-tokens.*')) aria-current="page" @endif>People</a>
             <a href="{{ route('analytics.dashboard') }}" class="ix-tab" data-area="analytics" @if(request()->routeIs('analytics.*')) aria-current="page" @endif>Analytics</a>
