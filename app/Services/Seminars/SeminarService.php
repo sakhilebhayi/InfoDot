@@ -171,8 +171,9 @@ class SeminarService
         app(SeminarHostPoints::class)->reverseIfAwarded($seminar);
 
         // Everyone who paid is refunded in full; anyone part-way through paying is released.
-        $regs = SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'pending'])->get();
-        $refundable = $regs->filter(fn ($r) => $r->payment_status === 'paid'
+        // A ticket the host already refunded in part still holds the rest of the buyer's money.
+        $regs = SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['paid', 'partially_refunded', 'pending'])->get();
+        $refundable = $regs->filter(fn ($r) => $r->payment_status !== 'pending'
             && ! ($refunds === 'none' || ($refunds === 'complainants' && ! in_array($r->user_id, $refundUserIds, true))));
 
         // Mark every refund as requested BEFORE the first call to Finance. Each call can take seconds; if this request is cut off part-way
@@ -181,7 +182,7 @@ class SeminarService
         SeminarRegistration::whereIn('id', $refundable->pluck('id'))->whereNull('refund_requested_at')->update(['refund_requested_at' => now()]);
 
         foreach ($regs as $reg) {
-            if ($reg->payment_status === 'paid') {
+            if ($reg->payment_status !== 'pending') {
                 if ($refundable->contains('id', $reg->id)) {
                     $this->requestRefund($reg->fresh());
                 }
@@ -622,7 +623,7 @@ class SeminarService
             return;
         }
 
-        if (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['pending', 'paid'])->exists()) {
+        if (SeminarRegistration::where('seminar_id', $seminar->id)->whereIn('payment_status', ['pending', 'paid', 'partially_refunded'])->exists()) {
             throw ValidationException::withMessages(['price' => 'People have already bought or started buying tickets, so the price cannot change.']);
         }
     }
@@ -875,7 +876,7 @@ class SeminarService
     {
         $n = 0;
 
-        foreach (SeminarRegistration::where('payment_status', 'paid')->whereNotNull('refund_requested_at')->where('refund_requested_at', '<', now()->subMinutes(10))->get() as $reg) {
+        foreach (SeminarRegistration::whereIn('payment_status', ['paid', 'partially_refunded'])->whereNotNull('refund_requested_at')->where('refund_requested_at', '<', now()->subMinutes(10))->get() as $reg) {
             $this->requestRefund($reg);
             $n++;
         }
