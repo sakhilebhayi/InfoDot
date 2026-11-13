@@ -78,6 +78,13 @@ final class EcosystemHandoff
      */
     public static function launchForm(User $user, string $key, ?string $redirect = null): ?array
     {
+        // A suspended account gets no launch code, whoever asks for the form.
+        if ($user->isSuspended()) {
+            Log::warning('Ecosystem handoff refused: the account is suspended.', ['platform' => $key]);
+
+            return null;
+        }
+
         $platform = config('ecosystem.platforms', [])[$key] ?? null;
         $endpoint = self::hasNoReceiver($key) ? null : self::endpointFor($platform);
 

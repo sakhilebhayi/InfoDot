@@ -6,10 +6,14 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Models\User;
+use App\Services\Accounts\AccountSuspension;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -35,6 +39,28 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
+
+        // A suspended account cannot sign in. The credentials are checked first, exactly as before, so the suspension
+        // is only ever mentioned to someone who knows the password: a wrong password gets the usual answer.
+        Fortify::authenticateUsing(function (Request $request) {
+            $guard = Auth::guard(config('fortify.guard'));
+            $credentials = $request->only(Fortify::username(), 'password');
+
+            if (! $guard->validate($credentials)) {
+                return null;
+            }
+
+            $user = $guard->getLastAttempted();
+
+            if ($user instanceof User && $user->isSuspended()) {
+                throw ValidationException::withMessages([Fortify::username() => [AccountSuspension::MESSAGE]]);
+            }
+
+            // The framework's own sign-in upgrades an old password hash at this point; keep doing so.
+            $guard->getProvider()->rehashPasswordIfRequired($user, $credentials);
+
+            return $user;
+        });
 
         Fortify::loginView(function () {
             return view('auth.login');
