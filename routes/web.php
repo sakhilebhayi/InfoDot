@@ -44,6 +44,7 @@ use App\Http\Controllers\TopicsController;
 use App\Http\Controllers\TopicSuggestionsController;
 use App\Http\Controllers\UxFrictionController;
 use App\Http\Controllers\VerificationDeskController;
+use App\Http\Middleware\ExplainFailedUpload;
 use App\Livewire\EcosystemWidget;
 use App\Livewire\Moderation\Library as ModerationLibrary;
 use App\Livewire\Moderation\Queue as ModerationQueue;
@@ -220,7 +221,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // -------------------------------------------------------
     // Attachments (R-15): uploads for questions, solutions, answers and comments, and the only door to the files
     // -------------------------------------------------------
-    Route::post('/attachments', [AttachmentController::class, 'store'])->middleware('throttle:30,1,attachments-upload')->name('attachments.store');
+    Route::post('/attachments', [AttachmentController::class, 'store'])->middleware(['throttle:30,1,attachments-upload', ExplainFailedUpload::class])->name('attachments.store');
     Route::delete('/attachments/{attachment:uuid}', [AttachmentController::class, 'destroy'])->middleware('throttle:60,1,attachments-destroy')->name('attachments.destroy');
 
     // // -------------------------------------------------------

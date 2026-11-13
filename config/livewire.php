@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\ExplainFailedUpload;
+
 return [
 
     /*
@@ -99,7 +101,8 @@ return [
         'disk' => null,        // Example: 'local', 's3'              Default: 'default'
         'rules' => null,       // Example: ['file', 'mimes:png,jpg']  Default: ['required', 'file', 'max:12288'] (12MB)
         'directory' => null,   // Example: 'tmp'                      Default  'livewire-tmp'
-        'middleware' => null,  // Example: 'throttle:5,1'             Default: 'throttle:60,1'
+        // Livewire's default throttle, plus the reason when PHP refused or damaged the file (too large, cut off, server fault).
+        'middleware' => ['throttle:60,1', ExplainFailedUpload::class],
         'preview_mimes' => [   // Supported file types for temporary pre-signed file URLs.
             'png', 'gif', 'bmp', 'svg', 'wav', 'mp4',
             'mov', 'avi', 'wmv', 'mp3', 'm4a',
