@@ -48,9 +48,13 @@ class EcosystemAuthController extends Controller
             return $this->refused();
         }
 
-        /** @var User $user */
         $user = $accessToken->tokenable;
         $accessToken->delete();
+
+        // The code is spent either way; a suspended account gets the same plain refusal as a bad code.
+        if (! $user instanceof User || $user->isSuspended()) {
+            return $this->refused();
+        }
 
         Auth::login($user);
 

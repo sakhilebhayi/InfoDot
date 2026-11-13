@@ -62,6 +62,10 @@ class EcosystemRedeemController extends Controller
             return $this->refuse($platform, 'user missing or email not verified');
         }
 
+        if ($user->isSuspended()) {
+            return $this->refuse($platform, 'account suspended');
+        }
+
         return response()->json([
             'user' => [
                 'id' => $user->id,

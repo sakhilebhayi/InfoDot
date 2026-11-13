@@ -31,10 +31,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $hidden = [
         'password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at',
+        'suspended_reason',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'suspended_at' => 'datetime',
         'points_expiry_emails' => 'boolean',
         'achievements_public' => 'boolean',
         'badges_visible' => 'boolean',
@@ -78,6 +80,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function wantsTopicSuggestions(): bool
     {
         return (bool) $this->topic_suggestions;
+    }
+
+    /**
+     * Whether an administrator has switched this account off. A suspended person cannot sign in here or on any Dot
+     * platform until the account is restored (see App\Services\Accounts\AccountSuspension).
+     */
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null;
     }
 
     /** Moderators accept answers on others' questions, verify solutions and handle reports. Granted by an administrator. */
