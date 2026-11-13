@@ -77,7 +77,7 @@
 
                         <h2 class="ix-mod__title"><a href="{{ $item['url'] }}">{{ $item['title'] }}</a></h2>
                         @if (filled($item['excerpt']))<p class="ix-mod__excerpt">{{ $item['excerpt'] }}</p>@endif
-                        <p class="ix-mod__by">By <a href="{{ route('profile.show', ['id' => $item['author']->id]) }}">{{ $item['author']->name }}</a></p>
+                        <p class="ix-mod__by">By <x-ix.person :user="$item['author']" /></p>
                     @endif
 
                     @if ($tab === 'reports' && ! $item['restricted'] && $row['reports']->isNotEmpty())

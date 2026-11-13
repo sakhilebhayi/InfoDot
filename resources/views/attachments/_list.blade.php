@@ -4,7 +4,9 @@
     with a full-screen lightbox, PDFs as cards that preview inline on demand, videos in the native player.
 --}}
 @php
-    $attachments = collect($attachments ?? []);
+    // A row whose file is no longer on the disk is not shown as a broken picture or a dead download; it is counted and said.
+    [$attachments, $lost] = collect($attachments ?? [])->partition(fn ($a) => $a->onDisk());
+    $attachments = $attachments->values();
     $compact = $compact ?? false;
     $images = $attachments->where('kind', \App\Models\Attachment::IMAGE)->values();
     $pdfs = $attachments->where('kind', \App\Models\Attachment::PDF)->values();
@@ -73,4 +75,7 @@
             </div>
         @endforeach
     </div>
+@endif
+@if ($lost->isNotEmpty())
+    <p class="ix-hint" role="status">{{ $lost->count() === 1 ? 'One attached file' : $lost->count().' attached files' }} could not be loaded.</p>
 @endif

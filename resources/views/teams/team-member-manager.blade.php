@@ -27,10 +27,10 @@
                 <!-- Role -->
                 @if (count($this->roles) > 0)
                     <div class="col-span-6 lg:col-span-4">
-                        <x-jet-label for="role" value="{{ __('Role') }}" />
+                        <x-jet-label id="add-member-role" value="{{ __('Role') }}" />
                         <x-jet-input-error for="role" />
 
-                        <div class="relative z-0 overflow-hidden" style="border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius);">
+                        <div class="relative z-0 overflow-hidden" role="group" aria-labelledby="add-member-role" style="border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius);">
                             @foreach (collect($this->roles)->filter(fn ($r) => in_array($r->key, \App\Support\TeamRoles::assignableBy(auth()->user(), $team), true))->values() as $index => $role)
                                 @php($selected = isset($addTeamMemberForm['role']) && $addTeamMemberForm['role'] === $role->key)
                                 <button type="button" class="relative flex w-full items-start justify-between gap-3 px-4 py-3 text-left focus:z-10"
@@ -121,13 +121,7 @@
                     @foreach ($team->users->sortBy('name') as $user)
                         <div class="flex items-center justify-between gap-3 py-3" style="{{ $loop->first ? '' : 'border-top: 1px solid var(--ix-rule);' }}">
                             <div class="flex min-w-0 items-center gap-3">
-                                <span class="ix-avatar">
-                                    @if ($user->profile_photo_path)
-                                        <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}">
-                                    @else
-                                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                                    @endif
-                                </span>
+                                <x-ix.avatar :user="$user" :alt="$user->name" />
                                 <div class="min-w-0 truncate">{{ $user->name }}</div>
                             </div>
 

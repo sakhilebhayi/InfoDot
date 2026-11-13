@@ -32,7 +32,7 @@
                         $unread = $e->unreadForCustomer($reads[$e->id] ?? null);
                     @endphp
                     <li @class(['is-unread' => $unread])>
-                        <span class="ix-biz__logo ix-threads__logo" aria-hidden="true">@if ($e->team?->logo)<img src="{{ route('attachments.show', $e->team->logo) }}" alt="" width="40" height="40">@else{{ mb_substr(trim((string) $e->team?->name), 0, 1) }}@endif</span>
+                        <span class="ix-biz__logo ix-threads__logo" aria-hidden="true">@if ($e->team?->logo?->onDisk())<img src="{{ route('attachments.show', $e->team->logo) }}" alt="" width="40" height="40">@else{{ mb_substr(trim((string) $e->team?->name), 0, 1) }}@endif</span>
                         <div class="ix-threads__main">
                             <a href="{{ route('inbox.show', $e) }}" class="ix-threads__subject">{{ $e->subject }}</a>
                             <span class="ix-threads__who">{{ $e->team?->name ?? 'A business no longer on InfoDot' }}</span>

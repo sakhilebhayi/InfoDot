@@ -5,7 +5,7 @@
         <span class="ix-mentioned__label">Mentioned:</span>
         @foreach ($rows as $mention)
             @if ($mention->mentioned_user_id && $mention->mentionedUser)
-                <a class="ix-chip ix-chip--info" href="{{ route('profile.show', ['id' => $mention->mentioned_user_id]) }}">{{ '@'.$mention->mentionedUser->name }}</a>
+                <x-ix.person class="ix-chip ix-chip--info" :user="$mention->mentionedUser" :name="'@'.$mention->mentionedUser->name" />
             @elseif ($mention->mentioned_team_id && $mention->mentionedTeam)
                 <span class="ix-chip ix-chip--info" title="Business">{{ '@'.$mention->mentionedTeam->name }}</span>
             @endif

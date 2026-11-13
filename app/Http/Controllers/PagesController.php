@@ -204,7 +204,8 @@ class PagesController extends Controller
         // Only yourself and people who share a company with you. Anyone else is
         // answered as if the profile did not exist.
         $get_profile = User::where('id', $id)->firstOrFail();
-        abort_unless(Auth::id() === $get_profile->id || $this->sharesATeam(Auth::user(), $get_profile), 404);
+        $viewer = Auth::user();
+        abort_unless($viewer instanceof User && $get_profile->profileOpenTo($viewer), 404);
         $association = Associates::where('user_id', Auth::id())->where('associate_id', $id)->whereNull('deleted_at')->first();
 
         $isOwner = Auth::id() === $get_profile->id;
@@ -223,17 +224,6 @@ class PagesController extends Controller
             // Moderation of someone's content is their own business: only the owner's view asks.
             'moderation' => $isOwner ? ModerationStatus::for($get_profile) : collect(),
         ]);
-    }
-
-    private function sharesATeam(?User $viewer, User $other): bool
-    {
-        if (! $viewer) {
-            return false;
-        }
-
-        $mine = $viewer->allTeams()->pluck('id');
-
-        return $other->allTeams()->pluck('id')->intersect($mine)->isNotEmpty();
     }
 
     public function edit()

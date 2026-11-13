@@ -15,8 +15,8 @@
         </div>
 
         <div class="col-span-6 sm:col-span-4">
-            <x-jet-label for="password" value="{{ __('New password') }}" />
-            <x-jet-input id="password" type="password" class="block w-full" wire:model.defer="state.password" autocomplete="new-password" />
+            <x-jet-label for="new_password" value="{{ __('New password') }}" />
+            <x-jet-input id="new_password" type="password" class="block w-full" wire:model.defer="state.password" autocomplete="new-password" />
             <x-jet-input-error for="password" />
         </div>
 

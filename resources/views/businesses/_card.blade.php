@@ -5,8 +5,8 @@
     $type = \App\Models\TeamProfile::BUSINESS_TYPES[$p?->business_type] ?? null;
 @endphp
 <li class="ix-bizcard">
-    <span class="ix-biz__logo ix-bizcard__logo" @if(! $team->logo) aria-hidden="true" @endif>
-        @if ($team->logo)
+    <span class="ix-biz__logo ix-bizcard__logo" @if(! $team->logo?->onDisk()) aria-hidden="true" @endif>
+        @if ($team->logo?->onDisk())
             <img src="{{ route('attachments.show', $team->logo) }}" alt="" width="56" height="56" loading="lazy">
         @else
             {{ mb_substr(trim($team->name), 0, 1) }}

@@ -82,10 +82,10 @@
 
             <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
                 <button type="button" class="ix-avatar" @click="open = !open" :aria-expanded="open" aria-haspopup="true" aria-label="{{ __('Account menu') }}">
-                    @if (Auth::user()->profile_photo_path != null)
-                        <img src="{{ Auth::user()->profile_photo_url }}" alt="">
+                    @if ($photo = Auth::user()->photoUrl())
+                        <img src="{{ $photo }}" alt="">
                     @else
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        {{ Auth::user()->initial() }}
                     @endif
                 </button>
                 <div class="ix-pop__panel" x-show="open" x-cloak x-transition.opacity.duration.100ms>

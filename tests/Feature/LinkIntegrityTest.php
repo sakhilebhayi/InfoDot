@@ -14,6 +14,9 @@ use Tests\TestCase;
 /**
  * No link and no form on a page a person can reach may lead to an error. The test opens the entry pages as a visitor and as a signed-in
  * person, follows every internal link once, and checks every form posts to a route that exists.
+ *
+ * R-49 widened this into Stabilisation\InteractionSweepTest: four kinds of viewer, pages reached several clicks in, and every button,
+ * Livewire action, label, anchor and picture as well as links and forms. This class stays as the quick first check.
  */
 class LinkIntegrityTest extends TestCase
 {

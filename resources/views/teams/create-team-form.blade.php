@@ -12,13 +12,7 @@
             <x-jet-label value="{{ __('Team owner') }}" />
 
             <div class="flex items-center gap-3">
-                <span class="ix-avatar" style="width: 40px; height: 40px; font-size: 15px;">
-                    @if ($this->user->profile_photo_path)
-                        <img src="{{ $this->user->profile_photo_url }}" alt="{{ $this->user->name }}">
-                    @else
-                        {{ strtoupper(substr($this->user->name, 0, 1)) }}
-                    @endif
-                </span>
+                <x-ix.avatar :user="$this->user" :size="40" :alt="$this->user->name" />
 
                 <div class="min-w-0 leading-tight">
                     <div style="font-weight: 600;">{{ $this->user->name }}</div>
