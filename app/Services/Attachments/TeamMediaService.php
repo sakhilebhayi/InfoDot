@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\Identity\IdentityProtection;
 use App\Services\Identity\ImageFingerprint;
+use App\Support\ImageBudget;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -90,6 +91,10 @@ class TeamMediaService
         };
         if ($info[0] < $minW || $info[1] < $minH) {
             throw ValidationException::withMessages(['file' => 'This image is too small for a '.$role.' — at least '.$minW.'×'.$minH.' pixels.']);
+        }
+
+        if (! ImageBudget::fits((int) $info[0], (int) $info[1])) {
+            throw ValidationException::withMessages(['file' => 'That image is too large to process here. Export a smaller copy (about 4000 pixels on the long side) and try again.']);
         }
 
         $source = @imagecreatefromstring((string) file_get_contents($file->getRealPath()));

@@ -2,6 +2,7 @@
 
 namespace App\Actions\Fortify;
 
+use App\Services\Profile\ProfilePhoto;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -20,11 +21,16 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'photo' => ['nullable', 'image', 'mimes:'.ProfilePhoto::MIMES, 'max:'.ProfilePhoto::MAX_KILOBYTES],
+        ], [
+            'photo.image' => 'Choose a picture: JPG, PNG or WebP.',
+            'photo.mimes' => 'Choose a picture: JPG, PNG or WebP.',
+            'photo.max' => 'That picture is over 10 MB. Choose a smaller one.',
+            'photo.uploaded' => 'The picture did not upload. Check your connection and try again.',
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
-            $user->updateProfilePhoto($input['photo']);
+            app(ProfilePhoto::class)->store($user, $input['photo']);
         }
 
         if ($input['email'] !== $user->email &&

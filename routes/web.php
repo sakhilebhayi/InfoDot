@@ -27,6 +27,7 @@ use App\Http\Controllers\NoticesController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
+use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\ReadinessController;
 use App\Http\Controllers\ReputationController;
 use App\Http\Controllers\ReputationRingsController;
@@ -80,6 +81,8 @@ Route::get('/business/{team:uuid}', [BusinessProfileController::class, 'show'])-
 // that chose "anyone"; for everything else they are sent to sign in, as before (R-15, R-33).
 Route::get('/attachments/{attachment:uuid}/thumb', [AttachmentController::class, 'thumb'])->middleware('throttle:240,1,attachments-view')->name('attachments.thumb');
 Route::get('/attachments/{attachment:uuid}', [AttachmentController::class, 'show'])->middleware('throttle:240,1,attachments-view')->name('attachments.show');
+// Profile pictures (R-48): served by the app because this host's web root has no link to storage/app/public.
+Route::get('/storage/profile-photos/{file}', ProfilePhotoController::class)->where('file', '[A-Za-z0-9]{1,80}\.(jpg|jpeg|png|webp)')->middleware('throttle:600,1,profile-photos')->name('profile-photos.show');
 Route::get('/sitemap.xml', SitemapController::class)->middleware('throttle:30,1,sitemap')->name('sitemap');
 
 // RFC 9116 disclosure file (R-19). The web server serves the physical copy first; this route is the
@@ -251,6 +254,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Profile Controller
     // -------------------------------------------------------
     Route::get('/user/profile/edit', 'App\Http\Controllers\PagesController@edit')->name('profile.edit');
+    // Jetstream's own account address. Its route name (profile.show) is used here for the public page below, so the
+    // old address goes to the account page instead of rendering that page's view without a person.
+    Route::redirect('/user/profile', '/user/profile/edit');
     Route::get('/user/profile/{id}', 'App\Http\Controllers\PagesController@show')->name('profile.show');
     // Whether other people may see the signed-in person's achievements and public contributions. Always their own row.
     Route::post('/user/profile/achievements-visibility', [AchievementsController::class, 'updateVisibility'])->middleware('throttle:20,1,profile.achievements-visibility')->name('profile.achievements-visibility');
