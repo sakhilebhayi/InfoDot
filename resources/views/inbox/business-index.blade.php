@@ -63,7 +63,7 @@
                 <li @class(['is-unread' => $unread])>
                     <div class="ix-threads__main">
                         <a href="{{ route('business.inbox.show', [$team, $e]) }}" class="ix-threads__subject">{{ $e->subject }}</a>
-                        <span class="ix-threads__who">{{ $e->customer?->name ?? 'Former InfoDot user' }}, {{ mb_strtolower($e->categoryLabel()) }}@if ($e->assignee) — with {{ $e->assignee->name }}@endif @if ($e->follow_up_on) — follow up {{ $e->follow_up_on->format('j M') }}@endif</span>
+                        <span class="ix-threads__who">{{ $e->customer?->name ?? 'Former InfoDot user' }}, {{ mb_strtolower($e->categoryLabel()) }}@if ($e->assignee) — with {{ $e->assignee->name }}@endif @if ($e->follow_up_on) — follow up {{ $e->follow_up_on->format('j M') }}@endif <x-demo-mark :of="$e" /></span>
                     </div>
                     <span class="ix-threads__state">
                         @if ($unread)<span class="ix-chip ix-chip--info">Unread</span>@endif

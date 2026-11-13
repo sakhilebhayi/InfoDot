@@ -15,7 +15,7 @@
                 </button>
             </div>
 
-            <p class="ix-detail__kind"><span class="ix-q__state {{ $solved ? 'is-done' : 'is-open' }}">{{ $solved ? 'Solved' : 'Waiting for an answer' }}</span></p>
+            <p class="ix-detail__kind"><span class="ix-q__state {{ $solved ? 'is-done' : 'is-open' }}">{{ $solved ? 'Solved' : 'Waiting for an answer' }}</span> <x-demo-mark :of="$question" /></p>
             <h1 class="ix-detail__title">{{ $question->question }}</h1>
 
             <livewire:hidden-notice kind="question" :item-id="$question->id" />

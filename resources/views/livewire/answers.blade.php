@@ -38,7 +38,7 @@
             @endforeach
 
             <footer class="ix-answer__meta">
-                <span>Answered by <a href="{{ route('profile.show', ['id' => $answer->user->id]) }}">{{ $answer->user->name }}</a>@if ($badge = $badges[$answer->user_id] ?? null) <span class="ix-chip" data-badge="{{ $badge['level'] }}" data-badge-topic="{{ $badge['slug'] }}" title="Other people accepted this person's answers in {{ $badge['topic'] }}">{{ $badge['topic'] }}: {{ $badge['level_name'] }}</span>@endif, {{ $answer->created_at->diffForHumans() }}</span>
+                <span>Answered by <a href="{{ route('profile.show', ['id' => $answer->user->id]) }}">{{ $answer->user->name }}</a> <x-demo-mark :of="$answer" />@if ($badge = $badges[$answer->user_id] ?? null) <span class="ix-chip" data-badge="{{ $badge['level'] }}" data-badge-topic="{{ $badge['slug'] }}" title="Other people accepted this person's answers in {{ $badge['topic'] }}">{{ $badge['topic'] }}: {{ $badge['level_name'] }}</span>@endif, {{ $answer->created_at->diffForHumans() }}</span>
 
                 @if ($service->canAccept($answer, $user) && ! $answer->isAccepted())
                     <button type="button" class="ix-btn" wire:click="accept({{ $answer->id }})">Accept as the solution</button>

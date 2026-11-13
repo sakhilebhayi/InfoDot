@@ -3,6 +3,7 @@
     <div>
         <div class="ix-comment__by">
             {{ $comment->user->name ?? 'Former member' }}
+            <x-demo-mark :of="$comment" />
             @if ($comment->commentable && $comment->user_id !== null && $comment->user_id === $comment->commentable->user_id)<em class="ix-comment__tag">{{ $comment->commentable instanceof \App\Models\Questions ? 'Asker' : 'Author' }}</em>@endif
             <span>{{ $comment->created_at->diffForHumans() }}</span>
         </div>

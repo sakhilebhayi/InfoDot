@@ -7,7 +7,7 @@ use App\Services\Accounts\AccountSuspension;
 use Illuminate\Console\Command;
 
 /**
- * The owner's way to switch an account off across the ecosystem (there is no screen for it yet). Says what was ended
+ * The owner's way to switch an account off across the ecosystem from a shell (moderators use /moderation/accounts). Says what was ended
  * so the person running it can see the suspension took hold.
  */
 class AccountSuspend extends Command
