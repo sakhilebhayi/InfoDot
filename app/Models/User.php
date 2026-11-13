@@ -6,13 +6,18 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -91,6 +96,31 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->suspended_at !== null;
     }
 
+    /**
+     * The password reset email goes out inside the request (the host has no queue worker). When the mail server
+     * refuses it, the link that was never delivered is not kept, so the person can ask again without waiting, and
+     * the form says the email did not go instead of the request ending in an error page.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        try {
+            parent::sendPasswordResetNotification($token);
+        } catch (TransportExceptionInterface $e) {
+            Log::error('account.password_reset_mail_failed', [
+                'category' => 'mail',
+                'user_id' => $this->getAuthIdentifier(),
+                'exception' => $e::class,
+                'reason' => mb_substr($e->getMessage(), 0, 300),
+            ]);
+
+            Password::broker()->deleteToken($this);
+
+            throw ValidationException::withMessages(['email' => 'The password reset email could not be sent just now. Please try again in a few minutes.']);
+        }
+    }
+
     /** Moderators accept answers on others' questions, verify solutions and handle reports. Granted by an administrator. */
     public function isModerator(): bool
     {
@@ -126,6 +156,53 @@ class User extends Authenticatable implements MustVerifyEmail
             .'<text x="32" y="42" text-anchor="middle" font-family="sans-serif" font-size="28" fill="#dae2fd">'.e($initial).'</text></svg>';
 
         return 'data:image/svg+xml;base64,'.base64_encode($svg);
+    }
+
+    /** The first letter of the person's name: what stands in for a picture wherever a person is shown. */
+    public function initial(): string
+    {
+        return mb_strtoupper(mb_substr(trim((string) $this->name) ?: '?', 0, 1));
+    }
+
+    /**
+     * The address of the person's profile picture, or null when there is none to show: no picture was saved, or the
+     * saved file is no longer on the disk (a restore without the storage folder leaves the row behind). Callers
+     * show the initial instead, so a page never carries a picture that cannot load.
+     */
+    public function photoUrl(): ?string
+    {
+        $path = $this->profile_photo_path;
+        if (! $path) {
+            return null;
+        }
+        // Asked once per request however many times the person appears on the page.
+        $key = 'photo-present:'.$path;
+        if (! request()->attributes->has($key)) {
+            request()->attributes->set($key, Storage::disk($this->profilePhotoDisk())->exists($path));
+        }
+
+        return request()->attributes->get($key) ? (string) $this->getAttribute('profile_photo_url') : null;
+    }
+
+    /**
+     * Whether the viewer may open this person's profile page: their own, or a person they share a company with.
+     * The page answers 404 for anyone else, so a name is a link only where this is true.
+     */
+    public function profileOpenTo(?self $viewer): bool
+    {
+        if (! $viewer) {
+            return false;
+        }
+        if ($viewer->id === $this->id) {
+            return true;
+        }
+        // Asked once per request: the same author is often named several times on one page.
+        $key = 'profile-open:'.$viewer->id.':'.$this->id;
+        if (! request()->attributes->has($key)) {
+            request()->attributes->set($key, $this->allTeams()->pluck('id')->intersect($viewer->allTeams()->pluck('id'))->isNotEmpty());
+        }
+
+        return (bool) request()->attributes->get($key);
     }
 
     public function likes()

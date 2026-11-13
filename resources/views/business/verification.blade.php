@@ -110,7 +110,7 @@
                         @if ($open->status === \App\Models\BusinessVerification::INFO_REQUIRED)
                             <form method="post" action="{{ route('business.verification.resubmit', $team) }}">@csrf<button type="submit" class="ix-btn ix-btn--primary">Send it back to InfoDot</button></form>
                         @endif
-                        <form method="post" action="{{ route('business.verification.withdraw', $team) }}" onsubmit="return confirm('Withdraw this application? You can apply again later.');">@csrf<button type="submit" class="ix-btn ix-btn--ghost">Withdraw the application</button></form>
+                        <form method="post" action="{{ route('business.verification.withdraw', $team) }}" x-data @submit="confirm('Withdraw this application? You can apply again later.') || $event.preventDefault()">@csrf<button type="submit" class="ix-btn ix-btn--ghost">Withdraw the application</button></form>
                     </div>
                 </section>
 

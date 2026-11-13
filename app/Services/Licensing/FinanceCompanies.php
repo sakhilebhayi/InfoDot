@@ -3,6 +3,7 @@
 namespace App\Services\Licensing;
 
 use App\Models\Team;
+use App\Services\Demo\DemoRegistry;
 use App\Support\Knowledge\Signature;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,11 @@ class FinanceCompanies
     public function sync(Team $team, bool $deleted = false): bool
     {
         if (! $this->entitlements->configured() || $team->personal_team || blank($team->uuid)) {
+            return false;
+        }
+
+        // A demonstration company (R-49) is never registered with Dot.Finance: there is nobody to bill.
+        if (app(DemoRegistry::class)->isDemoTeam($team)) {
             return false;
         }
 

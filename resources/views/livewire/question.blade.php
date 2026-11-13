@@ -3,13 +3,9 @@
         <blockquote>
             <cite class="inline-flex items-center not-italic">
                 <div class="flex items-center">
-                    @if ($question->user->profile_photo_path != null)
-                        <img src="{{ $question->user->profile_photo_url }}" class="h-8 w-8 rounded-full object-cover" alt="{{ $question->user->name }}">
-                    @else
-                        <img class="h-8 w-8 rounded-full object-cover" src="{{ $question->user->avatar() }}" alt="{{ $question->user->name }}" />
-                    @endif
+                    <x-ix.avatar :user="$question->user" :alt="$question->user->name" />
                     <div class="ml-4 text-sm">
-                        <a href="{{ route('profile.show', ['id' => $question->user->id]) }}" class="font-semibold capitalize text-[#dae2fd]"><strong>{{ $question->user->name }}</strong></a>
+                        <x-ix.person :user="$question->user" class="font-semibold capitalize text-[#dae2fd]" />
                         <small class="mt-1 text-[#8d90a2]">{{ $question->created_at->diffForHumans() }}.</small>
                     </div>
                 </div>

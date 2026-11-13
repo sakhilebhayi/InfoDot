@@ -72,7 +72,7 @@
         <ul class="ix-tried__people" aria-label="Who confirmed this works">
             @foreach ($confirmations->take(12) as $confirmation)
                 <li>
-                    <a href="{{ route('profile.show', ['id' => $confirmation->user_id]) }}">{{ $confirmation->user->name ?? 'Former member' }}</a>@if ($confirmation->business_industry) <span class="ix-hint">({{ $confirmation->business_industry }})</span>@endif
+                    <x-ix.person :user="$confirmation->user" :name="$confirmation->user->name ?? 'Former member'" />@if ($confirmation->business_industry) <span class="ix-hint">({{ $confirmation->business_industry }})</span>@endif
                 </li>
             @endforeach
             @if ($confirmations->count() > 12)

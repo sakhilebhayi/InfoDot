@@ -11,17 +11,17 @@
     // The researched library: public solutions published by the official InfoDot account (R-14/R-23).
     // Real rows from the database — the section disappears entirely when none exist yet.
     $library = \App\Models\Solutions::withoutGlobalScopes()->whereNotNull('seed_key')
-        ->where('visibility', \App\Models\Solutions::VISIBILITY_PUBLIC)
+        ->where('visibility', \App\Models\Solutions::VISIBILITY_PUBLIC)->whereNull('hidden_at')
         ->with('topics')->orderByDesc('id')->limit(6)->get();
     $libraryCount = $library->count() < 6 ? $library->count()
-        : \App\Models\Solutions::withoutGlobalScopes()->whereNotNull('seed_key')->where('visibility', \App\Models\Solutions::VISIBILITY_PUBLIC)->count();
+        : \App\Models\Solutions::withoutGlobalScopes()->whereNotNull('seed_key')->where('visibility', \App\Models\Solutions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->count();
 @endphp
 <x-public-layout landing title="InfoDot" description="Search practical business solutions from people who have done it, or ask your own question. InfoDot is where the Dot.Eco-system keeps what it knows about running a business.">
     {{-- Who publishes this site, for search engines (R-17 §13.3). Facts only: name, address, contact page. --}}
     <script type="application/ld+json">{!! json_encode([
         '@context' => 'https://schema.org',
         '@graph' => [
-            ['@type' => 'Organization', 'name' => 'InfoDot', 'url' => route('welcome'), 'logo' => asset('img/logo1.png')],
+            ['@type' => 'Organization', 'name' => 'InfoDot', 'url' => route('welcome'), 'logo' => asset('icon-512.png')],
             ['@type' => 'WebSite', 'name' => 'InfoDot', 'url' => route('welcome')],
         ],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>

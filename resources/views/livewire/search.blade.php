@@ -62,9 +62,12 @@
                 <div class="ix-quick__row">
                     <a class="ix-quick__chip" role="option" href="{{ route('seek') }}"><span class="material-symbols-rounded" aria-hidden="true">add_comment</span>Ask a question</a>
                     <a class="ix-quick__chip" role="option" href="{{ route('add') }}"><span class="material-symbols-rounded" aria-hidden="true">checklist</span>Add a solution</a>
-                    <a class="ix-quick__chip" role="option" href="{{ route('people') }}"><span class="material-symbols-rounded" aria-hidden="true">groups</span>People</a>
-                    <button type="button" class="ix-quick__chip" role="option" wire:click="openPlatform('files')"><span class="material-symbols-rounded" aria-hidden="true">folder</span>Files</button>
-                    <button type="button" class="ix-quick__chip" role="option" wire:click="openPlatform('docs')"><span class="material-symbols-rounded" aria-hidden="true">description</span>Documents</button>
+                    {{-- People, Files and Documents belong to a signed-in person's company: a visitor is not offered them (the two buttons did nothing when a visitor pressed them). --}}
+                    @auth
+                        <a class="ix-quick__chip" role="option" href="{{ route('people') }}"><span class="material-symbols-rounded" aria-hidden="true">groups</span>People</a>
+                        <button type="button" class="ix-quick__chip" role="option" wire:click="openPlatform('files')"><span class="material-symbols-rounded" aria-hidden="true">folder</span>Files</button>
+                        <button type="button" class="ix-quick__chip" role="option" wire:click="openPlatform('docs')"><span class="material-symbols-rounded" aria-hidden="true">description</span>Documents</button>
+                    @endauth
                 </div>
                 <p class="ix-results__foot">Type a reference such as <span class="ix-ref">{{ $team?->code ?? 'INFO' }}-Q-000001</span> to open that item.</p>
             </div>

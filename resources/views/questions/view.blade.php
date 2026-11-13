@@ -15,7 +15,7 @@
                 </button>
             </div>
 
-            <p class="ix-detail__kind"><span class="ix-q__state {{ $solved ? 'is-done' : 'is-open' }}">{{ $solved ? 'Solved' : 'Waiting for an answer' }}</span></p>
+            <p class="ix-detail__kind"><span class="ix-q__state {{ $solved ? 'is-done' : 'is-open' }}">{{ $solved ? 'Solved' : 'Waiting for an answer' }}</span> <x-demo-mark :of="$question" /></p>
             <h1 class="ix-detail__title">{{ $question->question }}</h1>
 
             <livewire:hidden-notice kind="question" :item-id="$question->id" />
@@ -38,7 +38,7 @@
             <section class="ix-facts">
                 <h2>Details</h2>
                 <dl>
-                    <div><dt>Asked by</dt><dd><a href="{{ route('profile.show', ['id' => $question->user->id]) }}">{{ $question->user->name }}</a></dd></div>
+                    <div><dt>Asked by</dt><dd><x-ix.person :user="$question->user" /></dd></div>
                     <div><dt>Asked</dt><dd>{{ $question->created_at->diffForHumans() }}</dd></div>
                     <div><dt>Visible to</dt><dd>{{ $question->isHidden() ? 'You and moderators' : ($question->isPublic() ? 'Everyone' : 'Your company') }}</dd></div>
                     <div><dt>Status</dt><dd>{{ $solved ? 'Solved' : 'Waiting for an answer' }}</dd></div>

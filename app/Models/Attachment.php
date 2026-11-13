@@ -83,6 +83,27 @@ class Attachment extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Whether the file this row points at is still on the disk. A row can outlive its file (a database restored
+     * without the storage folder, a failed copy on the host); the file's address then answers 404, so pages ask
+     * here first and show their fallback instead of a picture that cannot load. Asked once per request.
+     */
+    public function onDisk(): bool
+    {
+        $key = 'attachment-on-disk:'.$this->path;
+        if (! request()->attributes->has($key)) {
+            request()->attributes->set($key, Storage::disk(self::DISK)->exists($this->path));
+        }
+
+        return (bool) request()->attributes->get($key);
+    }
+
+    /** The row when its file can be shown, otherwise null: what a page showing one picture (a logo, a cover) asks for. */
+    public static function shown(?self $attachment): ?self
+    {
+        return $attachment?->onDisk() ? $attachment : null;
+    }
+
     public function isBound(): bool
     {
         return $this->attachable_id !== null;

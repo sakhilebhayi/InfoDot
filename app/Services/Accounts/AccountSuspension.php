@@ -5,6 +5,7 @@ namespace App\Services\Accounts;
 use App\Models\AccountSuspensionEvent;
 use App\Models\SsoPlatformSession;
 use App\Models\User;
+use App\Services\Demo\DemoRegistry;
 use App\Services\Sso\BackchannelLogoutService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -60,6 +61,32 @@ class AccountSuspension
         $this->backchannel->propagate($user);
 
         return $summary;
+    }
+
+    /**
+     * Why this moderator may not suspend or restore this account from the accounts desk, or null when they may. The
+     * desk shows the sentence and every action checks it again, so the rule holds whatever the browser sends.
+     *  - Nobody suspends themselves: the account that made a mistake could not undo it.
+     *  - A moderator does not suspend a moderator: that is the owner's decision, made from the command line, so a
+     *    disagreement between two moderators cannot end with one locking the other out.
+     *  - A demonstration moderator (R-49) acts on demonstration accounts only.
+     */
+    public function whyNot(User $moderator, User $account): ?string
+    {
+        if ($moderator->is($account)) {
+            return 'This is your own account. Nobody can suspend or restore themselves.';
+        }
+
+        if ($account->isModerator()) {
+            return $account->name.' is a moderator. One moderator cannot suspend or restore another: that decision is the owner\'s, made with the account:suspend command.';
+        }
+
+        $demo = app(DemoRegistry::class);
+        if ($demo->isDemoUser($moderator) && ! $demo->isDemoUser($account)) {
+            return 'You are signed in as the demonstration moderator, which can act on demonstration accounts only.';
+        }
+
+        return null;
     }
 
     /** Lets the person sign in again. Nothing that was ended is brought back: they start with a fresh sign-in. */

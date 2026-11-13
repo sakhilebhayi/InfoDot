@@ -66,8 +66,12 @@ class SignedInUiTest extends TestCase
             foreach (['Manrope', 'Baloo', 'Nunito', 'Hanken', '#2962ff', '#b6c4ff', 'backdrop-filter', 'material-symbols-outlined', 'fa fa-'] as $old) {
                 $this->assertStringNotContainsString($old, $html, "$url still contains $old");
             }
-            $this->assertStringContainsString('Archivo', $html, $url);
         }
+
+        // The pages used to name Archivo in a Google Fonts link. Since R-49 the typeface is served from this site and
+        // declared in the stylesheet every page loads, so that is where it is looked for.
+        $this->assertStringContainsString("--ix-font: 'Archivo'", (string) file_get_contents(resource_path('css/infodot.css')));
+        $this->assertStringContainsString("font-family: 'Archivo';", (string) file_get_contents(resource_path('css/fonts.css')));
     }
 
     public function test_the_questions_page_offers_unsolved_and_solved_filters(): void

@@ -1,0 +1,379 @@
+<?php
+
+namespace Tests\Feature\Stabilisation;
+
+use App\Models\Attachment;
+use App\Models\Questions;
+use App\Models\Team;
+use App\Models\User;
+use App\Services\Attachments\AttachmentService;
+use App\Support\OptionalVite;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Vite;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
+use Symfony\Component\Finder\Finder;
+use Tests\Feature\Stabilisation\Support\BuildsTheYard;
+use Tests\TestCase;
+
+/**
+ * R-49. A picture that cannot load must never reach a page. Three things can go wrong and each has its guard here:
+ * the file behind a database row is gone (the page must show its fallback and the file's address must answer 404,
+ * not 500); a private picture is asked for by someone who may not see what it belongs to; a view names a file that
+ * is not where the live site serves files from.
+ *
+ * It exists beside the interaction sweep because the sweep only sees a healthy world; these tests break the world
+ * on purpose.
+ */
+class ImageIntegrityTest extends TestCase
+{
+    use BuildsTheYard;
+    use RefreshDatabase;
+
+    /**
+     * The only files under public/ a page may name directly: the ones the deploy workflow copies to the live web
+     * root ("static files the docroot serves"). Everything else a page needs goes in resources/ and is named through
+     * Vite, or it will be missing on the live site, where only public/build and that short list are published.
+     *
+     * @return list<string>
+     */
+    private function filesTheDeployCopiesToTheWebRoot(): array
+    {
+        $this->assertSame(1, preg_match('/for F in ([^;]+); do/', (string) file_get_contents(base_path('.github/workflows/deploy.yml')), $m));
+
+        return preg_split('/\s+/', trim($m[1])) ?: [];
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->nameBuiltFilesBySource();
+        $this->withoutMiddleware(ThrottleRequests::class);
+        $this->buildTheYard();
+    }
+
+    private function as(?User $user): static
+    {
+        $this->signOut();
+
+        return $user ? $this->actingAs($user, 'web') : $this;
+    }
+
+    /** Whether an element of this class holds just this letter (Livewire's block comments aside). */
+    private function showsInitial(string $html, string $class, string $letter): bool
+    {
+        return preg_match('/class="'.preg_quote($class, '/').'[^"]*"[^>]*>(?:\s|<!--.*?-->)*'.preg_quote($letter, '/').'(?:\s|<!--.*?-->)*</s', $html) === 1;
+    }
+
+    private function forget(Attachment $attachment): void
+    {
+        Storage::disk(Attachment::DISK)->delete(array_filter([$attachment->path, $attachment->thumb_path]));
+    }
+
+    // ---- a row whose file is gone ---------------------------------------------------------------------------------
+
+    public function test_a_profile_picture_whose_file_is_gone_falls_back_to_the_initial_everywhere(): void
+    {
+        $path = (string) $this->member->profile_photo_path;
+        $url = '/storage/'.$path;
+        $this->as($this->member)->get('/home')->assertOk()->assertSee($url, false);
+        $this->get($url)->assertOk()->assertHeader('Content-Type', 'image/jpeg');
+
+        Storage::disk('public')->delete($path);
+
+        $this->as(null)->get($url)->assertNotFound();
+        foreach (['/home', '/user/profile/'.$this->member->id, '/user/profile/edit', '/teams/'.$this->member->personalTeam()->id, '/analytics', '/teams/create'] as $page) {
+            $html = $this->as($this->member->fresh())->get($page)->assertOk()->getContent();
+            $this->assertFalse(str_contains($html, 'profile-photos/'), "{$page} still shows the picture whose file is gone");
+            $this->assertTrue($this->showsInitial($html, 'ix-avatar', 'M'), "{$page} does not show the initial instead");
+        }
+    }
+
+    public function test_a_person_without_a_picture_is_an_initial_and_never_an_empty_image(): void
+    {
+        foreach (['/home', '/user/profile/'.$this->owner->id, '/teams/'.$this->business->id, '/analytics', '/question/view/'.$this->question->id] as $page) {
+            $html = $this->as($this->owner)->get($page)->assertOk()->getContent();
+            $this->assertSame(0, preg_match('/<img[^>]*\ssrc=""/', $html), "{$page} has an image with an empty src");
+            $this->assertFalse(str_contains($html, 'gravatar.com'), "{$page} asks another site for a picture of a person");
+        }
+        $this->assertSame('É', User::factory()->make(['name' => 'élodie'])->initial(), 'the initial is a whole character, not half of one');
+        $this->assertSame('?', User::factory()->make(['name' => ' '])->initial());
+    }
+
+    public function test_business_pictures_whose_files_are_gone_fall_back_and_their_addresses_answer_404(): void
+    {
+        $pictures = $this->businessPictures();
+        $this->assertEqualsCanonicalizing(['cover', 'gallery', 'logo', 'offering', 'project'], array_map(fn (Attachment $a) => $a->role, $pictures));
+        foreach ($pictures as $picture) {
+            $this->as(null)->get('/attachments/'.$picture->uuid)->assertOk();
+            $this->forget($picture);
+        }
+
+        foreach ($pictures as $picture) {
+            $this->as(null)->get('/attachments/'.$picture->uuid)->assertNotFound();
+            $this->as($this->owner)->get('/attachments/'.$picture->uuid.'/thumb')->assertNotFound();
+        }
+
+        $pages = [[null, $this->businessUrl()], [null, '/businesses'], [$this->member, $this->businessUrl()], [$this->member, '/inbox'], [$this->owner, $this->businessUrl('/edit')]];
+        foreach ($pages as [$viewer, $page]) {
+            $html = $this->as($viewer)->get($page)->assertOk()->getContent();
+            $this->assertSame(0, preg_match('#<img[^>]+src="[^"]*/attachments/#', $html), "{$page} still shows a picture whose file is gone");
+            $this->assertTrue(str_contains($html, 'Acme Boreholes'), "{$page} no longer names the business");
+        }
+        // The logo slot shows the business's initial, the same as a business that never uploaded one.
+        $this->assertTrue($this->showsInitial((string) $this->as(null)->get($this->businessUrl())->getContent(), 'ix-biz__logo', 'A'), 'the business page does not show the initial');
+        $this->assertTrue($this->showsInitial((string) $this->as(null)->get('/businesses')->getContent(), 'ix-biz__logo', 'A'), 'the directory card does not show the initial');
+    }
+
+    public function test_a_question_or_solution_picture_whose_file_is_gone_is_said_not_shown(): void
+    {
+        $onQuestion = $this->question->attachments()->firstOrFail();
+        $onSolution = $this->solution->attachments()->firstOrFail();
+        $this->forget($onQuestion);
+        $this->forget($onSolution);
+
+        $this->as($this->member)->get('/attachments/'.$onQuestion->uuid)->assertNotFound();
+        $this->as($this->member)->get('/attachments/'.$onQuestion->uuid.'/thumb')->assertNotFound();
+
+        $question = $this->as($this->member)->get('/question/view/'.$this->question->id)->assertOk()->assertSee('One attached file could not be loaded.')->getContent();
+        $this->assertFalse(str_contains($question, '/attachments/'.$onQuestion->uuid), 'the question still names the lost file');
+
+        $solution = $this->as($this->member)->get('/solution/view/'.$this->solution->id)->assertOk()->assertSee('One attached file could not be loaded.')->getContent();
+        $this->assertFalse(str_contains($solution, '/attachments/'.$onSolution->uuid), 'the solution still names the lost file');
+        $this->assertSame(1, preg_match('#<img[^>]+src="[^"]*/attachments/#', $solution), "the step's own picture is untouched and should still be shown");
+    }
+
+    public function test_a_brochure_whose_file_is_gone_is_not_offered_for_download(): void
+    {
+        $brochure = Attachment::where('role', 'brochure')->firstOrFail();
+        $this->as(null)->get($this->businessUrl())->assertOk()->assertSee('/attachments/'.$brochure->uuid, false);
+
+        $this->forget($brochure);
+
+        $this->as(null)->get($this->businessUrl())->assertOk()->assertDontSee('/attachments/'.$brochure->uuid, false);
+        $this->as(null)->get('/attachments/'.$brochure->uuid)->assertNotFound();
+    }
+
+    // ---- private pictures -----------------------------------------------------------------------------------------
+
+    public function test_pictures_are_served_only_to_people_who_may_see_what_they_belong_to(): void
+    {
+        $logo = Attachment::where('role', 'logo')->firstOrFail();
+        $evidence = Attachment::where('attachable_type', 'business_verification')->firstOrFail();
+
+        // A company-only question with a picture: its own company sees it, nobody else does.
+        $private = Questions::withoutSyncingToSearch(fn () => Questions::create(['user_id' => $this->owner->id, 'team_id' => $this->business->id, 'question' => 'Which rig goes to Hazyview?', 'description' => 'For the team only.', 'status' => 0]));
+        $picture = app(AttachmentService::class)->upload($this->owner, $this->picture('rota.jpg'));
+        app(AttachmentService::class)->bind([['uuid' => $picture->uuid]], $private, $this->owner);
+
+        $this->as($this->owner)->get('/attachments/'.$picture->uuid)->assertOk();
+        $this->as($this->colleague)->get('/attachments/'.$picture->uuid)->assertOk();
+        $this->as($this->member)->get('/attachments/'.$picture->uuid)->assertNotFound();
+        $this->as($this->member)->get('/attachments/'.$picture->uuid.'/thumb')->assertNotFound();
+        $this->as(null)->get('/attachments/'.$picture->uuid)->assertRedirect('/login');
+
+        // Verification evidence: the business's decision-makers and reviewers only.
+        $this->as($this->owner)->get('/attachments/'.$evidence->uuid)->assertOk();
+        $this->as($this->moderator)->get('/attachments/'.$evidence->uuid)->assertOk();
+        $this->as($this->member)->get('/attachments/'.$evidence->uuid)->assertNotFound();
+        $this->as(null)->get('/attachments/'.$evidence->uuid)->assertRedirect('/login');
+
+        // A public business's logo is public; once the business goes private it is not, and a replaced logo never is.
+        $this->as(null)->get('/attachments/'.$logo->uuid)->assertOk();
+        $this->as($this->owner)->post($this->businessUrl('/media'), ['role' => 'logo', 'file' => $this->picture('new-logo.jpg', 400, 400)])->assertRedirect();
+        $this->as(null)->get('/attachments/'.$logo->uuid)->assertRedirect('/login');
+        $this->as($this->member)->get('/attachments/'.$logo->uuid)->assertNotFound();
+
+        $current = Team::findOrFail($this->business->id)->currentMedia('logo');
+        $this->business->profileOrNew()->forceFill(['visibility' => 'private'])->save();
+        $this->as(null)->get('/attachments/'.$current->uuid)->assertRedirect('/login');
+        $this->as($this->member)->get('/attachments/'.$current->uuid)->assertNotFound();
+        $this->as($this->colleague)->get('/attachments/'.$current->uuid)->assertOk();
+    }
+
+    public function test_only_profile_pictures_are_served_from_the_storage_address(): void
+    {
+        Storage::disk('public')->put('other/secret.jpg', 'x');
+        Storage::disk('public')->put('profile-photos/notes.txt', 'x');
+
+        $this->as(null)->get('/storage/other/secret.jpg')->assertNotFound();
+        $this->as(null)->get('/storage/profile-photos/notes.txt')->assertNotFound();
+        $this->as(null)->get('/storage/profile-photos/..%2Fother%2Fsecret.jpg')->assertNotFound();
+        $this->as(null)->get('/storage/profile-photos/missing.jpg')->assertNotFound();
+    }
+
+    // ---- what the views name --------------------------------------------------------------------------------------
+
+    public function test_a_page_names_no_file_under_public_except_the_ones_the_deploy_publishes(): void
+    {
+        $published = $this->filesTheDeployCopiesToTheWebRoot();
+        $named = [];
+        foreach ($this->sources() + $this->frontendSources() as $file => $source) {
+            preg_match_all('/(?<!::)\basset\(\s*[\'"]([^\'"]+)[\'"]\s*\)/', $source, $m);
+            foreach ($m[1] as $path) {
+                $named[ltrim($path, '/')][] = $file;
+            }
+            // A hard-coded address under the web root, in an attribute, a style, a stylesheet or a script.
+            preg_match_all('#(?:src|href|poster|content)="/((?:img|css|js|fonts|images)/[^"{}]+)"|url\([\'"]?/((?:img|css|js|fonts|images)/[^\'"){}]+)|[\'"`]/((?:img|fonts|images)/[^\'"`]+)[\'"`]#', $source, $h);
+            foreach (array_filter(array_merge($h[1], $h[2], $h[3])) as $path) {
+                $named[$path][] = $file;
+            }
+        }
+        ksort($named);
+
+        $this->assertNotEmpty($named, 'the shared icon partial names the root icon files');
+        foreach ($named as $path => $files) {
+            $by = implode(', ', array_unique($files));
+            $this->assertFalse(str_starts_with($path, 'img/'), "{$path} is named by {$by}. public/img is not published to the live web root: put the picture in resources/img, add it to the import.meta.glob list in resources/js/app.js and name it with Vite::asset.");
+            $this->assertContains($path, $published, "{$path} is named by {$by} but the deploy does not copy it to the live web root. Use resources/ and Vite::asset, or add it to the list in deploy.yml if it must live at a fixed root address.");
+            $this->assertFileExists(public_path($path), "{$path} is named by {$by} but is not in public/");
+            $this->assertGreaterThan(0, filesize(public_path($path)), "{$path} is an empty file");
+        }
+    }
+
+    public function test_the_site_logo_ships_with_the_build_and_public_img_holds_no_copy(): void
+    {
+        $this->assertNull($this->builtFromSource('/build/source/resources/img/brand/logo_white.png'));
+        // Nothing a page uses lives under public/img (the deploy does not publish it), so the folder is gone and stays gone.
+        $this->assertDirectoryDoesNotExist(public_path('img'), 'public/img is back. A picture kept there never reaches the live web root: put it in resources/img.');
+
+        foreach ([[null, '/'], [null, '/login'], [null, '/businesses'], [$this->member, '/home']] as [$viewer, $page]) {
+            $html = (string) $this->as($viewer)->get($page)->assertOk()->getContent();
+            $this->assertSame(1, preg_match('#<img[^>]+src="/build/source/resources/img/brand/logo_white\.png"[^>]*alt="(InfoDot)?"#', $html), "{$page} does not show the logo from the build");
+        }
+    }
+
+    public function test_an_email_and_an_error_page_still_come_out_when_the_build_has_no_logo(): void
+    {
+        $this->swap(Vite::class, new class extends Vite
+        {
+            public function asset($asset, $buildDirectory = null)
+            {
+                throw new \RuntimeException('Unable to locate file in Vite manifest: '.$asset);
+            }
+
+            public function __invoke($entrypoints, $buildDirectory = null)
+            {
+                return new HtmlString('');
+            }
+        });
+        \Illuminate\Support\Facades\Vite::clearResolvedInstance();
+
+        $this->assertNull(OptionalVite::asset('resources/img/brand/logo_white.png'));
+
+        $mail = (new MailMessage)->line('Hello.')->render();
+        $this->assertStringContainsString('Hello.', (string) $mail);
+        $this->assertStringNotContainsString('<img', (string) $mail);
+        $this->assertStringContainsString(config('app.name'), (string) $mail);
+
+        $this->as(null)->get('/no-such-page-here')->assertNotFound()->assertSee('InfoDot');
+    }
+
+    public function test_every_picture_named_through_vite_is_a_source_file_the_build_picks_up(): void
+    {
+        $checked = 0;
+        foreach ($this->sources() as $file => $source) {
+            preg_match_all('/Vite::asset\(\s*[\'"]([^\'"$]+)[\'"]\s*\)/', $source, $m);
+            foreach ($m[1] as $path) {
+                $this->assertNull($this->builtFromSource('/build/source/'.$path), "{$file}: ".$this->builtFromSource('/build/source/'.$path));
+                $checked++;
+            }
+        }
+        $this->assertGreaterThan(4, $checked);
+
+        // Logos named by a platform key: every platform a person can be shown has its logo in both sets.
+        foreach (array_keys(config('ecosystem.platforms')) as $key) {
+            foreach (['apps', 'landing/platforms'] as $folder) {
+                if (is_file(resource_path("img/{$folder}/{$key}.png"))) {
+                    $this->assertNull($this->builtFromSource("/build/source/resources/img/{$folder}/{$key}.png"));
+                }
+            }
+        }
+    }
+
+    public function test_no_view_shows_a_person_except_through_the_shared_avatar(): void
+    {
+        foreach ($this->sources() as $file => $source) {
+            if (str_contains($file, 'components/ix/avatar') || ! str_ends_with($file, '.blade.php')) {
+                continue;
+            }
+            $this->assertStringNotContainsString('profile_photo_url', $source, "{$file} builds a profile picture by hand; use <x-ix.avatar> or User::photoUrl(), which fall back to the initial when the file is gone");
+            $this->assertStringNotContainsString('gravatar', strtolower($source), "{$file} asks another site for a picture of a person");
+        }
+    }
+
+    public function test_no_view_carries_an_inline_handler_or_a_placeholder_link(): void
+    {
+        foreach ($this->sources() as $file => $source) {
+            if (! str_ends_with($file, '.blade.php') || str_contains($file, '/vendor/mail/')) {
+                continue;
+            }
+            // script-src-attr 'none': a native on*= attribute never runs, so the control it sits on is dead.
+            $this->assertSame(0, preg_match('/<[a-z](?:[^>]|(?<=[-=])>)*\s(onclick|onsubmit|onchange|oninput|onfocus|onblur|onload|onerror|onkeydown|onkeyup)\s*=/i', $source), "{$file} uses an inline event handler, which the Content-Security-Policy blocks; use an Alpine directive");
+            // A ">" straight after "-" or "=" is Blade's own (->, =>), not the end of the tag.
+            preg_match_all('/<a\b(?:[^>]|(?<=[-=])>)*\shref="(#|javascript:[^"]*|)"(?:[^>]|(?<=[-=])>)*>/i', $source, $m);
+            foreach ($m[0] as $tag) {
+                $this->assertSame(1, preg_match('/(@click|x-on:click|wire:click)/', $tag), "{$file} has a link to nowhere: {$tag}");
+            }
+        }
+    }
+
+    public function test_no_page_loads_a_file_from_another_host(): void
+    {
+        // Since R-49 the fonts, the icon font, the charting library and every picture come from this site, and the
+        // Content-Security-Policy names no other host for them. A view that names one would simply be blocked.
+        $found = [];
+        foreach ($this->sources() as $file => $source) {
+            if (! str_ends_with($file, '.blade.php') || str_contains($file, '/vendor/mail/') || str_contains($file, '/emails/')) {
+                continue; // an email is opened in a mail program, which this site's policy does not govern
+            }
+            preg_match_all('#<(?:img|script|iframe|source|video|audio)\b[^>]*\ssrc="(?:https?:)?//([^/"]+)#i', $source, $tags);
+            preg_match_all('#<link\b[^>]*\brel="(?:stylesheet|preload|preconnect|modulepreload|icon)"[^>]*\shref="(?:https?:)?//([^/"]+)|<link\b[^>]*\shref="(?:https?:)?//([^/"]+)[^>]*\brel="(?:stylesheet|preload|preconnect|modulepreload|icon)"#i', $source, $links);
+            preg_match_all('#url\([\'"]?(?:https?:)?//([^/\'")]+)#i', $source, $urls);
+            foreach (array_filter(array_merge($tags[1], $links[1], $links[2], $urls[1])) as $host) {
+                $found[] = "{$file} loads from {$host}";
+            }
+        }
+        foreach ($this->frontendSources() as $file => $source) {
+            if (! str_ends_with($file, '.css')) {
+                continue;
+            }
+            preg_match_all('#(?:url\(|@import\s+)[\'"]?(?:https?:)?//([^/\'")]+)#i', (string) preg_replace('#/\*.*?\*/#s', '', $source), $urls);
+            foreach ($urls[1] as $host) {
+                $found[] = "{$file} loads from {$host}";
+            }
+        }
+
+        $this->assertSame([], $found, 'Serve the file from this site instead: put it in resources/ (or install its npm package) so the build ships it.');
+
+        $policy = (string) $this->as(null)->get('/')->headers->get('Content-Security-Policy');
+        foreach (['script-src', 'style-src', 'font-src', 'img-src', 'media-src', 'frame-src'] as $directive) {
+            $this->assertSame(1, preg_match('/(?:^|;\s*)'.$directive.' ([^;]+)/', $policy, $m), $directive);
+            $this->assertSame(0, preg_match('#https?:#', $m[1]), "{$directive} allows another host: {$m[1]}");
+        }
+    }
+
+    /** @return array<string, string> every script and stylesheet the build is made from, by relative path */
+    private function frontendSources(): array
+    {
+        $sources = [];
+        foreach ((new Finder)->files()->in([resource_path('js'), resource_path('css')])->name(['*.js', '*.css']) as $file) {
+            $sources[str_replace(base_path().'/', '', $file->getRealPath())] = $file->getContents();
+        }
+
+        return $sources;
+    }
+
+    /** @return array<string, string> every Blade view and every PHP file that can name a file, by relative path */
+    private function sources(): array
+    {
+        $sources = [];
+        foreach ((new Finder)->files()->in([resource_path('views'), app_path()])->name('*.php') as $file) {
+            $sources[str_replace(base_path().'/', '', $file->getRealPath())] = $file->getContents();
+        }
+
+        return $sources;
+    }
+}

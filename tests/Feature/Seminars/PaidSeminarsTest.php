@@ -272,6 +272,16 @@ class PaidSeminarsTest extends TestCase
         $this->actingAs($host)->get('/seminars/'.$s->id)->assertSee('InfoDot keeps R40.00', false)->assertSee('before Paystack');
     }
 
+    public function test_the_price_hint_names_dot_finance_as_where_payment_is_handled_and_no_provider_brand(): void
+    {
+        $html = $this->actingAs($this->host())->get('/seminars/new')->assertOk()
+            ->assertSee('Payment is handled by Dot.Finance, and the card processing fee comes out of your share')
+            ->assertSee('you receive R180.00 before that fee')
+            ->getContent();
+
+        $this->assertStringNotContainsStringIgnoringCase('paystack', (string) $html);
+    }
+
     public function test_the_page_says_what_a_ticket_costs_and_the_refund_rule(): void
     {
         $s = $this->paidSeminar($this->host());

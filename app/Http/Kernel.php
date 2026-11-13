@@ -12,6 +12,7 @@ use App\Http\Middleware\Oidc\EnforceOidcRules;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RecordUxSignals;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RefuseDemonstrationAccount;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\ThrottleAccountForms;
 use App\Http\Middleware\TrimStrings;
@@ -98,6 +99,7 @@ class Kernel extends HttpKernel
         'guest' => RedirectIfAuthenticated::class,
         'knowledge.signed' => VerifyKnowledgeSignature::class,
         'moderator' => EnsureModerator::class,
+        'not-demo' => RefuseDemonstrationAccount::class,
         'oidc.enforce' => EnforceOidcRules::class,
         'password.confirm' => RequirePassword::class,
         'signed' => ValidateSignature::class,

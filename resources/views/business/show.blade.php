@@ -32,14 +32,16 @@
         $products = $team->services->where('kind', 'product');
         $services = $team->services->where('kind', '!=', 'product');
         $standing = $team->standing;
+        // A demonstration business (R-49) is shown to people, never offered to a search engine.
+        $demo = app(\App\Services\Demo\DemoRegistry::class)->has($team);
     @endphp
 
     @push('meta')
         @if ($profile?->description)<meta name="description" content="{{ \Illuminate\Support\Str::limit($profile->description, 155) }}">@endif
-        @if ($public && ! $preview)
+        @if ($public && ! $preview && ! $demo)
             <link rel="canonical" href="{{ route('business.show', $team) }}">
         @else
-            {{-- Only businesses listed for everyone may be indexed. --}}
+            {{-- Only real businesses listed for everyone may be indexed. --}}
             <meta name="robots" content="noindex">
         @endif
     @endpush
@@ -81,6 +83,7 @@
                     <div class="ix-biz__name">
                         <h1 class="ix-h1">{{ $team->name }}</h1>
                         <x-business-badge :team="$team" />
+                        <x-demo-mark :of="$team" />
                     </div>
                     <p class="ix-biz__meta">
                         @if ($team->code)<span class="ix-ref">{{ $team->code }}</span>@endif

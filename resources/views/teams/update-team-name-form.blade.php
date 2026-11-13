@@ -13,13 +13,7 @@
             <x-jet-label value="{{ __('Team owner') }}" />
 
             <div class="flex items-center gap-3">
-                <span class="ix-avatar" style="width: 40px; height: 40px; font-size: 15px;">
-                    @if ($team->owner->profile_photo_path)
-                        <img src="{{ $team->owner->profile_photo_url }}" alt="{{ $team->owner->name }}">
-                    @else
-                        {{ strtoupper(substr($team->owner->name, 0, 1)) }}
-                    @endif
-                </span>
+                <x-ix.avatar :user="$team->owner" :size="40" :alt="$team->owner->name" />
 
                 <div class="min-w-0 leading-tight">
                     <div style="font-weight: 600;">{{ $team->owner->name }}</div>
@@ -30,9 +24,9 @@
 
         <!-- Team Name -->
         <div class="col-span-6 sm:col-span-4">
-            <x-jet-label for="name" value="{{ __('Team name') }}" />
+            <x-jet-label for="team_name" value="{{ __('Team name') }}" />
 
-            <x-jet-input id="name"
+            <x-jet-input id="team_name"
                         type="text"
                         class="block w-full"
                         wire:model.defer="state.name"

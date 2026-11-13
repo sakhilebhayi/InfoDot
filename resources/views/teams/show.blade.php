@@ -1,10 +1,12 @@
 <x-app-layout>
     @php
         $canDelete = Gate::check('delete', $team) && ! $team->personal_team;
+        $canTransfer = Gate::check('transferOwnership', $team);
         $sections = array_values(array_filter([
             ['name', 'Company name'],
             ['members', 'People and roles'],
             Gate::check('viewLicence', $team) && ! $team->personal_team ? ['seats', 'Seats'] : null,
+            $canTransfer ? ['transfer', 'Transfer ownership'] : null,
             $canDelete ? ['delete', 'Delete company'] : null,
         ]));
     @endphp
@@ -38,6 +40,9 @@
             <section id="members" class="ix-settings__sec">@livewire('teams.team-member-manager', ['team' => $team])</section>
             @if (Gate::check('viewLicence', $team) && ! $team->personal_team)
                 <section id="seats" class="ix-settings__sec">@php(app(\App\Services\Licensing\FinanceEntitlements::class)->sync($team))@include('teams._seats', ['team' => $team, 'seats' => app(\App\Services\Licensing\SeatLedger::class)->summary($team), 'history' => app(\App\Services\Licensing\SeatLedger::class)->history($team)])</section>
+            @endif
+            @if ($canTransfer)
+                <section id="transfer" class="ix-settings__sec">@livewire('teams.transfer-ownership-form', ['team' => $team])</section>
             @endif
             @if ($canDelete)
                 <section id="delete" class="ix-settings__sec">@livewire('teams.delete-team-form', ['team' => $team])</section>

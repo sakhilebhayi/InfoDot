@@ -26,10 +26,11 @@
 
                         reader.readAsDataURL($refs.photo.files[0]);
                     " />
-                    @if ($this->user->profile_photo_path)
-                        <img src="{{ $this->user->profile_photo_url }}" alt="{{ $this->user->name }}" class="h-20 w-20 cursor-pointer rounded-full object-cover" style="border: 1px solid var(--ix-rule-strong);">
+                    {{-- The saved picture when it can load; the initial when there is none or its file is gone. --}}
+                    @if ($photo = $this->user->photoUrl())
+                        <img src="{{ $photo }}" alt="{{ $this->user->name }}" class="h-20 w-20 cursor-pointer rounded-full object-cover" style="border: 1px solid var(--ix-rule-strong);">
                     @else
-                        <span class="ix-avatar" style="width: 80px; height: 80px; font-size: 28px; cursor: pointer;">{{ strtoupper(substr($this->user->name, 0, 1)) }}</span>
+                        <span class="ix-avatar" style="width: 80px; height: 80px; font-size: 28px; cursor: pointer;">{{ $this->user->initial() }}</span>
                     @endif
                 </div>
 

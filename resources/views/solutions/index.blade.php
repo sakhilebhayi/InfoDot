@@ -65,6 +65,7 @@
                             <span>{{ $solution->user->name ?? 'Former member' }}@if ($solution->user?->isOfficialAccount()) <span class="ix-chip ix-chip--info">Official</span>@endif</span>
                             <span>{{ $solution->comments_count }} {{ Str::plural('reply', $solution->comments_count) }}</span>
                             <span>{{ $solution->isPublic() ? 'Everyone' : 'Your company' }}</span>
+                            <x-demo-mark :of="$solution" />
                             @include('attachments._meta', ['item' => $solution])
                         </p>
                         @include('topics._chips', ['item' => $solution])

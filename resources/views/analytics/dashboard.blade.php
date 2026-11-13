@@ -1,7 +1,4 @@
 <x-app-layout>
-    {{-- ApexCharts CDN --}}
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.0/dist/apexcharts.min.js"></script>
-
     @php
         $trendTotal = $solutionTrend->sum() + $questionTrend->sum();
         $scored = ($totalQuestions + $totalSolutions) > 0;
@@ -157,7 +154,8 @@
                         <span class="ixa-legend" aria-hidden="true"><span><i class="s-sol"></i>Solutions</span><span><i class="s-que"></i>Questions</span></span>
                     </h2>
                     @if($trendTotal > 0)
-                        <div id="activityChart" class="ixa-chart" role="img" aria-label="Line chart of solutions and questions created per month over the last six months. The same values are listed in the table that follows."></div>
+                        {{-- Drawn by resources/js/analytics-chart.js, which app.js fetches only when this element is on the page. --}}
+                        <div id="activityChart" class="ixa-chart" data-solutions="{{ $solutionTrend->values()->toJson() }}" data-questions="{{ $questionTrend->values()->toJson() }}" data-months="{{ $monthLabels->values()->toJson() }}" role="img" aria-label="Line chart of solutions and questions created per month over the last six months. The same values are listed in the table that follows."></div>
                         <table class="ix-sr">
                             <caption>Created per month</caption>
                             <thead><tr><th>Month</th><th>Solutions</th><th>Questions</th></tr></thead>
@@ -216,7 +214,7 @@
                                 <li>
                                     <div class="ixa-row ixa-row--av">
                                         <span class="ixa-rank">{{ str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) }}</span>
-                                        <span class="ix-avatar">@if ($user->profile_photo_path)<img src="{{ $user->profile_photo_url }}" width="28" height="28" alt="" loading="lazy">@else{{ strtoupper(mb_substr($user->name, 0, 1)) }}@endif</span>
+                                        <x-ix.avatar :user="$user" />
                                         <span class="ixa-name">{{ $user->name }}</span>
                                         <span class="ixa-cnt"><x-ix.figure :value="$user->questions_count" :digits="2" /></span>
                                     </div>
@@ -280,93 +278,5 @@
 
         </div>
     </div>
-
-    @if($trendTotal > 0)
-    <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">
-    document.addEventListener('DOMContentLoaded', function () {
-        const el = document.getElementById('activityChart')
-        if (!el || typeof ApexCharts === 'undefined') return
-
-        const solutions = @json($solutionTrend->values());
-        const questions = @json($questionTrend->values());
-        const months = @json($monthLabels->values());
-        const top = Math.max(1, ...solutions, ...questions)
-
-        const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-        const themed = () => {
-            const text = token('--ix-text')
-            return {
-                colors: [token('--ix-signal-text'), text],
-                chart: { foreColor: token('--ix-text-3') },
-                grid: { borderColor: token('--ix-rule') },
-                markers: { strokeColors: token('--ix-panel') },
-                xaxis: { labels: { style: { colors: token('--ix-text-3') } } },
-                yaxis: { labels: { style: { colors: token('--ix-text-3') } } },
-                tooltip: { theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light' },
-            }
-        }
-
-        const base = themed()
-        const font = 'IBM Plex Sans'
-        const chart = new ApexCharts(el, {
-            chart: {
-                type: 'line',
-                height: 240,
-                fontFamily: font,
-                foreColor: base.chart.foreColor,
-                background: 'transparent',
-                toolbar: { show: false },
-                zoom: { enabled: false },
-                animations: { enabled: false },
-            },
-            series: [
-                { name: 'Solutions', data: solutions },
-                { name: 'Questions', data: questions },
-            ],
-            colors: base.colors,
-            stroke: { curve: 'straight', width: 2 },
-            fill: { type: 'solid', opacity: 1 },
-            markers: { size: 4, shape: ['circle', 'square'], strokeWidth: 2, strokeColors: base.markers.strokeColors, hover: { sizeOffset: 2 } },
-            xaxis: {
-                categories: months,
-                labels: { style: { colors: base.xaxis.labels.style.colors, fontSize: '12px', fontFamily: font } },
-                axisBorder: { show: false },
-                axisTicks: { show: false },
-            },
-            yaxis: {
-                min: 0,
-                max: top <= 5 ? top : undefined,
-                tickAmount: top <= 5 ? top : 5,
-                forceNiceScale: top > 5,
-                labels: {
-                    style: { colors: base.yaxis.labels.style.colors, fontSize: '12px', fontFamily: 'IBM Plex Mono' },
-                    formatter: (v) => String(Math.round(v)),
-                },
-            },
-            grid: { borderColor: base.grid.borderColor, strokeDashArray: 0, padding: { left: 4, right: 12 } },
-            tooltip: { theme: base.tooltip.theme, shared: true, intersect: false, style: { fontSize: '13px', fontFamily: font } },
-            legend: { show: false },
-            dataLabels: { enabled: false },
-        })
-        chart.render()
-
-        // Re-read the tokens when the operating system flips between night and light.
-        const mq = window.matchMedia('(prefers-color-scheme: dark)')
-        const onScheme = () => {
-            const t = themed()
-            chart.updateOptions({
-                colors: t.colors,
-                chart: { foreColor: t.chart.foreColor },
-                grid: { borderColor: t.grid.borderColor },
-                markers: { strokeColors: t.markers.strokeColors },
-                xaxis: { labels: { style: { colors: t.xaxis.labels.style.colors } } },
-                yaxis: { labels: { style: { colors: t.yaxis.labels.style.colors } } },
-                tooltip: { theme: t.tooltip.theme },
-            })
-        }
-        if (mq.addEventListener) mq.addEventListener('change', () => setTimeout(onScheme, 0))
-    })
-    </script>
-    @endif
 
 </x-app-layout>

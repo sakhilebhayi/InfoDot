@@ -37,12 +37,6 @@ parameters:
 			path: app/Http/Controllers/NoticesController.php
 
 		-
-			message: '#^Parameter \#1 \$viewer of method App\\Http\\Controllers\\PagesController\:\:sharesATeam\(\) expects App\\Models\\User\|null, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/PagesController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
 			identifier: property.notFound
 			count: 1

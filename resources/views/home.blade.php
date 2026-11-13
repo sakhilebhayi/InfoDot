@@ -36,7 +36,7 @@
                 @endif
                 <div class="ix-fieldblock__foot">
                     <a href="{{ route('questions') }}" class="ix-fieldblock__more">Open Knowledge</a>
-                    <span class="ix-logotile"><img src="{{ asset('img/logo_white.png') }}" alt="InfoDot" width="96" height="40"></span>
+                    <span class="ix-logotile"><img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/brand/logo_white.png') }}" alt="InfoDot" width="96" height="40"></span>
                 </div>
             </section>
 
@@ -81,7 +81,7 @@
                     <div class="ix-roster">
                         @foreach ($people as $person)
                             <a href="{{ route('profile.show', ['id' => $person->id]) }}">
-                                <span class="ix-avatar">{{ strtoupper(substr($person->name, 0, 1)) }}</span>
+                                <x-ix.avatar :user="$person" />
                                 <span>{{ $person->name }}</span>
                             </a>
                         @endforeach

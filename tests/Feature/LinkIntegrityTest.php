@@ -14,6 +14,9 @@ use Tests\TestCase;
 /**
  * No link and no form on a page a person can reach may lead to an error. The test opens the entry pages as a visitor and as a signed-in
  * person, follows every internal link once, and checks every form posts to a route that exists.
+ *
+ * R-49 widened this into Stabilisation\InteractionSweepTest: four kinds of viewer, pages reached several clicks in, and every button,
+ * Livewire action, label, anchor and picture as well as links and forms. This class stays as the quick first check.
  */
 class LinkIntegrityTest extends TestCase
 {
@@ -50,7 +53,7 @@ class LinkIntegrityTest extends TestCase
             }
             $path = ($parts['path'] ?? '/').(isset($parts['query']) ? '?'.$parts['query'] : '');
             // Opening a platform signs a token over to another host and is covered by its own tests.
-            if (str_starts_with($path, '/go/') || str_starts_with($path, '/open/') || str_starts_with($path, '/sub-services/') || str_starts_with($path, '/logout')) {
+            if (str_starts_with($path, '/go/') || str_starts_with($path, '/open/') || str_starts_with($path, '/logout')) {
                 continue;
             }
             $links[$path] = true;

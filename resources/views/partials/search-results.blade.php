@@ -66,6 +66,7 @@
                                     <span class="ix-ref">{{ \App\Support\Reference::for($question) }}</span>
                                     <span>{{ $question->user->name ?? 'Former member' }}</span>
                                     <span>{{ $question->created_at->diffForHumans() }}</span>
+                                    <x-demo-mark :of="$question" />
                                 </p>
                                 @include('topics._chips', ['item' => $question])
                             </div>
@@ -98,6 +99,7 @@
                                 @if ($solution->isVerified())<span class="ix-chip ix-chip--done">Verified by moderator</span>@endif
                                 <span>{{ $solution->user->name ?? 'Former member' }}</span>
                                 <span>{{ $solution->created_at->diffForHumans() }}</span>
+                                <x-demo-mark :of="$solution" />
                             </p>
                             @include('topics._chips', ['item' => $solution])
                         </li>

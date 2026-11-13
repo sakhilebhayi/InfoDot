@@ -2,7 +2,12 @@
 {{-- Header --}}
 <x-slot:header>
 <x-mail::header :url="config('app.url')">
-<img src="{{ asset('img/logo_white.png') }}" class="logo" alt="{{ config('app.name') }}">
+{{-- The logo comes from the build, like every other picture. A message is never held back for want of it: without a build the name stands in. --}}
+@if ($logo = \App\Support\OptionalVite::asset('resources/img/brand/logo_white.png'))
+<img src="{{ $logo }}" class="logo" alt="{{ config('app.name') }}">
+@else
+{{ config('app.name') }}
+@endif
 </x-mail::header>
 </x-slot:header>
 

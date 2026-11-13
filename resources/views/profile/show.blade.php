@@ -11,16 +11,11 @@
 
     <div class="ix-pagehead" style="align-items: center;">
         <div class="flex min-w-0 items-center gap-4">
-            <span class="ix-avatar" style="width: 56px; height: 56px; font-size: 22px;">
-                @if ($user->profile_photo_path)
-                    <img src="{{ $user->profile_photo_url }}" alt="">
-                @else
-                    {{ strtoupper(substr($user->name, 0, 1)) }}
-                @endif
-            </span>
+            <x-ix.avatar :user="$user" :size="56" />
 
             <div class="min-w-0">
                 <h1 class="ix-h1 truncate">{{ $user->name }}</h1>
+                <x-demo-mark :of="$user" />
                 @if ($user->created_at)
                     <p class="ix-lede" style="margin-top: 2px;">Member since {{ $user->created_at->format('j M Y') }}</p>
                 @endif

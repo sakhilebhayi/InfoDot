@@ -41,7 +41,7 @@ class Comments extends Component
     /** Livewire restores the model without the visibility scopes, so every call asks again whether this person may still see it. */
     private function ensureVisible(): void
     {
-        abort_unless(auth()->check() && app(AnswerService::class)->canSeeContent($this->model, auth()->user()), 404);
+        abort_unless(auth()->check() && app(AnswerService::class)->canRead($this->model, auth()->user()), 404);
     }
 
     public function storeLike(): void

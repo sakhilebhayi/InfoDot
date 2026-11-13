@@ -21,6 +21,10 @@ use Illuminate\Validation\ValidationException;
  * their profiles and public contributions are already platform-wide. A business is searchable only once it has public
  * content of its own, so one company's private client list never surfaces in another company's autocomplete. A
  * mentioned business notifies its owner and admins (its authorised representatives), never every member.
+ *
+ * A business can only be mentioned by someone who may see it (Team::isVisibleTo, R-49): the autocomplete leaves out
+ * a private or restricted business, and a mention that names one by id is dropped without a word, so the name of a
+ * business that is not there for you can be neither looked up nor confirmed.
  */
 class MentionService
 {
@@ -54,7 +58,8 @@ class MentionService
                 ->whereIn('id', Questions::withoutGlobalScopes()->where('visibility', Questions::VISIBILITY_PUBLIC)->select('team_id'))
                 ->orWhereIn('id', Solutions::withoutGlobalScopes()->where('visibility', Solutions::VISIBILITY_PUBLIC)->select('team_id'))
                 ->orWhere('id', $viewer->current_team_id))
-            ->orderBy('name')->limit(3)->get()
+            ->with('profile')->orderBy('name')->limit(25)->get()
+            ->filter(fn (Team $team) => $team->isVisibleTo($viewer))->take(3)
             ->map(fn (Team $team) => ['type' => 'business', 'id' => $team->id, 'name' => $team->name, 'detail' => 'Business']);
 
         return $people->concat($businesses)->values()->all();
@@ -126,7 +131,8 @@ class MentionService
                 }
             } elseif ($type === 'business') {
                 $team = Team::where('personal_team', false)->find($id);
-                if (! $team) {
+                // Unknown, private or restricted: dropped silently, the same as a business that does not exist.
+                if (! $team || ! $team->isVisibleTo($mentioner)) {
                     continue;
                 }
                 if ($this->store($mentionable, $mentioner, ['mentioned_team_id' => $team->id])) {

@@ -102,6 +102,12 @@ class TeamPolicy
         return $user->ownsTeam($team);
     }
 
+    /** Who may hand a company to one of its members (R-49): its owner. A personal workspace is one person's and cannot be handed on. */
+    public function transferOwnership(User $user, Team $team)
+    {
+        return ! $team->personal_team && $user->ownsTeam($team);
+    }
+
     /**
      * Who sees a company's seats, licence and payment state: the owner and administrators. An ordinary member does not, and nothing about a person's
      * InfoDot tier or reputation changes this: organisation permissions and reputation are separate systems.
