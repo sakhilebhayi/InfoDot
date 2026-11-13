@@ -6685,9 +6685,19 @@ body {
     opacity: 0;
 }
 
+/* The failsafe has the last word. The motion script hides items with inline styles before animating them; if it then
+   stalls (a throttled or backgrounded tab), a plain rule would lose to those inline styles and the hero would stay empty. */
 .has-motion.motion-failsafe [data-hero],
-.has-motion.motion-failsafe [data-reveal] {
-    opacity: 1;
+.has-motion.motion-failsafe [data-reveal],
+.has-motion.motion-failsafe .lp-hero__title,
+.has-motion.motion-failsafe .lp-hero__sub,
+.has-motion.motion-failsafe .lp-search,
+.has-motion.motion-failsafe .lp-chips,
+.has-motion.motion-failsafe .lp-chips li,
+.has-motion.motion-failsafe .lp-hero__ask {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
 }
 
 @media (max-width: 900px) {
