@@ -27,6 +27,11 @@ class ForwardKnowledgeEventToPoints
 
     public function handle(object $event): void
     {
+        // The author deleted their account: there is nobody to credit or debit, so the ledger is told nothing.
+        if (array_key_exists('author_uuid', $event->facts ?? []) && $event->facts['author_uuid'] === null) {
+            return;
+        }
+
         $envelope = match (true) {
             $event instanceof QuestionSubmitted => $this->envelope('infodot.question.published', $event, $event->facts['author_uuid'], null, ['approved' => false]),
             $event instanceof AnswerPublished => $this->envelope('infodot.answer.published', $event, $event->facts['author_uuid'], null, [

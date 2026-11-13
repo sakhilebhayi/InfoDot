@@ -17,6 +17,7 @@ use App\Listeners\ForwardKnowledgeEventToMemory;
 use App\Listeners\ForwardKnowledgeEventToPoints;
 use App\Listeners\RecordInAppNotice;
 use App\Listeners\RefreshAchievements;
+use App\Listeners\SkipMailToReservedDomains;
 use App\Livewire\Profile\UpdateProfileInformationForm;
 use App\Livewire\Teams\TeamMemberManager;
 use App\Models\BusinessAppeal;
@@ -28,10 +29,12 @@ use App\Models\Folder;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
+use App\Services\Demo\DemoRegistry;
 use App\Support\CanonicalUrl;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
@@ -53,6 +56,9 @@ class AppServiceProvider extends ServiceProvider
         if (! config('cashier.webhook.secret')) {
             Cashier::ignoreRoutes();
         }
+
+        // One register of demonstration content per request (R-49): it is read once and asked many times.
+        $this->app->scoped(DemoRegistry::class);
     }
 
     /**
@@ -70,6 +76,13 @@ class AppServiceProvider extends ServiceProvider
         Livewire::component('teams.team-member-manager', TeamMemberManager::class);
         // Jetstream's profile form, returning to the account page after a picture is saved (app/Livewire/Profile/UpdateProfileInformationForm.php).
         Livewire::component('profile.update-profile-information-form', UpdateProfileInformationForm::class);
+
+        // R-49: the demonstration register hears of every record created, and keeps the ones `demo:install` or a demonstration account made.
+        Event::listen('eloquent.created: *', function (string $event, array $models): void {
+            $this->app->make(DemoRegistry::class)->created($models[0]);
+        });
+        // R-49: nothing is ever mailed to an address on a reserved domain (the demonstration accounts' addresses are).
+        Event::listen(MessageSending::class, SkipMailToReservedDomains::class);
 
         // Community knowledge events -> durable outbox -> the Dot Points ledger (signed, retried).
         foreach ([

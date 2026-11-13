@@ -13,6 +13,7 @@ use App\Services\Knowledge\SimilarContent;
 use App\Services\Knowledge\TopicBadges;
 use App\Services\Points\PointsClient;
 use App\Services\Ux\UxSignals;
+use App\Support\Input;
 use App\Support\Knowledge\ContributionStats;
 use App\Support\Knowledge\ModerationStatus;
 use Auth;
@@ -113,12 +114,12 @@ class PagesController extends Controller
 
     public function solution_search_results()
     {
-        $search_term = (string) request()->query('search', '');
+        $search_term = Input::text(request()->query('search', ''));
         $driver = \DB::connection()->getDriverName();
         $startedAt = microtime(true);
 
         // ?topic=slug narrows the results to one topic. With a topic and no words, everything under the topic is listed.
-        $topicSlug = trim((string) request()->query('topic', ''));
+        $topicSlug = trim(Input::text(request()->query('topic', '')));
         $topic = $topicSlug !== '' ? Topic::where('slug', $topicSlug)->first() : null;
         $textSearch = ! ($topicSlug !== '' && trim($search_term) === '');
 

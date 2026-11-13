@@ -3,7 +3,7 @@
         <div>
             <h1 class="ix-h1">{{ $enquiry->subject }}</h1>
             <p class="ix-lede">With <a href="{{ route('business.show', $enquiry->team) }}">{{ $enquiry->team->name }}</a>. {{ $enquiry->categoryLabel() }}, opened {{ $enquiry->created_at->format('j M Y') }}.
-                <span class="ix-chip">{{ \App\Models\Enquiry::CUSTOMER_STATUSES[$enquiry->status] ?? $enquiry->status }}</span></p>
+                <span class="ix-chip">{{ \App\Models\Enquiry::CUSTOMER_STATUSES[$enquiry->status] ?? $enquiry->status }}</span> <x-demo-mark :of="$enquiry" /></p>
         </div>
         <a href="{{ route('inbox') }}" class="ix-btn ix-btn--ghost">All enquiries</a>
     </div>

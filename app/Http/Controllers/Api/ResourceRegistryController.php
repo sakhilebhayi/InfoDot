@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Resource;
 use App\Models\Team;
+use App\Support\Input;
 use App\Support\Reference;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -75,7 +76,7 @@ class ResourceRegistryController extends Controller
 
     private function platform(Request $request): ?string
     {
-        $platform = (string) $request->input('platform', $request->query('platform', ''));
+        $platform = Input::text($request->input('platform', $request->query('platform', '')));
         $secret = (string) config('ecosystem.service_secrets.'.$platform, '');
         $bearer = (string) $request->bearerToken();
 

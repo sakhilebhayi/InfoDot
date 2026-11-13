@@ -5,6 +5,7 @@ namespace App\Actions\Jetstream;
 use App\Services\Licensing\SeatLedger;
 use App\Support\TeamRoles;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -14,6 +15,7 @@ use Laravel\Jetstream\Events\InvitingTeamMember;
 use Laravel\Jetstream\Jetstream;
 use Laravel\Jetstream\Mail\TeamInvitation;
 use Laravel\Jetstream\Rules\Role;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class InviteTeamMember implements InvitesTeamMembers
 {
@@ -46,7 +48,24 @@ class InviteTeamMember implements InvitesTeamMembers
             'role' => $role,
         ]), null, $user, 'invited', $email);
 
-        Mail::to($email)->send(new TeamInvitation($invitation));
+        // Mail goes out inside the request. A refused send must not leave an invitation nobody received holding a seat.
+        try {
+            Mail::to($email)->send(new TeamInvitation($invitation));
+        } catch (TransportExceptionInterface $e) {
+            Log::error('team.invitation_mail_failed', [
+                'category' => 'mail',
+                'team_id' => $team->id,
+                'exception' => $e::class,
+                'reason' => mb_substr($e->getMessage(), 0, 300),
+            ]);
+
+            $invitation->delete();
+            app(SeatLedger::class)->record($team, $user, 'invitation_cancelled', $email, ['reason' => 'email_not_sent']);
+
+            throw ValidationException::withMessages([
+                'email' => __('The invitation email could not be sent just now, so nobody was invited. Please try again in a few minutes.'),
+            ])->errorBag('addTeamMember');
+        }
     }
 
     /**

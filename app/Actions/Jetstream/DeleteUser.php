@@ -44,6 +44,9 @@ class DeleteUser implements DeletesUsers
         $this->endSessionsElsewhere($user);
 
         DB::transaction(function () use ($user) {
+            // Hold the person's row, so a request that is creating a business for them finishes before the teams are read.
+            DB::table($user->getTable())->where($user->getKeyName(), $user->getKey())->lockForUpdate()->exists();
+
             app(SeminarDataEraser::class)->erase($user);
             $this->deleteTeams($user);
             $user->deleteProfilePhoto();
@@ -99,7 +102,8 @@ class DeleteUser implements DeletesUsers
     {
         $user->teams()->detach();
 
-        $user->ownedTeams->each(function ($team) {
+        // Read now, never from what the model already holds: a business created a moment ago must go too.
+        $user->ownedTeams()->get()->each(function ($team) {
             $this->deletesTeams->delete($team);
         });
     }

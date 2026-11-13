@@ -15,9 +15,11 @@ use App\Services\Knowledge\InAppNotices;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 /**
  * The only way a business verification changes (R-29 Part B, §26 "verification decisions must be
@@ -145,7 +147,22 @@ class VerificationService
             'email_code_attempts' => 0,
         ])->save();
 
-        Mail::to($email)->send(new VerificationEmailCode($code, $verification->team->name, $minutes));
+        // Mail goes out inside the request. A code nobody received is not kept, so the applicant can ask again at once.
+        try {
+            Mail::to($email)->send(new VerificationEmailCode($code, $verification->team->name, $minutes));
+        } catch (TransportExceptionInterface $e) {
+            Log::error('verification.email_code_mail_failed', [
+                'category' => 'mail',
+                'verification_id' => $verification->id,
+                'exception' => $e::class,
+                'reason' => mb_substr($e->getMessage(), 0, 300),
+            ]);
+
+            $verification->forceFill(['email_code_hash' => null, 'email_code_expires_at' => null])->save();
+
+            throw ValidationException::withMessages(['official_email' => 'The code could not be sent just now. Please try again in a few minutes.']);
+        }
+
         $this->log($verification, 'email_code_sent', $verification->status, $verification->status, $applicant);
     }
 

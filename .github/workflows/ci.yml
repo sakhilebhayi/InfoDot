@@ -194,20 +194,6 @@ jobs:
       - name: Run the fixture test (migrations, casts, dependencies, hosts; no value from any .env.example may reach the output)
         run: bash tools/test-popia-inventory.sh
 
-  finance-env-keys:
-    # TEMPORARY (added 2026-11-13): delete this job with tools/finance-env-keys.sh after the first deploy that ran it.
-    name: payment setting names (fake host)
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - name: Syntax and lint
-        run: |
-          bash -n tools/finance-env-keys.sh tools/test-finance-env-keys.sh
-          shellcheck -S warning tools/finance-env-keys.sh tools/test-finance-env-keys.sh
-      - name: Run the fake-host test of the one-time .env rename the deploy runs (values kept byte for byte, one mode-600 backup, names only on screen, nothing on a second run)
-        run: bash tools/test-finance-env-keys.sh
-
   backup-pull:
     name: off-host pull (forced command + Mac script)
     runs-on: ubuntu-latest
@@ -269,7 +255,8 @@ jobs:
           php-version: "8.4"
           tools: composer:v2
           coverage: none
-          extensions: pdo_mysql
+          # gd draws the demonstration pictures; pdo_sqlite is the search index (TNTSearch) the demonstration content is written to.
+          extensions: pdo_mysql, pdo_sqlite, gd
       - name: Prepare Environment
         run: cp .env.example .env
       - name: Install Dependencies
@@ -298,6 +285,23 @@ jobs:
           DB_PASSWORD: root
           CACHE_DRIVER: file
         run: php tools/mysql-concurrency-test.php
+
+      # The demonstration content (R-49) is installed on the live site and must come off it exactly. The suite proves that on SQLite; this proves
+      # it on MySQL with the real commands: refused without --force in production, installed, the two companies listed for a visitor, a second
+      # install creates nothing, and after demo:remove every table's row count equals the count before. Files go to storage/ in the checkout.
+      - name: Demonstration content on MySQL (install, idempotent, remove restores every count)
+        env:
+          APP_ENV: production
+          APP_DEBUG: "false"
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: infodot_ci
+          DB_USERNAME: root
+          DB_PASSWORD: root
+          CACHE_DRIVER: file
+          MAIL_MAILER: array
+        run: php tools/mysql-demo-content-test.php
 
       # Production was created with the old column names. The suite proves the rename on SQLite; this proves it on MySQL: the three tables are
       # rebuilt as they were first created, the migration runs twice, and values, the default and the unique indexes are checked. Last step on

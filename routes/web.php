@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountsDeskController;
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
@@ -205,6 +206,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/moderation/identity', [IdentityDeskController::class, 'index'])->middleware(['moderator', 'throttle:60,1,moderation.identity'])->name('moderation.identity');
     Route::get('/moderation/identity/{conflict}', [IdentityDeskController::class, 'show'])->whereNumber('conflict')->middleware(['moderator', 'throttle:60,1,moderation.identity.show'])->name('moderation.identity.show');
     Route::post('/moderation/identity/{conflict}/{action}', [IdentityDeskController::class, 'resolve'])->whereNumber('conflict')->whereIn('action', ['dismiss', 'relate', 'escalate'])->middleware(['moderator', 'throttle:60,1,moderation.identity.resolve'])->name('moderation.identity.resolve');
+    // The accounts desk (R-49): find a person, read their suspension trail, suspend or restore.
+    Route::prefix('/moderation/accounts')->name('moderation.accounts')->middleware('moderator')->controller(AccountsDeskController::class)->group(function () {
+        Route::get('/', 'index')->middleware('throttle:60,1,moderation.accounts');
+        Route::get('/{user}', 'show')->whereNumber('user')->middleware('throttle:60,1,moderation.accounts.show')->name('.show');
+        Route::post('/{user}/suspend', 'suspend')->whereNumber('user')->middleware('throttle:20,1,moderation.accounts.act')->name('.suspend');
+        Route::post('/{user}/restore', 'restore')->whereNumber('user')->middleware('throttle:20,1,moderation.accounts.act')->name('.restore');
+    });
     Route::get('/moderation/verifications', [VerificationDeskController::class, 'index'])->middleware(['moderator', 'throttle:60,1,moderation.verifications'])->name('moderation.verifications');
     Route::get('/moderation/verifications/{verification}', [VerificationDeskController::class, 'show'])->whereNumber('verification')->middleware(['moderator', 'throttle:60,1,moderation.verification'])->name('moderation.verifications.show');
     Route::post('/moderation/verifications/{verification}/{action}', [VerificationDeskController::class, 'decide'])->whereNumber('verification')
@@ -279,9 +287,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Free seminars: any verified person may host one; the host's own join link is shown only to registered people in the window.
     Route::get('/seminars', [SeminarsController::class, 'index'])->name('seminars');
     Route::get('/seminars/payouts', [SeminarPayoutsController::class, 'index'])->middleware('throttle:30,1,seminars.payouts')->name('seminars.payouts');
-    Route::post('/seminars/payouts', [SeminarPayoutsController::class, 'store'])->middleware('throttle:5,1,seminars.payouts.store')->name('seminars.payouts.store');
-    Route::post('/seminars/payouts/agreement', [SeminarPayoutsController::class, 'agreement'])->middleware('throttle:10,1,seminar-agreement')->name('seminars.payouts.agreement');
-    Route::post('/seminars/payouts/seller', [SeminarPayoutsController::class, 'seller'])->middleware('throttle:10,1,seminars.payouts.seller')->name('seminars.payouts.seller');
+    Route::post('/seminars/payouts', [SeminarPayoutsController::class, 'store'])->middleware(['not-demo', 'throttle:5,1,seminars.payouts.store'])->name('seminars.payouts.store');
+    Route::post('/seminars/payouts/agreement', [SeminarPayoutsController::class, 'agreement'])->middleware(['not-demo', 'throttle:10,1,seminar-agreement'])->name('seminars.payouts.agreement');
+    Route::post('/seminars/payouts/seller', [SeminarPayoutsController::class, 'seller'])->middleware(['not-demo', 'throttle:10,1,seminars.payouts.seller'])->name('seminars.payouts.seller');
     Route::get('/seminars/invoices', [SeminarInvoicesController::class, 'index'])->middleware('throttle:30,1,seminars.invoices')->name('seminars.invoices');
     Route::get('/seminars/invoices/{invoice}', [SeminarInvoicesController::class, 'show'])->whereNumber('invoice')->middleware('throttle:30,1,seminars.invoice')->name('seminars.invoice');
     Route::get('/moderation/seminar-payments', [SeminarPaymentsModerationController::class, 'index'])->middleware(['moderator', 'throttle:30,1,moderation.seminar-payments'])->name('moderation.seminar-payments');
@@ -333,7 +341,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Dot Points: balance, rewards, redemptions. Server-to-server with the points service; always the signed-in person's own.
     // -------------------------------------------------------
     Route::get('/points', [PointsController::class, 'index'])->middleware('throttle:60,1,points')->name('points');
-    Route::post('/points/redeem', [PointsController::class, 'redeem'])->middleware('throttle:10,1,points.redeem')->name('points.redeem');
+    Route::post('/points/redeem', [PointsController::class, 'redeem'])->middleware(['not-demo', 'throttle:10,1,points.redeem'])->name('points.redeem');
     Route::post('/points/expiry-emails', [PointsController::class, 'updateExpiryEmails'])->middleware('throttle:20,1,points.expiry-emails')->name('points.expiry-emails');
     // Opt-in summary emails of what the signed-in person earned (off unless they choose weekly or monthly).
     Route::post('/points/digest-emails', [PointsController::class, 'updateDigestEmails'])->middleware('throttle:20,1,points.digest-emails')->name('points.digest-emails');

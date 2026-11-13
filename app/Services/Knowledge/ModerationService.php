@@ -420,7 +420,7 @@ class ModerationService
     private function ledgerFacts(Model $row, ModerationAction $action): array
     {
         return [
-            'author_uuid' => $row->user->uuid,
+            'author_uuid' => $row->user?->uuid,
             'tenant_team_id' => $row->team_id,
             'visibility' => $row->visibility,
             'event_key' => 'moderation_action:'.$action->id,

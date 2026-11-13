@@ -15,6 +15,7 @@
 
             <div class="min-w-0">
                 <h1 class="ix-h1 truncate">{{ $user->name }}</h1>
+                <x-demo-mark :of="$user" />
                 @if ($user->created_at)
                     <p class="ix-lede" style="margin-top: 2px;">Member since {{ $user->created_at->format('j M Y') }}</p>
                 @endif

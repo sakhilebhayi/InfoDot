@@ -54,6 +54,23 @@ class AnswerService
         };
     }
 
+    /**
+     * May this person read it as a reader does? canSeeContent() plus the moderation rule: once a moderator has hidden a
+     * question or solution, only its author and moderators still see it. (The desk itself asks canSeeContent(), because
+     * moderators act on hidden items.)
+     */
+    public function canRead(Model $item, User $user): bool
+    {
+        if (! $this->canSeeContent($item, $user)) {
+            return false;
+        }
+
+        $subject = $item instanceof Answer ? $item->question : $item;
+        $hidden = ($subject instanceof Questions || $subject instanceof Solutions) && $subject->isHidden();
+
+        return ! $hidden || $subject->user_id === $user->id || $user->isModerator();
+    }
+
     public function publish(Questions $question, User $author, string $body): Answer
     {
         $body = trim($body);
@@ -130,7 +147,7 @@ class AnswerService
 
             foreach ($previous as $old) {
                 $old->forceFill(['accepted_at' => null, 'accepted_by' => null])->save();
-                DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($old->reference(), ['answer_id' => $old->id, 'author_uuid' => $old->user->uuid, 'revoked_by_uuid' => $by->uuid])));
+                DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($old->reference(), ['answer_id' => $old->id, 'author_uuid' => $old->user?->uuid, 'revoked_by_uuid' => $by->uuid])));
             }
 
             $answer->forceFill(['accepted_at' => now(), 'accepted_by' => $by->id])->save();
@@ -139,7 +156,7 @@ class AnswerService
             DB::afterCommit(fn () => event(new AnswerAccepted($answer->reference(), [
                 'answer_id' => $answer->id,
                 'question_id' => $answer->question_id,
-                'author_uuid' => $answer->user->uuid,
+                'author_uuid' => $answer->user?->uuid,
                 'accepted_by_uuid' => $by->uuid,
                 'by_moderator' => $by->isModerator() && $answer->question->user_id !== $by->id,
                 'tenant_team_id' => $answer->question->team_id,
@@ -155,9 +172,17 @@ class AnswerService
         abort_unless($answer->isAccepted() && ($answer->question->user_id === $by->id || $by->isModerator()), 403);
 
         DB::transaction(function () use ($answer, $by): void {
+            // The same order as accept(): the question's row first, then look again. A second request that still saw the acceptance
+            // must not send a second reversal, or reset the question after another answer was accepted.
+            Questions::withoutGlobalScopes()->whereKey($answer->question_id)->lockForUpdate()->first();
+
+            if (! Answer::withoutGlobalScopes()->whereKey($answer->id)->whereNotNull('accepted_at')->exists()) {
+                return;
+            }
+
             $answer->forceFill(['accepted_at' => null, 'accepted_by' => null])->save();
             $answer->question->forceFill(['status' => 0])->save();
-            DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($answer->reference(), ['answer_id' => $answer->id, 'author_uuid' => $answer->user->uuid, 'revoked_by_uuid' => $by->uuid])));
+            DB::afterCommit(fn () => event(new AnswerAcceptanceRevoked($answer->reference(), ['answer_id' => $answer->id, 'author_uuid' => $answer->user?->uuid, 'revoked_by_uuid' => $by->uuid])));
         });
 
         return $answer->refresh();
@@ -214,7 +239,7 @@ class AnswerService
                 'reason' => $reason,
                 'report_id' => $report->id,
                 // Who wrote it and where it lives, for the points ledger. The reporter is deliberately not part of the event's facts.
-                'author_uuid' => $item->user->uuid,
+                'author_uuid' => $item->user?->uuid,
                 'tenant_team_id' => $question->team_id,
                 'visibility' => $question->visibility,
             ]));

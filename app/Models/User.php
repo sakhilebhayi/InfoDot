@@ -6,14 +6,18 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Cashier\Billable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -90,6 +94,31 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isSuspended(): bool
     {
         return $this->suspended_at !== null;
+    }
+
+    /**
+     * The password reset email goes out inside the request (the host has no queue worker). When the mail server
+     * refuses it, the link that was never delivered is not kept, so the person can ask again without waiting, and
+     * the form says the email did not go instead of the request ending in an error page.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        try {
+            parent::sendPasswordResetNotification($token);
+        } catch (TransportExceptionInterface $e) {
+            Log::error('account.password_reset_mail_failed', [
+                'category' => 'mail',
+                'user_id' => $this->getAuthIdentifier(),
+                'exception' => $e::class,
+                'reason' => mb_substr($e->getMessage(), 0, 300),
+            ]);
+
+            Password::broker()->deleteToken($this);
+
+            throw ValidationException::withMessages(['email' => 'The password reset email could not be sent just now. Please try again in a few minutes.']);
+        }
     }
 
     /** Moderators accept answers on others' questions, verify solutions and handle reports. Granted by an administrator. */

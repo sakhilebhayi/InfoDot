@@ -6,6 +6,7 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Http\Controllers\Auth\ResendVerificationEmailController;
 use App\Models\User;
 use App\Services\Accounts\AccountSuspension;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -25,7 +27,8 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        // Fortify registers the route against its own controller; ours adds the answer for a mail server that is down.
+        $this->app->bind(EmailVerificationNotificationController::class, ResendVerificationEmailController::class);
     }
 
     /**

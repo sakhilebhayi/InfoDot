@@ -56,6 +56,7 @@
                                     <span>{{ $question->user->name ?? 'Former member' }}</span>
                                     <span>{{ $question->created_at->diffForHumans() }}</span>
                                     <span>{{ $question->isPublic() ? 'Everyone' : 'Your company' }}</span>
+                                    <x-demo-mark :of="$question" />
                                     @include('attachments._meta', ['item' => $question])
                                 </p>
                                 @include('topics._chips', ['item' => $question])
