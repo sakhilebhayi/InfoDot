@@ -17,6 +17,22 @@ export async function scan(page: Page, name: string, scheme: string): Promise<Vi
     // contrast yet. Scan the page as a person sees it once it has settled.
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(250);
+    // An entrance that is still fading in is not what a person reads (the landing page's first screen takes about two
+    // seconds to arrive, and a chip caught part-way reads as low contrast). Wait until no element's opacity is moving.
+    await page
+        .waitForFunction(
+            () => {
+                const seen = window as unknown as { settledOpacity?: string };
+                const now = Array.from(document.querySelectorAll('body *'), (el) => getComputedStyle(el).opacity).join();
+                const still = seen.settledOpacity === now;
+                seen.settledOpacity = now;
+
+                return still;
+            },
+            undefined,
+            { polling: 300, timeout: 10_000 },
+        )
+        .catch(() => undefined);
     const results = await new AxeBuilder({ page }).withTags(tags).analyze();
     const where = new URL(page.url()).pathname.replace(/[0-9a-f]{8}-[0-9a-f-]{27}/, '{uuid}');
 

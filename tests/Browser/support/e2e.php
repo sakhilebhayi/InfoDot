@@ -52,7 +52,7 @@ $result = match ($op['op']) {
         return ['id' => $user->id, 'email' => $user->email, 'name' => $user->name];
     })(),
 
-    // A business, made the way the "Create team" form makes one.
+    // A business, made the way the "Create a business" form makes one.
     'make-business' => (function () use ($op) {
         $owner = User::where('email', $op['owner'])->firstOrFail();
         $team = app(CreateTeam::class)->create($owner, [

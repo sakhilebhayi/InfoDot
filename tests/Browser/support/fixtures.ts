@@ -138,7 +138,7 @@ export async function register(page: Page, name: string): Promise<string> {
         await page.locator('#password').fill(password());
         await page.locator('#password_confirmation').fill(password());
         await page.getByRole('checkbox', { name: /I agree to the/ }).check();
-        await page.getByRole('button', { name: 'Sign Up' }).click();
+        await page.getByRole('button', { name: 'Create account' }).click();
         await page.waitForLoadState('load');
         if (attempt === 1 && await page.getByText('Too many attempts. Please wait a few minutes and try again.').count() > 0) {
             op({ op: 'clear-rate-limits' });

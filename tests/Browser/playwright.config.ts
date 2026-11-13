@@ -1,10 +1,19 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
-import { appEnv, baseURL, browserRoot, port, repoRoot } from './support/env';
+import { appEnv, baseURL, browserRoot, dataDir, databaseFile, port, repoRoot } from './support/env';
 
 const everything = /.*\.spec\.ts/;
 const crossEngine = /(a-new-user|b-business|d-permissions|g-failure-paths)\.spec\.ts/;
 const handheld = /e-mobile\.spec\.ts/;
+
+// Playwright starts the server before global setup runs, and waits for /up. On a fresh checkout the scratch database
+// file does not exist yet, /up answers 500 and the run times out before a single test. An empty file is enough for the
+// server to come up; global setup then empties, migrates and seeds it as before.
+fs.mkdirSync(dataDir, { recursive: true });
+if (!fs.existsSync(databaseFile)) {
+    fs.writeFileSync(databaseFile, '');
+}
 
 export default defineConfig({
     testDir: path.join(browserRoot, 'specs'),

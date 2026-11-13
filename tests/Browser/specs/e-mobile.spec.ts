@@ -115,12 +115,12 @@ test.describe('E. On a phone or tablet', () => {
         // A business: created, then managed.
         const name = `Zanele Spaza ${unique()}`;
         await page.getByRole('button', { name: 'Company menu' }).click();
-        await page.getByRole('link', { name: 'Create new team' }).click();
+        await page.getByRole('link', { name: 'Create a business' }).click();
         await check(page, findings);
-        await page.getByLabel('Team name').fill(name);
+        await page.getByLabel('Business name').fill(name);
         await page.getByLabel('What the business does').fill('A spaza shop selling groceries, airtime and prepaid electricity in Soshanguve.');
         await page.getByRole('radio', { name: /^Anyone/ }).check();
-        await page.getByRole('button', { name: 'Create team' }).click();
+        await page.getByRole('button', { name: 'Create business' }).click();
         await expect(page).toHaveURL(/\/business\/[0-9a-f-]{36}\/edit/);
         await check(page, findings);
         const team = rows('teams', { name })[0];
@@ -157,11 +157,8 @@ test.describe('E. On a phone or tablet', () => {
     });
 
     test('every primary button met on that journey is at least 44 by 44', async ({}, testInfo) => {
-        // KNOWN FAILURE, kept visible on purpose: The Yard sets .ix-btn to 36px high at every width, so this cannot pass
-        // until the design pass changes that (docs/programme/r49/UX_FINDINGS.md, U-01). It is a size decision for the
-        // design system, not something a test run should restyle. Delete the next line when the buttons are 44px.
-        test.fail(true, 'Primary buttons are 36px high on touch screens: UX_FINDINGS.md U-01');
-
+        // The Yard keeps its 36px buttons for a mouse and makes every control at least 44px on a touch screen or a narrow
+        // window (resources/css/infodot.css, the touch block at the end). This guards that: UX_FINDINGS.md U-01, closed.
         const findings: Finding[] = JSON.parse(fs.readFileSync(findingsFile(testInfo.project.name), 'utf8'));
         const small = Array.from(new Set(findings.filter((f) => f.kind === 'button').map((f) => `${f.page}: ${f.what}`)));
         expect(small, small.join('\n')).toEqual([]);

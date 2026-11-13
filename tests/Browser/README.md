@@ -47,7 +47,7 @@ Everything a run writes inside `tests/Browser` (`.data/`, `screens/`, `test-resu
 
 Registration is tested for real: the app writes the verification email to the log (`MAIL_MAILER=log`), the test reads the newest link for that address out of `storage/logs/laravel.log` and opens it in the same browser (`verificationLink()` in `support/app.ts`). Scenarios A and E do this. Those people register with an address on `example.com`, because the app never mails a `.test` address.
 
-Accounts that a scenario only needs as a starting point (an owner, a customer, a moderator) are made by `support/e2e.php` through `php artisan tinker`, using the same actions the sign-up and "Create team" forms use, and are marked verified there. That helper refuses to run against anything but the scratch SQLite file.
+Accounts that a scenario only needs as a starting point (an owner, a customer, a moderator) are made by `support/e2e.php` through `php artisan tinker`, using the same actions the sign-up and "Create a business" forms use, and are marked verified there. That helper refuses to run against anything but the scratch SQLite file.
 
 ## Projects
 
@@ -76,7 +76,7 @@ Accounts that a scenario only needs as a starting point (an owner, a customer, a
 
 ## Known failures
 
-Two checks are marked `test.fail`: primary buttons of 44 x 44 on touch screens (`e-mobile.spec.ts`) and text contrast (`h-accessibility.spec.ts`). Both fail today for reasons that need a design decision, recorded in `docs/programme/r49/UX_FINDINGS.md`. Playwright reports them as expected failures, not as passes. When the design changes, delete the `test.fail` line: from then on the test must pass.
+None. Two checks were marked `test.fail` until the design pass: primary buttons of 44 x 44 on touch screens (`e-mobile.spec.ts`) and text contrast (`h-accessibility.spec.ts`). The marks are gone and both must pass. If a later change needs one again, record the reason in `docs/programme/r49/UX_FINDINGS.md`: Playwright reports a marked test as an expected failure, not as a pass.
 
 ## Adding a test
 

@@ -28,12 +28,12 @@ test.describe('B. A business', () => {
         // Create the business from the company menu.
         await signIn(page, owner.email);
         await page.getByRole('button', { name: 'Company menu' }).click();
-        await page.getByRole('link', { name: 'Create new team' }).click();
+        await page.getByRole('link', { name: 'Create a business' }).click();
         await expect(page).toHaveURL(/\/teams\/create$/);
-        await page.getByLabel('Team name').fill(name);
+        await page.getByLabel('Business name').fill(name);
         await page.getByLabel('What the business does').fill('Borehole drilling, pump installation and water testing for farms and homes in Mpumalanga.');
         await page.getByRole('radio', { name: /^Anyone/ }).check();
-        await page.getByRole('button', { name: 'Create team' }).click();
+        await page.getByRole('button', { name: 'Create business' }).click();
 
         // It lands on the listing, which says where the business stands.
         await expect(page).toHaveURL(/\/business\/[0-9a-f-]{36}\/edit#directory$/);

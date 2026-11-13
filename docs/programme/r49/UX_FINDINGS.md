@@ -4,7 +4,32 @@ Things noticed while the real-browser journeys ran (`tests/Browser`, 2026-11-13,
 
 Screenshot names refer to `tests/Browser/screens/`, which `npm run test:browser -- --project=desktop-chromium f-investor` writes on your machine (the folder is not in git). Desktop is 1440 x 900; phone is 390 x 844.
 
-## Held by a test that is marked as a known failure
+## What became of these (design pass, `DESIGN_AUDIT.md`)
+
+The design pass took every item below as input. The list itself is kept as it was written, so the history reads straight; this table says where each one ended.
+
+| No. | Result | Audit row |
+|---|---|---|
+| U-01 | Closed. Controls are at least 44px on touch and narrow widths; the `test.fail` mark is removed and the test must pass. | D-21 |
+| U-02 | Closed. `--ix-warn` darkened; the chip passes on every surface. Mark removed. | D-11 |
+| U-03 | Closed. The "On InfoDot" list uses white ink on the blue; numerals and the cover code changed. | D-12, D-14 |
+| U-04 | Closed. Full white ink in the Knowledge field. | D-13 |
+| U-05 | Closed. See the audit: the chips sit on an opaque panel; what was measured was the entrance fade part-way. | D-16 |
+| U-06 | Closed. The period control is the pill strip used on a business's insights page. | D-19 |
+| U-07 | Closed. `demo:install` shelves two accepted answers, labelled, removed with the rest. | D-35 |
+| U-08 | Closed. Plain-language off state. | D-19 |
+| U-09 | Closed. The sign-in pages are The Yard. | D-01 |
+| U-10 | Closed. The 429 page, with the wait in minutes; sign-up allows 30 in ten minutes. | D-30 |
+| U-11 | Closed for the heading and the terms box. The password fields come back empty on purpose. | D-28, D-29 |
+| U-12 | Open. Needs the photo field's upload binding changed. | D-31 |
+| U-13 | Open. A change to the structure of two forms. | D-32 |
+| U-14 | Closed on the create form ("Create a business"). "Team settings" and "company" elsewhere are left for the owner. | D-08 |
+| U-15 | Closed. Any authenticator app. | D-09 |
+| U-16 | Closed. The tab row fades at its right edge. | D-25 |
+| U-17 | Open. Deciding what leaves the phone top bar is a product decision. | D-25 |
+| U-18 | Open. Splitting the editor is a redesign of that screen. | D-26 |
+
+## Held by a test that is marked as a known failure (at the time; both marks are now removed)
 
 Two checks the brief asks for cannot pass until the design system changes. They are in the suite, marked `test.fail` with a pointer to this file, so they report as expected failures and start guarding the result as soon as the mark is removed.
 
