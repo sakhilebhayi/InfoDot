@@ -4,6 +4,12 @@
 # (Linux, real flock) and locally. Every output of the tool is collected and scanned for the fake secrets at the end.
 # shellcheck disable=SC2010
 set -uo pipefail
+# Overwrite one byte so that it always differs from what was there. Writing a fixed 'X' left the file unchanged whenever
+# the byte already was 'X' (one run in 256), and the checksum test then failed at random.
+flip_byte() { # file offset
+  local cur; cur="$(dd if="$1" bs=1 skip="$2" count=1 2>/dev/null | od -An -tu1 | tr -d ' ')"
+  if [ "$cur" = 88 ]; then printf 'Y'; else printf 'X'; fi | dd of="$1" bs=1 seek="$2" conv=notrunc 2>/dev/null
+}
 ROOT_REPO="$(cd "$(dirname "$0")/.." && pwd)"
 W="$(mktemp -d)"
 BGPIDS=""
@@ -230,7 +236,7 @@ check "a target under ~/dot-backups/.restore-test is allowed" "[ $RC = 0 ]"; rm 
 
 # ---- 8. damaged archive and wrong passphrase ---------------------------------------------------------------------
 A="$(newest tasks)"; BAD="$BKR/tasks/tasks-29990101-000000.tar.gz.enc"
-cp "$A" "$BAD"; cp "$A.sha256" "$BAD.sha256"; printf 'X' | dd of="$BAD" bs=1 seek=200 conv=notrunc 2>/dev/null
+cp "$A" "$BAD"; cp "$A.sha256" "$BAD.sha256"; flip_byte "$BAD" 200
 runout bk verify tasks
 check "verify fails on a damaged newest archive (checksum mismatch)" "[ $RC -ne 0 ] && echo \"\$OUT\" | grep -q 'FAILED' && echo \"\$OUT\" | grep -qi 'sha256'"
 rm -f "$BAD" "$BAD.sha256"
