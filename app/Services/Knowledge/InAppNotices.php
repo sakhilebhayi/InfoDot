@@ -9,6 +9,7 @@ use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Platforms\PlatformNotices;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -184,6 +185,11 @@ class InAppNotices
         [, $id, $status] = array_pad(explode(':', $notice->ref), 3, null);
         $name = '“'.Str::limit($team->name, 60, '…', true).'”';
 
+        // R-50. The reference carries the platform and what happened: "pe:{event}:{platform}:{type}".
+        if ($notice->kind === UserNotice::PLATFORM_ENTITLEMENT) {
+            return PlatformNotices::describe($notice->ref, $team, $name);
+        }
+
         // R-49. The reference says which side the reader is on: "own:{team}:owner:…" or "own:{team}:{role they now hold}:…".
         if ($notice->kind === UserNotice::BUSINESS_OWNERSHIP) {
             [, , $side] = array_pad(explode(':', $notice->ref), 3, null);
@@ -344,6 +350,7 @@ class InAppNotices
             UserNotice::ENQUIRY_RECEIVED, UserNotice::ENQUIRY_REPLY, UserNotice::ENQUIRY_ASSIGNED, UserNotice::ENQUIRY_FOLLOW_UP => 'Inbox',
             UserNotice::BUSINESS_TRUST_QUEUE, UserNotice::BUSINESS_REPORT_DECIDED, UserNotice::BUSINESS_STANDING => 'Business review',
             UserNotice::BUSINESS_OWNERSHIP => 'Ownership',
+            UserNotice::PLATFORM_ENTITLEMENT => 'Platforms',
             default => 'Update',
         };
     }

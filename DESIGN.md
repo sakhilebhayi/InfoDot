@@ -28,11 +28,11 @@ A company yard. Owner code and reference on everything owned; area colours like 
 ## Page layouts
 Each page is laid out for its job, not from one card template.
 - Home: the gate (company name), a blue Knowledge field, Files and Documents doors with platform logos.
-- Platforms: a register. An index of area plates beside a ledger, one platform per row (logo, host, LIVE or NOT LIVE YET stamp, open).
+- Platforms: the catalogue for the current company, as a register. An index of plates beside a ledger: the company's own platforms first (YOURS), then one section per catalogue category. One platform per row: its original logo, name and one-line purpose, the company's state in words (a chip, never a stencil stamp: states are phrases), and exactly one action. Search and two filters sit in one line above the ledger. A platform's own page is a header (logo and name beside the company's state under a mustard rule) over a ledger of headings in the margin column; switching on or off is a page of its own that lists what will happen.
 - People: a headcount slab (stencil numeral and role tally) beside the roster; roles are stamped plates.
 - Analytics: a graphite scoreboard (stencil score, solve rate, solved) over stencil tallies, then trend and rankings.
 - Settings (account, team): a numbered index beside title-over-form sections.
-- Dot Apps: the yard map, a full-width panel of bays grouped under stencil plates (WORK, AUTO, COMM, FINA, LEARN, INFRA, VERT), live in colour and unavailable greyed with a SOON stamp.
+- Dot Apps: the yard map, a full-width panel of bays grouped under the stencil plates of the catalogue's categories (BSNS, FINA, WORK, SALE, MRKT, DATA, CREW, LEARN, OPER, AUTO). It holds only what the current company has and the person can open; everything else is one link away on Platforms.
 - Contrast rule: mustard plates and the Platforms band carry ink (#1b2124), never white (white on mustard is 2.8:1).
 - The primary action (`--ix-signal`) is ink on the ground in both schemes: graphite by day, light ink by night. It never follows the area colour.
 - Chips and secondary text are measured against every surface they sit on (panel, ground, sunken, hover), wash included: `--ix-warn`, `--ix-ok` and `--ix-text-3` are set so each passes 4.5:1 on all four.

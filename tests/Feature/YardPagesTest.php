@@ -25,18 +25,17 @@ class YardPagesTest extends TestCase
         return $user;
     }
 
-    public function test_platforms_is_a_register_with_area_plates_hosts_and_state(): void
+    public function test_platforms_is_a_register_with_category_plates_logos_and_each_platforms_state(): void
     {
-        config(['ecosystem.platforms.files' => ['name' => 'Dot.Files', 'url' => 'https://files.infodot.co.za', 'icon' => 'folder', 'active' => true]]);
-        config(['ecosystem.platforms.hr' => ['name' => 'Dot.HR', 'url' => 'https://hr.infodot.co.za', 'icon' => 'groups', 'active' => false]]);
-
         $html = $this->actingAs($this->owner())->get('/platforms')->assertOk()->getContent();
 
         $this->assertStringContainsString('ix-register', $html);
-        $this->assertStringContainsString('WORK', $html);
-        $this->assertStringContainsString('files.infodot.co.za', $html);
-        $this->assertStringContainsString('Dot.HR is not live yet', $html);
-        $this->assertMatchesRegularExpression('#ix-regrow__logo">\s*(<!--\[if BLOCK\]><!\[endif\]-->)?\s*<img#', $html, 'each platform row carries its logo');
+        $this->assertStringContainsString('<span class="ix-bays__code">YOURS</span>', $html, 'the company\'s own platforms carry their own plate');
+        $this->assertStringContainsString('<span class="ix-bays__code">WORK</span>', $html);
+        $this->assertStringContainsString('Company file storage', $html, 'each row says what the platform is for');
+        $this->assertStringContainsString('Included', $html);
+        $this->assertStringContainsString('Free while pricing is being finalised', $html);
+        $this->assertMatchesRegularExpression('#ix-catrow__logo">\s*(<!--\[if BLOCK\]><!\[endif\]-->)?\s*<img#', $html, 'each platform row carries its logo');
     }
 
     public function test_people_shows_the_headcount_and_each_persons_role(): void
@@ -66,16 +65,18 @@ class YardPagesTest extends TestCase
         $this->assertStringContainsString('href="#delete"', $team, 'the owner of a company can see the delete section');
     }
 
-    public function test_dot_apps_lists_bays_with_logos_and_stamps_unavailable_platforms(): void
+    public function test_dot_apps_lists_the_companys_bays_with_logos_and_nothing_it_cannot_open(): void
     {
-        config(['ecosystem.platforms.files' => ['name' => 'Dot.Files', 'url' => 'https://files.infodot.co.za', 'icon' => 'folder', 'active' => true]]);
-        config(['ecosystem.platforms.hr' => ['name' => 'Dot.HR', 'url' => 'https://hr.infodot.co.za', 'icon' => 'groups', 'active' => false]]);
+        config(['ecosystem.platforms.tasks.active' => false]);
 
         $html = $this->actingAs($this->owner())->get('/home')->assertOk()->getContent();
 
         $this->assertStringContainsString('ix-yardmap', $html);
         $this->assertMatchesRegularExpression('#ix-bay__logo">\s*(<!--\[if BLOCK\]><!\[endif\]-->)?\s*<img#', $html, 'each bay carries its logo');
-        $this->assertMatchesRegularExpression('#ix-bay is-soon[^>]*disabled#s', $html);
-        $this->assertStringContainsString('Dot.HR is not live yet', $html);
+        $this->assertStringContainsString("switchTo('files')", $html);
+        $this->assertStringNotContainsString("switchTo('tasks')", $html, 'a platform that cannot be opened is not a bay');
+        $this->assertStringNotContainsString("switchTo('hr')", $html, 'a platform the company does not hold is not a bay');
+        $this->assertStringNotContainsString('ix-bay is-soon', $html);
+        $this->assertStringContainsString('See all platforms', $html);
     }
 }

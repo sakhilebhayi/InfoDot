@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\DotSwitcher;
 use App\Livewire\EcosystemWidget;
 use App\Models\Team;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Support\Platforms;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\PersonalAccessToken;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -78,22 +80,26 @@ class PlatformRegistryConsistencyTest extends TestCase
         $this->assertSame([], array_values(array_diff($names[1], self::KEYS)));
     }
 
-    public function test_the_register_groups_hold_every_visible_platform_and_nothing_else(): void
+    public function test_the_platforms_page_holds_every_visible_platform_and_nothing_else(): void
     {
         $visible = array_keys(Platforms::visible());
-        $grouped = collect((new EcosystemWidget)->groups())->flatMap(fn (array $group) => array_keys($group['members']))->all();
+        $listed = Livewire::actingAs($this->user())->test(EcosystemWidget::class)->instance()->rows->keys()->all();
 
-        $this->assertEqualsCanonicalizing(array_values(array_diff($visible, ['infodot'])), $grouped);
+        $this->assertEqualsCanonicalizing(array_values(array_diff($visible, ['infodot'])), $listed);
     }
 
-    public function test_the_switcher_groups_name_registered_platforms_only(): void
+    public function test_dot_apps_offers_registered_platforms_only_and_names_none_in_its_view(): void
     {
-        $blade = (string) file_get_contents(resource_path('views/livewire/dot-switcher.blade.php'));
-        $this->assertSame(1, preg_match('/\$groups = \[(.+?)\n    \];/s', $blade, $m));
-        preg_match_all("/\[('[a-z]+'(?:, '[a-z]+')*)\]\],/", $m[1], $lists);
-        $keys = collect($lists[1])->flatMap(fn (string $list) => explode(', ', str_replace("'", '', $list)))->all();
+        $offered = collect(Livewire::actingAs($this->user())->test(DotSwitcher::class)->instance()->groups)->flatMap(fn (array $group) => array_keys($group['members']))->all();
 
-        $this->assertEqualsCanonicalizing(array_values(array_diff(array_keys(Platforms::visible()), ['infodot'])), $keys);
+        $this->assertNotEmpty($offered);
+        $this->assertSame([], array_values(array_diff($offered, array_keys(Platforms::visible()))));
+
+        // R-50: the groups come from the catalogue. The view carries no list of platform keys of its own.
+        $blade = (string) file_get_contents(resource_path('views/livewire/dot-switcher.blade.php'));
+        foreach (self::KEYS as $key) {
+            $this->assertStringNotContainsString("'".$key."'", $blade, $key);
+        }
     }
 
     public function test_the_landing_page_shows_only_platforms_from_the_registry(): void
@@ -123,7 +129,7 @@ class PlatformRegistryConsistencyTest extends TestCase
 
         $this->assertNotEmpty($names);
         $this->assertSame([], array_values(array_diff($names, array_column(config('ecosystem.platforms'), 'name'))));
-        $this->assertSame(count(self::KEYS) - 1 - count(array_intersect(self::KEYS, Platforms::INTERNAL)), substr_count($html, 'class="ix-regrow '), 'one row per visible platform other than InfoDot');
+        $this->assertSame(count(self::KEYS) - 1 - count(array_intersect(self::KEYS, Platforms::INTERNAL)), substr_count($html, '<li class="ix-catrow"'), 'one row per visible platform other than InfoDot');
     }
 
     public function test_a_platform_outside_the_registry_cannot_be_opened_and_no_token_is_minted(): void

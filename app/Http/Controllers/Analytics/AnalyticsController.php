@@ -7,7 +7,7 @@ use App\Models\Comment;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\User;
-use App\Support\Platforms;
+use App\Services\Platforms\CompanyCatalogue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -94,8 +94,12 @@ class AnalyticsController extends Controller
             default => 'Building',
         };
 
-        // ── Platform registry ─────────────────────────────────────────────
-        $platforms = Platforms::visible();
+        // ── This company's platforms (R-50) ───────────────────────────────
+        // What the company itself holds, of what the catalogue offers it: never the state of the fleet, which is
+        // for platform administrators. Counted from the same rows the Platforms page shows.
+        $catalogueRows = CompanyCatalogue::shared()->rows(auth()->user(), CompanyCatalogue::teamOf(auth()->user()));
+        $companyPlatforms = $catalogueRows->where('held', true)->values();
+        $platformsOffered = $catalogueRows->count();
 
         return view('analytics.dashboard', compact(
             'team', 'totalUsers', 'totalSolutions', 'totalQuestions', 'totalComments',
@@ -107,7 +111,7 @@ class AnalyticsController extends Controller
             'topSolutions', 'topContributors',
             'engagementScore', 'engagementLabel',
             'solveRate', 'avgCommentsPerQ',
-            'platforms',
+            'companyPlatforms', 'platformsOffered',
         ));
     }
 }

@@ -3,8 +3,7 @@
         $trendTotal = $solutionTrend->sum() + $questionTrend->sum();
         $scored = ($totalQuestions + $totalSolutions) > 0;
         $solvePct = (int) round($solveRate * 100);
-        $livePlatforms = collect($platforms)->filter(fn ($p) => ! empty($p['active']));
-        $sortedPlatforms = collect($platforms)->sortByDesc(fn ($p) => ! empty($p['active']) ? 1 : 0)->values();
+        $isCompany = $team && ! $team->personal_team;
 
         $counts = [
             ['label' => 'Members',     'value' => $totalUsers,     'delta' => $usersThisMonth,     'prev' => $usersLastMonth],
@@ -229,27 +228,25 @@
 
             {{-- Platform coverage + engines share an edge --}}
             <div>
-                <section class="ix-panel" aria-labelledby="ixa-platforms">
+                {{-- R-50: what this company holds, of what the catalogue offers it. The state of the fleet is not shown to a business. --}}
+                <section class="ix-panel" aria-labelledby="ixa-platforms" data-company-platforms>
                     <h2 class="ix-panel__head" id="ixa-platforms">
-                        <span>Platform coverage</span>
-                        <span class="ixa-stamp">{{ str_pad((string) $livePlatforms->count(), 2, '0', STR_PAD_LEFT) }} live / {{ str_pad((string) count($platforms), 2, '0', STR_PAD_LEFT) }} registered</span>
+                        <span>{{ $isCompany ? "Your company's platforms" : 'Your platforms' }}</span>
+                        <span class="ixa-stamp">{{ $companyPlatforms->count() }} of the {{ $platformsOffered }} in the catalogue</span>
                     </h2>
-                    @if(count($platforms) > 0)
+                    @if ($companyPlatforms->isNotEmpty())
                         <ul class="ixa-cover">
-                            @foreach($sortedPlatforms as $platform)
+                            @foreach ($companyPlatforms as $platform)
                                 <li>
-                                    <span>{{ $platform['name'] }}</span>
-                                    @if (! empty($platform['active']))
-                                        <span class="ixa-cover__live">Live</span>
-                                    @else
-                                        <span class="ixa-cover__soon">Not live yet</span>
-                                    @endif
+                                    <a href="{{ route('platforms.show', ['platform' => $platform['key']]) }}">{{ $platform['name'] }}</a>
+                                    <span class="ixa-cover__state">{{ $platform['label'] }}</span>
                                 </li>
                             @endforeach
                         </ul>
                     @else
-                        <p class="ixa-none">No platforms are registered in this environment's ecosystem configuration.</p>
+                        <p class="ixa-none">{{ $isCompany ? 'Your company has no platforms yet.' : 'Your personal workspace has no platforms yet.' }}</p>
                     @endif
+                    <p class="ixa-cover__more"><a href="{{ route('ecosystem.widget') }}">{{ $isCompany ? 'See what else '.$team->name.' can switch on' : 'See the whole catalogue' }}</a></p>
                 </section>
 
                 <section class="ix-panel" aria-labelledby="ixa-engines">

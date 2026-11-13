@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\BusinessCollection;
+use App\Models\PlatformCatalogue;
 use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\Solutions;
@@ -22,7 +23,7 @@ class NavSection
             request()->routeIs('dashboard') => 'Home',
             request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*', 'library', 'solution_search_results') => 'Knowledge',
             request()->routeIs('seminars*') => 'Seminars',
-            request()->routeIs('ecosystem.widget') => 'Platforms',
+            request()->routeIs('ecosystem.widget', 'platforms.*') => 'Platforms',
             request()->routeIs('analytics.*') => 'Analytics',
             request()->routeIs('people') => 'People',
             request()->routeIs('business.*', 'businesses.*') => 'Businesses',
@@ -51,7 +52,7 @@ class NavSection
             request()->routeIs('dashboard') => ['home', 'GATE'],
             request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*', 'library', 'solution_search_results') => ['knowledge', 'KNOW'],
             request()->routeIs('seminars*') => ['knowledge', 'SEMI'],
-            request()->routeIs('ecosystem.widget') => ['platforms', 'PLAT'],
+            request()->routeIs('ecosystem.widget', 'platforms.*') => ['platforms', 'PLAT'],
             request()->routeIs('analytics.*') => ['analytics', 'DATA'],
             request()->routeIs('people') => ['people', 'CREW'],
             request()->routeIs('business.*', 'businesses.*') => ['people', 'IDNT'],
@@ -86,6 +87,8 @@ class NavSection
             request()->routeIs('add') => [$knowledge, ['Solutions', route('solutions')], ['Add a solution', null]],
             request()->routeIs('solutions.view') => [$knowledge, ['Solutions', route('solutions')], [self::title(Solutions::class, 'solution_title', request()->route('id')), null]],
             request()->routeIs('ecosystem.widget') => [['Platforms', null]],
+            request()->routeIs('platforms.show') => [['Platforms', route('ecosystem.widget')], [self::platformName(), null]],
+            request()->routeIs('platforms.*') => [['Platforms', route('ecosystem.widget')], [self::platformName(), route('platforms.show', ['platform' => (string) request()->route('platform')])], [request()->routeIs('platforms.switch-off*') ? 'Switch off' : 'Switch on', null]],
             request()->routeIs('analytics.*') => [['Analytics', null]],
             request()->routeIs('people') => [['People', null]],
             request()->routeIs('admin.platforms') => [['Platform admin', null]],
@@ -141,6 +144,15 @@ class NavSection
         $value = is_scalar($id) ? $model::query()->whereKey($id)->value($column) : null;
 
         return filled($value) ? (string) $value : 'Details';
+    }
+
+    /** The catalogue name of the platform in the address, for the trail. */
+    private static function platformName(): string
+    {
+        $key = request()->route('platform');
+        $name = is_string($key) ? PlatformCatalogue::query()->where('key', $key)->value('name') : null;
+
+        return filled($name) ? (string) $name : 'Platform';
     }
 
     /** Whether the signed-in person administers their current team. */
