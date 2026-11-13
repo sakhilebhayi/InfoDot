@@ -67,7 +67,7 @@ Consequence: integration cannot mean "point InfoDot at the Dot.Files tables". It
 - **Documents:** Dot.docs registers each document in Dot.Files through the same API (type `document`), so it is discoverable from both. Authorization stays in Dot.docs; Dot.Files shows a title only to people who may see it.
 - **Approvals, tasks, workspace structure:** owned by InfoDot in its own database (an approval references a `file_uuid` and a version). 
 - **Notifications:** Dot.Notify is not live. Phase 1 uses in-app notifications stored in InfoDot; Dot.Notify is added later behind the same interface.
-- **Not integrated now (not live or no clear benefit):** Dot.HR, Dot.Finance, Dot.Analytics, Dot.Billing, Dot.Notify, Dot.Tasks. Dot.Agents and Dot.Brain only after permission-aware retrieval exists.
+- **Not integrated now (not live or no clear benefit):** Dot.HR, Dot.Finance, Dot.Analytics, Dot.Notify, Dot.Tasks. Dot.Agents and Dot.Brain only after permission-aware retrieval exists.
 
 ## 4. Phased plan
 

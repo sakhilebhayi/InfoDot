@@ -19,8 +19,8 @@ a security claim.
 | symfony/yaml | CVE-2026-109413 unbounded recursion in inline lexer | unrated | exposure depends on parsing untrusted YAML |
 | axios (npm, prod) | 1.0.0 to 1.19.0 range | **high** | Analytics, Files; `npm audit fix` available |
 
-Repositories with advisories (17): Auction, Billing, Design, Dopemine, Ehail, Emall, Farms, Files, Finance, HR,
-Memory, Notify, Plug, Projects, Pulse, Tasks, Tutor (4 to 5 advisories each; Pulse 10). Clean in this audit (9):
+Repositories with advisories (14): Auction, Design, Dopemine, Ehail, Emall, Files, Finance, HR,
+Memory, Notify, Projects, Pulse, Tasks, Tutor (4 to 5 advisories each; Pulse 10). Clean in this audit (9):
 Agents, Analytics (composer), Central, Engage, Forms, Mines, Press, Sheet, docs. Dot.Charts' Laravel app is in `backend/` and was missed here at first; the later audit found 48
 advisories across 15 packages, 14 high (see REMEDIATION_ROADMAP.md R-2). Dot.Brain (JavaScript) was not audited.
 
@@ -36,7 +36,7 @@ Tracked as R-2 in the roadmap. No upgrade is applied to production without the s
 - Production invariants forced by every deploy: `APP_DEBUG=false`, `APP_ENV=production`.
 - Smoke check on every deploy: POST `/up` must answer 405; `/<key>/.env`, `artisan` and the SQLite file must not be
   downloadable (all 13 returned 403 on 2026-10-18).
-- Signed server-to-server calls (HMAC-SHA256 over timestamp + body) for Notify, Analytics and Billing; unsigned
+- Signed server-to-server calls (HMAC-SHA256 over timestamp + body) for Notify and Analytics; unsigned
   Analytics ingest answers 401 (verified).
 - Sign-in redeem refuses a wrong bearer (422) and platforms not marked active.
 - Paystack code refuses `sk_live_` keys; webhook signatures and idempotency are tested in the repositories.
@@ -160,7 +160,7 @@ exposed" are told apart (any 200 still fails the probe). Tested against a temp d
 **Shim report (added 2026-10-23, `ops/inventory-shim-diff`).** The first run reported `custom-shim` for Forms, Files, Agents, Engage, Press, Projects, Sheet and docs. Once the document root is `<key>/public`, the docroot `index.php` is no longer used and `public/index.php` runs alone, so whatever a custom shim does (a maintenance include, `ini_set`, `putenv`, `define`, `header`, `$_SERVER` changes, another app path, extra requires) would be lost silently. For every pair whose shim is `custom` the inventory now also prints a sanitised classification: `shim_extra:` lines (line count and byte size, then one line per statement that is not the standard `<?php` or the standard require, at most 40 per pair), the flags `shim_requires_public_index`, `shim_requires_other`, `shim_sets_ini_or_env`, `shim_sends_headers`, `shim_has_maintenance_include`, `shim_app_path_differs`, `shim_defines`, `shim_other_code`, and a verdict `SHIM-SAFE-TO-DROP` (equivalent to the standard shim apart from comments, whitespace and the maintenance include, and `public/index.php` already has the maintenance check) or `SHIM-DOES-SOMETHING(<flags>)`. A statement is shown by its construct or function name only (`ini_set`, `header`, `$_SERVER[...] assignment`); for `require`/`include` the relative path is shown with the home directory as `~`, the query string cut and any key/secret/password/token-like, long hex or base64-like piece replaced by `<redacted>`. String literals, comments and array contents are never printed. The mode stays read-only (same static no-write test and the same before/after checksum of the whole temp HOME); the job summary has a per-app shim column plus a flags table and the statement list. **Owner step:** re-dispatch `docroot-inventory` after merging, read the shim table, and move a pair only once its shim is `SHIM-SAFE-TO-DROP` or each flag is accounted for in `public/index.php`. **Not verified:** the classification on the real shims (it is tested only on a fake host).
 
 **Result (run 40005518270, 2026-10-23 18:42 UTC, 25 pairs): READY=2, NEEDS-ATTENTION=23, UNKNOWN-LAYOUT=0.** Only Dopemine and Memory are READY. Reasons reported:
-- `.user.ini` and `php.ini` sit in the docroot, not in `public/`, and would stop applying after the move: Analytics, Billing, Farms, HR, Notify, Plug, Pulse.
+- `.user.ini` and `php.ini` sit in the docroot, not in `public/`, and would stop applying after the move: Analytics, HR, Notify, Pulse.
 - `public/storage` is a broken link: Forms, Agents, Engage, Press, Sheet, docs.
 - A custom `index.php` shim, not the standard one: Files, Forms, Agents, Engage, Press, Projects, Sheet, docs.
 - Projects' layout differs (the app folder is `main`, not `projects`). **Update 2026-10-27:** Projects' document root was already moved (13 apps by then; checked from outside: `/main/artisan` and `/main/nonexistent` answer Laravel's own 404, `/main/.env` and `/main/database/database.sqlite` 403) and the inventory with the right pair `projects:main` says READY. The earlier NEEDS-ATTENTION was the default list naming `projects:projects`; the default is now `projects:main`. Since then doc, Analytics, Forms, Files, Auction, Design, Ehail, Emall, Finance, Tutor and Tasks have been moved too (2026-10-27, each read back with `uapi` and probed from outside: `/`, `/login`, `/up` 200, POST `/up` 405, build assets 200, `/<app>/artisan` 404, `/<app>/.env` and `/<app>/database/database.sqlite` 403, and the old coming-soon `/index.html` and `/styles.css` 404). **24 of the 25 platform hosts now serve from `<app>/public`; Central is the one left** (auto-deploys on merge, and mining is gated on the G0 employment-contract check). Mines and Charts were not part of the inventory. The fleet inventory still prints NEEDS-ATTENTION for apps that are already moved (it reads leftover files in the old docroot, such as `LICENSE`, `index.html` and the shim); those files are no longer served and can be tidied by the owner. The roots of Dot.docs (#95) and Dot.Files (#109) needed deploy changes first; both are merged and deployed.
@@ -188,11 +188,11 @@ Tasks, Auction, Central, Design, Ehail, Emall, Finance, Projects, Tutor). The Sh
 
 ## S-2g Registration closed and read-only role (2026-10-21 to 2026-10-23)
 
-Public registration is closed on the 25 platform apps: `ALLOW_REGISTRATION` defaults to false and `/register` redirects to `/login` (accounts come from InfoDot). Dopemine first (#28,
+Public registration is closed on the 22 platform apps: `ALLOW_REGISTRATION` defaults to false and `/register` redirects to `/login` (accounts come from InfoDot). Dopemine first (#28,
 2026-10-21), Memory next (#34), then the rest on 2026-10-23. **Verified live 2026-10-23** (`curl -I https://<host>.infodot.co.za/register`): 302 to `/login` on agents, analytics,
-auction, billing, central, design, ehail, emall, engage, farms, files, finance, forms, hr, memory, notify, plug, pres, projects, pulse, sheets, tasks, tutor and doc (24 hosts); 404 on
-dopemine. Not one of the 25 answered anything else. Outside the 25: `charts` answers 404 and **`mines` answers 200 on `/register`** (Mines has its own sign-in and is not one of
-the 25 receivers; whether its registration should be closed is undecided). Host names: the Docs app is `doc`, Press is `pres`, Sheet is `sheets`; `brain.infodot.co.za` does not resolve (Dot.Brain has no host).
+auction, central, design, ehail, emall, engage, files, finance, forms, hr, memory, notify, pres, projects, pulse, sheets, tasks, tutor and doc (21 hosts); 404 on
+dopemine. Not one of the 22 answered anything else. Outside the 22: `charts` answers 404 and **`mines` answers 200 on `/register`** (Mines has its own sign-in and is not one of
+the 22 receivers; whether its registration should be closed is undecided). Host names: the Docs app is `doc`, Press is `pres`, Sheet is `sheets`; `brain.infodot.co.za` does not resolve (Dot.Brain has no host).
 
 A real read-only `viewer` role was added and enforced on every write path in Agents (#16), Engage (#46), Press (#48), Projects (#22) and Sheet (#54, a team role); Forms already had one; Central
 maps InfoDot's viewer to its read-only manager role. Agents also maps InfoDot companies to organisations (#17).

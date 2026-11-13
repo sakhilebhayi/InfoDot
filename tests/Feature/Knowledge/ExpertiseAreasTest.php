@@ -60,14 +60,14 @@ class ExpertiseAreasTest extends TestCase
     public function test_a_topic_needs_the_minimum_amount_of_accepted_work_and_names_the_counts(): void
     {
         $me = $this->person();
-        $this->acceptedIn($me, ['billing'], 'Billing one');
+        $this->acceptedIn($me, ['finance'], 'Finance one');
         $this->assertSame([], app(AchievementService::class)->expertise($me), 'one piece of work is not an area');
 
-        $this->acceptedIn($me, ['billing'], 'Billing two');
+        $this->acceptedIn($me, ['finance'], 'Finance two');
         $areas = app(AchievementService::class)->expertise($me);
 
         $this->assertCount(1, $areas);
-        $this->assertSame('billing', $areas[0]['slug']);
+        $this->assertSame('finance', $areas[0]['slug']);
         $this->assertSame(2, $areas[0]['accepted']);
         $this->assertSame(0, $areas[0]['verified']);
     }
@@ -76,16 +76,16 @@ class ExpertiseAreasTest extends TestCase
     {
         $me = $this->person();
         $mod = $this->moderator();
-        $this->acceptedIn($me, ['billing', 'tasks'], 'Both topics');
+        $this->acceptedIn($me, ['finance', 'tasks'], 'Both topics');
         $solution = $this->solution($me);
-        DB::table('solution_topic')->insert(['solution_id' => $solution->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('solution_topic')->insert(['solution_id' => $solution->id, 'topic_id' => $this->topicId('finance')]);
         app(ModerationService::class)->verify($solution, $mod);
 
         $areas = collect(app(AchievementService::class)->expertise($me))->keyBy('slug');
 
-        $this->assertSame(2, $areas['billing']['work']);
-        $this->assertSame(1, $areas['billing']['accepted']);
-        $this->assertSame(1, $areas['billing']['verified']);
+        $this->assertSame(2, $areas['finance']['work']);
+        $this->assertSame(1, $areas['finance']['accepted']);
+        $this->assertSame(1, $areas['finance']['verified']);
         $this->assertArrayNotHasKey('tasks', $areas->all(), 'one piece of work in a topic stays below the minimum');
     }
 
@@ -93,7 +93,7 @@ class ExpertiseAreasTest extends TestCase
     {
         config(['achievements.expertise.max_areas' => 2]);
         $me = $this->person();
-        foreach (['billing' => 3, 'tasks' => 2, 'projects' => 2] as $slug => $n) {
+        foreach (['finance' => 3, 'tasks' => 2, 'projects' => 2] as $slug => $n) {
             foreach (range(1, $n) as $i) {
                 $this->acceptedRow($me, $slug, $slug.' '.$i);
             }
@@ -102,7 +102,7 @@ class ExpertiseAreasTest extends TestCase
         $names = array_column(app(AchievementService::class)->expertise($me), 'slug');
 
         $this->assertCount(2, $names);
-        $this->assertSame('billing', $names[0]);
+        $this->assertSame('finance', $names[0]);
     }
 
     public function test_work_that_does_not_qualify_never_counts(): void
@@ -112,13 +112,13 @@ class ExpertiseAreasTest extends TestCase
 
         // Company-only question, a self-answer, an answer nobody accepted, and an accepted answer that was then hidden.
         $private = $this->question($this->person('P'), 'company', 'Private');
-        DB::table('question_topic')->insert(['question_id' => $private->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('question_topic')->insert(['question_id' => $private->id, 'topic_id' => $this->topicId('finance')]);
         $ownQuestion = $this->question($me, 'public', 'Own');
-        DB::table('question_topic')->insert(['question_id' => $ownQuestion->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('question_topic')->insert(['question_id' => $ownQuestion->id, 'topic_id' => $this->topicId('finance')]);
         $unaccepted = $this->question($this->person('U'), 'public', 'Unaccepted');
-        DB::table('question_topic')->insert(['question_id' => $unaccepted->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('question_topic')->insert(['question_id' => $unaccepted->id, 'topic_id' => $this->topicId('finance')]);
         $this->answer($unaccepted, $me);
-        $hidden = $this->acceptedIn($me, ['billing'], 'Hidden later');
+        $hidden = $this->acceptedIn($me, ['finance'], 'Hidden later');
         app(ModerationService::class)->hide($hidden, $mod, 'This answer is wrong and misleading.');
 
         $this->assertSame([], app(AchievementService::class)->expertise($me));
@@ -128,7 +128,7 @@ class ExpertiseAreasTest extends TestCase
     {
         $me = $this->person();
         $q = $this->question($me, 'public', 'Mine');
-        DB::table('question_topic')->insert(['question_id' => $q->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('question_topic')->insert(['question_id' => $q->id, 'topic_id' => $this->topicId('finance')]);
         foreach ([1, 2] as $i) {
             Answer::create(['question_id' => $q->id, 'user_id' => $me->id, 'body' => self::GOOD, 'body_hash' => 's'.$i, 'status' => 'published', 'is_self_answer' => true])
                 ->forceFill(['accepted_at' => now(), 'accepted_by' => $me->id])->save();
@@ -144,19 +144,19 @@ class ExpertiseAreasTest extends TestCase
         $company = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
         $company->users()->attach($owner, ['role' => 'admin']);
         $company->users()->attach($viewer, ['role' => 'editor']);
-        $this->acceptedIn($owner, ['billing'], 'B1');
-        $this->acceptedIn($owner, ['billing'], 'B2');
+        $this->acceptedIn($owner, ['finance'], 'B1');
+        $this->acceptedIn($owner, ['finance'], 'B2');
 
         $own = $this->actingAs($owner)->get('/user/profile/'.$owner->id)->assertOk()->getContent();
         $this->assertStringContainsString('Areas of expertise', $own);
-        $this->assertStringContainsString('data-expertise="billing"', $own);
+        $this->assertStringContainsString('data-expertise="finance"', $own);
         $this->assertStringContainsString('Other people cannot see this list', $own);
 
         $this->actingAs($viewer)->get('/user/profile/'.$owner->id)->assertOk()->assertDontSee('Areas of expertise');
 
         $owner->forceFill(['achievements_public' => true])->save();
         $seen = $this->actingAs($viewer)->get('/user/profile/'.$owner->id)->assertOk()->getContent();
-        $this->assertStringContainsString('data-expertise="billing"', $seen);
+        $this->assertStringContainsString('data-expertise="finance"', $seen);
         $this->assertStringContainsString('2 accepted answers', $seen);
     }
 

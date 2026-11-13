@@ -98,15 +98,15 @@ class SpecialistBadgesTest extends TestCase
     public function test_a_badge_is_stored_per_topic_with_its_level_and_count(): void
     {
         $me = $this->person();
-        $this->accepted($me, 'billing', 1);
+        $this->accepted($me, 'finance', 1);
         $this->sync($me);
-        $this->assertNull($this->badge($me, 'billing'), 'one piece of work is below the lowest level');
+        $this->assertNull($this->badge($me, 'finance'), 'one piece of work is below the lowest level');
 
-        $this->accepted($me, 'billing', 1);
+        $this->accepted($me, 'finance', 1);
         $this->accepted($me, 'tasks', 5);
         $this->sync($me);
 
-        $b = $this->badge($me, 'billing');
+        $b = $this->badge($me, 'finance');
         $this->assertSame(['contributor', 2, 1], [$b->level, $b->work_count, $b->rules_version]);
         $this->assertSame(['specialist', 5], [$this->badge($me, 'tasks')->level, $this->badge($me, 'tasks')->work_count]);
         $this->assertSame(2, UserTopicBadge::where('user_id', $me->id)->count(), 'one row per topic, never an overall badge');
@@ -116,25 +116,25 @@ class SpecialistBadgesTest extends TestCase
     {
         $me = $this->person();
         $mod = $this->moderator();
-        $this->accepted($me, 'billing', 1);
+        $this->accepted($me, 'finance', 1);
         $s = $this->solution($me);
-        DB::table('solution_topic')->insert(['solution_id' => $s->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('solution_topic')->insert(['solution_id' => $s->id, 'topic_id' => $this->topicId('finance')]);
         app(ModerationService::class)->verify($s, $mod);
 
-        $this->assertSame('contributor', $this->badge($me, 'billing')->level, 'the verify event refreshed it without a manual sync');
-        $this->assertSame(2, $this->badge($me, 'billing')->work_count);
+        $this->assertSame('contributor', $this->badge($me, 'finance')->level, 'the verify event refreshed it without a manual sync');
+        $this->assertSame(2, $this->badge($me, 'finance')->work_count);
     }
 
     public function test_the_level_follows_the_work_up_and_down(): void
     {
         $me = $this->person();
-        $answers = $this->accepted($me, 'billing', 5);
+        $answers = $this->accepted($me, 'finance', 5);
         $this->sync($me);
-        $this->assertSame('specialist', $this->badge($me, 'billing')->level);
+        $this->assertSame('specialist', $this->badge($me, 'finance')->level);
 
         app(ModerationService::class)->hide($answers[0], $this->moderator(), 'This answer is wrong and misleading.');
         $this->sync($me);
-        $this->assertSame(['contributor', 4], [$this->badge($me, 'billing')->level, $this->badge($me, 'billing')->work_count]);
+        $this->assertSame(['contributor', 4], [$this->badge($me, 'finance')->level, $this->badge($me, 'finance')->work_count]);
     }
 
     // ---- revoke and restore --------------------------------------------------------------------------------------------
@@ -143,31 +143,31 @@ class SpecialistBadgesTest extends TestCase
     {
         $me = $this->person();
         $mod = $this->moderator();
-        [$a, $b] = $this->accepted($me, 'billing', 2);
+        [$a, $b] = $this->accepted($me, 'finance', 2);
         $this->sync($me);
-        $this->assertNotNull($this->badge($me, 'billing'));
+        $this->assertNotNull($this->badge($me, 'finance'));
 
         app(ModerationService::class)->hide($a, $mod, 'This answer is wrong and misleading.');
-        $this->assertNull($this->badge($me, 'billing'), 'the moderation event refreshed it');
+        $this->assertNull($this->badge($me, 'finance'), 'the moderation event refreshed it');
 
         // Hiding an accepted answer also removes its acceptance, and restoring does not bring that back: the asker accepts again.
         app(ModerationService::class)->restore($a, $mod);
-        $this->assertNull($this->badge($me, 'billing'), 'restored but not yet accepted again: still no badge');
+        $this->assertNull($this->badge($me, 'finance'), 'restored but not yet accepted again: still no badge');
 
         app(AnswerService::class)->accept($a->fresh(), User::find($a->question->user_id));
-        $this->assertSame(['contributor', 2], [$this->badge($me, 'billing')->level, $this->badge($me, 'billing')->work_count]);
+        $this->assertSame(['contributor', 2], [$this->badge($me, 'finance')->level, $this->badge($me, 'finance')->work_count]);
     }
 
     public function test_removing_an_acceptance_takes_the_badge_back(): void
     {
         $me = $this->person();
-        [$a, $b] = $this->accepted($me, 'billing', 2);
+        [$a, $b] = $this->accepted($me, 'finance', 2);
         $this->sync($me);
 
         $asker = User::find($a->accepted_by);
         app(AnswerService::class)->revokeAcceptance($a->fresh(), $asker);
 
-        $this->assertNull($this->badge($me, 'billing'));
+        $this->assertNull($this->badge($me, 'finance'));
     }
 
     // ---- the switch ------------------------------------------------------------------------------------------------------
@@ -204,9 +204,9 @@ class SpecialistBadgesTest extends TestCase
         $company = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
         $company->users()->attach($owner, ['role' => 'admin']);
         $company->users()->attach($viewer, ['role' => 'editor']);
-        $this->accepted($owner, 'billing', 5);
+        $this->accepted($owner, 'finance', 5);
         $this->sync($owner);
-        $q = $this->questionWithAnswers('billing', [$owner]);
+        $q = $this->questionWithAnswers('finance', [$owner]);
 
         $this->actingAs($viewer)->get('/user/profile/'.$owner->id)->assertOk()->assertSee('data-badge="specialist"', false);
         $this->actingAs($viewer)->get('/question/view/'.$q->id)->assertOk()->assertSee('data-badge="specialist"', false);
@@ -224,14 +224,14 @@ class SpecialistBadgesTest extends TestCase
     public function test_the_profile_lists_the_badges_highest_level_first(): void
     {
         $me = $this->person();
-        $this->accepted($me, 'billing', 2);
+        $this->accepted($me, 'finance', 2);
         $this->accepted($me, 'tasks', 12);
         $this->sync($me);
 
         $html = $this->actingAs($me)->get('/user/profile/'.$me->id)->assertOk()->getContent();
 
         $this->assertStringContainsString('data-badge="authority" data-badge-topic="tasks"', $html);
-        $this->assertLessThan(strpos($html, 'data-badge-topic="billing"'), strpos($html, 'data-badge-topic="tasks"'));
+        $this->assertLessThan(strpos($html, 'data-badge-topic="finance"'), strpos($html, 'data-badge-topic="tasks"'));
         $this->assertStringContainsString('Show my specialist badges to other people', $html);
     }
 
@@ -239,7 +239,7 @@ class SpecialistBadgesTest extends TestCase
     {
         $owner = $this->person('Owner');
         $stranger = $this->person('Stranger');
-        $this->accepted($owner, 'billing', 2);
+        $this->accepted($owner, 'finance', 2);
         $this->sync($owner);
 
         $this->actingAs($stranger)->get('/user/profile/'.$owner->id)->assertNotFound();
@@ -251,13 +251,13 @@ class SpecialistBadgesTest extends TestCase
     {
         $viewer = $this->person('Viewer');
         $expert = $this->person('Expert');
-        $this->accepted($expert, 'billing', 2);   // contributor
+        $this->accepted($expert, 'finance', 2);   // contributor
         $this->accepted($expert, 'tasks', 12);    // authority, but the question is not about tasks
         $this->accepted($expert, 'projects', 5);  // specialist
 
-        $q = $this->questionWithAnswers('billing', [$expert]);
+        $q = $this->questionWithAnswers('finance', [$expert]);
         $html = $this->actingAs($viewer)->get('/question/view/'.$q->id)->assertOk()->getContent();
-        $this->assertStringContainsString('data-badge="contributor" data-badge-topic="billing"', $html);
+        $this->assertStringContainsString('data-badge="contributor" data-badge-topic="finance"', $html);
         $this->assertStringNotContainsString('data-badge-topic="tasks"', $html);
         $this->assertStringNotContainsString('data-badge-topic="projects"', $html);
 
@@ -272,7 +272,7 @@ class SpecialistBadgesTest extends TestCase
     {
         $viewer = $this->person('Viewer');
         $expert = $this->person('Expert');
-        $this->accepted($expert, 'billing', 2);
+        $this->accepted($expert, 'finance', 2);
         $q = $this->question($this->person('Asker'));
         $this->answer($q, $expert);
 
@@ -288,7 +288,7 @@ class SpecialistBadgesTest extends TestCase
         // Work on company-only questions earns nothing, however much of it there is.
         foreach (range(1, 6) as $i) {
             $private = $this->question($asker, 'company', "Private question $i");
-            DB::table('question_topic')->insert(['question_id' => $private->id, 'topic_id' => $this->topicId('billing')]);
+            DB::table('question_topic')->insert(['question_id' => $private->id, 'topic_id' => $this->topicId('finance')]);
             Answer::create(['question_id' => $private->id, 'user_id' => $colleague->id, 'body' => self::GOOD, 'body_hash' => md5("p$i"), 'status' => 'published'])
                 ->forceFill(['accepted_at' => now(), 'accepted_by' => $asker->id])->save();
         }
@@ -296,11 +296,11 @@ class SpecialistBadgesTest extends TestCase
         $this->assertSame(0, UserTopicBadge::where('user_id', $colleague->id)->count());
 
         // A badge earned in public does not show up beside an answer on a company-only question either.
-        $this->accepted($colleague, 'billing', 5);
+        $this->accepted($colleague, 'finance', 5);
         $this->sync($colleague);
-        $this->assertNotNull($this->badge($colleague, 'billing'));
+        $this->assertNotNull($this->badge($colleague, 'finance'));
         $private = $this->question($asker, 'company', 'Another private question');
-        DB::table('question_topic')->insert(['question_id' => $private->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('question_topic')->insert(['question_id' => $private->id, 'topic_id' => $this->topicId('finance')]);
         $this->answer($private, $colleague);
 
         $this->actingAs($asker)->get('/question/view/'.$private->id)->assertOk()->assertSee('Another private question')->assertDontSee('data-badge=', false);
@@ -310,8 +310,8 @@ class SpecialistBadgesTest extends TestCase
     public function test_a_hidden_question_shows_no_badges(): void
     {
         $expert = $this->person('Expert');
-        $this->accepted($expert, 'billing', 2);
-        $q = $this->questionWithAnswers('billing', [$expert]);
+        $this->accepted($expert, 'finance', 2);
+        $q = $this->questionWithAnswers('finance', [$expert]);
         app(ModerationService::class)->hide($q, $this->moderator(), 'This question breaks the community rules.');
 
         $this->assertSame([], app(TopicBadges::class)->forQuestion($q->fresh(), [$expert->id]));
@@ -323,12 +323,12 @@ class SpecialistBadgesTest extends TestCase
     {
         $experts = collect(range(1, 8))->map(function ($i) {
             $e = $this->person("Expert $i");
-            $this->accepted($e, 'billing', 2);
+            $this->accepted($e, 'finance', 2);
 
             return $e;
         });
         $q = $this->question($this->person('Asker'));
-        DB::table('question_topic')->insert(['question_id' => $q->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('question_topic')->insert(['question_id' => $q->id, 'topic_id' => $this->topicId('finance')]);
         $service = app(TopicBadges::class);
 
         $queries = function (array $ids) use ($service, $q): int {
@@ -353,11 +353,11 @@ class SpecialistBadgesTest extends TestCase
         $count = function (int $answers) use ($viewer): int {
             $authors = collect(range(1, $answers))->map(function ($i) {
                 $e = $this->person("Author $i");
-                $this->accepted($e, 'billing', 2);
+                $this->accepted($e, 'finance', 2);
 
                 return $e;
             })->all();
-            $q = $this->questionWithAnswers('billing', $authors);
+            $q = $this->questionWithAnswers('finance', $authors);
             DB::flushQueryLog();
             DB::enableQueryLog();
             $this->actingAs($viewer)->get('/question/view/'.$q->id)->assertOk();
@@ -375,12 +375,12 @@ class SpecialistBadgesTest extends TestCase
         $viewer = $this->person('Viewer');
         $plain = $this->person('Plain Newcomer');
         $expert = $this->person('Expert Authority');
-        $this->accepted($expert, 'billing', 12);
+        $this->accepted($expert, 'finance', 12);
         $this->sync($expert);
 
         $asker = $this->person('Asker');
         $q = $this->question($asker, 'public', 'Ordering question');
-        DB::table('question_topic')->insert(['question_id' => $q->id, 'topic_id' => $this->topicId('billing')]);
+        DB::table('question_topic')->insert(['question_id' => $q->id, 'topic_id' => $this->topicId('finance')]);
         // The newcomer answers first, the authority second: oldest first, so the newcomer stays on top.
         $first = Answer::create(['question_id' => $q->id, 'user_id' => $plain->id, 'body' => 'FIRSTANSWER '.self::GOOD, 'body_hash' => 'o1', 'status' => 'published'])->forceFill(['created_at' => now()->subHour()]);
         $first->save();
@@ -400,9 +400,9 @@ class SpecialistBadgesTest extends TestCase
     public function test_a_badge_grants_no_permissions(): void
     {
         $expert = $this->person('Expert');
-        $this->accepted($expert, 'billing', 12);
+        $this->accepted($expert, 'finance', 12);
         $this->sync($expert);
-        $q = $this->questionWithAnswers('billing', [$this->person('Other')]);
+        $q = $this->questionWithAnswers('finance', [$this->person('Other')]);
         $answer = Answer::where('question_id', $q->id)->first();
 
         $this->assertFalse(app(AnswerService::class)->canAccept($answer, $expert), 'only the asker or a moderator can accept, whatever the badge');
@@ -414,7 +414,7 @@ class SpecialistBadgesTest extends TestCase
     public function test_the_backfill_command_builds_badges_for_earlier_work_and_is_idempotent(): void
     {
         $me = $this->person();
-        $this->accepted($me, 'billing', 5);
+        $this->accepted($me, 'finance', 5);
         $this->assertSame(0, UserTopicBadge::count(), 'rows written directly raised no event');
 
         $this->artisan('badges:backfill')->expectsOutputToContain('1 awarded')->assertSuccessful();
@@ -430,28 +430,28 @@ class SpecialistBadgesTest extends TestCase
     {
         $me = $this->person();
         $other = $this->person('Other');
-        $this->accepted($me, 'billing', 2);
-        $this->accepted($other, 'billing', 2);
+        $this->accepted($me, 'finance', 2);
+        $this->accepted($other, 'finance', 2);
         UserTopicBadge::create(['user_id' => $me->id, 'topic_id' => $this->topicId('tasks'), 'level' => 'authority', 'work_count' => 40, 'rules_version' => 1]);
 
         $this->artisan('badges:backfill', ['--user' => (string) $me->id])->assertSuccessful();
 
         $this->assertNull($this->badge($me, 'tasks'), 'a badge with no work behind it is removed');
-        $this->assertNotNull($this->badge($me, 'billing'));
-        $this->assertNull($this->badge($other, 'billing'), 'the other person was not touched');
+        $this->assertNotNull($this->badge($me, 'finance'));
+        $this->assertNull($this->badge($other, 'finance'), 'the other person was not touched');
         $this->artisan('badges:backfill', ['--user' => '999999'])->assertFailed();
     }
 
     public function test_a_new_level_table_is_picked_up_by_a_backfill_with_a_new_version(): void
     {
         $me = $this->person();
-        $this->accepted($me, 'billing', 3);
+        $this->accepted($me, 'finance', 3);
         $this->sync($me);
-        $this->assertSame('contributor', $this->badge($me, 'billing')->level);
+        $this->assertSame('contributor', $this->badge($me, 'finance')->level);
 
         config(['achievements.badges.version' => 2, 'achievements.badges.levels.specialist.min_work' => 3]);
         $this->artisan('badges:backfill')->expectsOutputToContain('1 changed')->assertSuccessful();
 
-        $this->assertSame(['specialist', 2], [$this->badge($me, 'billing')->level, $this->badge($me, 'billing')->rules_version]);
+        $this->assertSame(['specialist', 2], [$this->badge($me, 'finance')->level, $this->badge($me, 'finance')->rules_version]);
     }
 }

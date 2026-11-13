@@ -24,7 +24,7 @@
 
             @if ($seats['can_buy'] && Gate::check('changeLicence', $team))
                 <p style="margin-top: 16px;">
-                    <a class="ix-btn ix-btn--primary" href="{{ \App\Support\EcosystemHandoff::launchUrl(auth()->user(), 'billing', '/seats') }}">{{ __('Add or change seats in Dot.Billing') }}</a>
+                    <a class="ix-btn ix-btn--primary" href="{{ \App\Support\EcosystemHandoff::launchUrl(auth()->user(), 'finance', '/seats') }}">{{ __('Add or change seats in Dot.Billing') }}</a>
                 </p>
                 <p class="ix-hint">{{ __('Seats beyond the free :n are bought in Dot.Billing. Extra seats count only after the payment is confirmed.', ['n' => $seats['included']]) }}</p>
             @endif

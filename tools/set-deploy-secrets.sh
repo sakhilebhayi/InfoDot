@@ -7,8 +7,8 @@
 #   DEPLOY_KEY_FILE=~/.ssh/<deploy key, private half> [DEPLOY_PORT=22] \
 #   tools/set-deploy-secrets.sh [platform ...]
 #
-# With no platform arguments it does all 13: tasks auction ehail notify farms finance emall billing hr
-# tutor design pulse plug. (Analytics deploys differently: Docker/own host; not included.)
+# With no platform arguments it does all 10: tasks auction ehail notify finance emall hr
+# tutor design pulse. (Analytics deploys differently: Docker/own host; not included.)
 #
 # DEPLOY_KNOWN_HOSTS is read from the host with ssh-keyscan -- verify the fingerprints match your
 # cPanel account before trusting it (ssh-keygen -lf <(ssh-keyscan -t ed25519 $DEPLOY_HOST)).
@@ -18,7 +18,7 @@ set -euo pipefail
 KEY_FILE="${DEPLOY_KEY_FILE/#\~/$HOME}"
 [ -r "$KEY_FILE" ] || { echo "cannot read $KEY_FILE" >&2; exit 1; }
 PORT="${DEPLOY_PORT:-22}"
-PLATFORMS=("$@"); [ ${#PLATFORMS[@]} -gt 0 ] || PLATFORMS=(tasks auction ehail notify farms finance emall billing hr tutor design pulse plug)
+PLATFORMS=("$@"); [ ${#PLATFORMS[@]} -gt 0 ] || PLATFORMS=(tasks auction ehail notify finance emall hr tutor design pulse)
 cap() { case "$1" in hr) echo HR;; *) echo "$(tr '[:lower:]' '[:upper:]' <<<"${1:0:1}")${1:1}";; esac; }
 KNOWN="$(ssh-keyscan -p "$PORT" -t ed25519,rsa "$DEPLOY_HOST" 2>/dev/null)"
 [ -n "$KNOWN" ] || { echo "ssh-keyscan returned nothing for $DEPLOY_HOST" >&2; exit 1; }

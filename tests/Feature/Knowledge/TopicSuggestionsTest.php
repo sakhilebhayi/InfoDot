@@ -69,8 +69,8 @@ class TopicSuggestionsTest extends TestCase
     public function test_it_is_off_by_default_and_then_nothing_is_worked_out_or_shown(): void
     {
         $me = $this->person('Me');
-        $this->expertIn($me, 'billing');
-        $this->open('A billing question waiting', 'billing');
+        $this->expertIn($me, 'finance');
+        $this->open('A finance question waiting', 'finance');
         $this->assertFalse($me->fresh()->wantsTopicSuggestions());
 
         $queries = [];
@@ -81,7 +81,7 @@ class TopicSuggestionsTest extends TestCase
         $section = $this->section($me);
         $this->assertStringContainsString('Questions you might be able to answer', $section);
         $this->assertStringContainsString('Right now this is <strong>off</strong>', $section);
-        $this->assertStringNotContainsString('A billing question waiting', $section);
+        $this->assertStringNotContainsString('A finance question waiting', $section);
         $this->assertStringNotContainsString('Based on your work in', $section);
 
         $this->assertSame([], array_values(array_filter($queries, fn ($sql) => str_contains($sql, 'question_topic'))), 'no topic query runs while it is off');
@@ -120,23 +120,23 @@ class TopicSuggestionsTest extends TestCase
     {
         $me = $this->person('New');
         $me->forceFill(['topic_suggestions' => true])->save();
-        $this->open('A billing question waiting', 'billing');
+        $this->open('A finance question waiting', 'finance');
 
         $section = $this->section($me);
         $this->assertStringContainsString('Nothing to suggest yet', $section);
         $this->assertStringContainsString('no target and nothing to catch up on', $section);
-        $this->assertStringNotContainsString('A billing question waiting', $section);
+        $this->assertStringNotContainsString('A finance question waiting', $section);
     }
 
     public function test_it_lists_open_public_questions_in_topics_where_the_person_has_shown_they_know_the_subject(): void
     {
         $me = $this->person('Me');
-        $this->expertIn($me, 'billing');
-        $this->open('Billing question one', 'billing');
+        $this->expertIn($me, 'finance');
+        $this->open('Finance question one', 'finance');
         $this->open('Tasks question', 'tasks');
-        $this->open('Mixed question', 'tasks')->topics()->attach($this->topic('billing')->id);
+        $this->open('Mixed question', 'tasks')->topics()->attach($this->topic('finance')->id);
 
-        $this->assertEqualsCanonicalizing(['Billing question one', 'Mixed question'], $this->titles($me));
+        $this->assertEqualsCanonicalizing(['Finance question one', 'Mixed question'], $this->titles($me));
     }
 
     public function test_a_verified_solution_counts_as_expertise_too_but_an_unverified_one_does_not(): void
@@ -158,13 +158,13 @@ class TopicSuggestionsTest extends TestCase
     {
         $me = $this->person('Me');
         $asker = $this->person('Asker');
-        $this->open('A billing question', 'billing');
+        $this->open('A finance question', 'finance');
         $this->open('A tasks question', 'tasks');
         $this->open('An hr question', 'hr');
         $this->open('A files question', 'files');
 
         // An answer nobody accepted.
-        $this->answer($this->file($this->question($asker), 'billing'), $me);
+        $this->answer($this->file($this->question($asker), 'finance'), $me);
         // An answer to a question that was later made company-only, accepted.
         $private = $this->file($this->question($asker, 'public', 'Private'), 'tasks');
         app(AnswerService::class)->accept($this->answer($private, $me), $asker);
@@ -187,11 +187,11 @@ class TopicSuggestionsTest extends TestCase
     public function test_a_topic_that_has_been_switched_off_is_no_longer_suggested(): void
     {
         $me = $this->person('Me');
-        $this->expertIn($me, 'billing');
-        $this->open('A billing question', 'billing');
-        $this->assertSame(['A billing question'], $this->titles($me));
+        $this->expertIn($me, 'finance');
+        $this->open('A finance question', 'finance');
+        $this->assertSame(['A finance question'], $this->titles($me));
 
-        app(TopicService::class)->setActive($this->topic('billing'), $this->moderator(), false);
+        app(TopicService::class)->setActive($this->topic('finance'), $this->moderator(), false);
         $this->assertSame([], $this->titles($me));
     }
 
@@ -199,18 +199,18 @@ class TopicSuggestionsTest extends TestCase
     {
         $me = $this->person('Me');
         $helper = $this->person('Helper');
-        $this->expertIn($me, 'billing');
+        $this->expertIn($me, 'finance');
         $mod = $this->moderator();
 
-        $this->open('My own billing question', 'billing', $me);
-        $answered = $this->open('Already answered', 'billing');
+        $this->open('My own finance question', 'finance', $me);
+        $answered = $this->open('Already answered', 'finance');
         $this->answer($answered, $helper);
-        $solved = $this->open('Already solved', 'billing');
+        $solved = $this->open('Already solved', 'finance');
         $solved->forceFill(['status' => 1])->save();
-        $hidden = $this->open('A hidden one', 'billing');
+        $hidden = $this->open('A hidden one', 'finance');
         app(ModerationService::class)->hide($hidden, $mod, 'Hidden for the test.');
-        $this->open('Private to a company', 'billing', null, 'company');
-        $this->open('The only fair one', 'billing');
+        $this->open('Private to a company', 'finance', null, 'company');
+        $this->open('The only fair one', 'finance');
 
         $this->assertSame(['The only fair one'], $this->titles($me));
     }
@@ -218,11 +218,11 @@ class TopicSuggestionsTest extends TestCase
     public function test_an_answer_that_is_hidden_or_by_the_asker_does_not_make_a_question_answered(): void
     {
         $me = $this->person('Me');
-        $this->expertIn($me, 'billing');
+        $this->expertIn($me, 'finance');
         $asker = $this->person('Asker');
-        $selfAnswered = $this->open('Only the asker replied', 'billing', $asker);
+        $selfAnswered = $this->open('Only the asker replied', 'finance', $asker);
         $this->answer($selfAnswered, $asker);
-        $hiddenAnswered = $this->open('Only a hidden answer', 'billing');
+        $hiddenAnswered = $this->open('Only a hidden answer', 'finance');
         $answer = $this->answer($hiddenAnswered, $this->person('Helper'));
         app(ModerationService::class)->hide($answer, $this->moderator(), 'Hidden for the test.');
 
@@ -232,35 +232,35 @@ class TopicSuggestionsTest extends TestCase
     public function test_at_most_five_newest_first(): void
     {
         $me = $this->person('Me');
-        $this->expertIn($me, 'billing');
+        $this->expertIn($me, 'finance');
 
         foreach (range(1, 7) as $n) {
-            $q = $this->open("Billing question $n", 'billing');
+            $q = $this->open("Finance question $n", 'finance');
             Questions::withoutGlobalScopes()->where('id', $q->id)->update(['created_at' => now()->subMinutes(10 - $n)]);
         }
 
-        $this->assertSame(['Billing question 7', 'Billing question 6', 'Billing question 5', 'Billing question 4', 'Billing question 3'], $this->titles($me));
+        $this->assertSame(['Finance question 7', 'Finance question 6', 'Finance question 5', 'Finance question 4', 'Finance question 3'], $this->titles($me));
     }
 
     public function test_the_points_page_shows_the_list_and_what_it_is_based_on_to_the_person_only(): void
     {
         $me = $this->person('Me');
         $me->forceFill(['topic_suggestions' => true])->save();
-        $this->expertIn($me, 'billing');
-        $this->open('A billing question waiting', 'billing');
+        $this->expertIn($me, 'finance');
+        $this->open('A finance question waiting', 'finance');
         $this->open('A tasks question waiting', 'tasks');
         $stranger = $this->person('Stranger');
 
         $section = $this->section($me);
         $this->assertStringContainsString('Based on your work in', $section);
-        $this->assertStringContainsString('Dot.Billing', $section);
-        $this->assertStringContainsString('A billing question waiting', $section);
+        $this->assertStringContainsString('Dot.Finance', $section);
+        $this->assertStringContainsString('A finance question waiting', $section);
         $this->assertStringNotContainsString('A tasks question waiting', $section);
-        $this->assertSame(['A billing question waiting'], $this->actingAs($me)->get('/points')->viewData('suggestedQuestions')->pluck('question')->all());
+        $this->assertSame(['A finance question waiting'], $this->actingAs($me)->get('/points')->viewData('suggestedQuestions')->pluck('question')->all());
 
         // Nobody else sees it: not on their own page, and not on a profile.
         $theirs = $this->section($stranger);
-        $this->assertStringNotContainsString('A billing question waiting', $theirs);
+        $this->assertStringNotContainsString('A finance question waiting', $theirs);
         $this->assertStringNotContainsString('Based on your work in', $theirs);
         $this->actingAs($stranger)->get('/user/profile/'.$stranger->id)->assertOk()->assertDontSee('Questions you might be able to answer');
         $this->actingAs($me)->get('/user/profile/'.$me->id)->assertOk()->assertDontSee('Questions you might be able to answer');
@@ -272,10 +272,10 @@ class TopicSuggestionsTest extends TestCase
         Notification::fake();
         $me = $this->person('Me');
         $me->forceFill(['topic_suggestions' => true])->save();
-        $this->expertIn($me, 'billing');
-        $this->open('A billing question waiting', 'billing');
+        $this->expertIn($me, 'finance');
+        $this->open('A finance question waiting', 'finance');
 
-        $this->assertStringContainsString('A billing question waiting', $this->section($me));
+        $this->assertStringContainsString('A finance question waiting', $this->section($me));
         $this->actingAs($me)->post(route('points.topic-suggestions'), ['topic_suggestions' => '1']);
 
         Mail::assertNothingSent();

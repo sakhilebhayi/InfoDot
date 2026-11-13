@@ -17,10 +17,10 @@ command -v openssl >/dev/null || { echo "openssl is required" >&2; exit 1; }
 secret() { openssl rand -hex 32; }
 upper() { echo "$1" | tr '[:lower:]' '[:upper:]'; }
 
-SIGNIN="analytics auction billing design ehail emall farms finance hr notify plug pulse tasks tutor"
-NOTIFY_CALLERS="auction billing ehail farms hr tasks"
-ANALYTICS_PUBLISHERS="auction billing design ehail emall farms hr notify pulse tasks tutor"
-BILLING_ENTITLEMENT_CALLERS="analytics auction ehail emall farms hr notify tasks tutor"   # optional: apps that ask Billing "what plan is this company on?"
+SIGNIN="analytics auction design ehail emall finance hr notify pulse tasks tutor"
+NOTIFY_CALLERS="auction ehail hr tasks"
+ANALYTICS_PUBLISHERS="auction design ehail emall hr notify pulse tasks tutor"
+BILLING_ENTITLEMENT_CALLERS="analytics auction ehail emall hr notify tasks tutor"   # optional: apps that ask Billing "what plan is this company on?"
 
 umask 077
 {

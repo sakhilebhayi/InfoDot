@@ -91,7 +91,7 @@ class EcosystemHandoffTest extends TestCase
         // legitimately override DOT_*_URL, and this test is about the defaults.
         preg_match_all("/'(?<key>[a-z]+)' => \\['name' => '[^']+', 'url' => env\\('DOT_[A-Z]+_URL', '(?<url>[^']+)'\\), 'icon' => '[a-z_]+', 'accent' => '#[0-9a-f]{6}', 'active' => (?<active>true|false)(?:, 'internal' => true)?(?:, 'sso' => false)?\\]/", file_get_contents(base_path('config/ecosystem.php')), $m, PREG_SET_ORDER);
 
-        $this->assertCount(28, $m);
+        $this->assertCount(25, $m);
 
         foreach ($m as $row) {
             $endpoint = EcosystemHandoff::endpointFor(['url' => $row['url'], 'active' => $row['active'] === 'true']);
