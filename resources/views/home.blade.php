@@ -103,7 +103,7 @@
                                 <tr>
                                     <td><span class="ix-ref">{{ \App\Support\Reference::for($s) }}</span></td>
                                     <td><a class="title" href="{{ route('solutions.view', ['id' => $s->id]) }}">{{ $s->solution_title }}</a></td>
-                                    <td class="num">{{ $s->steps ?? 0 }}<span class="ix-sr"> {{ \Illuminate\Support\Str::plural('step', (int) ($s->steps ?? 0)) }}</span></td>
+                                    <td class="num">{{ $s->steps ?? 0 }}<span class="ix-narrow-only"> {{ \Illuminate\Support\Str::plural('step', (int) ($s->steps ?? 0)) }}</span></td>
                                 </tr>
                             @endforeach
                             </tbody>

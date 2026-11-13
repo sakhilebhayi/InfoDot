@@ -31,7 +31,7 @@ final class GettingStarted
                 'note' => 'People recognise your answers and your name on the roster.',
                 'done' => filled($user->profile_photo_path),
                 'url' => route('profile.edit').'#profile',
-                'action' => 'Open account settings',
+                'action' => 'Add a picture',
             ],
             [
                 'key' => 'contribute',
@@ -111,7 +111,7 @@ final class GettingStarted
                 'note' => 'A business gets its own four-letter owner code, a page and a place in the directory.',
                 'done' => false,
                 'url' => route('teams.create'),
-                'action' => 'Create a business',
+                'action' => 'Set up a business',
             ];
         }
 

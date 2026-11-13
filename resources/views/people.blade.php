@@ -15,7 +15,7 @@
         @if ($team && $team->personal_team)
             {{-- A personal workspace is one person's; people are invited into a business. --}}
             <a href="{{ route('teams.create') }}" class="ix-btn ix-btn--primary">
-                <span class="material-symbols-rounded" aria-hidden="true">add</span>Create a business to invite people
+                <span class="material-symbols-rounded" aria-hidden="true">add</span>Set up a business to invite people
             </a>
         @elseif ($canManage && $team)
             <a href="{{ route('teams.show', $team->id) }}" class="ix-btn ix-btn--primary">

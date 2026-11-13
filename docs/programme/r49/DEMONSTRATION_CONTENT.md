@@ -21,6 +21,7 @@ The content is data in `database/demo/content.php`, reviewed like any other chan
 | Questions | 6 | 5 public, 1 visible to Ledger Works only. |
 | Answers | 7 | 4 accepted by the person who asked (through `AnswerService`). |
 | Solutions | 4 (18 steps) | 3 public, 1 visible to Ledger Works only. |
+| Library entries | 2 | Two of the accepted public answers (the late invoice, the quote) are on the Verified library shelf, so that page is not empty. The entry only points at the answer. No moderator adopted it: there is no audit row in anyone's name and no event to the points ledger. |
 | Comments | 2 | One on a question, one on a solution. |
 | "Tried it" confirmation | 1 | Lerato on the month-end solution. |
 | Enquiry | 1 | Lerato to Ledger Works, with Naledi's reply (through `EnquiryService`). |
@@ -51,9 +52,15 @@ CSS). It shows on:
 - the business page and every directory row;
 - questions and solutions, in their lists, on their pages and in search results;
 - each answer and comment;
+- each row of the Verified library that points at demonstration content;
 - a person's profile;
 - an enquiry, in both inboxes and on the conversation;
 - the moderators' accounts desk.
+
+On a business page the marker is used once per block rather than on every line (R-49 design pass): the chip
+beside the name, and one line above the services and products ("Demonstration prices: nothing in this list is an
+offer.") in place of the words "Demonstration price:" on each price. The stored price notes still begin with those
+words; the page leaves them out only where that one line stands above them.
 
 The company and people names also say so ("… (Demonstration)", "… Demo"), for the places a chip cannot reach
 (page titles, another platform after single sign-on).
