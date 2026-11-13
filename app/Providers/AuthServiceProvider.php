@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Policies\TeamPolicy;
 use App\Support\EcosystemHandoff;
+use App\Support\Input;
 use App\Support\SuspensionAwareAccessTokenRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -70,7 +71,7 @@ class AuthServiceProvider extends ServiceProvider
         RateLimiter::for('oauth-token', function (Request $request) {
             return [
                 Limit::perMinute(60)->by('oauth-token:'.$request->ip()),
-                Limit::perMinute(120)->by('oauth-token-client:'.(string) $request->input('client_id')),
+                Limit::perMinute(120)->by('oauth-token-client:'.Input::text($request->input('client_id'))),
             ];
         });
     }

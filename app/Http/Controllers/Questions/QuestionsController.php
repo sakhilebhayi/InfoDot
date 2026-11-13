@@ -11,6 +11,7 @@ use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\MentionService;
 use App\Services\Knowledge\TopicService;
 use App\Support\Industry;
+use App\Support\Input;
 use App\Support\Related;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,11 +24,11 @@ class QuestionsController extends Controller
     public function index(Request $request, TopicService $topics)
     {
         // ?topic=slug narrows the list; ?topic=none shows what has no topic yet. An unknown slug is simply an empty list.
-        $slug = trim((string) $request->query('topic', ''));
+        $slug = trim(Input::text($request->query('topic', '')));
         $untagged = $slug === 'none';
         $topic = $slug !== '' && ! $untagged ? Topic::where('slug', $slug)->first() : null;
 
-        $has = trim((string) $request->query('has', ''));
+        $has = trim(Input::text($request->query('has', '')));
 
         $questions = Questions::withCount(['likes', 'comments', 'answers' => fn ($q) => $q->where('status', Answer::PUBLISHED)])
             ->withAttachmentCounts()
@@ -53,7 +54,7 @@ class QuestionsController extends Controller
     public function seek(Request $request, TopicService $topics)
     {
         $choices = $topics->choices();
-        $preselected = $choices->firstWhere('slug', (string) $request->query('topic'));
+        $preselected = $choices->firstWhere('slug', Input::text($request->query('topic')));
 
         return view('questions.seek', [
             'industry' => Industry::for(auth()->user()->currentTeam),
