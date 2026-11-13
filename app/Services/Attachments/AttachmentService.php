@@ -15,6 +15,7 @@ use App\Models\Steps;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Knowledge\AnswerService;
+use App\Support\ImageBudget;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -76,11 +77,14 @@ class AttachmentService
         $attachment->meta = $meta ?: null;
         $attachment->expires_at = now()->addHours((int) config('attachments.unbound_ttl_hours'));
 
-        if ($kind === Attachment::IMAGE) {
-            $attachment->thumb_path = $this->makeThumb($path, $meta); // best-effort; null is fine
-        }
-
+        // The row is saved before the thumbnail is attempted: decoding is the one step that can end the process
+        // (memory), and a stored file must never be left without the row that owns, counts and prunes it.
         $attachment->save();
+
+        if ($kind === Attachment::IMAGE && ($thumb = $this->makeThumb($path, $meta)) !== null) { // best-effort
+            $attachment->thumb_path = $thumb;
+            $attachment->save();
+        }
 
         return $attachment;
     }
@@ -417,7 +421,8 @@ class AttachmentService
         $width = (int) ($meta['width'] ?? 0);
         $height = (int) ($meta['height'] ?? 0);
 
-        if ($width < 1 || $height < 1) {
+        // A picture that cannot be decoded in the memory this process has left goes without a thumbnail.
+        if ($width < 1 || $height < 1 || ! ImageBudget::fits($width, $height)) {
             return null;
         }
 
