@@ -39,7 +39,7 @@ class InteractionSweepTest extends TestCase
 
     private const PUBLIC_ENTRY = ['/', '/about', '/features', '/faqs', '/contact', '/complains', '/policy', '/terms', '/cookies', '/security', '/terms-of-service', '/privacy-policy', '/solution-results', '/solution-results?search=borehole', '/businesses', '/businesses/featured', '/login', '/register', '/forgot-password'];
 
-    private const SIGNED_IN_ENTRY = ['/home', '/questions', '/questions/ask', '/solutions', '/solution/create', '/topics', '/library', '/platforms', '/people', '/analytics', '/points', '/notifications', '/inbox', '/collections', '/seminars', '/seminars/new', '/user/profile/edit', '/teams/create', '/user/confirm-password', '/go/files', '/go/docs', '/sub-services/dot-files', '/sub-services/dot-docs', '/sub-services/dot-sheets', '/sub-services/dot-press', '/sub-services/dot-forms', '/sub-services/dot-engage'];
+    private const SIGNED_IN_ENTRY = ['/home', '/questions', '/questions/ask', '/solutions', '/solution/create', '/topics', '/library', '/platforms', '/people', '/analytics', '/points', '/notifications', '/inbox', '/collections', '/seminars', '/seminars/new', '/user/profile/edit', '/teams/create', '/user/confirm-password', '/go/files', '/go/docs'];
 
     private const MODERATOR_ENTRY = ['/moderation', '/moderation/friction', '/moderation/topics', '/moderation/library', '/moderation/trust', '/moderation/identity', '/moderation/verifications', '/moderation/seminars'];
 

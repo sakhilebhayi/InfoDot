@@ -361,16 +361,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/moderation/library', ModerationLibrary::class)->middleware('moderator')->name('moderation.library');
     Route::post('/moderation/library', [LibraryEntryController::class, 'store'])->middleware(['moderator', 'throttle:30,1,moderation.library.add'])->name('moderation.library.add');
 
-    // -------------------------------------------------------
-    // Sub Services
-    // -------------------------------------------------------
-    Route::view('/sub-services/dot-files', 'sub-services.dot-files')->name('subservices.files');
-    Route::view('/sub-services/dot-docs', 'sub-services.dot-docs')->name('subservices.docs');
-    Route::view('/sub-services/dot-sheets', 'sub-services.dot-sheets')->name('subservices.sheets');
-    Route::view('/sub-services/dot-press', 'sub-services.dot-press')->name('subservices.press');
-    Route::view('/sub-services/dot-forms', 'sub-services.dot-forms')->name('subservices.forms');
-    Route::view('/sub-services/dot-engage', 'sub-services.dot-engage')->name('subservices.engage');
-
 });
 
 // -------------------------------------------------------

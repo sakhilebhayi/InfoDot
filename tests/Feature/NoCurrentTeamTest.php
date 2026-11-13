@@ -18,7 +18,7 @@ class NoCurrentTeamTest extends TestCase
      * behind a Jetstream::hasTeamFeatures() check that only verifies the
      * *feature* is enabled, not that *this user* actually has a team —
      * causing a 500 on every page that renders the shared navigation
-     * (dashboard, questions, solutions, sub-services, profile, teams.create
+     * (dashboard, questions, solutions, profile, teams.create
      * itself, and more) the moment current_team_id is null.
      */
     public function test_authenticated_user_with_no_team_does_not_crash_dashboard(): void
