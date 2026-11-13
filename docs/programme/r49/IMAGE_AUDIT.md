@@ -80,3 +80,14 @@ The deploy copies `public/build` to the web root and refreshes two files from th
 - **Pictures an Alpine expression fills in** (the lightbox's large image, the upload preview) get their address in the browser; the lightbox's addresses are the same attachment addresses the grid uses, which are requested.
 - **Unmounted views** (`livewire/solution-list.blade.php:7` asks `source.unsplash.com` for a random picture) are never rendered. The policy allows the host, so the static check passes; the view should go when the legacy components are removed.
 - **The live web root** was not inspected: the instruction was not to send requests to production.
+
+## Follow-up, 2026-11-13: the owner decisions above were carried out
+
+Branch `r49/assets-selfhost-lifecycle`. The sections above describe the state before it; this is what changed.
+
+1. **Tab icon (decision 1).** The icons are cut from the logo's "dot." disc by `tools/build-icons.py`: `favicon.ico` (16, 32, 48), `apple-touch-icon.png` (180), `icon-192.png`, `icon-512.png` and `site.webmanifest`, all in `public/` and all on the deploy's list of static files. One partial (`partials/head-icons`) names them and every layout includes it. No vector source of the logo is in the repository, so there is no SVG icon. Guard: `HeadIconsTest`.
+2. **Logo (decision 2).** `logo_white.png` lives in `resources/img/brand` and is named through Vite on every page and in every email; error pages and emails fall back to the name when the build has no logo. The tests did not need a refreshed committed manifest: they run without Vite, and the committed `public/build` is untouched.
+3. **Other hosts (decision 3).** Fonts (the `@fontsource` packages), the icon font (Material Symbols Rounded cut down to the icons in use, `tools/build-icon-font.py`), ApexCharts (npm, fetched only on Analytics) and the sign-in background (the home page's own credited photograph) are served from the build. The Content-Security-Policy names no other host for scripts, styles, fonts or pictures. Guards: `SelfHostedAssetsTest`, `IconFontTest`, the sweep, and `tools/check-built-assets.mjs` against a real build in CI.
+4. **Unused files (decision 4).** `public/img` is gone: 101 files, 102 MB. `ImageIntegrityTest` fails if the folder comes back, and if any view, script or stylesheet names a file under `public/` that the deploy does not copy.
+
+Still true: the deploy does not remove old copies from the live web root, so `/img/logo_white.png` and the rest keep answering there until someone deletes them on the host. Nothing links to them any more.
