@@ -6,12 +6,13 @@ use App\Services\Ops\OpsCheck;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
  * GET /ready: can this instance do its job? /up only says the framework booted. This also asks the database, the cache and the storage
- * disk. The answer is "ok" or "degraded" and nothing else: which check failed goes to the log, never to the caller, so the endpoint is safe
+ * disk (by writing to it). The answer is "ok" or "degraded" and nothing else: which check failed goes to the log, never to the caller, so the endpoint is safe
  * to leave open for an uptime monitor.
  */
 class ReadinessController extends Controller
@@ -30,7 +31,17 @@ class ReadinessController extends Controller
                 $age = app(OpsCheck::class)->minutesSinceHeartbeat();
                 abort_if($age !== null && $age > 15, 500, 'scheduler heartbeat is stale');
             },
-            'storage' => fn () => abort_unless(is_writable(storage_path('framework')) && is_writable(storage_path('logs')), 500),
+            // A full disk or a used-up quota still looks writable; only a write shows it. A few bytes, removed at once.
+            'storage' => function () {
+                abort_unless(is_writable(storage_path('framework')) && is_writable(storage_path('logs')), 500);
+                $probe = storage_path('framework/ready-'.bin2hex(random_bytes(6)));
+
+                try {
+                    abort_unless(File::put($probe, 'ok') === 2, 500);
+                } finally {
+                    File::delete($probe);
+                }
+            },
         ];
 
         $failed = [];
