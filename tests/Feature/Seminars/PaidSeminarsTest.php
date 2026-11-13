@@ -272,7 +272,7 @@ class PaidSeminarsTest extends TestCase
 
         $r = app(SeminarService::class)->hostRevenue($s);
         $this->assertSame([2, 40000, 4000, 36000], [$r['tickets'], $r['gross_cents'], $r['platform_cents'], $r['host_cents']]);
-        $this->actingAs($host)->get('/seminars/'.$s->id)->assertSee('InfoDot keeps R40.00', false)->assertSee('before Paystack');
+        $this->actingAs($host)->get('/seminars/'.$s->id)->assertSee('InfoDot keeps R40.00', false)->assertSee('before the payment processing fee')->assertSee('Payments are handled by Dot.Finance')->assertDontSee('Paystack');
     }
 
     public function test_the_price_hint_names_dot_finance_as_where_payment_is_handled_and_no_provider_brand(): void

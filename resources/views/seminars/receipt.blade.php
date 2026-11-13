@@ -26,5 +26,5 @@
             @endforeach
         </p>
     @endif
-    <p class="ix-hint" style="margin-top: 12px;">Payment was collected for the seller by InfoDot through Paystack.</p>
+    <p class="ix-hint" style="margin-top: 12px;">Payment was collected for the seller by InfoDot. Payments are handled by Dot.Finance.</p>
 </x-app-layout>

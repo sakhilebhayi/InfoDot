@@ -251,6 +251,34 @@ class SeminarTicketSalesTest extends TestCase
         $this->actingAs($other)->get('/seminars/'.$seminar->id.'/receipt?sale='.$a->id)->assertNotFound();
     }
 
+    /** Item 6: the pages a person reads say payments are handled by Dot.Finance and name no payment provider by brand. */
+    public function test_seminar_pages_say_dot_finance_and_name_no_payment_provider(): void
+    {
+        $seminar = $this->seminar();
+        $host = User::findOrFail($seminar->host_id);
+        $buyer = $this->person('Buyer');
+        $visitor = $this->person('Visitor');
+        $moderator = $this->person('Moderator');
+        $moderator->forceFill(['is_moderator' => true])->save();
+        $this->buy($seminar, $buyer);
+
+        $pages = [
+            'the seminar, before buying' => $this->actingAs($visitor)->get('/seminars/'.$seminar->id)->assertOk()->assertSee('Payments are handled by Dot.Finance'),
+            'the seminar, for its host' => $this->actingAs($host)->get('/seminars/'.$seminar->id)->assertOk()->assertSee('Payments are handled by Dot.Finance'),
+            'the receipt' => $this->actingAs($buyer)->get('/seminars/'.$seminar->id.'/receipt')->assertOk()->assertSee('Payments are handled by Dot.Finance'),
+            'payouts' => $this->actingAs($host)->get('/seminars/payouts')->assertOk()->assertSee('Payments are handled by Dot.Finance'),
+            'invoices' => $this->actingAs($host)->get('/seminars/invoices')->assertOk(),
+            'moderators\' payments' => $this->actingAs($moderator)->get('/moderation/seminar-payments')->assertOk()->assertSee('Payments are handled by Dot.Finance'),
+        ];
+
+        foreach ($pages as $name => $page) {
+            // The host agreement, shown under the payout form, is a legal text that has to name the payment provider; everything above it is the page's own copy.
+            $own = $name === 'payouts' ? (string) strstr((string) $page->getContent(), 'id="agreement-h"', true) : (string) $page->getContent();
+            $this->assertNotSame('', $own, $name);
+            $this->assertStringNotContainsStringIgnoringCase('paystack', $own, $name);
+        }
+    }
+
     public function test_the_data_export_lists_every_purchase(): void
     {
         [, $buyer, $first, $second] = $this->boughtTwice();

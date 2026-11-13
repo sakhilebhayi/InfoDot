@@ -3,7 +3,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Get paid for seminars</h1>
-            <p class="ix-lede">You set the price of each seminar. InfoDot keeps {{ $percent }}% of every ticket and Paystack's processing fee comes out of your share. Paystack pays the rest to the bank account you give here.</p>
+            <p class="ix-lede">You set the price of each seminar. InfoDot keeps {{ $percent }}% of every ticket and the payment processing fee comes out of your share. Payments are handled by Dot.Finance, which pays the rest to the bank account you give here.</p>
         </div>
     </div>
     @if ($flash)<p class="ix-pts__muted" role="status">{{ $flash }}</p>@endif

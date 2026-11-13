@@ -127,7 +127,7 @@
                 <form method="POST" action="{{ route('seminars.register', $seminar) }}">@csrf
                     @if ($seminar->isPaid())
                         <button class="ix-btn ix-btn--primary" type="submit" @disabled($seminar->capacity && $registeredCount >= $seminar->capacity)>{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Sold out' : 'Buy a ticket ('.$seminar->priceLabel().')' }}</button>
-                        <p class="ix-hint">You pay on Paystack. If you cancel at least {{ config('seminars.paid.refund_hours_before', 24) }} hours before the start you get a full refund; later than that there is no refund. If the host cancels the seminar you are always refunded in full.</p>
+                        <p class="ix-hint">Payments are handled by Dot.Finance: you pay on its secure payment page and come back here. If you cancel at least {{ config('seminars.paid.refund_hours_before', 24) }} hours before the start you get a full refund; later than that there is no refund. If the host cancels the seminar you are always refunded in full.</p>
                     @else
                         <button class="ix-btn ix-btn--primary" type="submit">{{ $seminar->capacity && $registeredCount >= $seminar->capacity ? 'Join the waiting list' : 'Register for free' }}</button>
                     @endif
@@ -175,7 +175,7 @@
                 <form method="POST" action="{{ route('seminars.join', $seminar) }}">@csrf<button class="ix-btn" type="submit">{{ $seminar->isRoom() || $seminar->isP2p() ? 'Enter the room' : 'Open my meeting room' }}</button></form>
             @endif
             @if ($revenue)
-                <p class="ix-hint">Tickets sold: <b>{{ $revenue['tickets'] }}</b>. Paid by attendees {{ \App\Models\Seminar::money($revenue['gross_cents']) }}; InfoDot keeps {{ \App\Models\Seminar::money($revenue['platform_cents']) }}; yours {{ \App\Models\Seminar::money($revenue['host_cents']) }} before Paystack's processing fee. Paystack pays you out on its own schedule.</p>
+                <p class="ix-hint">Tickets sold: <b>{{ $revenue['tickets'] }}</b>. Paid by attendees {{ \App\Models\Seminar::money($revenue['gross_cents']) }}; InfoDot keeps {{ \App\Models\Seminar::money($revenue['platform_cents']) }}; yours {{ \App\Models\Seminar::money($revenue['host_cents']) }} before the payment processing fee. Payments are handled by Dot.Finance, which pays you out on its own schedule.</p>
             @endif
             @if ($people->isEmpty())
                 <p class="ix-hint">Nobody has registered yet.</p>
