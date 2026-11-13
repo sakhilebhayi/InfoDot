@@ -29,7 +29,7 @@ class HomeController extends Controller
             'people' => $team ? $team->allUsers()->take(8)->values() : collect([$user]),
             'memberCount' => $team ? $team->allUsers()->count() : 1,
             'role' => $team ? ($user->ownsTeam($team) ? 'Owner' : $user->teamRole($team)?->name) : null,
-            'gettingStarted' => GettingStarted::showsFor($user) ? GettingStarted::steps($user) : [],
+            'gettingStarted' => GettingStarted::stepsToShow($user),
         ]);
     }
 

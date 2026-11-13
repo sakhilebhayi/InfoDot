@@ -69,11 +69,26 @@ final class GettingStarted
         return $steps;
     }
 
+    /**
+     * What Home draws: every step while the block is not put away and something is still to do, otherwise nothing.
+     *
+     * @return list<array{key: string, title: string, note: string, done: bool, url: string, action: string}>
+     */
+    public static function stepsToShow(User $user): array
+    {
+        if ($user->getting_started_dismissed_at !== null) {
+            return [];
+        }
+
+        $steps = self::steps($user);
+
+        return collect($steps)->contains(fn (array $step) => ! $step['done']) ? $steps : [];
+    }
+
     /** Whether Home shows the block: not put away, and something is still to do. */
     public static function showsFor(User $user): bool
     {
-        return $user->getting_started_dismissed_at === null
-            && collect(self::steps($user))->contains(fn (array $step) => ! $step['done']);
+        return self::stepsToShow($user) !== [];
     }
 
     /**

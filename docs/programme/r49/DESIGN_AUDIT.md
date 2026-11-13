@@ -56,7 +56,7 @@ Status is filled in after the work: **fixed**, or **left** with the reason.
 
 | No. | Page | Width | Theme | What is wrong | Sev. | Status |
 |---|---|---|---|---|---|---|
-| D-12 | `/business/{uuid}`, "On InfoDot" block | all | both | Chips and dates keep their page colours on the blue field (U-03): "Question" 1.11:1, "Solution" 1.24:1, dates 1.30:1 (light); 2.10, 2.04, 1.71 (dark). | P1 | **fixed.** The block uses the Home field's rows: "Question"/"Solution", title and date in white on the blue (8.6:1 light, 5.05:1 dark). |
+| D-12 | `/business/{uuid}`, "On InfoDot" block | all | both | Chips and dates keep their page colours on the blue field (U-03): "Question" 1.11:1, "Solution" 1.24:1, dates 1.30:1 (light); 2.10, 2.04, 1.71 (dark). | P1 | **fixed.** The block uses the Home field's rows: "Question"/"Solution", title and date in white on the blue (8.14:1 light, 5.05:1 dark). |
 | D-13 | `/home` | all | dark | References and times in the blue Knowledge field are 4.14:1 (U-04): the dark scheme's blue is lighter and the ink was not adjusted. | P1 | **fixed.** Full white ink (5.05:1). |
 | D-14 | `/business/{uuid}` | all | dark | Section numerals 2.98:1; "Reach them" field labels below 4.5:1 (U-03). | P2 | **fixed.** Numerals use `--ix-text-3` (5.64:1 dark); the cover without a photograph is stencil gold on graphite (7.7:1). |
 | D-15 | `/businesses`, business cards | all | dark | The letter that stands in for a missing logo is 2.95:1 (grey on a white tile). | P2 | **fixed.** The tile is white in both schemes, so its ink is fixed too (7.09:1). |
@@ -125,6 +125,60 @@ Nothing about the steps is stored. The block is absent when every row is done, c
 
 Empty states that were blank, bare or a dead end now say what the page is for and offer the next action: Notifications, a personal workspace's People page, Home's recent solutions, the business inbox, the moderation queue's three tabs, and the Library with demonstration content installed.
 
+## Measured before and after
+
+The same 100 page states at four widths in two schemes, 800 renders each time, on the same data.
+
+| Measure | Before | After |
+|---|---|---|
+| Renders that scroll sideways | 0 | 0 |
+| Text below its contrast target (element and colour pair, counted per render) | 1,180 | 0 |
+| Controls under 44 by 44 at 768 and 375 (counted per render) | 3,990 | 16 |
+
+The before-figure for sideways scrolling is 0 although D-22 is real: with a touch viewport Chromium widens the layout to fit an unbreakable word, so the page drew zoomed out and the measure of "wider than the window" did not see it. It was found by looking at the screenshot.
+
+The 16 remaining small targets are three things, each on four renders or fewer, and none is a control that needs changing: a link inside a sentence ("the inbox"), which WCAG 2.5.8 exempts; the subject of an inbox row, whose whole row is the target (a pseudo-element covers it); and a one-word breadcrumb that is 44px tall and 34px wide.
+
+**How contrast was measured.** In the page, for every element that holds text of its own: the computed colour, composited over each background layer beneath it up to the first opaque one (opacity on the way up included), then the WCAG ratio. Text over a photograph is not judged by this method and was read by eye (the landing hero's headline and line sit on a veil; the chips have an opaque panel). The browser suite's axe scan is a second, independent measure and now reports no contrast finding on any page it scans, in either scheme.
+
+Token pairs after the change, worst surface of the four (panel, ground, sunken, hover):
+
+| Pair | Light | Dark |
+|---|---|---|
+| `--ix-text-3` on the surface | 5.18:1 | 5.13:1 |
+| Warning chip (`--ix-warn` on its wash) | 5.29:1 | 5.26:1 |
+| Done chip (`--ix-ok` on its wash) | 4.98:1 | 5.26:1 |
+| `--ix-danger` on the surface | 5.09:1 | 6.64:1 |
+| White on the Knowledge blue | 8.14:1 | 5.05:1 |
+| Stencil gold on graphite | 7.7:1 | 7.7:1 |
+
+No pair measured is under its target.
+
+## The detector
+
+`impeccable detect` on the HTML of every page state, as the local server sent it (and, for the six states reached by submitting a form, the page as the browser held it afterwards).
+
+| | Before | After |
+|---|---|---|
+| Findings in total | 18 | 15 |
+| Page states with a finding | 15 of 100 | 13 of 100 |
+| Page states where the count went up | | none |
+
+Changed: `/teams/create` 1 to 0, `/teams/create` with errors 2 to 1, `/user/profile/edit` 1 to 0. The other 97 are unchanged, 85 of them at 0.
+
+What remains, and what it is:
+
+- `dark-glow`, 7 page states, one each. All seven are the pages captured from the browser after a form was sent, and the rule it matches is in the style block Livewire adds to a live page for its progress bar (`box-shadow: 0 0 10px #29d`). It is not in the HTML the server sends, not in the stylesheet, and the bar is not shown anywhere in InfoDot.
+- `broken-image`, 2 on the business editor. The two `<img data-crop-img>` inside the crop dialogs have no `src` until a person chooses a picture; they are inside a closed dialog and never drawn empty.
+- `flat-type-hierarchy`, 4 page states (three team settings pages and a profile). The detector reads only the sizes written in the HTML (`text-sm`, `text-xs`, an inline 15px on an avatar) and cannot see the stylesheet, where the page title is 26px and the section titles 18px. The inline section-title sizes it did have a point about were moved into the stylesheet (D-41).
+
+**The `broken-image` finding on about 22 elements of every signed-in page is an artefact of how the page was dumped, not a defect.** It appears when the HTML comes from a PHPUnit request, because `Tests\TestCase` calls `withoutVite()`, which makes every `Vite::asset()` return an empty string: the platform logos in the Dot Apps panel and the brand mark come out as `<img src="">`. Reproduced here with a throwaway test (since deleted): 23 to 45 per page before the changes and the same after. The same pages fetched from the running application have real addresses under `/build/assets/` on every one of those images and the detector reports none.
+
 ## What was and was not looked at
 
-Filled in after the work, with the after-numbers.
+- **Measured:** all 100 page states at 1440, 1024, 768 and 375, light and dark, before and after (1,600 renders).
+- **Read by eye, before:** landing, sign in, 404, a business page, Home at 1440 and 375 light; contact sheets of Questions, a question, Solutions, a solution; nine public pages at 1440 light and twelve at 375 light; nine signed-in pages at 1440 dark and nine more at 1440 light; fourteen signed-in pages at 375 dark; the empty account on eight pages at 1440 light; the long-content company on four pages at 1440 light and five at 375 light; crops of Analytics and verification.
+- **Read by eye, after:** sign in, register, forgot password, the register form with errors, verify email, two-factor, 404, 429, Home for a new account and for a demonstration owner, a business page, the business editor, verification, Analytics, Questions, Solutions, account settings, team settings, People, Notifications, the moderation queue, the directory, the reading pages, public search, and the long-content business and solution, between them at 1440 and 375 in both schemes.
+- **Not read by eye:** most pages at 1024 and 768 (those widths were measured, and the only layout change in that range is the tab row); the dark scheme at 375 for the public pages other than register and 404; every state of every moderation desk.
+- **Not opened at all:** a seminar's own page, its room and its invoices; `/progress`; the OIDC consent page (restyled with the other way-in pages, never rendered here); the moderation pages for one verification, one identity conflict and one trust report; the library with entries in a browser (the two demonstration entries are covered by a test, the scratch data here was installed before that change).
+- **Not tested:** a screen reader; a real phone (touch was emulated in Chromium, and the browser suite adds WebKit at iPhone and iPad sizes); hover and focus states were checked in the stylesheet and by the keyboard spec, not photographed.
