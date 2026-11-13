@@ -19,7 +19,7 @@ use Illuminate\Testing\TestResponse;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
-/** Paid seminars: the host sets the price, InfoDot keeps 10%, money moves only through Dot.Billing, a ticket exists only after its verified callback. */
+/** Paid seminars: the host sets the price, InfoDot keeps 10%, money moves only through Dot.Finance, a ticket exists only after its verified callback. */
 class PaidSeminarsTest extends TestCase
 {
     use RefreshDatabase;
@@ -30,7 +30,7 @@ class PaidSeminarsTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['seminars.paid.agreement_approved' => true, 'seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => self::CALLBACK_SECRET, 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret', 'licensing.billing.platform' => 'infodot']);
+        config(['seminars.paid.agreement_approved' => true, 'seminars.paid.enabled' => true, 'seminars.paid.callback_secret' => self::CALLBACK_SECRET, 'licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 'platform-secret', 'licensing.finance.platform' => 'infodot']);
     }
 
     private function person(string $name = 'Person'): User
@@ -41,7 +41,7 @@ class PaidSeminarsTest extends TestCase
     private function host(): User
     {
         $h = $this->person('Host');
-        SeminarPayoutAccount::create(['user_id' => $h->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+        SeminarPayoutAccount::create(['user_id' => $h->id, 'finance_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
         SeminarHostAgreement::create(['user_id' => $h->id, 'version' => 'v1', 'accepted_at' => now()]);
 
         return $h;
@@ -58,17 +58,17 @@ class PaidSeminarsTest extends TestCase
     private function ticketFake(string $ref = 'ignored'): void
     {
         Http::fake([
-            'billing.test/api/seminar-tickets' => Http::response(['reference' => 'ref_1', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201),
-            'billing.test/api/seminar-tickets/*' => Http::response(['status' => 'ok']),
+            'finance.test/api/seminar-tickets' => Http::response(['reference' => 'ref_1', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201),
+            'finance.test/api/seminar-tickets/*' => Http::response(['status' => 'ok']),
         ]);
     }
 
-    private function billingCallback(string $event, string $ref, int $amount = 20000, string $currency = 'ZAR', ?string $secret = null): TestResponse
+    private function financeCallback(string $event, string $ref, int $amount = 20000, string $currency = 'ZAR', ?string $secret = null): TestResponse
     {
         $body = json_encode(['event' => $event, 'ticket_ref' => $ref, 'reference' => 'ref_1', 'amount_cents' => $amount, 'currency' => $currency]);
         $h = Signature::headers($secret ?? self::CALLBACK_SECRET, $body);
 
-        return $this->call('POST', '/api/billing/ticket-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => $h['X-InfoDot-Timestamp'], 'HTTP_X_INFODOT_SIGNATURE' => $h['X-InfoDot-Signature']], $body);
+        return $this->call('POST', '/api/finance/ticket-events', [], [], [], ['CONTENT_TYPE' => 'application/json', 'HTTP_X_INFODOT_TIMESTAMP' => $h['X-InfoDot-Timestamp'], 'HTTP_X_INFODOT_SIGNATURE' => $h['X-InfoDot-Signature']], $body);
     }
 
     private function buy(Seminar $s, User $u): SeminarRegistration
@@ -113,11 +113,11 @@ class PaidSeminarsTest extends TestCase
         $this->assertTrue(Seminar::first()->isPaid());
     }
 
-    public function test_the_account_number_is_sent_to_billing_and_kept_nowhere_here(): void
+    public function test_the_account_number_is_sent_to_finance_and_kept_nowhere_here(): void
     {
         Http::fake([
-            'billing.test/api/payout-banks' => Http::response(['banks' => [['name' => 'Test Bank', 'code' => '058']]]),
-            'billing.test/api/payout-accounts' => Http::response(['id' => 77, 'status' => 'active', 'last4' => '9876', 'bank_code' => '058'], 201),
+            'finance.test/api/payout-banks' => Http::response(['banks' => [['name' => 'Test Bank', 'code' => '058']]]),
+            'finance.test/api/payout-accounts' => Http::response(['id' => 77, 'status' => 'active', 'last4' => '9876', 'bank_code' => '058'], 201),
         ]);
         Log::spy();
         $host = $this->person('Host');
@@ -126,7 +126,7 @@ class PaidSeminarsTest extends TestCase
         $this->actingAs($host)->post('/seminars/payouts', ['business_name' => 'Host Pty', 'settlement_bank' => '058', 'account_number' => '1234569876'])->assertRedirect('/seminars/payouts');
 
         $account = SeminarPayoutAccount::first();
-        $this->assertSame(['9876', 77], [$account->account_last4, $account->billing_account_id]);
+        $this->assertSame(['9876', 77], [$account->account_last4, $account->finance_account_id]);
         $this->assertStringNotContainsString('1234569876', json_encode(\DB::table('seminar_payout_accounts')->get()));
         $this->assertStringNotContainsString('1234569876', json_encode(session()->all()));
         Log::shouldNotHaveReceived('warning');
@@ -166,12 +166,12 @@ class PaidSeminarsTest extends TestCase
         $s = $this->paidSeminar($this->host());
         $reg = $this->buy($s, $this->person('Buyer'));
 
-        $this->billingCallback('ticket.paid', $reg->ticket_ref, secret: 'wrong')->assertUnauthorized();
+        $this->financeCallback('ticket.paid', $reg->ticket_ref, secret: 'wrong')->assertUnauthorized();
         $this->assertSame('pending_payment', $reg->fresh()->status);
 
-        $this->billingCallback('ticket.paid', $reg->ticket_ref)->assertOk()->assertJson(['status' => 'applied']);
+        $this->financeCallback('ticket.paid', $reg->ticket_ref)->assertOk()->assertJson(['status' => 'applied']);
         $this->assertSame(['registered', 'paid'], [$reg->fresh()->status, $reg->fresh()->payment_status]);
-        $this->billingCallback('ticket.paid', $reg->ticket_ref)->assertOk()->assertJson(['status' => 'duplicate']);
+        $this->financeCallback('ticket.paid', $reg->ticket_ref)->assertOk()->assertJson(['status' => 'duplicate']);
 
         $this->travelTo($s->starts_at->copy()->subMinutes(5));
         $this->actingAs($reg->user)->post('/seminars/'.$s->id.'/join')->assertRedirect('https://meet.example.test/room');
@@ -182,14 +182,14 @@ class PaidSeminarsTest extends TestCase
         $s = $this->paidSeminar($this->host());
         $reg = $this->buy($s, $this->person());
 
-        $this->billingCallback('ticket.paid', $reg->ticket_ref, amount: 100)->assertOk()->assertJson(['status' => 'mismatch']);
+        $this->financeCallback('ticket.paid', $reg->ticket_ref, amount: 100)->assertOk()->assertJson(['status' => 'mismatch']);
         $this->assertSame('pending_payment', $reg->fresh()->status);
-        $this->billingCallback('ticket.paid', 'sem9-u9-zzzz')->assertOk()->assertJson(['status' => 'unknown']);
-        $this->billingCallback('ticket.exploded', $reg->ticket_ref)->assertOk()->assertJson(['status' => 'ignored']);
-        $this->post('/api/billing/ticket-events', [])->assertUnauthorized();
+        $this->financeCallback('ticket.paid', 'sem9-u9-zzzz')->assertOk()->assertJson(['status' => 'unknown']);
+        $this->financeCallback('ticket.exploded', $reg->ticket_ref)->assertOk()->assertJson(['status' => 'ignored']);
+        $this->post('/api/finance/ticket-events', [])->assertUnauthorized();
     }
 
-    public function test_a_held_place_counts_against_capacity_and_expires_with_billing_told(): void
+    public function test_a_held_place_counts_against_capacity_and_expires_with_finance_told(): void
     {
         $s = $this->paidSeminar($this->host(), ['capacity' => 1]);
         $first = $this->buy($s, $this->person('First'));
@@ -220,7 +220,7 @@ class PaidSeminarsTest extends TestCase
         $host = $this->host();
         $s = $this->paidSeminar($host);
         $paid = $this->buy($s, $this->person('Paid'));
-        $this->billingCallback('ticket.paid', $paid->ticket_ref);
+        $this->financeCallback('ticket.paid', $paid->ticket_ref);
         $pending = $this->buy($s, $this->person('Pending'));
 
         $this->actingAs($host)->post('/seminars/'.$s->id.'/cancel')->assertRedirect();
@@ -230,7 +230,7 @@ class PaidSeminarsTest extends TestCase
         $this->assertNotNull($paid->fresh()->refund_requested_at);
         $this->assertSame('cancelled', $pending->fresh()->status);
 
-        $this->billingCallback('ticket.refunded', $paid->ticket_ref)->assertJson(['status' => 'applied']);
+        $this->financeCallback('ticket.refunded', $paid->ticket_ref)->assertJson(['status' => 'applied']);
         $this->assertSame(['refunded', 'cancelled'], [$paid->fresh()->payment_status, $paid->fresh()->status]);
     }
 
@@ -240,9 +240,9 @@ class PaidSeminarsTest extends TestCase
         $s = $this->paidSeminar($host);
         $late = $this->buy($s, $this->person());
         app(SeminarService::class)->cancel($s->fresh());
-        Http::fake(['billing.test/*' => Http::response(['status' => 'ok'])]);
+        Http::fake(['finance.test/*' => Http::response(['status' => 'ok'])]);
 
-        $this->billingCallback('ticket.paid', $late->ticket_ref)->assertJson(['status' => 'applied']);
+        $this->financeCallback('ticket.paid', $late->ticket_ref)->assertJson(['status' => 'applied']);
 
         $this->assertNotNull($late->fresh()->refund_requested_at);
         Http::assertSent(fn (Request $r) => str_ends_with($r->url(), '/refund'));
@@ -252,7 +252,7 @@ class PaidSeminarsTest extends TestCase
     {
         $s = $this->paidSeminar($this->host());
         $reg = $this->buy($s, $this->person());
-        $this->billingCallback('ticket.paid', $reg->ticket_ref);
+        $this->financeCallback('ticket.paid', $reg->ticket_ref);
         $reg->forceFill(['refund_requested_at' => now()->subMinutes(30)])->save();
 
         $this->assertSame(1, app(SeminarService::class)->retryRefunds());
@@ -264,7 +264,7 @@ class PaidSeminarsTest extends TestCase
         $s = $this->paidSeminar($host);
         foreach (['A', 'B'] as $n) {
             $reg = $this->buy($s, $this->person($n));
-            $this->billingCallback('ticket.paid', $reg->ticket_ref);
+            $this->financeCallback('ticket.paid', $reg->ticket_ref);
         }
 
         $r = app(SeminarService::class)->hostRevenue($s);
@@ -280,10 +280,10 @@ class PaidSeminarsTest extends TestCase
         $this->actingAs($this->person())->get('/seminars')->assertSee('R200.00');
     }
 
-    public function test_billing_being_down_leaves_nothing_held_and_nothing_charged(): void
+    public function test_finance_being_down_leaves_nothing_held_and_nothing_charged(): void
     {
         $s = $this->paidSeminar($this->host());
-        Http::fake(['billing.test/*' => Http::response([], 500)]);
+        Http::fake(['finance.test/*' => Http::response([], 500)]);
         $buyer = $this->person();
 
         $this->actingAs($buyer)->post('/seminars/'.$s->id.'/register')->assertSessionHasErrors('seminar');
@@ -295,7 +295,7 @@ class PaidSeminarsTest extends TestCase
     public function test_a_checkout_page_that_is_not_paystack_is_refused(): void
     {
         $s = $this->paidSeminar($this->host());
-        Http::fake(['billing.test/*' => Http::response(['reference' => 'r', 'authorization_url' => 'https://evil.example/pay', 'status' => 'pending'], 201)]);
+        Http::fake(['finance.test/*' => Http::response(['reference' => 'r', 'authorization_url' => 'https://evil.example/pay', 'status' => 'pending'], 201)]);
         $buyer = $this->person();
 
         $this->actingAs($buyer)->post('/seminars/'.$s->id.'/register')->assertSessionHasErrors('seminar');

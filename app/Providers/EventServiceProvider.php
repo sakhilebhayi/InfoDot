@@ -7,7 +7,7 @@ use App\Listeners\SendMembershipChange;
 use App\Listeners\SendVerificationEmailSafely;
 use App\Listeners\Sso\PropagateCentralLogout;
 use App\Listeners\Sso\RecordPlatformSession;
-use App\Listeners\SyncCompanyToBilling;
+use App\Listeners\SyncCompanyToFinance;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -34,9 +34,9 @@ class EventServiceProvider extends ServiceProvider
         // Platforms that copy a company's membership are told at once (see MembershipWebhook).
         TeamMemberRemoved::class => [[SendMembershipChange::class, 'handleRemoved'], RecordSeatReleased::class],
         TeamMemberUpdated::class => [[SendMembershipChange::class, 'handleUpdated']],
-        TeamUpdated::class => [[SyncCompanyToBilling::class, 'updated']],
-        TeamDeleted::class => [[SendMembershipChange::class, 'handleDeleted'], [SyncCompanyToBilling::class, 'deleted']],
-        TeamCreated::class => [[SyncCompanyToBilling::class, 'created']],
+        TeamUpdated::class => [[SyncCompanyToFinance::class, 'updated']],
+        TeamDeleted::class => [[SendMembershipChange::class, 'handleDeleted'], [SyncCompanyToFinance::class, 'deleted']],
+        TeamCreated::class => [[SyncCompanyToFinance::class, 'created']],
         // R-20: ecosystem single sign-on — session registry and central-logout propagation.
         AccessTokenCreated::class => [RecordPlatformSession::class],
         Logout::class => [[PropagateCentralLogout::class, 'handleLogout']],

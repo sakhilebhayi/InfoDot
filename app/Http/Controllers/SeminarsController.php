@@ -104,7 +104,7 @@ class SeminarsController extends Controller
         abort_unless($seminar->isPublished(), 404);
 
         if ($seminar->isPaid()) {
-            // Never a registration yet: that happens only when Billing reports the payment verified.
+            // Never a registration yet: that happens only when Finance reports the payment verified.
             return redirect()->away($this->seminars->startCheckout($seminar, $request->user()));
         }
 
@@ -154,7 +154,7 @@ class SeminarsController extends Controller
         return back()->with('seminar_notice', 'Thank you. The host sees your comment; only the rating counts toward the host’s average.');
     }
 
-    /** The host refunds part (or all the rest) of one ticket. Confirmed by Billing before the ticket changes. */
+    /** The host refunds part (or all the rest) of one ticket. Confirmed by Finance before the ticket changes. */
     public function refund(Request $request, Seminar $seminar, int $person): RedirectResponse
     {
         $this->hostOnly($request, $seminar);

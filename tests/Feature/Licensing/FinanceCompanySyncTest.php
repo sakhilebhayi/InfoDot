@@ -4,7 +4,7 @@ namespace Tests\Feature\Licensing;
 
 use App\Models\Team;
 use App\Models\User;
-use App\Services\Licensing\BillingCompanies;
+use App\Services\Licensing\FinanceCompanies;
 use App\Support\Knowledge\Signature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -16,16 +16,16 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
-/** InfoDot tells Dot.Billing when a company is created, renamed or deleted; Billing only registers and flags. A failure never reaches the person. */
-class BillingCompanySyncTest extends TestCase
+/** InfoDot tells Dot.Finance when a company is created, renamed or deleted; Finance only registers and flags. A failure never reaches the person. */
+class FinanceCompanySyncTest extends TestCase
 {
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
-        config(['licensing.billing_connected' => true, 'licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret', 'licensing.billing.platform' => 'infodot']);
-        Http::fake(['billing.test/*' => Http::response(['status' => 'registered'])]);
+        config(['licensing.finance_connected' => true, 'licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 'platform-secret', 'licensing.finance.platform' => 'infodot']);
+        Http::fake(['finance.test/*' => Http::response(['status' => 'registered'])]);
     }
 
     private function fake(array $map): void
@@ -50,7 +50,7 @@ class BillingCompanySyncTest extends TestCase
     {
         $team = $this->team();
 
-        $this->assertTrue(app(BillingCompanies::class)->sync($team));
+        $this->assertTrue(app(FinanceCompanies::class)->sync($team));
 
         Http::assertSent(function (Request $r) use ($team) {
             return str_ends_with($r->url(), '/api/companies') && json_decode($r->body(), true) === ['company_uuid' => (string) $team->uuid, 'name' => 'Thandi Foods', 'deleted' => false]
@@ -63,16 +63,16 @@ class BillingCompanySyncTest extends TestCase
     {
         $team = $this->team();
 
-        app(BillingCompanies::class)->sync($team, true);
+        app(FinanceCompanies::class)->sync($team, true);
 
         $this->assertTrue($this->bodies()[0]['deleted']);
     }
 
     public function test_personal_workspaces_and_a_switched_off_link_send_nothing(): void
     {
-        $this->assertFalse(app(BillingCompanies::class)->sync($this->team('Mine', true)));
-        config(['licensing.billing_connected' => false]);
-        $this->assertFalse(app(BillingCompanies::class)->sync($this->team()));
+        $this->assertFalse(app(FinanceCompanies::class)->sync($this->team('Mine', true)));
+        config(['licensing.finance_connected' => false]);
+        $this->assertFalse(app(FinanceCompanies::class)->sync($this->team()));
 
         Http::assertNothingSent();
     }
@@ -85,13 +85,13 @@ class BillingCompanySyncTest extends TestCase
         Bus::assertDispatchedTimes(CallQueuedClosure::class, 1);
 
         $team->forceFill(['industry' => 'retail'])->save();
-        Bus::assertDispatchedTimes(CallQueuedClosure::class, 1);   // only a new name matters to Billing
+        Bus::assertDispatchedTimes(CallQueuedClosure::class, 1);   // only a new name matters to Finance
 
         $team->forceFill(['name' => 'Thandi Foods (Pty) Ltd'])->save();
         Bus::assertDispatchedTimes(CallQueuedClosure::class, 2);
 
         $team->delete();
-        Bus::assertDispatchedTimes(CallQueuedClosure::class, 4);   // one for Billing, one for the existing membership webhook to the other platforms
+        Bus::assertDispatchedTimes(CallQueuedClosure::class, 4);   // one for Finance, one for the existing membership webhook to the other platforms
     }
 
     public function test_a_personal_workspace_queues_nothing(): void
@@ -103,17 +103,17 @@ class BillingCompanySyncTest extends TestCase
         Bus::assertNotDispatched(CallQueuedClosure::class);
     }
 
-    public function test_a_billing_failure_never_reaches_the_person_and_is_logged(): void
+    public function test_a_finance_failure_never_reaches_the_person_and_is_logged(): void
     {
-        $this->fake(['billing.test/*' => Http::response([], 500)]);
+        $this->fake(['finance.test/*' => Http::response([], 500)]);
         Log::spy();
         $team = $this->team();
 
-        $this->assertFalse(app(BillingCompanies::class)->sync($team));
-        Log::shouldHaveReceived('warning')->withArgs(fn ($m) => str_contains($m, 'Billing company sync'));
+        $this->assertFalse(app(FinanceCompanies::class)->sync($team));
+        Log::shouldHaveReceived('warning')->withArgs(fn ($m) => str_contains($m, 'Finance company sync'));
 
-        $this->fake(['billing.test/*' => fn () => throw new ConnectionException('down')]);
-        $this->assertFalse(app(BillingCompanies::class)->sync($team));
+        $this->fake(['finance.test/*' => fn () => throw new ConnectionException('down')]);
+        $this->assertFalse(app(FinanceCompanies::class)->sync($team));
         $this->assertNotNull(Team::find($team->id));
     }
 
@@ -133,7 +133,7 @@ class BillingCompanySyncTest extends TestCase
 
     public function test_the_backfill_command_says_so_when_the_link_is_off(): void
     {
-        config(['licensing.billing_connected' => false]);
+        config(['licensing.finance_connected' => false]);
 
         $this->artisan('licence:sync-companies')->assertSuccessful()->expectsOutputToContain('nothing sent');
     }
@@ -141,7 +141,7 @@ class BillingCompanySyncTest extends TestCase
     public function test_the_backfill_command_reports_failures(): void
     {
         $this->team('A');
-        $this->fake(['billing.test/*' => Http::response([], 500)]);
+        $this->fake(['finance.test/*' => Http::response([], 500)]);
 
         $this->artisan('licence:sync-companies')->assertFailed()->expectsOutputToContain('1 failed');
     }

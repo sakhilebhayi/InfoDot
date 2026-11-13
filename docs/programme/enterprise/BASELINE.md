@@ -4,7 +4,7 @@ Measured on `main` at `c89286f` (PHP 8.5.9 locally, 8.4 in CI; Laravel 12.70.2, 
 
 ## What the application is
 
-258 PHP files in `app/`, 112 test files, 368 lines of routes across `web.php` (240), `api.php` (46), `jetstream.php` (41) and `channels.php`. Companies are Jetstream teams with roles owner, admin, manager, member. Seven server-to-server endpoints (SSO redeem and token, resource registry, knowledge candidates, Billing ticket events, LiveKit webhook) are signed or secret-guarded. `QUEUE_CONNECTION=sync`; no class implements `ShouldQueue`; background work is 15 scheduled commands run by one cron runner (115-second limit per pass, four apps at a time). Production runs on shared cPanel hosting (1 GB RAM, 30 entry processes for the whole account), MySQL.
+258 PHP files in `app/`, 112 test files, 368 lines of routes across `web.php` (240), `api.php` (46), `jetstream.php` (41) and `channels.php`. Companies are Jetstream teams with roles owner, admin, manager, member. Seven server-to-server endpoints (SSO redeem and token, resource registry, knowledge candidates, Finance ticket events, LiveKit webhook) are signed or secret-guarded. `QUEUE_CONNECTION=sync`; no class implements `ShouldQueue`; background work is 15 scheduled commands run by one cron runner (115-second limit per pass, four apps at a time). Production runs on shared cPanel hosting (1 GB RAM, 30 entry processes for the whole account), MySQL.
 
 ## Measurements
 

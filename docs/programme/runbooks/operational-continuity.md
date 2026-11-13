@@ -13,7 +13,7 @@ no secret values appear in this document or anywhere in the repository.**
 | GitHub (sakhilebhayi) | all source, CI/CD, Actions secrets | owner's GitHub account (2FA); a recovery admin needs org/repo access granted by the owner |
 | Backup encryption | restoring ANY backup | passphrase file on the host at `~/.dot-backup/passphrase` AND a copy the owner holds offline; without it backups are unreadable — this is the single most important secret |
 | Off-site backup pull | the Mac mirror of `~/dot-backups` | read-only SSH key `~/.ssh/dot_backup_pull` on the owner's Mac (tools/pull-dot-backups.sh) |
-| Paystack | money | Paystack dashboard login (owner); secret keys only in Billing host `.env` |
+| Paystack | money | Paystack dashboard login (owner); secret keys only in Finance host `.env` |
 | SARS eFiling, Information Regulator portal | tax + POPIA duties | owner credentials (password manager) |
 | OIDC signing keys | ecosystem sign-in | `storage/oauth-*.key` on the InfoDot host (untracked; regenerate with `php artisan passport:keys` — regenerating invalidates issued tokens, which is acceptable recovery) |
 

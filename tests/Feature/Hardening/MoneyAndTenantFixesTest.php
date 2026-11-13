@@ -41,8 +41,8 @@ class MoneyAndTenantFixesTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
-        Http::fake(['billing.test/api/seminar-tickets' => Http::response(['reference' => 'r1', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201), 'billing.test/*' => Http::response(['status' => 'ok'])]);
+        config(['licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 'platform-secret', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
+        Http::fake(['finance.test/api/seminar-tickets' => Http::response(['reference' => 'r1', 'authorization_url' => 'https://checkout.paystack.com/abc', 'status' => 'pending'], 201), 'finance.test/*' => Http::response(['status' => 'ok'])]);
     }
 
     private function member(string $name = 'Person'): User
@@ -52,7 +52,7 @@ class MoneyAndTenantFixesTest extends TestCase
 
     private function paidSeminar(User $host): Seminar
     {
-        DB::table('seminar_payout_accounts')->insert(['user_id' => $host->id, 'billing_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
+        DB::table('seminar_payout_accounts')->insert(['user_id' => $host->id, 'finance_account_id' => 77, 'bank_code' => '058', 'account_last4' => '4321', 'status' => 'active']);
         $s = app(SeminarService::class)->save($host, null, ['title' => 'Pricing', 'summary' => 'An hour.', 'starts_at' => now()->addDays(3)->format('Y-m-d\TH:i'), 'duration_minutes' => 60, 'join_url' => 'https://meet.example.test/r'], true);
         $s->forceFill(['price_cents' => 20000, 'currency' => 'ZAR'])->save();
 
@@ -81,12 +81,12 @@ class MoneyAndTenantFixesTest extends TestCase
             $this->assertStringContainsString('already on its way', $e->errors()['refund'][0]);
         }
 
-        $this->assertSame(1, $this->sentTo('/refund'), 'Billing was asked once');
+        $this->assertSame(1, $this->sentTo('/refund'), 'Finance was asked once');
     }
 
     // ---- M-02 double click on "buy" --------------------------------------------------------------------------------------
 
-    public function test_a_second_checkout_while_the_first_waits_for_billing_does_not_replace_the_ticket(): void
+    public function test_a_second_checkout_while_the_first_waits_for_finance_does_not_replace_the_ticket(): void
     {
         $s = $this->paidSeminar($this->member('Host'));
         $buyer = $this->member('Buyer');
@@ -131,7 +131,7 @@ class MoneyAndTenantFixesTest extends TestCase
         $this->assertSame('paid', $paid->fresh()->payment_status);
         $this->assertSame('pending_payment', $paid->fresh()->status);
         $this->assertSame('cancelled', $unpaid->fresh()->status);
-        $this->assertSame(1, $this->sentTo('/cancel'), 'Billing was told to drop only the unpaid hold');
+        $this->assertSame(1, $this->sentTo('/cancel'), 'Finance was told to drop only the unpaid hold');
     }
 
     // ---- M-04 monthly invoice run ----------------------------------------------------------------------------------------

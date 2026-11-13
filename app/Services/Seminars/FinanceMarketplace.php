@@ -9,17 +9,17 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * InfoDot's side of paid seminars: asks Dot.Billing (which owns Paystack) to set up a host's payout account, start a ticket payment,
+ * InfoDot's side of paid seminars: asks Dot.Finance (which owns Paystack) to set up a host's payout account, start a ticket payment,
  * and refund or cancel one. Every call is signed with this platform's secret. Nothing here ever logs a request body, because the
  * payout call carries a bank account number that must not be written anywhere.
  */
-class BillingMarketplace
+class FinanceMarketplace
 {
     public function configured(): bool
     {
         return (bool) config('seminars.paid.enabled')
-            && filled(config('licensing.billing.url'))
-            && filled(config('licensing.billing.secret'));
+            && filled(config('licensing.finance.url'))
+            && filled(config('licensing.finance.secret'));
     }
 
     /** @return list<array{name: string, code: string}> */
@@ -59,7 +59,7 @@ class BillingMarketplace
     }
 
     /** No amount = the whole remaining ticket. A partial refund needs an amount and a key that makes a repeat the same refund. */
-    /** Tells Billing the host accepted this version of the agreement. Billing refuses tickets for a host who has not. */
+    /** Tells Finance the host accepted this version of the agreement. Finance refuses tickets for a host who has not. */
     public function acceptAgreement(int $payoutAccountId, string $version, string $acceptedByRef): void
     {
         $this->send('POST', '/api/payout-accounts/'.$payoutAccountId.'/agreement', ['version' => $version, 'accepted_by_ref' => $acceptedByRef]);
@@ -85,24 +85,24 @@ class BillingMarketplace
         }
 
         $raw = $method === 'GET' ? '' : json_encode($body ?? [], JSON_UNESCAPED_SLASHES);
-        $request = Http::acceptJson()->timeout(8)->withHeaders(['X-InfoDot-Platform' => (string) config('licensing.billing.platform', 'infodot')]
-            + Signature::headers((string) config('licensing.billing.secret'), $raw));
+        $request = Http::acceptJson()->timeout(8)->withHeaders(['X-InfoDot-Platform' => (string) config('licensing.finance.platform', 'infodot')]
+            + Signature::headers((string) config('licensing.finance.secret'), $raw));
 
         try {
             $response = $method === 'GET'
-                ? $request->get(rtrim((string) config('licensing.billing.url'), '/').$path)
-                : $request->withBody($raw, 'application/json')->post(rtrim((string) config('licensing.billing.url'), '/').$path);
+                ? $request->get(rtrim((string) config('licensing.finance.url'), '/').$path)
+                : $request->withBody($raw, 'application/json')->post(rtrim((string) config('licensing.finance.url'), '/').$path);
         } catch (Throwable $e) {
-            Log::warning('Billing marketplace unreachable.', ['path' => $path, 'reason' => class_basename($e)]);
+            Log::warning('Finance marketplace unreachable.', ['path' => $path, 'reason' => class_basename($e)]);
 
             throw new MarketplaceUnavailable('Payments are unavailable right now. Nothing was charged.');
         }
 
         if (! $response->successful()) {
-            Log::warning('Billing marketplace refused.', ['path' => $path, 'status' => $response->status()]);
+            Log::warning('Finance marketplace refused.', ['path' => $path, 'status' => $response->status()]);
 
             throw new MarketplaceUnavailable($response->status() === 422
-                ? 'Billing did not accept those details. Check them and try again.'
+                ? 'Finance did not accept those details. Check them and try again.'
                 : 'Payments are unavailable right now. Nothing was charged.');
         }
 

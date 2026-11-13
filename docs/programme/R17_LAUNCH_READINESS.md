@@ -102,13 +102,13 @@ legal set; opening read-only public solution pages to crawlers is a product deci
 ## G. Commercial readiness report
 
 Entitlements (tiers, seats, licensing) are enforced server-side with tests (R-13, #143/#144 line);
-`SEMINARS_CHECKOUT_ENABLED` gates new ticket sales narrowly; billing callbacks signed and
+`SEMINARS_CHECKOUT_ENABLED` gates new ticket sales narrowly; payment callbacks signed and
 throttled; receipts/invoices implemented. **Blocker: the Paystack path has never been run even in
 test mode** — checkout, webhook delivery to production, refund of a split payment. Until that
 one-hour owner session happens, paid seminars must stay off. Free-tier commerce (registration →
 company → usage) is fully tested. Admin: a real moderation suite exists (queue, library,
 reputation, rings, seminar payments, topics, UX friction) plus `ops:check`/heartbeat; a dedicated
-billing-admin panel is roadmap, not launch-blocking, since billing admin currently runs through
+payments-admin panel is roadmap, not launch-blocking, since payments admin currently runs through
 Paystack's own dashboard + host commands.
 
 ## H. Deployment and operational report
@@ -135,7 +135,7 @@ still pending (owner).
 | 8 | Malware-scan service decision for uploads (R-15 §6) | Medium | Owner | decision + ~2 h |
 | 9 | Device-matrix responsive pass + specialist WCAG 2.2 AA audit | Medium | Either | ~1 day |
 | 10 | Product decision: public read-only solution pages for crawlers | Low (opportunity) | Owner | decision, then ~1 day |
-| 11 | Billing-admin panel beyond Paystack dashboard + host commands | Low | Engineering | roadmap |
+| 11 | Payments-admin panel beyond Paystack dashboard + host commands | Low | Engineering | roadmap |
 | 12 | AI-training crawler policy: confirm or reverse the block defaults | Low | Owner | decision |
 
 ## §19 score (evidence-weighted)

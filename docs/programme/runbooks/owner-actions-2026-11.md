@@ -47,8 +47,8 @@ Host-side, ~30–45 min. The tooling already does the heavy lifting (`dot-backup
 
 ## 5. Live Paystack verification — runbook: `runbooks/paystack-live-verification.md`
 
-Needs you because real money moves (small controlled amount) and Dot.Billing owns the keys.
-Step 0 is confirming where Dot.Billing actually runs in production.
+Needs you because real money moves (small controlled amount) and Dot.Finance owns the keys.
+Step 0 is confirming that Dot.Finance takes payments in production.
 
 ## 6. Start the SSO client session
 

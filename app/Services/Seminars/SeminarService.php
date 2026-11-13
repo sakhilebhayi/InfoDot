@@ -31,7 +31,7 @@ use Illuminate\Validation\ValidationException;
  */
 class SeminarService
 {
-    public function __construct(private readonly InAppNotices $notices, private readonly BillingMarketplace $billing) {}
+    public function __construct(private readonly InAppNotices $notices, private readonly FinanceMarketplace $finance) {}
 
     /** @return array<string, mixed> validation rules for the host's form */
     public static function rules(): array
@@ -175,8 +175,8 @@ class SeminarService
         $refundable = $regs->filter(fn ($r) => $r->payment_status === 'paid'
             && ! ($refunds === 'none' || ($refunds === 'complainants' && ! in_array($r->user_id, $refundUserIds, true))));
 
-        // Mark every refund as requested BEFORE the first call to Billing. Each call can take seconds; if this request is cut off part-way
-        // (a PHP time limit), the rest are already marked and `seminars:sweep-payments` asks Billing for them. Marked afterwards, they would be
+        // Mark every refund as requested BEFORE the first call to Finance. Each call can take seconds; if this request is cut off part-way
+        // (a PHP time limit), the rest are already marked and `seminars:sweep-payments` asks Finance for them. Marked afterwards, they would be
         // forgotten: paid, with no refund requested.
         SeminarRegistration::whereIn('id', $refundable->pluck('id'))->whereNull('refund_requested_at')->update(['refund_requested_at' => now()]);
 
@@ -189,7 +189,7 @@ class SeminarService
                 $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null, 'checkout_url' => null])->save();
 
                 try {
-                    $this->billing->cancel((string) $reg->ticket_ref);
+                    $this->finance->cancel((string) $reg->ticket_ref);
                 } catch (MarketplaceUnavailable) {
                 }
             }
@@ -273,8 +273,8 @@ class SeminarService
     }
 
     /**
-     * The host refunds part of one ticket. Sent to Billing with a key so a retry is the same refund; the ticket changes only when
-     * Billing confirms. Not possible while the ticket is disputed or once it is fully refunded.
+     * The host refunds part of one ticket. Sent to Finance with a key so a retry is the same refund; the ticket changes only when
+     * Finance confirms. Not possible while the ticket is disputed or once it is fully refunded.
      */
     public function hostRefund(Seminar $seminar, SeminarRegistration $reg, int $cents): void
     {
@@ -287,7 +287,7 @@ class SeminarService
                 throw ValidationException::withMessages(['refund' => 'This ticket cannot be refunded now.']);
             }
 
-            // One refund at a time: a second submit (a double click) would otherwise be a second, differently keyed request to Billing.
+            // One refund at a time: a second submit (a double click) would otherwise be a second, differently keyed request to Finance.
             if ($locked->refund_pending_cents !== null) {
                 throw ValidationException::withMessages(['refund' => 'A refund for this ticket is already on its way. Wait until it is confirmed.']);
             }
@@ -301,7 +301,7 @@ class SeminarService
         });
 
         try {
-            $this->billing->refund((string) $reg->ticket_ref, $cents, $key);
+            $this->finance->refund((string) $reg->ticket_ref, $cents, $key);
         } catch (MarketplaceUnavailable $e) {
             SeminarRegistration::whereKey($reg->id)->update(['refund_pending_cents' => null]);
 
@@ -629,11 +629,11 @@ class SeminarService
 
     /**
      * Holds a place and starts the payment for a paid seminar. Returns the Paystack page to send the attendee to. The place is held for
-     * a short time; it becomes a registration only when Billing reports the payment verified, never because the browser came back.
+     * a short time; it becomes a registration only when Finance reports the payment verified, never because the browser came back.
      */
     public function startCheckout(Seminar $seminar, User $user): string
     {
-        // The narrow switch: stops NEW ticket sales while refunds, Billing's callbacks and tickets already paid carry on. (SEMINARS_PAID_ENABLED=false
+        // The narrow switch: stops NEW ticket sales while refunds, Finance's callbacks and tickets already paid carry on. (SEMINARS_PAID_ENABLED=false
         // stops all of those too, which strands payments already in flight.)
         if (! config('seminars.paid.checkout_enabled', true)) {
             throw ValidationException::withMessages(['seminar' => 'Ticket sales are paused for a short while. Please try again later. Tickets already bought are not affected.']);
@@ -663,7 +663,7 @@ class SeminarService
                     return [$existing, true];
                 }
 
-                // The first request is still asking Billing for the payment page. A second one now would make a second ticket reference and
+                // The first request is still asking Finance for the payment page. A second one now would make a second ticket reference and
                 // overwrite the first, and a payment made on the first would match no registration. Wait for it (a minute at most).
                 if ($existing->updated_at?->gt(now()->subMinute())) {
                     throw ValidationException::withMessages(['seminar' => 'Your ticket is being prepared. Wait a moment and try again.']);
@@ -694,7 +694,7 @@ class SeminarService
         }
 
         try {
-            $ticket = $this->billing->createTicket($reg->ticket_ref, (int) $account?->billing_account_id, $user->email, (int) $reg->amount_cents, (string) $reg->currency, $seminar->title, url(config('seminars.paid.return_path', '/seminars').'/'.$seminar->id));
+            $ticket = $this->finance->createTicket($reg->ticket_ref, (int) $account?->finance_account_id, $user->email, (int) $reg->amount_cents, (string) $reg->currency, $seminar->title, url(config('seminars.paid.return_path', '/seminars').'/'.$seminar->id));
         } catch (MarketplaceUnavailable $e) {
             $reg->forceFill(['status' => SeminarRegistration::CANCELLED, 'payment_status' => 'free', 'hold_expires_at' => null])->save();
 
@@ -707,7 +707,7 @@ class SeminarService
     }
 
     /**
-     * Applies one signed callback from Billing. Each (event, ticket) is applied once. The amount and currency must equal what was asked
+     * Applies one signed callback from Finance. Each (event, ticket) is applied once. The amount and currency must equal what was asked
      * for; anything else is recorded and left for a person to look at. @return string applied|duplicate|unknown|mismatch|ignored
      */
     public function applyTicketEvent(string $event, string $ticketRef, int $amountCents, string $currency, array $extra = []): string
@@ -754,7 +754,7 @@ class SeminarService
         });
     }
 
-    /** Billing confirmed money went back. A repeat key is a repeat; a total that does not add up is refused. */
+    /** Finance confirmed money went back. A repeat key is a repeat; a total that does not add up is refused. */
     private function applyRefund(SeminarRegistration $reg, Seminar $seminar, array $extra, string $refKey): string
     {
         $total = (int) ($extra['refunded_total_cents'] ?? $reg->amount_cents);
@@ -835,14 +835,14 @@ class SeminarService
     {
         try {
             $reg->refunded_cents > 0
-                ? $this->billing->refund((string) $reg->ticket_ref, $reg->refundableCents(), 'rest-'.$reg->id)
-                : $this->billing->refund((string) $reg->ticket_ref);
+                ? $this->finance->refund((string) $reg->ticket_ref, $reg->refundableCents(), 'rest-'.$reg->id)
+                : $this->finance->refund((string) $reg->ticket_ref);
         } catch (MarketplaceUnavailable) {
             // Left marked as requested; seminars:sweep-payments asks again.
         }
     }
 
-    /** Places held for payment that ran out of time are given back, and Billing is told not to take a late payment. */
+    /** Places held for payment that ran out of time are given back, and Finance is told not to take a late payment. */
     public function expireHolds(): int
     {
         $n = 0;
@@ -861,7 +861,7 @@ class SeminarService
             $n++;
 
             try {
-                $this->billing->cancel((string) $reg->ticket_ref);
+                $this->finance->cancel((string) $reg->ticket_ref);
             } catch (MarketplaceUnavailable) {
                 // A late payment would be refunded by markPaid().
             }
@@ -870,7 +870,7 @@ class SeminarService
         return $n;
     }
 
-    /** Asks again for refunds that were requested but not yet confirmed. Billing treats a repeat as the same request. */
+    /** Asks again for refunds that were requested but not yet confirmed. Finance treats a repeat as the same request. */
     public function retryRefunds(): int
     {
         $n = 0;

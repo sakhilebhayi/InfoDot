@@ -39,7 +39,7 @@ class DeleteUser implements DeletesUsers
     public function delete($user)
     {
         $this->eraseFromMemory($user);
-        // Upcoming seminars are cancelled and tickets refunded first: that talks to Billing, so it runs outside the transaction.
+        // Upcoming seminars are cancelled and tickets refunded first: that talks to Finance, so it runs outside the transaction.
         app(SeminarDataEraser::class)->settle($user);
         $this->endSessionsElsewhere($user);
 

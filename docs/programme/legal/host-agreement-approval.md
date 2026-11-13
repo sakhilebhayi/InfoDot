@@ -1,8 +1,10 @@
 # Host agreement v1: approval record
 
+> **Note, 2026-11-13: payments moved to Dot.Finance.** This document was written against the payment system as it stood on 2026-10-29. Wherever it cites that system's own code or documents as checked (`seminar-payments.md`, `docs/host-agreement-draft.md`, its `origin/main`), the check has **not** been repeated against Dot.Finance, and must be before anyone relies on it.
+
 | | |
 |---|---|
-| Version | v1 (InfoDot `SEMINARS_HOST_AGREEMENT_VERSION` and Dot.Billing `BILLING_MARKETPLACE_AGREEMENT_VERSION` both default to `v1`) |
+| Version | v1 (InfoDot `SEMINARS_HOST_AGREEMENT_VERSION` and Dot.Finance `FINANCE_MARKETPLACE_AGREEMENT_VERSION` both default to `v1`) |
 | Text shown to hosts | `resources/markdown/host-agreement.md` (Part A, chargebacks; Part B, removal of a seminar by a moderator) |
 | Annotated working draft (archive) | [host-agreement-v1-annotated.md](host-agreement-v1-annotated.md) |
 | Approval | The owner told Claude on 2026-10-29 that the owner's adviser has approved the wording **as it is**. Claude did not see the adviser's review. |
@@ -32,8 +34,8 @@ cd /home/infodotc/public_html/main && php artisan tinker --execute="echo DB::tab
 ```
 
    (`/home/infodotc/public_html/main` is the InfoDot folder on the host: the one that holds `.env` and `tools/`.)
-   If the count is not 0, tell Claude: either the old acceptances need a new version label (`--agreement-version v2`, set the same value in Billing) or they accepted a wording that is now different.
-2. Deploy InfoDot first, so the host has the approved text and #158's migration. Dot.Billing needs no deploy for this (its copy is documentation only).
+   If the count is not 0, tell Claude: either the old acceptances need a new version label (`--agreement-version v2`, set the same value in Finance) or they accepted a wording that is now different.
+2. Deploy InfoDot first, so the host has the approved text and #158's migration. Dot.Finance needs no deploy for this.
 3. Run the agreement stage, preview first (nothing changes without `--apply`):
 
 ```bash
@@ -41,4 +43,4 @@ tools/r13-enable.sh --infodot /home/infodotc/public_html/main --stage agreement 
 ```
 
    then, if the preview is what you expect, the same command with `--apply`. The script flips `SEMINARS_HOST_AGREEMENT_APPROVED` to true and names only the variable it set. Re-run the deploy or `php artisan config:cache` so the value is read.
-4. As a host with a payout account, open Seminars > payouts, read both parts and accept. Dot.Billing will then allow tickets for that host.
+4. As a host with a payout account, open Seminars > payouts, read both parts and accept. Dot.Finance will then allow tickets for that host.

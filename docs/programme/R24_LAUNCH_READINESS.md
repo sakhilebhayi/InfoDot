@@ -18,7 +18,6 @@ registries, or the running application — not inherited from older reports.
 | Rich media / tried-it / mentions / versioning / duplicates | DEPLOYED (browser-verified at build time) | never used by real users |
 | Seminars, tiers, licensing | DEPLOYED | never exercised commercially; Paystack never live |
 | 20-entry sourced library | DEPLOYED — LIVE VERIFIED | host seed output + post-seed log sweep |
-| Dot.Billing deployed | VERIFIED (corrected) | live at billing.infodot.co.za; own pipeline, 12 deploys since 2026-10-18; **stale-checkout claim "no pipeline" was wrong** |
 
 ## §2 Critical priorities
 
@@ -26,14 +25,14 @@ registries, or the running application — not inherited from older reports.
 |---|---|---|---|
 | P0 | Domain renewal | **BLOCKED — OWNER** | whois re-verified this day: still expires **2026-11-27 13:53 UTC**. Steps: `runbooks/owner-actions-2026-11.md` §1. ~10 min |
 | P1 | Restore drill | BLOCKED — OWNER | runbook ready; ~30–45 min on the host; paste output here for verification |
-| P1 | Live Paystack | BLOCKED — OWNER | preconditions now exact (runbook §0, updated from the Billing code audit): live key + `PAYSTACK_ALLOW_LIVE=true` on the Billing host, dashboard webhook URL, coordinated window. Billing's headers PR [#37](https://github.com/sakhilebhayi/Dot.Billing/pull/37) open |
+| P1 | Live Paystack | BLOCKED — OWNER | preconditions in the runbook (§0): payments moved to Dot.Finance on 2026-11-13, so each one has to be confirmed there first; then a live key, the dashboard webhook URL and a coordinated window |
 | P1 | DNS/email | BLOCKED — OWNER | records ready (R-18 §B + owner sheet §2); verification probes run from here afterwards |
 | P1 | SSO client + Central pilot | BLOCKED — OWNER (session start) | this session is barred from generating it (4 safety-layer stops incl. delegation); paste-ready prompt: owner sheet §6 |
 
 ## §4–5 Ecosystem
 
 Headers: InfoDot, Mines, Agents live; 15 platforms MERGED — NOT DEPLOYED (deploy pairs with each
-platform's SSO wave, or sooner on request); Dot.docs #103 OPEN (merge = deploy); Billing #37 OPEN.
+platform's SSO wave, or sooner on request); Dot.docs #103 OPEN (merge = deploy).
 SSO migration + legacy retirement: NOT STARTED (gated on the pilot).
 
 ## §6 Landing page (R-10) — DEPLOY PENDING in this PR
@@ -61,7 +60,7 @@ with real users.
 
 ## §8 Commercial model
 
-Tiers/seats/licensing implemented and tested in CI (R-13); entitlements flow InfoDot↔Billing via
+Tiers/seats/licensing implemented and tested in CI (R-13); entitlements flow InfoDot↔Dot.Finance via
 the signed API. UNVALIDATED commercially: no live transaction has ever run (see P1). Free tier
 keeps Q&A + library reading accessible. Status: IMPLEMENTED — NOT VERIFIED until the Paystack
 window runs.

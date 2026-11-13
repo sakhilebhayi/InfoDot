@@ -29,8 +29,8 @@ class SeminarReportsAndErasureTest extends TestCase
     {
         parent::setUp();
         Cache::flush();
-        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 'platform-secret', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
-        Http::fake(['billing.test/*' => Http::response(['status' => 'ok'])]);
+        config(['licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 'platform-secret', 'seminars.paid.enabled' => true, 'seminars.paid.agreement_approved' => true, 'seminars.paid.callback_secret' => 'cb']);
+        Http::fake(['finance.test/*' => Http::response(['status' => 'ok'])]);
     }
 
     private function person(string $name = 'Person'): User
@@ -117,7 +117,7 @@ class SeminarReportsAndErasureTest extends TestCase
         app(SeminarService::class)->removeByModerator($s->fresh(), $this->moderator(), 'Breaks the community rules.');
 
         $this->assertNotNull($reg->fresh()->refund_requested_at);
-        Http::assertSent(fn ($r) => str_contains($r->url(), 'billing.test/api/seminar-tickets'));
+        Http::assertSent(fn ($r) => str_contains($r->url(), 'finance.test/api/seminar-tickets'));
     }
 
     public function test_a_moderator_can_dismiss_a_report_and_a_plain_member_cannot(): void

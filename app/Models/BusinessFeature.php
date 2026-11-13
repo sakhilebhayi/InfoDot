@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 /**
  * A featured placement in the directory (R-33 §8), granted by a reviewer under the published rules
  * and shown with a label that says it is a placement, not a rating or a verification. `basis` is
- * "editorial" for now: paid featuring waits for billing and an owner decision on price.
+ * "editorial" for now: paid featuring waits for payments and an owner decision on price.
  *
  * @property int $id
  * @property int $team_id

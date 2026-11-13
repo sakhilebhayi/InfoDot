@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Paid seminars (R-13). A ticket price on the seminar (null = free), the payment state of each registration, a host's payout account
- * (only Billing's id for it and the last four digits: never the account number), and a record of each Billing callback so a repeat is
+ * (only Finance's id for it and the last four digits: never the account number), and a record of each Finance callback so a repeat is
  * applied once. Additive and guarded.
  */
 return new class extends Migration
@@ -38,7 +38,7 @@ return new class extends Migration
             Schema::create('seminar_payout_accounts', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->unique();
-                $table->unsignedBigInteger('billing_account_id');
+                $table->unsignedBigInteger('finance_account_id');
                 $table->string('bank_code', 24);
                 $table->string('account_last4', 4);
                 $table->string('status', 12)->default('active');

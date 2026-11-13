@@ -18,7 +18,7 @@ The legal drafts in `docs/programme/legal/` described behaviour the code did not
 ## Still open (owner or adviser)
 
 - Retention periods are not written down. The eraser keeps money records without a stated period; tax advice decides how long.
-- Paystack and Dot.Billing hold their own copies (payout account, transactions). Deleting the InfoDot account does not delete those; the privacy policy must say so, and a Billing-side erase is a separate item.
+- Paystack and Dot.Finance hold their own copies (payout account, transactions). Deleting the InfoDot account does not delete those; the privacy policy must say so, and a Finance-side erase is a separate item.
 - No per-host opt-out of Dot Points; badges are public by default with the opt-out.
 - Moderators removing a seminar is a decision with money consequences (full refunds). The wording of the host agreement on this is not approved.
 - The reporter's identity is shown to moderators, never to the host. The policy text must say that.

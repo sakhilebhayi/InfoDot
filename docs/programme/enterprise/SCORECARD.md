@@ -32,13 +32,13 @@ Scored with [READINESS_MODEL.md](READINESS_MODEL.md). "Baseline" is `main` at `c
 | | Named failure tests for payments (4) | 2 | 4 | Duplicate webhooks, double refund, double checkout, sweep race, cut-off cancel, pause switch, and the MySQL concurrency job (seats, capacity, accept) in CI |
 | API (8) | Contracts documented with schemas (3) | 1 | 2 | `docs/api/openapi.yaml`, 8 paths; the candidates response is not fully described |
 | | Idempotency/replay tests per inbound webhook (3) | 2 | 3 | Ticket events (duplicate, mismatch), redeem single-use, and the outbox claim test; LiveKit webhook signature and body-hash tests |
-| | Outbound calls have timeouts and visible failure (2) | 1 | 2 | Timeouts everywhere incl. SMTP; parked rows, stale backlogs and overdue appeals reach ops:check and Sentry; Billing reads back off |
+| | Outbound calls have timeouts and visible failure (2) | 1 | 2 | Timeouts everywhere incl. SMTP; parked rows, stale backlogs and overdue appeals reach ops:check and Sentry; Finance reads back off |
 | Performance (8) | Measured response times at a stated data size (4) | 0 | 0 | Not measured |
 | | No unbounded query in request paths (2) | 0 | 2 | Lists bounded; analytics grouped; notices preloaded; searches remembered per person; query-budget tests fail on one-per-row loops |
 | | Indexes support the queries (2) | 0 | 2 | Hot-path indexes (#161) plus associates/comments/objects (#168), verified up and rollback |
 | Reliability (9) | Error tracking and alerts reach a person (3) | 0 | 1 | Sentry wired; DSN and alert routing unverified |
 | | Health check (2) | 1 | 2 | `/up` plus `/ready` |
-| | Queue/schedule failures visible and retried safely (2) | 0 | 2 | `ops:check` reports parked/stale outbox rows, unconfirmed refunds and unreleased holds; `/ready` shows a stale scheduler; locks expire in 30 minutes; refunds are marked before Billing is called. Not yet proven on production (needs a monitor on `/ready`) |
+| | Queue/schedule failures visible and retried safely (2) | 0 | 2 | `ops:check` reports parked/stale outbox rows, unconfirmed refunds and unreleased holds; `/ready` shows a stale scheduler; locks expire in 30 minutes; refunds are marked before Finance is called. Not yet proven on production (needs a monitor on `/ready`) |
 | | Structured logs, request id, no personal data (2) | 0 | 1 | Request id on every log line, Sentry event and response; daily rotation. Logs are plain text, not JSON |
 | DevOps (8) | Required checks on the default branch (2) | 0 | 2 | Eleven CI jobs required on `main` since 2026-10-30, admins included, force pushes and deletion blocked (P-01); Dependabot security updates on (P-02) |
 | | Release gate runs the same checks (2) | 1 | 2 | `deploy.yml` calls `ci.yml` |

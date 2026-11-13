@@ -10,7 +10,7 @@ Owner steps: `runbooks/owner-actions-2026-11.md`. Evidence lives in the PRs and 
 |---|---|---|
 | 1 | Domain renewal | BLOCKED — OWNER ACTION REQUIRED (registry-verified: expires 2026-11-27 13:53 UTC; registrar Key-Systems via the hosting reseller; steps in the owner sheet) |
 | 2 | SSO client + Dot.Central pilot | BLOCKED — OWNER ACTION REQUIRED (must run as its own session; both launch attempts from this session were denied by the permission layer; paste-ready prompt in the owner sheet §6) |
-| 3 | Restore drill / live Paystack | BLOCKED — OWNER ACTION REQUIRED (runbooks ready; Paystack step 0 = confirm where Dot.Billing runs in production — its repo has no deploy pipeline) |
+| 3 | Restore drill / live Paystack | BLOCKED — OWNER ACTION REQUIRED (runbooks ready; Paystack step 0 = confirm that Dot.Finance takes payments in production) |
 | 4 | DNS + provider security | BLOCKED — OWNER ACTION REQUIRED (exact staged records in R-18 register §B + owner sheet; verification probes ready here) |
 | 5 | Fleet security headers | IMPLEMENTED — NOT VERIFIED (15 PRs open, suites green; live verification happens at each deploy) |
 | 5b | Fleet SSO migration | NOT STARTED (gated on the pilot) |

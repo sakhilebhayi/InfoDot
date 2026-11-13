@@ -50,7 +50,7 @@ time mysql --defaults-extra-file=$HOME/.restore.cnf infodotc_restorecheck < ~/re
 
 ## What the numbers give you
 
-* **RPO** today = the archive age from step 1. The backup runs nightly at 02:40 (BACKUPS.md), so up to about 24 hours of seminar sign-ups, ratings and payments could be lost. Payment data is also held by Billing and Paystack, so a ticket paid since the last backup can be rebuilt from their records; a rating or a question cannot.
+* **RPO** today = the archive age from step 1. The backup runs nightly at 02:40 (BACKUPS.md), so up to about 24 hours of seminar sign-ups, ratings and payments could be lost. Payment data is also held by Finance and Paystack, so a ticket paid since the last backup can be rebuilt from their records; a rating or a question cannot.
 * **RTO** for a database loss = decrypt/extract + import (Drill B) + the swap: `php artisan down`, import into the real database, `php artisan up`, check `/ready`. The swap is not rehearsed here because it overwrites live data; time it in a real event and add the figure.
 * Whether an **off-host copy** is usable: BACKUPS.md says the owner's Mac pulls the backup folder daily. Do step 2 once from the Mac's copy (needs the passphrase) so the claim that the Mac copy can restore is tested, not assumed.
 

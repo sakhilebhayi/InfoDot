@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
 use Laravel\Passport\Passport;
 
 /**
- * The failures that used to be silent: events parked after their last retry, deliveries that never went out, refunds Billing never confirmed,
+ * The failures that used to be silent: events parked after their last retry, deliveries that never went out, refunds Finance never confirmed,
  * holds nobody released, a scheduler that stopped, a folder the application cannot write to and a disk that is nearly full. Counts
  * only: no row, name or address is ever read out.
  *

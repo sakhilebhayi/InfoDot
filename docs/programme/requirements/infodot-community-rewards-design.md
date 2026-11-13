@@ -32,7 +32,7 @@ author or a moderator who is not the answerer; verification by someone who is ne
 
 `rewards` (catalogue: kind `billing_credit | capacity | marketplace`, price in points, monthly cap, active) and
 `redemptions` (user, reward, points, `pending | fulfilled | failed | cancelled`, fulfilment reference). Fulfilment sits behind
-an adapter per kind; until Dot.Billing / the entitlement / marketplace hooks exist the adapter is **manual** (an operator
+an adapter per kind; until Dot.Finance / the entitlement / marketplace hooks exist the adapter is **manual** (an operator
 marks it fulfilled) and the screen says so. A failed or cancelled redemption writes a compensating `reverse` entry.
 
 ## Events (InfoDot -> Dopemine, signed server to server)

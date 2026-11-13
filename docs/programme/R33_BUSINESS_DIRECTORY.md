@@ -210,7 +210,7 @@ This also completes R-29 Part D (§20–23, scenarios 8–10). Phase 4 is split:
   described, ≥1 service, a logo, not under review); a business's owner/admin asks; a reviewer
   outside it grants up to 30 days or declines with a reason; at most 3 show, daily-rotating, under
   the label "a placement … not a rating, a recommendation or a verification". It stops showing the
-  moment the business stops meeting the rules. **Not sold:** paid featuring waits for live billing
+  moment the business stops meeting the rules. **Not sold:** paid featuring waits for live payments
   and an owner decision on price; the rules page says it will be labelled as paid if introduced.
 - **Insights** (§9) at `/business/{uuid}/insights` for owner/admins, 30 or 90 days: page views,
   search appearances, contact actions (call, email, website, map), enquiries received and typical

@@ -8,7 +8,7 @@ use App\Models\SeminarRegistration;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\Ops\OpsCheck;
-use App\Services\Seminars\BillingMarketplace;
+use App\Services\Seminars\FinanceMarketplace;
 use App\Services\Seminars\SeminarService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -143,16 +143,16 @@ class OperationsTest extends TestCase
 
     // ---- cancel loop -----------------------------------------------------------------------------------------------------
 
-    public function test_cancelling_marks_every_refund_before_the_first_call_to_billing(): void
+    public function test_cancelling_marks_every_refund_before_the_first_call_to_finance(): void
     {
-        config(['licensing.billing.url' => 'https://billing.test', 'licensing.billing.secret' => 's', 'seminars.paid.enabled' => true]);
+        config(['licensing.finance.url' => 'https://finance.test', 'licensing.finance.secret' => 's', 'seminars.paid.enabled' => true]);
         $host = User::factory()->create(['email_verified_at' => now()]);
         $seminar = Seminar::create(['host_id' => $host->id, 'title' => 'T', 'summary' => 's', 'starts_at' => now()->addDays(2), 'duration_minutes' => 60, 'join_url' => 'https://x.test/a', 'status' => 'published', 'price_cents' => 1000, 'currency' => 'ZAR']);
         $regs = collect([11, 12, 13])->map(fn ($uid) => SeminarRegistration::create(['seminar_id' => $seminar->id, 'user_id' => $uid, 'status' => 'registered', 'payment_status' => 'paid', 'ticket_ref' => "t$uid", 'amount_cents' => 1000, 'currency' => 'ZAR', 'paid_at' => now()]));
 
-        // Not a Billing error (those are caught and retried): the request itself is cut off at the second ticket, as a PHP time limit would.
+        // Not a Finance error (those are caught and retried): the request itself is cut off at the second ticket, as a PHP time limit would.
         $calls = 0;
-        $this->mock(BillingMarketplace::class, function ($m) use (&$calls) {
+        $this->mock(FinanceMarketplace::class, function ($m) use (&$calls) {
             $m->shouldReceive('refund')->andReturnUsing(function () use (&$calls) {
                 if (++$calls === 2) {
                     throw new \RuntimeException('the request was cut off part-way');

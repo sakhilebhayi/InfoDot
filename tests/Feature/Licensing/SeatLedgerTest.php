@@ -39,7 +39,7 @@ class SeatLedgerTest extends TestCase
     {
         parent::setUp();
         Mail::fake();
-        config(['licensing.included_seats' => 3, 'licensing.price.amount_minor_units' => null, 'licensing.price.currency' => null, 'licensing.billing_connected' => false]);
+        config(['licensing.included_seats' => 3, 'licensing.price.amount_minor_units' => null, 'licensing.price.currency' => null, 'licensing.finance_connected' => false]);
     }
 
     public function test_the_owner_takes_one_of_three_free_seats_so_two_people_can_be_invited(): void
@@ -151,7 +151,7 @@ class SeatLedgerTest extends TestCase
     public function test_purchased_seats_raise_capacity_without_a_price_being_invented(): void
     {
         [$owner, $team] = $this->company();
-        TeamLicence::create(['team_id' => $team->id, 'purchased_seats' => 2, 'billing_status' => 'active']);
+        TeamLicence::create(['team_id' => $team->id, 'purchased_seats' => 2, 'payment_status' => 'active']);
         foreach (['a', 'b', 'c', 'd'] as $n) {
             $this->invite($owner, $team, "$n@example.test");
         }
@@ -162,18 +162,18 @@ class SeatLedgerTest extends TestCase
         $this->assertFalse($s['can_buy']);
     }
 
-    public function test_buying_is_offered_only_when_billing_is_connected_and_no_price_is_invented(): void
+    public function test_buying_is_offered_only_when_finance_is_connected_and_no_price_is_invented(): void
     {
         [, $team] = $this->company();
 
         $s = app(SeatLedger::class)->summary($team);
-        $this->assertFalse($s['can_buy'], 'billing is not connected');
+        $this->assertFalse($s['can_buy'], 'finance is not connected');
         $this->assertNull($s['price']);
 
-        config(['licensing.billing_connected' => true]);
+        config(['licensing.finance_connected' => true]);
         $s = app(SeatLedger::class)->summary($team);
         $this->assertTrue($s['can_buy']);
-        $this->assertNull($s['price'], 'InfoDot never states a price: Billing owns it');
+        $this->assertNull($s['price'], 'InfoDot never states a price: Finance owns it');
     }
 
     public function test_the_check_and_the_change_run_in_one_transaction_that_locks_the_company(): void

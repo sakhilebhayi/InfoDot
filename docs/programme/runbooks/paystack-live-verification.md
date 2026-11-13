@@ -1,33 +1,32 @@
 # Runbook — live Paystack verification (R-17 blocker; R-22 §3.2)
 
-**Where the money actually moves:** Paystack lives in **Dot.Billing**. InfoDot never touches a
-card — paid seminars and seat licensing call Billing's signed API (`BillingMarketplace`,
-`config/licensing.php`: "Dot.Billing is the only place seats are bought and paid for"). So the
-live verification is a Billing-first exercise, observed from InfoDot.
+**Where the money actually moves:** Paystack lives in **Dot.Finance**. InfoDot never touches a
+card — paid seminars and seat licensing call Dot.Finance's signed API (`FinanceMarketplace`,
+`config/licensing.php`: "Dot.Finance is the only place seats are bought and paid for"). So the
+live verification is a Dot.Finance-first exercise, observed from InfoDot.
 
-## 0. Preconditions (updated 2026-10-31 from the Billing code audit)
+## 0. Preconditions (rewritten 2026-11-13: payments moved to Dot.Finance)
 
-1. **Dot.Billing IS deployed and pipelined**: live at https://billing.infodot.co.za, with a manual
-   deploy workflow in its repo (12 successful production deploys since 2026-10-18). The earlier
-   "no pipeline" note came from a stale checkout.
-2. **The code has NEVER touched real Paystack** (its own README says so; every test fakes HTTP).
-   Two production-side switches gate a live run, both on the Billing host `.env`:
-   - a live secret key, AND `PAYSTACK_ALLOW_LIVE=true` — `PaystackConfig` refuses an `sk_live_`
-     key without it (a deliberate safety catch);
-   - the webhook URL registered in the Paystack dashboard must be
-     `https://billing.infodot.co.za/webhooks/paystack`.
-3. The webhook endpoint verifies `X-Paystack-Signature` (HMAC-SHA512 over the raw body,
-   constant-time compare) BEFORE parsing; bad signature → 401. Business anomalies (unknown
-   reference, amount mismatch, replay, overpayment) return 200 and are HELD as PaymentEvents for
-   review at `/operator/payment-events` — check that queue during the test.
-4. The payer's return callback requires a signed-in session and verifies the transaction
-   server-side with Paystack; the browser redirect proves nothing by itself (by design).
-5. InfoDot-side: `licensing.billing.url` + secret set (the signed channel), and
-   `seminars.paid.enabled` only if testing the seminar path. The Billing marketplace API is OFF by
-   default (`BILLING_MARKETPLACE_ENABLED=false`) — seminar-ticket tests need it enabled and
-   configured.
-6. Deploys put Billing in maintenance mode briefly; a webhook arriving then gets 503 and Paystack
-   retries — don't run the payment window during a deploy.
+None of these has been checked against Dot.Finance from this repository. Confirm each one there
+before the window; `docs/programme/R13_FINANCE_CONTRACT.md` is what InfoDot expects of it.
+
+1. **Dot.Finance takes payments in production**: the Paystack checkout, the Paystack webhook and
+   the signed API InfoDot calls are deployed, and you know its Paystack webhook URL.
+2. **A live key is a deliberate act.** No real Paystack call has been made on InfoDot's behalf (every
+   InfoDot test fakes HTTP). Confirm how Dot.Finance guards a live secret key (a switch that refuses an
+   `sk_live_` key until it is turned on is the safety catch to look for), and register its webhook
+   URL in the Paystack dashboard.
+3. The webhook must verify `X-Paystack-Signature` (HMAC-SHA512 over the raw body, constant-time
+   compare) BEFORE parsing; bad signature → 401. Business anomalies (unknown reference, amount
+   mismatch, replay, overpayment) must be held for review, not applied: find where Dot.Finance
+   lists them and check that queue during the test.
+4. The payer's return must be verified server-side with Paystack; the browser redirect proves
+   nothing by itself (by design).
+5. InfoDot-side: `licensing.finance.url` + secret set (the signed channel), and
+   `seminars.paid.enabled` only if testing the seminar path. Seminar-ticket tests also need the
+   marketplace API switched on in Dot.Finance (`FINANCE_MARKETPLACE_ENABLED`).
+6. A deploy puts an app in maintenance mode briefly; a webhook arriving then gets 503 and Paystack
+   retries — don't run the payment window during a deploy of Dot.Finance.
 
 ## 1. The controlled transaction (you, ~20 min, coordinated window)
 
@@ -43,7 +42,7 @@ once with a declining card if you have one (failure path).
 
 - Paystack dashboard shows the transaction with the expected reference, amount, currency, and
   the webhook delivered (2xx).
-- Billing recorded payment + subscription/entitlement exactly once; webhook signature
+- Dot.Finance recorded payment + subscription/entitlement exactly once; webhook signature
   (`X-Paystack-Signature`, HMAC-SHA512) was verified; a **re-delivered** webhook (Paystack
   dashboard → resend) does NOT create a duplicate payment or entitlement.
 - InfoDot reflects the entitlement (seat count / registration goes paid) via the signed read —
