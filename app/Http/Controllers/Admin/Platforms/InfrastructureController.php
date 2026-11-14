@@ -40,7 +40,7 @@ class InfrastructureController extends Controller
         )->groupBy('platform_key')->get()->keyBy('platform_key');
 
         // The newest undelivered row per platform says what the platform answered last time it was tried.
-        $stuck = DB::table('entitlement_outbox')->whereNull('sent_at')->whereNotNull('last_error')->orderBy('id')->get(['platform_key', 'last_error'])->pluck('last_error', 'platform_key');
+        $stuck = DB::table('entitlement_outbox')->whereNull('sent_at')->whereNotNull('last_error')->orderBy('id')->pluck('last_error', 'platform_key');
 
         $rows = PlatformCatalogue::query()->orderBy('sort')->orderBy('name')->get()->map(function (PlatformCatalogue $entry) use ($registry, $sso, $people, $changed, $outbox, $stuck) {
             $key = (string) $entry->key;

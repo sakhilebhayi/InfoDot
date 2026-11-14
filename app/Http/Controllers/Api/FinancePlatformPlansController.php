@@ -42,16 +42,24 @@ class FinancePlatformPlansController extends Controller
                 'trial_days' => $plan->trial_days === null ? null : (int) $plan->trial_days,
             ])->values();
 
-        $bundles = PlatformBundle::query()->with('items')->where('active', true)->whereNotNull('approved_at')->whereNotNull('amount_minor')->whereNotNull('currency')
-            ->orderBy('slug')->get()
-            ->map(fn (PlatformBundle $bundle) => [
+        $bundles = [];
+
+        foreach (PlatformBundle::query()->with('items')->where('active', true)->whereNotNull('approved_at')->whereNotNull('amount_minor')->whereNotNull('currency')->orderBy('slug')->get() as $bundle) {
+            $platforms = [];
+
+            foreach ($bundle->items->sortBy('platform_key') as $item) {
+                $platforms[] = ['platform' => $item->platform_key, 'plan' => $item->plan_slug];
+            }
+
+            $bundles[] = [
                 'slug' => $bundle->slug,
                 'name' => $bundle->name,
                 'amount_minor' => (int) $bundle->amount_minor,
                 'currency' => $bundle->currency,
                 'interval' => $bundle->interval,
-                'platforms' => $bundle->items->sortBy('platform_key')->map(fn ($item) => ['platform' => $item->platform_key, 'plan' => $item->plan_slug])->values(),
-            ])->values();
+                'platforms' => $platforms,
+            ];
+        }
 
         return response()->json(['plans' => $plans, 'bundles' => $bundles])->header('Cache-Control', 'no-store');
     }
