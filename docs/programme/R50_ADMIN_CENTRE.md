@@ -152,7 +152,7 @@ X-InfoDot-Signature: sha256=<hex HMAC-SHA256 of "{timestamp}.{raw body}" with th
 | `grace_until` | ISO 8601 date-time | optional on `payment_failed` | When access should stop. Capped at 30 days. Without it InfoDot uses `PLATFORM_PAYMENT_GRACE_DAYS` (7). |
 | `occurred_at` | ISO 8601 date-time | always | When it happened at Dot.Finance. An event older than one already applied for the same company and platform is stored and answered `ignored`. |
 
-Example:
+Example (the amounts in the examples on this page are placeholders for the shape, not prices; the application ships none):
 
 ```json
 {
@@ -217,10 +217,29 @@ person. Amounts are minor units.
 }
 ```
 
-The example is the shape only. The application ships no plan, so the list is empty until an administrator approves one.
+The example is the shape only, and its amounts are placeholders. The application ships no plan, so the list is empty until an administrator approves one.
+
+## 4b. Read-only views and limits added with the completion work
+
+- **Infrastructure** (`/admin/platforms/infrastructure`, administrators only). One row per catalogue platform with
+  only what InfoDot has recorded: the catalogue status an administrator set and when it last changed, the registry
+  entry (can be opened, switched off, address not trusted, missing), whether a shared secret is set (never its value),
+  the single sign-on registration and its last sign-in, and the delivery state from the outbox (accepted, waiting,
+  parked, closed because the platform has no receiver yet, and the last answer). InfoDot does not probe the platforms, so
+  there is no uptime figure. Launch-code sign-ins are checked when they happen and are not kept, so they do not appear.
+  A business never sees this page; its Analytics page shows its own platforms only.
+- **Starting a trial from the catalogue.** Where an approved, priced plan offers trial days and the company has not had
+  a trial of that platform, the owner or an administrator of the company sees "Start the N-day trial" on the platform's
+  page. A confirmation page states the end date and that nothing is charged, now or when it ends: access simply ends
+  unless the company chooses a paid plan later. One trial per company and platform, however the first one ended and
+  whoever started it. When a trial on a priced plan runs out the company is told the trial ended, not that a payment
+  is missing.
+- **The platforms read has its own rate limit.** `GET /api/ecosystem/companies/{uuid}/platforms` is limited per
+  calling platform (600 a minute once its secret is proved; 30 a minute per address for anything that is not). It no
+  longer shares the sign-in redemption limit, and it is taken out of the API group's per-address limit, which the
+  redeem call still has.
 
 ## 5. What is not built in this step
 
 - The owner's checkout. `Entitlements::subscribe()` records that an owner asked for a paid plan (`pending`), but no
   page calls it yet and nothing sends the company to Dot.Finance, because Dot.Finance cannot take the payment yet.
-- In-app notices to a company's owner when an administrator changes its access.
