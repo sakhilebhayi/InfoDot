@@ -70,6 +70,20 @@ class EcosystemRedeemController extends Controller
         // R-50: which of the person's companies may use this platform. The code is spent either way; a person with no
         // entitled company is refused like any other bad code, and the reason is in the log.
         $teams = $user->allTeams()->values();
+
+        // R-51: a launch token minted for a chosen company names it. The answer then reports that company as the current
+        // one (the person's InfoDot current company is not touched). If the company is no longer one of theirs, or is no
+        // longer entitled, the code is refused like any other bad code rather than opening under a different company.
+        $chosen = null;
+        $chosenUuid = collect($accessToken->abilities ?? [])->first(fn ($a) => is_string($a) && str_starts_with($a, EcosystemHandoff::COMPANY_ABILITY_PREFIX));
+
+        if ($chosenUuid !== null) {
+            $chosen = $teams->first(fn ($team) => (string) $team->uuid === substr($chosenUuid, strlen(EcosystemHandoff::COMPANY_ABILITY_PREFIX)));
+
+            if ($chosen === null || ! $access->decideFor($user, $chosen, $platform)->allowed) {
+                return $this->refuse($platform, 'chosen company missing or not entitled');
+            }
+        }
         $decisions = $teams->map(fn ($team) => $access->decideFor($user, $team, $platform));
 
         if (! $decisions->contains->allowed) {
@@ -99,8 +113,8 @@ class EcosystemRedeemController extends Controller
                 'entitled' => $decisions[$i]->allowed,
                 'access' => $decisions[$i]->allowed ? null : $decisions[$i]->reason,
             ])->values(),
-            'current_team_id' => $user->current_team_id,
-            'current_team_uuid' => $user->currentTeam?->uuid,
+            'current_team_id' => $chosen !== null ? $chosen->id : $user->current_team_id,
+            'current_team_uuid' => $chosen !== null ? $chosen->uuid : $user->currentTeam?->uuid,
         ]);
     }
 

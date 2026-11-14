@@ -140,3 +140,10 @@ Urgent independent of R-20: Dot.Projects still accepts the GET token-in-URL hand
 
 Provider side is additive: no existing route, table or flow changed; reverting the merge removes
 it. Per-platform rollout is a host `.env` flag, flipped off to return to local login instantly.
+
+## R-51 addendum: opening a platform for a chosen company
+
+`GET /go/{platform}` accepts an optional `company` (a team uuid the person belongs to). The launch token then carries the
+ability `company:<uuid>` besides `ecosystem:read`, and `/api/ecosystem/redeem` reports that company in
+`current_team_id` / `current_team_uuid`. Platforms that ignore these fields keep working. See
+[r50/ARCHITECTURE.md](r50/ARCHITECTURE.md) and `docs/api/openapi.yaml`.
