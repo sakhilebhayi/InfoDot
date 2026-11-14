@@ -42,7 +42,7 @@ class PlatformAccess
         }
 
         // A platform with its own sign-in cannot be enforced from here: it is listed and opened by its plain link.
-        if (EcosystemHandoff::hasNoReceiver($key)) {
+        if (EcosystemHandoff::managesOwnAccess($key)) {
             return AccessDecision::allow($team, AccessDecision::MANAGED_IN_PLATFORM);
         }
 
@@ -159,7 +159,7 @@ class PlatformAccess
             return 'not_launched';
         }
 
-        if (EcosystemHandoff::hasNoReceiver($key)) {
+        if (EcosystemHandoff::managesOwnAccess($key)) {
             return 'managed_in_platform';
         }
 

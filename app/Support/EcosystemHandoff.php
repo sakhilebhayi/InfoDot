@@ -77,6 +77,12 @@ final class EcosystemHandoff
         return (config('ecosystem.platforms', [])[$key]['sso'] ?? true) === false;
     }
 
+    /** True for a platform that decides access itself ('access' => 'own' in the registry): InfoDot does not enforce a company entitlement for it, even when it receives a sign-in token. A platform with no receiver is always its own. */
+    public static function managesOwnAccess(string $key): bool
+    {
+        return self::hasNoReceiver($key) || (config('ecosystem.platforms', [])[$key]['access'] ?? null) === 'own';
+    }
+
     /** The platform's own front door (scheme, host and port from the trusted endpoint), or null when it must not be opened. */
     public static function plainUrl(string $key): ?string
     {

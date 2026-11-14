@@ -27,6 +27,10 @@ return [
 
     // 'sso' => false marks a platform that has its own sign-in and no /auth/ecosystem receiver (Dot.Mines, Dot.Charts):
     // opening it goes to its own login page and no token is minted for it.
+    // 'access' => 'own' marks a platform that decides who may use it itself (its own subscriptions and workspaces): InfoDot never
+    // enforces a company entitlement for it (R-50), whether or not it receives a sign-in token. Dot.Mines is both: it receives a
+    // token once DOT_MINES_SSO=true (default false, so nothing changes until Mines ships its /auth/ecosystem receiver), and
+    // it stays link-only and non-enforced either way.
     'platforms' => [
         'infodot' => ['name' => 'InfoDot', 'url' => env('DOT_INFODOT_URL', 'https://infodot.co.za'), 'icon' => 'home', 'accent' => '#2f8fd6', 'active' => true],
         'agents' => ['name' => 'Dot.Agents', 'url' => env('DOT_AGENTS_URL', 'https://agents.infodot.co.za'), 'icon' => 'smart_toy', 'accent' => '#f1c62e', 'active' => true],
@@ -44,7 +48,7 @@ return [
         'forms' => ['name' => 'Dot.Forms', 'url' => env('DOT_FORMS_URL', 'https://forms.infodot.co.za'), 'icon' => 'dynamic_form', 'accent' => '#f1c62e', 'active' => true],
         'hr' => ['name' => 'Dot.HR', 'url' => env('DOT_HR_URL', 'https://hr.infodot.co.za'), 'icon' => 'badge', 'accent' => '#f0b91c', 'active' => true],
         'memory' => ['name' => 'Dot.Memory', 'url' => env('DOT_MEMORY_URL', 'https://memory.infodot.co.za'), 'icon' => 'memory', 'accent' => '#f4c94c', 'active' => true, 'internal' => true],
-        'mines' => ['name' => 'Dot.Mines', 'url' => env('DOT_MINES_URL', 'https://mines.infodot.co.za'), 'icon' => 'terrain', 'accent' => '#f1c62e', 'active' => true, 'sso' => false],
+        'mines' => ['name' => 'Dot.Mines', 'url' => env('DOT_MINES_URL', 'https://mines.infodot.co.za'), 'icon' => 'terrain', 'accent' => '#f1c62e', 'active' => true, 'sso' => filter_var(env('DOT_MINES_SSO', false), FILTER_VALIDATE_BOOLEAN), 'access' => 'own'],
         'notify' => ['name' => 'Dot.Notify', 'url' => env('DOT_NOTIFY_URL', 'https://notify.infodot.co.za'), 'icon' => 'notifications', 'accent' => '#f0c33a', 'active' => true],
         'press' => ['name' => 'Dot.Press', 'url' => env('DOT_PRESS_URL', 'https://pres.infodot.co.za'), 'icon' => 'newspaper', 'accent' => '#f0c33a', 'active' => true],
         'projects' => ['name' => 'Dot.Projects', 'url' => env('DOT_PROJECTS_URL', 'https://projects.infodot.co.za'), 'icon' => 'folder_special', 'accent' => '#f0c33a', 'active' => true],

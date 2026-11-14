@@ -48,7 +48,7 @@ class CatalogueController extends Controller
         return view('admin.platforms.platform', [
             'entry' => $entry,
             'plans' => $plans,
-            'ownSignIn' => EcosystemHandoff::hasNoReceiver($entry->key),
+            'ownSignIn' => EcosystemHandoff::managesOwnAccess($entry->key),
             'events' => PlatformCatalogueEvent::with('actor')
                 ->where(fn ($w) => $w->where(fn ($q) => $q->where('subject_type', 'platform')->where('subject_key', $entry->key))
                     ->orWhere(fn ($q) => $q->where('subject_type', 'plan')->where('subject_key', 'like', $entry->key.'/%')))

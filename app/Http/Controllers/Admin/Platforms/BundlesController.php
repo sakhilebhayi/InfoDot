@@ -94,7 +94,7 @@ class BundlesController extends Controller
     private function choices(): Collection
     {
         return PlatformCatalogue::query()->where('is_core', false)->orderBy('sort')->orderBy('name')->get()
-            ->reject(fn (PlatformCatalogue $entry) => config('ecosystem.platforms.'.$entry->key) === null || EcosystemHandoff::hasNoReceiver($entry->key))->values();
+            ->reject(fn (PlatformCatalogue $entry) => config('ecosystem.platforms.'.$entry->key) === null || EcosystemHandoff::managesOwnAccess($entry->key))->values();
     }
 
     /** @return array{0: array<string, mixed>, 1: list<string>, 2: string} */
