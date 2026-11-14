@@ -23,7 +23,8 @@ use Illuminate\Support\Str;
  * A row is an array:
  *   key, name, tagline, entry (PlatformCatalogue), categories (list of keys), category (the first one),
  *   state (businessState), label, why, held (the company holds it), open (this person may open it now),
- *   action ('open' | 'switch_on' | 'finance' | 'details'), action_label, price (string|null), entitlement.
+ *   action ('open' | 'switch_on' | 'start_trial' | 'finance' | 'details'), action_label, price (string|null), entitlement,
+ *   trial_days (int|null: the shortest trial the company could start now).
  */
 class CompanyCatalogue
 {
@@ -38,6 +39,7 @@ class CompanyCatalogue
         'available_for_purchase' => 'Available for purchase',
         'trial_available' => 'Trial available',
         'payment_required' => 'Payment needed',
+        'trial_ended' => 'Trial ended',
         'subscription_expired' => 'Subscription expired',
         'suspended' => 'Suspended',
         'temporarily_unavailable' => 'Temporarily unavailable',
@@ -141,10 +143,12 @@ class CompanyCatalogue
         $manages = $team->exists && Gate::forUser($user)->check('managePlatforms', $team);
         $owns = $team->exists && ! $team->personal_team && $user->ownsTeam($team);
         $notForYou = $decision->reason === AccessDecision::NOT_PERMITTED_FOR_YOU;
+        $trialDays = $state === 'trial_available' ? $this->access->trialPlans($key)->min(fn (PlatformPlan $plan) => (int) $plan->getAttribute('trial_days')) : null;
 
         [$action, $actionLabel] = match (true) {
             $open => ['open', 'Open'],
             $manages && in_array($state, self::SWITCHABLE, true) => ['switch_on', 'Switch on'],
+            $manages && $state === 'trial_available' => ['start_trial', 'Start trial'],
             $owns && in_array($state, ['payment_required', 'subscription_expired'], true) && $key !== 'finance' => ['finance', 'Open Dot.Finance'],
             default => ['details', 'See details'],
         };
@@ -158,18 +162,19 @@ class CompanyCatalogue
             'category' => PlatformCategories::primary($entry->getAttribute('categories')),
             'state' => $state,
             'label' => $notForYou && $state !== 'temporarily_unavailable' ? 'Active for selected people' : (self::LABELS[$state] ?? Str::headline($state)),
-            'why' => $this->why($state, $entry, $team, $entitlement, $user, $manages, $owns, $notForYou),
+            'why' => $this->why($state, $entry, $team, $entitlement, $user, $manages, $owns, $notForYou, $trialDays),
             'held' => $held,
             'open' => $open,
             'action' => $action,
             'action_label' => $actionLabel,
             'price' => $this->price($key),
             'entitlement' => $entitlement,
+            'trial_days' => $trialDays,
         ];
     }
 
     /** The reason for the state, in one or two plain sentences, for this reader. */
-    private function why(string $state, PlatformCatalogue $entry, Team $team, ?PlatformEntitlement $entitlement, User $user, bool $manages, bool $owns, bool $notForYou): string
+    private function why(string $state, PlatformCatalogue $entry, Team $team, ?PlatformEntitlement $entitlement, User $user, bool $manages, bool $owns, bool $notForYou, ?int $trialDays = null): string
     {
         $name = (string) $entry->name;
         $company = $team->personal_team || ! $team->exists ? 'your company' : (string) $team->name;
@@ -189,7 +194,10 @@ class CompanyCatalogue
                 ? "No price has been set for {$name}, so it is free for now. You can switch it on for {$company}."
                 : "No price has been set for {$name}, so it is free for now. {$ask} to switch it on.",
             'available_for_purchase' => "{$name} has an approved price, but paid activation is not open yet: payment runs through Dot.Finance, which is not taking payments yet. Nothing can be charged.",
-            'trial_available' => "{$name} has a price and offers a trial. Trials cannot be started from this page yet.",
+            'trial_available' => $manages
+                ? "{$name} has a price and offers a trial of {$trialDays} days. You can start it for {$company}. Nothing is charged, during the trial or when it ends."
+                : "{$name} has a price and offers a trial of {$trialDays} days. {$ask} to start it. Nothing is charged.",
+            'trial_ended' => "{$company}'s trial of {$name} has ended. Nothing was charged and nothing was deleted. A paid plan is arranged in Dot.Finance, which is not taking payments yet.",
             'payment_required' => $owns ? "A payment for {$name} has not been confirmed. Payments are handled in Dot.Finance." : "A payment for {$name} has not been confirmed. {$ask} to settle it in Dot.Finance.",
             'subscription_expired' => $owns ? "{$company}'s access to {$name} has ended. Nothing was deleted. Renewing is done in Dot.Finance." : "{$company}'s access to {$name} has ended. Nothing was deleted. {$ask} to renew it.",
             'suspended' => "An InfoDot administrator has paused {$company}'s use of {$name}. Nothing was deleted. Contact support to find out why.",
@@ -249,6 +257,16 @@ class CompanyCatalogue
     public function plans(string $key): Collection
     {
         return $this->access->sellablePlans($key);
+    }
+
+    /**
+     * The plans this company could start a trial of now: none once it has had its one trial of the platform.
+     *
+     * @return Collection<int, PlatformPlan>
+     */
+    public function trialPlans(Team $team, string $key): Collection
+    {
+        return $this->access->hadTrial($team, $key) ? collect() : $this->access->trialPlans($key);
     }
 
     /** "ZAR 250.00 a month", from the plan's own amount, currency and interval. */

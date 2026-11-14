@@ -4,6 +4,7 @@ namespace App\Services\Platforms;
 
 use App\Models\PlatformCatalogue;
 use App\Models\PlatformEntitlement;
+use App\Models\PlatformEntitlementEvent;
 use App\Models\PlatformPlan;
 use App\Models\Team;
 use Illuminate\Support\Collection;
@@ -25,6 +26,9 @@ class PreloadedAccess extends PlatformAccess
 
     /** @var Collection<string, Collection<int, PlatformPlan>>|null */
     private ?Collection $plans = null;
+
+    /** @var array<int, list<string>> the platforms each company has already had a trial of */
+    private array $trials = [];
 
     public function entry(string $key): ?PlatformCatalogue
     {
@@ -69,5 +73,21 @@ class PreloadedAccess extends PlatformAccess
         $this->plans ??= PlatformPlan::where('active', true)->orderBy('amount_minor')->get()->filter->isSellable()->groupBy('platform_key');
 
         return $this->plans->get($key, collect())->values();
+    }
+
+    public function trialPlans(string $key): Collection
+    {
+        return $this->sellablePlans($key)->filter(self::offersTrial(...))->values();
+    }
+
+    public function hadTrial(Team $team, string $key): bool
+    {
+        if (! $team->exists) {
+            return false;
+        }
+
+        $this->trials[$team->id] ??= PlatformEntitlementEvent::where('team_id', $team->id)->where('type', 'trial_started')->distinct()->pluck('platform_key')->all();
+
+        return in_array($key, $this->trials[$team->id], true);
     }
 }

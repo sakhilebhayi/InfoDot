@@ -76,7 +76,7 @@ class PlatformCataloguePageTest extends PlatformTestCase
             'sheet' => ['free_to_activate', 'Free to switch on', 'switch_on'],
             'notify' => ['free_while_pricing_finalised', 'Free while pricing is being finalised', 'switch_on'],
             'agents' => ['available_for_purchase', 'Available for purchase', 'details'],
-            'design' => ['trial_available', 'Trial available', 'details'],
+            'design' => ['trial_available', 'Trial available', 'start_trial'],
             'engage' => ['payment_required', 'Payment needed', 'finance'],
             'press' => ['subscription_expired', 'Subscription expired', 'finance'],
             'pulse' => ['suspended', 'Suspended', 'details'],
