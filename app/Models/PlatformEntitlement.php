@@ -68,13 +68,17 @@ class PlatformEntitlement extends Model
      * Why this entitlement does not grant access now, or null when it does. Active grants until its end date, if it
      * has one; a trial until it ends; a failed payment while the grace period lasts; a cancellation to the end of
      * the period already paid for. Pending waits for the payment confirmation, so it reads as payment required.
+     * A trial that ran out on a priced plan also waits for a payment, but nobody was asked for one, so it reads as
+     * a trial that ended.
      */
     public function refusal(): ?string
     {
         return match ($this->status) {
             self::ACTIVE => $this->ended_at !== null && $this->ended_at->isPast() ? 'expired' : null,
             self::TRIAL => $this->trial_ends_at !== null && $this->trial_ends_at->isFuture() ? null : 'trial_ended',
-            self::PAYMENT_REQUIRED, self::PENDING => $this->status === self::PAYMENT_REQUIRED && $this->grace_until !== null && $this->grace_until->isFuture() ? null : 'payment_required',
+            self::PAYMENT_REQUIRED, self::PENDING => $this->status === self::PAYMENT_REQUIRED && $this->grace_until !== null && $this->grace_until->isFuture()
+                ? null
+                : ($this->status === self::PAYMENT_REQUIRED && $this->source === 'trial' ? 'trial_ended' : 'payment_required'),
             self::CANCELLED => $this->current_period_ends_at !== null && $this->current_period_ends_at->isFuture() ? null : 'cancelled',
             self::EXPIRED => 'expired',
             self::SUSPENDED => 'suspended',

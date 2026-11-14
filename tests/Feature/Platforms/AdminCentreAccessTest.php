@@ -67,6 +67,7 @@ class AdminCentreAccessTest extends AdminCentreTestCase
             ['POST', $company.'/restore', $why + ['platform' => 'forms']],
             ['POST', $company.'/access', $why + ['platform' => 'forms', 'mode' => 'selected']],
             ['POST', $company.'/cancel', $why + ['platform' => 'forms', 'confirm' => 1]],
+            ['GET', '/admin/platforms/infrastructure', []],
             ['GET', '/admin/platforms/outbox', []],
             ['POST', '/admin/platforms/outbox/'.$this->outboxId.'/retry', []],
             ['GET', '/admin/platforms/payments', []],
@@ -94,7 +95,7 @@ class AdminCentreAccessTest extends AdminCentreTestCase
         $registered = collect(app('router')->getRoutes())->filter(fn ($route) => str_starts_with((string) $route->getName(), 'admin.platforms'));
 
         // Each registered route appears in doors() (decision and action routes several times), and each carries the gate.
-        $this->assertCount(19, $registered);
+        $this->assertCount(20, $registered);
 
         foreach ($registered as $route) {
             $this->assertContains('platform.admin', $route->gatherMiddleware(), $route->uri());

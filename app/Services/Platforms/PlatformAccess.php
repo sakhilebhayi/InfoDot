@@ -4,6 +4,7 @@ namespace App\Services\Platforms;
 
 use App\Models\PlatformCatalogue;
 use App\Models\PlatformEntitlement;
+use App\Models\PlatformEntitlementEvent;
 use App\Models\PlatformPlan;
 use App\Models\PlatformUserAccess;
 use App\Models\Team;
@@ -180,9 +181,10 @@ class PlatformAccess
         $held = match ($entitlement?->status) {
             PlatformEntitlement::PENDING => 'activation_pending',
             PlatformEntitlement::SUSPENDED => 'suspended',
-            PlatformEntitlement::PAYMENT_REQUIRED => 'payment_required',
+            // A trial that ran out on a priced plan waits for a plan to be paid for; no payment was ever asked for or missed.
+            PlatformEntitlement::PAYMENT_REQUIRED => $entitlement->source === 'trial' && ! $entitlement->grants() ? 'trial_ended' : 'payment_required',
             PlatformEntitlement::ACTIVE => $entitlement->grants() ? 'active' : $lapsed,
-            PlatformEntitlement::TRIAL => $entitlement->grants() ? 'trial' : $lapsed,
+            PlatformEntitlement::TRIAL => $entitlement->grants() ? 'trial' : 'trial_ended',
             // Cancelled with paid time left is still in use; a free platform that was switched off can simply be switched on again.
             PlatformEntitlement::CANCELLED => $entitlement->grants() ? 'active' : null,
             PlatformEntitlement::EXPIRED => in_array($entitlement->source, PlatformEntitlement::SELF_SERVICE_SOURCES, true) ? null : $lapsed,
@@ -197,7 +199,32 @@ class PlatformAccess
         return match ($this->offer($key)) {
             'free' => 'free_to_activate',
             'unpriced_free' => 'free_while_pricing_finalised',
-            default => PlatformPlan::where('platform_key', $key)->where('active', true)->whereNotNull('trial_days')->get()->contains->isSellable() ? 'trial_available' : 'available_for_purchase',
+            default => $this->trialPlans($key)->isNotEmpty() && ! $this->hadTrial($team, $key) ? 'trial_available' : 'available_for_purchase',
         };
+    }
+
+    /**
+     * The plans of a platform that a company can try before paying: on sale (active, approved, priced), not free,
+     * and offering a number of trial days inside the configured ceiling. Cheapest first.
+     *
+     * @return Collection<int, PlatformPlan>
+     */
+    public function trialPlans(string $key): Collection
+    {
+        return PlatformPlan::where('platform_key', $key)->where('active', true)->whereNotNull('trial_days')->orderBy('amount_minor')->get()
+            ->filter(self::offersTrial(...))->values();
+    }
+
+    public static function offersTrial(PlatformPlan $plan): bool
+    {
+        $days = (int) $plan->getAttribute('trial_days');
+
+        return $plan->isSellable() && ! $plan->isFree() && $days >= 1 && $days <= (int) config('platform_subscriptions.max_trial_days');
+    }
+
+    /** Whether the company has ever had a trial of the platform, whoever started it. One trial per company and platform. */
+    public function hadTrial(Team $team, string $key): bool
+    {
+        return $team->exists && PlatformEntitlementEvent::where('team_id', $team->id)->where('platform_key', $key)->where('type', 'trial_started')->exists();
     }
 }

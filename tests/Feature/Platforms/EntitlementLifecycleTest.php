@@ -104,7 +104,8 @@ class EntitlementLifecycleTest extends AdminCentreTestCase
         $this->artisan('platforms:lifecycle')->assertSuccessful();
         $hr = $this->access()->entitlement($team, 'hr');
         $this->assertSame(['payment_required', null], [$hr->status, $hr->grace_until]);
-        $this->assertSame('payment_required', $this->access()->decideFor($team->owner, $team, 'hr')->reason);
+        // The status waits for a payment, but nobody was asked for one: the person is told the trial ended.
+        $this->assertSame('trial_ended', $this->access()->decideFor($team->owner, $team, 'hr')->reason);
         $this->assertSame('expired', $this->access()->decideFor($team->owner, $team, 'forms')->reason);
 
         // Idempotent: nothing more happens, however often it runs.

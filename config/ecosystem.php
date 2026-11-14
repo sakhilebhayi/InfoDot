@@ -107,6 +107,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Platforms read (GET /api/ecosystem/companies/{uuid}/platforms)
+    |--------------------------------------------------------------------------
+    | Per calling platform, per minute, once its secret is proved. About twenty platforms each check a company at
+    | most once in ten minutes (a platform caches the answer for ten minutes, and for 60 seconds after a failure), so a
+    | platform with 3,000 companies active at once asks about 300 a minute. 600 leaves room for twice that, plus the
+    | retries after a failure, and still stops a loop. A call that does not prove itself gets the small per-address
+    | allowance. Independent of the sign-in redeem limit.
+    */
+
+    'companies_read_per_minute' => 600,
+    'companies_read_unproven_per_minute' => 30,
+
+    /*
+    |--------------------------------------------------------------------------
     | Membership webhooks
     |--------------------------------------------------------------------------
     | When someone is removed from a company, has their role changed, or a company is

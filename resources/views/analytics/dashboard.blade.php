@@ -12,25 +12,6 @@
             ['label' => 'Comments',  'value' => $totalComments,  'delta' => null, 'prev' => null],
             
         ];
-
-        $engines = [
-            ['name' => 'Business Intelligence',    'status' => 'active',  'desc' => 'KPIs, dashboards, reports'],
-            ['name' => 'Community Intelligence',   'status' => 'active',  'desc' => 'Sentiment, trends, engagement'],
-            ['name' => 'People Intelligence',      'status' => 'active',  'desc' => 'Workforce, retention, skills'],
-            ['name' => 'Content Intelligence',     'status' => 'active',  'desc' => 'Solutions, Q&A, knowledge'],
-            ['name' => 'Operational Intelligence', 'status' => 'planned', 'desc' => 'Fleet, assets, maintenance'],
-            ['name' => 'Financial Intelligence',   'status' => 'planned', 'desc' => 'Cash flow, fraud, forecasting'],
-            ['name' => 'Customer Intelligence',    'status' => 'planned', 'desc' => 'CLV, churn, satisfaction'],
-            ['name' => 'AI Intelligence',          'status' => 'planned', 'desc' => 'Agent ROI, adoption, quality'],
-            ['name' => 'Predictive Intelligence',  'status' => 'planned', 'desc' => 'Forecasting, risk, outcomes'],
-            ['name' => 'Decision Intelligence',    'status' => 'planned', 'desc' => 'Recommendations, next-best-action'],
-            ['name' => 'Risk Intelligence',        'status' => 'planned', 'desc' => 'Threats, compliance, posture'],
-            ['name' => 'Document Intelligence',    'status' => 'planned', 'desc' => 'Contracts, expiry, compliance'],
-            ['name' => 'Asset Intelligence',       'status' => 'planned', 'desc' => 'Depreciation, lifecycle, ROI'],
-            ['name' => 'Mining Intelligence',      'status' => 'planned', 'desc' => 'Production, safety, compliance'],
-            ['name' => 'Agriculture Intelligence', 'status' => 'planned', 'desc' => 'Yield, irrigation, equipment'],
-        ];
-        $activeEngines = collect($engines)->where('status', 'active')->count();
     @endphp
 
     <style>
@@ -73,14 +54,6 @@
         .ixa-bays-wrap { overflow: hidden; }
         .ixa-bays { margin: 0 -1px -1px 0; background: transparent; gap: 0; }
         .ixa-bays .ix-bay { cursor: default; box-shadow: inset -1px -1px 0 var(--ix-rule); }
-        .ixa-tbl-wrap { overflow-x: auto; }
-        .ixa-tbl { width: 100%; min-width: 560px; border-collapse: collapse; }
-        .ixa-tbl th { padding: 9px 16px; text-align: left; background: var(--ix-sunken); border-bottom: 1px solid var(--ix-rule); font-family: var(--ix-font); font-weight: 700; font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--ix-text-3); }
-        .ixa-tbl td { padding: 10px 16px; border-bottom: 1px solid var(--ix-rule); vertical-align: middle; }
-        .ixa-tbl tr:last-child td { border-bottom: 0; }
-        .ixa-tbl td.n { font-weight: 600; }
-        .ixa-tbl td.d { color: var(--ix-text-2); }
-        .ixa-tbl .ix-state { height: auto; }
         .apexcharts-tooltip { background: var(--ix-panel) !important; border: 1px solid var(--ix-rule-strong) !important; color: var(--ix-text) !important; box-shadow: none !important; border-radius: var(--ix-radius) !important; font-family: var(--ix-font) !important; }
         .apexcharts-tooltip-title { background: var(--ix-sunken) !important; border-bottom: 1px solid var(--ix-rule) !important; color: var(--ix-text) !important; font-family: var(--ix-font) !important; font-size: 12px !important; }
         .apexcharts-tooltip-text, .apexcharts-tooltip-y-group { font-size: 13px !important; }
@@ -226,7 +199,7 @@
                 </div>
             </section>
 
-            {{-- Platform coverage + engines share an edge --}}
+            {{-- This company's platforms --}}
             <div>
                 {{-- R-50: what this company holds, of what the catalogue offers it. The state of the fleet is not shown to a business. --}}
                 <section class="ix-panel" aria-labelledby="ixa-platforms" data-company-platforms>
@@ -247,28 +220,6 @@
                         <p class="ixa-none">{{ $isCompany ? 'Your company has no platforms yet.' : 'Your personal workspace has no platforms yet.' }}</p>
                     @endif
                     <p class="ixa-cover__more"><a href="{{ route('ecosystem.widget') }}">{{ $isCompany ? 'See what else '.$team->name.' can switch on' : 'See the whole catalogue' }}</a></p>
-                </section>
-
-                <section class="ix-panel" aria-labelledby="ixa-engines">
-                    <h2 class="ix-panel__head" id="ixa-engines">
-                        <span>Intelligence engines</span>
-                        <span class="ixa-stamp">{{ str_pad((string) $activeEngines, 2, '0', STR_PAD_LEFT) }} active / {{ str_pad((string) count($engines), 2, '0', STR_PAD_LEFT) }}</span>
-                    </h2>
-                    <div class="ixa-tbl-wrap">
-                        <table class="ixa-tbl">
-                            <caption class="ix-sr">Each engine reads data from connected Dot platforms and produces cross-platform intelligence.</caption>
-                            <thead><tr><th scope="col">Engine</th><th scope="col">Covers</th><th scope="col">State</th></tr></thead>
-                            <tbody>
-                                @foreach($engines as $engine)
-                                    <tr>
-                                        <td class="n">{{ $engine['name'] }}</td>
-                                        <td class="d">{{ $engine['desc'] }}</td>
-                                        <td><span class="ix-state {{ $engine['status'] === 'active' ? 'ix-state--done' : '' }}">{{ $engine['status'] === 'active' ? 'Active' : 'Planned' }}</span></td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
                 </section>
             </div>
 

@@ -144,6 +144,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/platforms/{platform}/switch-on', [PlatformCatalogueController::class, 'switchOn'])->middleware('throttle:20,1,platforms.switch')->name('platforms.switch-on');
     Route::get('/platforms/{platform}/switch-off', [PlatformCatalogueController::class, 'confirm'])->name('platforms.switch-off.confirm');
     Route::post('/platforms/{platform}/switch-off', [PlatformCatalogueController::class, 'switchOff'])->middleware('throttle:20,1,platforms.switch')->name('platforms.switch-off');
+    // Starting the one trial a priced plan offers: a page that states the end date and that nothing is charged, then the act.
+    Route::get('/platforms/{platform}/trial', [PlatformCatalogueController::class, 'trialConfirm'])->name('platforms.trial.confirm');
+    Route::post('/platforms/{platform}/trial', [PlatformCatalogueController::class, 'startTrial'])->middleware('throttle:20,1,platforms.switch')->name('platforms.trial');
     Route::put('/platforms/{platform}/people', [PlatformCatalogueController::class, 'people'])->middleware('throttle:30,1,platforms.people')->name('platforms.people');
     Route::post('/platforms/{platform}/recommendation/dismiss', [PlatformCatalogueController::class, 'dismiss'])->middleware('throttle:30,1,platforms.dismiss')->name('platforms.recommendation.dismiss');
 

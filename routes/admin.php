@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\Platforms\BundlesController;
 use App\Http\Controllers\Admin\Platforms\CatalogueController;
 use App\Http\Controllers\Admin\Platforms\CompaniesController;
+use App\Http\Controllers\Admin\Platforms\InfrastructureController;
 use App\Http\Controllers\Admin\Platforms\RecordsController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,9 @@ Route::middleware(['web', 'auth:sanctum', 'verified', 'platform.admin'])->prefix
         Route::get('/companies/{team:uuid}', 'show')->whereUuid('team')->middleware('throttle:60,1,admin.platforms.view')->name('.company');
         Route::post('/companies/{team:uuid}/{action}', 'act')->whereUuid('team')->whereIn('action', ['grant', 'trial', 'suspend', 'restore', 'cancel', 'access'])->middleware('throttle:30,1,admin.platforms.act')->name('.company.act');
     });
+
+    // What InfoDot has on record about each platform: read only, and never shown to a business.
+    Route::get('/infrastructure', InfrastructureController::class)->middleware('throttle:60,1,admin.platforms.view')->name('.infrastructure');
 
     Route::controller(RecordsController::class)->group(function () {
         Route::get('/outbox', 'outbox')->middleware('throttle:60,1,admin.platforms.view')->name('.outbox');

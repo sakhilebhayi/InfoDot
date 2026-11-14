@@ -7931,6 +7931,8 @@ body {
 .ix-adm__acts .ix-form { gap: 14px; max-width: none; }
 .ix-adm__h { margin: 0; font-size: 15px; font-weight: 700; color: var(--ix-text); }
 .ix-adm__soft { color: var(--ix-text-2); }
+/* The dated fact under a cell's headline in the infrastructure table: when it changed, when it last answered. */
+.ix-adm__fact { display: block; margin-top: 2px; color: var(--ix-text-2); font-size: 13px; line-height: 1.45; text-wrap: pretty; }
 .ix-table tr[aria-current='true'] td { background: var(--ix-signal-wash); }
 @media (max-width: 899px) { .ix-adm__split { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 767px) {

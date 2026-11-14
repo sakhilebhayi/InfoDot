@@ -152,7 +152,7 @@ X-InfoDot-Signature: sha256=<hex HMAC-SHA256 of "{timestamp}.{raw body}" with th
 | `grace_until` | ISO 8601 date-time | optional on `payment_failed` | When access should stop. Capped at 30 days. Without it InfoDot uses `PLATFORM_PAYMENT_GRACE_DAYS` (7). |
 | `occurred_at` | ISO 8601 date-time | always | When it happened at Dot.Finance. An event older than one already applied for the same company and platform is stored and answered `ignored`. |
 
-Example:
+Example (the amounts in the examples on this page are placeholders for the shape, not prices; the application ships none):
 
 ```json
 {
@@ -195,15 +195,51 @@ A suspended platform stays suspended whatever arrives; the payment facts are sti
 | 429 | | Too many requests. | Retry later. |
 | 5xx | | InfoDot failed. | Retry with growing delays; the call is idempotent by `event_id`. |
 
-### What Dot.Finance needs from InfoDot
+### What Dot.Finance reads from InfoDot: `GET /api/finance/platform-plans`
 
-Plan and bundle slugs, amounts and currencies are read by a person from the admin centre today. A signed read of the
-plans on sale is not built yet; it belongs with the payments work in Dot.Finance (specification section 11).
+The plans and bundles Dot.Finance may sell, so it never needs them typed in by hand. Signed in the scheme above, with the
+same secret, but a GET signs the empty body: `X-InfoDot-Signature` is `sha256=` plus the HMAC-SHA256 of `{timestamp}.`
+and `X-InfoDot-Timestamp` is the same unix time, accepted within five minutes. With the secret unset every request is
+refused (401, the same answer for every fault).
+
+Only what is on sale is returned: active, approved by a platform administrator, with an amount and a currency. Plans that
+cost nothing are not listed (nothing is bought, and a payment for one would be refused). Nothing about any company or
+person. Amounts are minor units.
+
+```json
+{
+  "plans": [
+    { "slug": "team", "platform": "hr", "name": "Team", "amount_minor": 24900, "currency": "ZAR", "interval": "month", "trial_days": 14 }
+  ],
+  "bundles": [
+    { "slug": "office-pair", "name": "Office pair", "amount_minor": 39900, "currency": "ZAR", "interval": "month", "platforms": [ { "platform": "forms", "plan": null }, { "platform": "projects", "plan": null } ] }
+  ]
+}
+```
+
+The example is the shape only, and its amounts are placeholders. The application ships no plan, so the list is empty until an administrator approves one.
+
+## 4b. Read-only views and limits added with the completion work
+
+- **Infrastructure** (`/admin/platforms/infrastructure`, administrators only). One row per catalogue platform with
+  only what InfoDot has recorded: the catalogue status an administrator set and when it last changed, the registry
+  entry (can be opened, switched off, address not trusted, missing), whether a shared secret is set (never its value),
+  the single sign-on registration and its last sign-in, and the delivery state from the outbox (accepted, waiting,
+  parked, closed because the platform has no receiver yet, and the last answer). InfoDot does not probe the platforms, so
+  there is no uptime figure. Launch-code sign-ins are checked when they happen and are not kept, so they do not appear.
+  A business never sees this page; its Analytics page shows its own platforms only.
+- **Starting a trial from the catalogue.** Where an approved, priced plan offers trial days and the company has not had
+  a trial of that platform, the owner or an administrator of the company sees "Start the N-day trial" on the platform's
+  page. A confirmation page states the end date and that nothing is charged, now or when it ends: access simply ends
+  unless the company chooses a paid plan later. One trial per company and platform, however the first one ended and
+  whoever started it. When a trial on a priced plan runs out the company is told the trial ended, not that a payment
+  is missing.
+- **The platforms read has its own rate limit.** `GET /api/ecosystem/companies/{uuid}/platforms` is limited per
+  calling platform (600 a minute once its secret is proved; 30 a minute per address for anything that is not). It no
+  longer shares the sign-in redemption limit, and it is taken out of the API group's per-address limit, which the
+  redeem call still has.
 
 ## 5. What is not built in this step
 
 - The owner's checkout. `Entitlements::subscribe()` records that an owner asked for a paid plan (`pending`), but no
   page calls it yet and nothing sends the company to Dot.Finance, because Dot.Finance cannot take the payment yet.
-- A signed read of plans and prices for Dot.Finance.
-- The infrastructure health view named in specification section 9.
-- In-app notices to a company's owner when an administrator changes its access.

@@ -58,7 +58,7 @@ class PlatformRefusal
             ],
             AccessDecision::TRIAL_ENDED => [
                 "The trial of {$platform} has ended",
-                $owns ? "What {$company} made during the trial is kept. Choosing a plan is done in Dot.Finance." : "What {$company} made during the trial is kept. {$ask} to choose a plan.",
+                $owns ? "What {$company} made during the trial is kept, and nothing was charged. Choosing a plan is done in Dot.Finance." : "What {$company} made during the trial is kept, and nothing was charged. {$ask} to choose a plan.",
             ],
             AccessDecision::PAYMENT_REQUIRED => [
                 "{$platform} is waiting for a payment",

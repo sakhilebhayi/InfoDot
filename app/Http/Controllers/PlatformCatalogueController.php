@@ -21,8 +21,8 @@ use Illuminate\View\View;
 
 /**
  * One platform as the person's current company sees it, and what the company can do about it from the catalogue
- * (R-50 section 7): switch a free or unpriced platform on, switch it off again, and choose who in the company may
- * open it. Every action is for the person's current company and nothing else: no company is named in the address,
+ * (R-50 section 7): switch a free or unpriced platform on, switch it off again, start the one trial a priced plan
+ * offers, and choose who in the company may open it. Every action is for the person's current company and nothing else: no company is named in the address,
  * and the company a form was drawn for is only compared with the current one, so a stale tab or a forged form
  * cannot act for a different company. Who may do what is TeamPolicy (managePlatforms, cancelPlatforms), checked here
  * and again inside the Entitlements service that writes the change, its history and its outbox message.
@@ -48,6 +48,7 @@ class PlatformCatalogueController extends Controller
             'owns' => $company && $user->can('cancelPlatforms', $team),
             'canSwitchOff' => $company && $user->can('cancelPlatforms', $team) && $this->switchable($entitlement),
             'plans' => CompanyCatalogue::shared()->plans($platform),
+            'trialPlans' => $row['state'] === 'trial_available' ? CompanyCatalogue::shared()->trialPlans($team, $platform) : collect(),
             'connections' => collect((array) $row['entry']->connects_with)->map(fn ($key) => $key === 'infodot' ? null : CompanyCatalogue::shared()->find($user, $team, (string) $key))->filter()->values(),
             'people' => $manages && $entitlement !== null ? $this->peopleOf($team) : collect(),
             'selected' => $selected,
@@ -107,6 +108,56 @@ class PlatformCatalogueController extends Controller
         }
 
         return redirect()->route('platforms.show', ['platform' => $platform])->with('status', "{$row['name']} is switched off for {$team->name}. Nothing was deleted.");
+    }
+
+    /**
+     * The page that says what a trial is before it starts: the plan, the date it ends, and that nothing is charged
+     * when it does. Owner or administrator, and only while the company has not had its trial of this platform.
+     */
+    public function trialConfirm(Request $request, string $platform): View|RedirectResponse
+    {
+        [$user, $team, $row] = $this->resolve($request, $platform);
+
+        abort_unless($team->exists && $user->can('managePlatforms', $team), 403);
+
+        $plans = $row['state'] === 'trial_available' ? CompanyCatalogue::shared()->trialPlans($team, $platform) : collect();
+
+        if ($plans->isEmpty()) {
+            return redirect()->route('platforms.show', ['platform' => $platform]);
+        }
+
+        return view('platforms.trial', [
+            'row' => $row,
+            'team' => $team,
+            'plans' => $plans,
+            'chosen' => $plans->firstWhere('slug', Input::text($request->query('plan'))) ?? $plans->first(),
+            'owns' => $user->ownsTeam($team),
+            'headcount' => 1 + $team->users()->where('users.id', '!=', $team->user_id)->count(),
+        ]);
+    }
+
+    /** Start the trial that was confirmed. The Entitlements service checks everything again and allows one per company. */
+    public function startTrial(Request $request, string $platform, Entitlements $entitlements): RedirectResponse
+    {
+        [$user, $team, $row] = $this->resolve($request, $platform);
+        $this->sameCompany($request, $team);
+        abort_unless($user->can('managePlatforms', $team), 403);
+
+        // The plan is named by its slug and looked up among this platform's trial plans only: nothing else can be trialled from here.
+        $plan = CompanyCatalogue::shared()->trialPlans($team, $platform)->firstWhere('slug', Input::text($request->input('plan')));
+
+        try {
+            if ($plan === null) {
+                throw new EntitlementRefused($row['state'] === 'trial_available' ? 'Choose the plan to try.' : "{$row['name']} has no trial that {$team->name} can start.");
+            }
+
+            $entitlement = $entitlements->startTrial($team, $platform, $user, $plan);
+        } catch (EntitlementRefused $e) {
+            return redirect()->route('platforms.show', ['platform' => $platform])->with('status', $e->getMessage().' Nothing was changed and nothing was charged.');
+        }
+
+        return redirect()->route('platforms.show', ['platform' => $platform])
+            ->with('status', "The trial of {$row['name']} has started for {$team->name}. It ends on ".$entitlement->trial_ends_at?->format('j F Y').', and nothing is charged when it does.');
     }
 
     /** Everyone in the company, or the people ticked. Owners and administrators can always open it and are never listed. */

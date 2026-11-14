@@ -8,8 +8,8 @@
     $company = $isCompany ? $team->name : 'your company';
     $chip = match (true) {
         in_array($row['state'], ['included', 'active', 'trial'], true) => 'ix-chip--done',
-        in_array($row['state'], CompanyCatalogue::SWITCHABLE, true) => 'ix-chip--info',
-        in_array($row['state'], ['payment_required', 'subscription_expired', 'suspended', 'activation_pending'], true) => 'ix-chip--open',
+        in_array($row['state'], [...CompanyCatalogue::SWITCHABLE, 'trial_available'], true) => 'ix-chip--info',
+        in_array($row['state'], ['payment_required', 'trial_ended', 'subscription_expired', 'suspended', 'activation_pending'], true) => 'ix-chip--open',
         default => '',
     };
     $mode = $entitlement?->access_mode ?? PlatformEntitlement::EVERYONE;
@@ -45,6 +45,8 @@
                         <a class="ix-btn ix-btn--primary" data-platform-action="open" href="{{ route('platform.launch', ['platform' => $key]) }}">Open {{ $name }}</a>
                     @elseif ($row['action'] === 'switch_on')
                         <a class="ix-btn ix-btn--primary" data-platform-action="switch_on" href="{{ route('platforms.switch-on.confirm', ['platform' => $key]) }}">Switch on {{ $name }}</a>
+                    @elseif ($row['action'] === 'start_trial')
+                        <a class="ix-btn ix-btn--primary" data-platform-action="start_trial" href="{{ route('platforms.trial.confirm', ['platform' => $key]) }}">Start the {{ $row['trial_days'] }}-day trial</a>
                     @elseif ($row['action'] === 'finance' && $financeUrl)
                         <a class="ix-btn ix-btn--primary" data-platform-action="finance" href="{{ $financeUrl }}">Open Dot.Finance</a>
                     @elseif ($row['state'] === 'company_required')
@@ -100,9 +102,12 @@
                 @else
                     <ul class="ix-plat__plans">
                         @foreach ($plans as $plan)
-                            <li><strong>{{ $plan->name }}</strong> <span>{{ CompanyCatalogue::priceOf($plan) }}</span></li>
+                            <li><strong>{{ $plan->name }}</strong> <span>{{ CompanyCatalogue::priceOf($plan) }}@if ($trialPlans->contains('id', $plan->id)), after a trial of {{ $plan->trial_days }} days if you start one @endif</span></li>
                         @endforeach
                     </ul>
+                    @if ($row['state'] === 'trial_available')
+                        <p data-trial-offer><strong>A trial costs nothing.</strong> {{ $manages ? 'You can start one for '.$team->name.'.' : 'The owner or an administrator of '.$company.' can start one.' }} When it ends, access simply ends: nothing is charged, and nothing is deleted. A company can have one trial of {{ $name }}.</p>
+                    @endif
                     @if (! $row['held'] && ! $plans->contains->isFree())
                         <p data-paid-not-open><strong>Paid activation is not open yet.</strong> Payment for a platform runs through Dot.Finance, which is not taking payments yet, so this plan cannot be started and nothing can be charged. The price above is the approved one; it is shown so you know it, not so you can buy it today.</p>
                     @endif

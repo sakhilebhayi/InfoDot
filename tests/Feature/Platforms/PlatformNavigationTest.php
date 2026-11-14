@@ -149,4 +149,22 @@ class PlatformNavigationTest extends PlatformTestCase
         $this->assertStringContainsString("5 of the {$catalogue} in the catalogue", $panel($team->owner));
         $this->assertStringNotContainsString('registered', $this->actingAs($team->owner)->get('/analytics')->getContent());
     }
+
+    public function test_analytics_claims_no_intelligence_engines_because_none_is_recorded_for_the_company(): void
+    {
+        // The page used to list fifteen "engines", four of them "Active", from an array in the view. Nothing recorded about a company
+        // backs any of them, so the panel is gone and no engine is named or counted as active.
+        $team = $this->company('Northwind Freight');
+
+        foreach ([$team->owner, $this->memberOf($team), $this->person()] as $person) {
+            $html = $this->actingAs($person->fresh())->get('/analytics')->assertOk()->getContent();
+
+            foreach (['Intelligence engines', 'ixa-engines', 'Business Intelligence', 'Community Intelligence', 'People Intelligence', 'Predictive Intelligence', 'Planned'] as $absent) {
+                $this->assertStringNotContainsString($absent, $html, $absent);
+            }
+            $this->assertDoesNotMatchRegularExpression('/\d+ active \/ \d+/', strip_tags($html));
+        }
+
+        $this->assertStringNotContainsString("'status' => 'active'", (string) file_get_contents(resource_path('views/analytics/dashboard.blade.php')));
+    }
 }

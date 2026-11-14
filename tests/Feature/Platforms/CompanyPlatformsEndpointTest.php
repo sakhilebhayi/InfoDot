@@ -154,11 +154,60 @@ class CompanyPlatformsEndpointTest extends PlatformTestCase
         $this->assertSame('company_required', $platforms['forms']['status']);
     }
 
-    public function test_it_is_throttled_like_the_redeem_call(): void
+    public function test_it_has_its_own_named_limiter_and_none_of_the_shared_ones(): void
     {
         $route = app('router')->getRoutes()->getByName('api.ecosystem.companies.platforms');
 
-        $this->assertContains('throttle:ecosystem-redeem', $route->gatherMiddleware());
+        $this->assertContains('throttle:platform-companies', $route->gatherMiddleware());
+        $this->assertNotContains('throttle:ecosystem-redeem', $route->gatherMiddleware());
+        $this->assertNotContains('throttle:api', $route->gatherMiddleware(), 'the api group limit is shared with sign-in redemption');
+        $this->assertContains('throttle:ecosystem-redeem', app('router')->getRoutes()->getByName('api.ecosystem.redeem')->gatherMiddleware());
         $this->assertSame(['GET', 'HEAD'], $route->methods());
+    }
+
+    public function test_the_read_has_its_own_limit_per_calling_platform_and_the_redeem_limit_is_untouched(): void
+    {
+        $team = $this->company();
+        config(['ecosystem.companies_read_per_minute' => 3]);
+
+        foreach (range(1, 3) as $n) {
+            $this->read($team->uuid)->assertOk();
+        }
+        $this->read($team->uuid)->assertStatus(429);
+
+        // Another platform has its own allowance, from the same address.
+        $this->read($team->uuid, 'analytics', self::ANALYTICS)->assertOk();
+
+        // Sign-in redemption is a different bucket: exhausted reads do not touch it.
+        $redeem = fn () => $this->withHeaders(['Authorization' => 'Bearer '.self::FORMS])->postJson('/api/ecosystem/redeem', ['token' => 'unknown', 'platform' => 'forms']);
+        $this->assertNotSame(429, $redeem()->status());
+        $this->assertSame(58, (int) $redeem()->headers->get('X-RateLimit-Remaining'), 'the redeem bucket has only counted its own calls');
+    }
+
+    public function test_exhausting_the_redeem_limit_does_not_stop_the_read(): void
+    {
+        $team = $this->company();
+
+        foreach (range(1, 60) as $n) {
+            $this->withHeaders(['Authorization' => 'Bearer '.self::FORMS])->postJson('/api/ecosystem/redeem', ['token' => 'unknown', 'platform' => 'forms']);
+        }
+        $this->withHeaders(['Authorization' => 'Bearer '.self::FORMS])->postJson('/api/ecosystem/redeem', ['token' => 'unknown', 'platform' => 'forms'])->assertStatus(429);
+
+        $this->read($team->uuid)->assertOk();
+    }
+
+    public function test_calls_that_do_not_prove_themselves_use_a_small_bucket_that_cannot_spend_a_platforms_allowance(): void
+    {
+        $team = $this->company();
+        config(['ecosystem.companies_read_unproven_per_minute' => 2]);
+
+        foreach (range(1, 2) as $n) {
+            $this->read($team->uuid, 'forms', 'a-wrong-secret')->assertStatus(401);
+        }
+        $this->read($team->uuid, 'forms', 'a-wrong-secret')->assertStatus(429);
+        $this->read($team->uuid, null, null)->assertStatus(429);
+
+        // The real platform, from the same address, is not throttled by the guesses.
+        $this->read($team->uuid)->assertOk();
     }
 }

@@ -12,8 +12,8 @@
     // The colour of a state's chip: in use, something the company can do, something that needs attention, or plain.
     $chip = fn (array $row) => match (true) {
         in_array($row['state'], ['included', 'active', 'trial'], true) => 'ix-chip--done',
-        in_array($row['state'], CompanyCatalogue::SWITCHABLE, true) => 'ix-chip--info',
-        in_array($row['state'], ['payment_required', 'subscription_expired', 'suspended', 'activation_pending'], true) => 'ix-chip--open',
+        in_array($row['state'], [...CompanyCatalogue::SWITCHABLE, 'trial_available'], true) => 'ix-chip--info',
+        in_array($row['state'], ['payment_required', 'trial_ended', 'subscription_expired', 'suspended', 'activation_pending'], true) => 'ix-chip--open',
         default => '',
     };
 @endphp
@@ -161,6 +161,8 @@
                                             </button>
                                         @elseif ($row['action'] === 'switch_on')
                                             <a class="ix-btn ix-btn--sm" data-platform-action="switch_on" href="{{ route('platforms.switch-on.confirm', ['platform' => $key]) }}" aria-label="Switch on {{ $row['name'] }}">Switch on</a>
+                                        @elseif ($row['action'] === 'start_trial')
+                                            <a class="ix-btn ix-btn--sm" data-platform-action="start_trial" href="{{ route('platforms.trial.confirm', ['platform' => $key]) }}" aria-label="Start trial of {{ $row['name'] }}">Start trial</a>
                                         @elseif ($row['action'] === 'finance')
                                             <button type="button" class="ix-btn ix-btn--sm" data-platform-action="finance" wire:click="launch('finance')" aria-label="Open Dot.Finance to pay for {{ $row['name'] }}">Open Dot.Finance</button>
                                         @else
