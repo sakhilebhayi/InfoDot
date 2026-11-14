@@ -20,9 +20,13 @@ Route::post('/ecosystem/redeem', EcosystemRedeemController::class)
     ->middleware('throttle:ecosystem-redeem')
     ->name('api.ecosystem.redeem');
 
-// R-50: what a company holds, for the platform that asks (its own secret, like the redeem call). See CompanyPlatformsController.
+// R-50: what a company holds, for the platform that asks (its own secret, like the redeem call), under its own rate limit per calling
+// platform so it never shares a bucket with sign-in redemption. See CompanyPlatformsController and the `platform-companies` limiter.
 Route::get('/ecosystem/companies/{uuid}/platforms', CompanyPlatformsController::class)
-    ->middleware('throttle:ecosystem-redeem')
+    // The `api` group also applies a 60 a minute limit per address to every route here, which the redeem call shares: left on, it
+    // would be a second, shared bucket in front of this one. This route answers to its own limiter only.
+    ->withoutMiddleware('throttle:api')
+    ->middleware('throttle:platform-companies')
     ->name('api.ecosystem.companies.platforms');
 
 // A platform registers (and removes) pointers to the objects it owns. Authenticated by that

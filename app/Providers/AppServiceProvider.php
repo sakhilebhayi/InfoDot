@@ -33,6 +33,8 @@ use App\Models\Team;
 use App\Services\Demo\DemoRegistry;
 use App\Services\Platforms\PlatformNotices;
 use App\Support\CanonicalUrl;
+use App\Support\Input;
+use App\Support\PlatformSecret;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -155,6 +157,18 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('knowledge-candidates', fn (Request $request) => Limit::perMinute((int) config('knowledge.candidates.per_minute', 60))->by($request->ip()));
         RateLimiter::for('ecosystem-redeem', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
+        // R-50: the platforms read has its own bucket, so sign-in redemption and entitlement checks can never starve each other. A platform
+        // that is refused (429) carries on and treats the answer as unknown, so sharing the redeem bucket could silently pause enforcement.
+        // The bucket belongs to the calling platform once its secret has been proved here (the same check the endpoint makes), never to
+        // the address alone: platforms often share a host, and one platform's burst must not slow another's. Anything that does not prove
+        // itself falls back to a small bucket per address, so guessing is throttled and cannot spend a real platform's allowance.
+        RateLimiter::for('platform-companies', function (Request $request) {
+            $caller = Input::text($request->query('platform')) ?: Input::text($request->header('X-Dot-Platform'));
+
+            return $caller !== '' && strlen($caller) <= 40 && PlatformSecret::proves($request, $caller)
+                ? Limit::perMinute((int) config('ecosystem.companies_read_per_minute', 600))->by('platform:'.$caller)
+                : Limit::perMinute((int) config('ecosystem.companies_read_unproven_per_minute', 30))->by('unproven:'.$request->ip());
+        });
         // Their own buckets, so a burst of payment or room callbacks cannot lock out sign-in redeems, or the reverse. Verification of the
         // signature happens after the limiter, so the allowance is generous: a 200-person room start sends 200 joins in a minute.
         RateLimiter::for('finance-callbacks', fn (Request $request) => Limit::perMinute(300)->by($request->ip()));
