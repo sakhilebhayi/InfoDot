@@ -113,6 +113,13 @@ It is enforced at every door, server-side:
   Platforms page, Home, search, `/open/{resource}`).
 - `POST /api/ecosystem/redeem`: refuses a code whose company is not entitled, and the answer marks each company
   with `entitled` for that platform so the platform syncs only entitled companies.
+- R-51 (optional): `GET /go/{platform}?company=<team uuid>` opens the platform for a company the person chose rather than
+  InfoDot's current one. The uuid must be one of the person's own companies (anything else is the same `not_a_member`
+  refusal page as an unknown uuid, revealing nothing). The decision is made for that company, and the one-use token
+  (60 s, ability `ecosystem:read`) carries one extra ability, `company:<uuid>`. Redeem then returns that company as
+  `current_team_id` / `current_team_uuid`; the `teams` list and its `entitled` flags are unchanged, and a company that is
+  no longer the person's or no longer entitled makes the code refused. Without `company` everything is as before, and
+  InfoDot's own current company is never changed.
 - `/oauth/authorize`: refuses a client whose platform the person's company is not entitled to.
 - A signed read for platforms, `GET /api/ecosystem/companies/{uuid}/platforms` (bearer: the caller's platform
   secret), so a platform can check on its own login path and Dot.Analytics can show "Your business platforms".

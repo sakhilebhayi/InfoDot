@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Team;
 use App\Models\User;
 use App\Services\Platforms\PlatformAccess;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +20,9 @@ use Illuminate\Support\Facades\Log;
 final class EcosystemHandoff
 {
     public const TOKEN_PREFIX = 'ecosystem-handoff';
+
+    /** R-51: the extra ability a launch token carries when the person chose a company ("company:<team uuid>"). */
+    public const COMPANY_ABILITY_PREFIX = 'company:';
 
     /**
      * The token's name carries its audience, so a token minted for one platform
@@ -88,7 +92,7 @@ final class EcosystemHandoff
      *
      * @return array{action: string, token: string, redirect: ?string, name: string, origin: string}|null
      */
-    public static function launchForm(User $user, string $key, ?string $redirect = null): ?array
+    public static function launchForm(User $user, string $key, ?string $redirect = null, ?Team $company = null): ?array
     {
         // A suspended account gets no launch code, whoever asks for the form.
         if ($user->isSuspended()) {
@@ -110,7 +114,11 @@ final class EcosystemHandoff
         }
 
         // R-50: no launch code for a platform the person's current company is not entitled to, whoever asks for the form.
-        $decision = app(PlatformAccess::class)->decide($user, $key);
+        // R-51: when the caller names a company (already checked as one of the person's own), the decision is made for
+        // that company and the token carries it, so the platform opens the person under the company they chose.
+        $decision = $company !== null
+            ? app(PlatformAccess::class)->decideFor($user, $company, $key)
+            : app(PlatformAccess::class)->decide($user, $key);
 
         if ($decision->refused()) {
             Log::info('Ecosystem handoff refused: the company is not entitled to the platform.', ['platform' => $key, 'reason' => $decision->reason]);
@@ -120,7 +128,7 @@ final class EcosystemHandoff
 
         $token = $user->createToken(
             self::tokenName($key),
-            ['ecosystem:read'],
+            $company !== null ? ['ecosystem:read', self::COMPANY_ABILITY_PREFIX.$company->uuid] : ['ecosystem:read'],
             now()->addSeconds(max(10, (int) config('ecosystem.launch_ttl_seconds', 60)))
         )->plainTextToken;
 

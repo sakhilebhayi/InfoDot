@@ -69,7 +69,7 @@ paths:
   /ecosystem/redeem:
     post:
       summary: A platform proves a handoff token
-      description: Rate limited (`throttle:ecosystem-redeem`). The token is single use, bound to the platform and the person must have a verified email. Refusals are identical.
+      description: "Rate limited (`throttle:ecosystem-redeem`). The token is single use, bound to the platform and the person must have a verified email. Refusals are identical. When the browser was sent to the platform by `GET /go/{platform}?company=<team uuid>`, the token names that company and `current_team_id` / `current_team_uuid` report it instead of the person's InfoDot current company (the per-company `entitled` list is unchanged). A named company that is no longer the person's, or no longer entitled, is refused like any bad code. Without a named company the answer is as before."
       security: [{ platformSecret: [] }]
       requestBody:
         required: true
@@ -105,8 +105,8 @@ paths:
                         uuid: { type: string, format: uuid }
                         name: { type: string }
                         personal: { type: boolean }
-                  current_team_id: { type: integer }
-                  current_team_uuid: { type: string, format: uuid }
+                  current_team_id: { type: integer, description: "The company chosen at launch when the token names one, otherwise the person's InfoDot current company." }
+                  current_team_uuid: { type: string, format: uuid, description: "As current_team_id." }
         "401": { description: "Service secret missing or wrong." }
         "403": { $ref: "#/components/schemas/Refusal" }
   /ecosystem/resources:
