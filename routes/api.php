@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CompanyPlatformsController;
 use App\Http\Controllers\Api\EcosystemRedeemController;
+use App\Http\Controllers\Api\FinancePlatformPlansController;
 use App\Http\Controllers\Api\KnowledgeCandidatesController;
 use App\Http\Controllers\Api\PlatformSubscriptionEventsController;
 use App\Http\Controllers\Api\ResourceRegistryController;
@@ -54,6 +55,12 @@ Route::post('/finance/ticket-events', SeminarTicketEventsController::class)
 Route::post('/finance/platform-subscription-events', PlatformSubscriptionEventsController::class)
     ->middleware('throttle:finance-callbacks')
     ->name('api.finance.platform-subscription-events');
+
+// R-50: Dot.Finance reads the approved plans and bundles it may sell. Same signature and secret as the confirmations above (a GET signs the
+// empty body); refused entirely while the secret is unset. See FinancePlatformPlansController.
+Route::get('/finance/platform-plans', FinancePlatformPlansController::class)
+    ->middleware('throttle:finance-callbacks')
+    ->name('api.finance.platform-plans');
 
 // LiveKit tells InfoDot who connected to a seminar room. Signed with the LiveKit API secret; see SeminarRoomWebhookController.
 Route::post('/seminars/livekit-webhook', SeminarRoomWebhookController::class)

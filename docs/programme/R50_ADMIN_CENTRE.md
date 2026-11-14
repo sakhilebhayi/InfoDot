@@ -195,15 +195,32 @@ A suspended platform stays suspended whatever arrives; the payment facts are sti
 | 429 | | Too many requests. | Retry later. |
 | 5xx | | InfoDot failed. | Retry with growing delays; the call is idempotent by `event_id`. |
 
-### What Dot.Finance needs from InfoDot
+### What Dot.Finance reads from InfoDot: `GET /api/finance/platform-plans`
 
-Plan and bundle slugs, amounts and currencies are read by a person from the admin centre today. A signed read of the
-plans on sale is not built yet; it belongs with the payments work in Dot.Finance (specification section 11).
+The plans and bundles Dot.Finance may sell, so it never needs them typed in by hand. Signed in the scheme above, with the
+same secret, but a GET signs the empty body: `X-InfoDot-Signature` is `sha256=` plus the HMAC-SHA256 of `{timestamp}.`
+and `X-InfoDot-Timestamp` is the same unix time, accepted within five minutes. With the secret unset every request is
+refused (401, the same answer for every fault).
+
+Only what is on sale is returned: active, approved by a platform administrator, with an amount and a currency. Plans that
+cost nothing are not listed (nothing is bought, and a payment for one would be refused). Nothing about any company or
+person. Amounts are minor units.
+
+```json
+{
+  "plans": [
+    { "slug": "team", "platform": "hr", "name": "Team", "amount_minor": 24900, "currency": "ZAR", "interval": "month", "trial_days": 14 }
+  ],
+  "bundles": [
+    { "slug": "office-pair", "name": "Office pair", "amount_minor": 39900, "currency": "ZAR", "interval": "month", "platforms": [ { "platform": "forms", "plan": null }, { "platform": "projects", "plan": null } ] }
+  ]
+}
+```
+
+The example is the shape only. The application ships no plan, so the list is empty until an administrator approves one.
 
 ## 5. What is not built in this step
 
 - The owner's checkout. `Entitlements::subscribe()` records that an owner asked for a paid plan (`pending`), but no
   page calls it yet and nothing sends the company to Dot.Finance, because Dot.Finance cannot take the payment yet.
-- A signed read of plans and prices for Dot.Finance.
-- The infrastructure health view named in specification section 9.
 - In-app notices to a company's owner when an administrator changes its access.

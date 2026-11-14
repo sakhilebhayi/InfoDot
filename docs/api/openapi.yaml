@@ -228,6 +228,54 @@ paths:
         "400": { description: "Body is not a well-formed event." }
         "401": { description: "Signature, timestamp or secret is wrong, or the secret is unset." }
         "422": { description: "The company, platform, plan or bundle is unknown or does not fit. The answer does not say which." }
+  /finance/platform-plans:
+    get:
+      summary: Dot.Finance reads the approved plans and bundles it may sell
+      description: |
+        Signed like the confirmations Dot.Finance sends (HMAC-SHA256 over "{timestamp}." with the empty body, headers `X-InfoDot-Timestamp`
+        and `X-InfoDot-Signature`), 300 second window, with the same secret; refused entirely while the secret is unset. Returns only plans
+        and bundles that are active, approved by a platform administrator and priced. Plans that cost nothing are not listed. Amounts
+        are in minor units. Nothing about any company or person.
+      security: [{ hmac: [] }]
+      responses:
+        "200":
+          description: The plans and bundles on sale.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plans:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        slug: { type: string }
+                        platform: { type: string }
+                        name: { type: string }
+                        amount_minor: { type: integer }
+                        currency: { type: string, minLength: 3, maxLength: 3 }
+                        interval: { type: string, nullable: true, enum: [month, year] }
+                        trial_days: { type: integer, nullable: true }
+                  bundles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        slug: { type: string }
+                        name: { type: string }
+                        amount_minor: { type: integer }
+                        currency: { type: string, minLength: 3, maxLength: 3 }
+                        interval: { type: string, nullable: true, enum: [month, year] }
+                        platforms:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              platform: { type: string }
+                              plan: { type: string, nullable: true }
+        "401": { description: "Signature, timestamp or secret is wrong, or the secret is unset." }
+        "429": { description: "Too many requests." }
   /seminars/livekit-webhook:
     post:
       summary: LiveKit reports a participant joining a seminar room
