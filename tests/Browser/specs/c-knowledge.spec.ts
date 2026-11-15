@@ -1,5 +1,6 @@
 import { addMember, fixture, makeBusiness, makeUser, rows, unique } from '../support/app';
 import { expect, openContext, signIn, test } from '../support/fixtures';
+import { accountLink, goTo } from '../support/nav';
 
 test.describe('C. Knowledge', () => {
     test('library, a question with a picture, a solution with steps, an answer, who can see it, and a reported item', async ({ page, browser }) => {
@@ -13,7 +14,7 @@ test.describe('C. Knowledge', () => {
 
         // The library, and an existing solution opened from it.
         await signIn(page, asker.email);
-        await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Library', exact: true }).click();
+        await goTo(page, 'Library', 'Knowledge');
         await expect(page.getByRole('heading', { level: 1, name: 'Verified library' })).toBeVisible();
         await page.getByRole('navigation', { name: 'Knowledge' }).getByRole('link', { name: 'Solutions' }).click();
         await page.getByRole('link', { name: 'Demo: month-end reconciliation routine' }).first().click();
@@ -23,7 +24,7 @@ test.describe('C. Knowledge', () => {
 
         // Ask a question, for the company only, with a photograph attached.
         const question = `Why does the proving cabinet trip the power ${tag}?`;
-        await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Knowledge', exact: true }).click();
+        await goTo(page, 'Questions', 'Knowledge');
         await page.getByLabel('Ask', { exact: true }).fill(question);
         await page.getByRole('button', { name: 'Ask a question' }).click();
         await expect(page).toHaveURL(/\/questions\/ask\?question=/);
@@ -109,7 +110,7 @@ test.describe('C. Knowledge', () => {
         const moderatorContext = await openContext(browser);
         const moderatorPage = await moderatorContext.newPage();
         await signIn(moderatorPage, moderator.email);
-        await moderatorPage.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Moderation', exact: true }).click();
+        await goTo(moderatorPage, 'Moderation', 'Admin');
         await expect(moderatorPage.getByRole('heading', { level: 1, name: 'Moderation' })).toBeVisible();
         const item = moderatorPage.locator('.ix-mod__item').filter({ hasText: title });
         await expect(item).toBeVisible();

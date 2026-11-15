@@ -81,9 +81,10 @@
         'signOut' => ['action' => route('logout'), 'label' => __('Log out')],
     ];
 @endphp
+{{-- No skip link of its own: the layout already prints one first (a second would be a second Tab stop). --}}
 <x-dot.header
     brand-href="{{ route('dashboard') }}" brand-label="InfoDot home"
-    :nav="$nav" :account="$account" :context="$company?->name ?? 'Personal workspace'" skip="#main" drawer-title="Menu"
+    :nav="$nav" :account="$account" :context="$company?->name ?? 'Personal workspace'" drawer-title="Menu"
     class="ix-header">
     <x-slot:brand><x-ix.brand /></x-slot:brand>
     <x-slot:search><livewire:search /></x-slot:search>

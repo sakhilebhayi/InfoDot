@@ -13,7 +13,6 @@
         <span class="ix-yardlabel">Dot Apps</span>
     </button>
 
-    <div class="ix-yardscrim" x-show="open" x-cloak @click="open = false" aria-hidden="true"></div>
     <div id="ix-yardmap" class="ix-yardmap" x-show="open" x-cloak x-transition.opacity.duration.100ms role="dialog" aria-label="Dot platforms">
         <div class="ix-yardmap__in">
             <button type="button" class="ix-yardmap__close" @click="open = false; $el.closest('.ix-yardwrap').querySelector('button').focus()" aria-label="Close Dot Apps"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
@@ -59,4 +58,5 @@
             </div>
         </div>
     </div>
+    <div class="ix-yardscrim" x-show="open" x-cloak @click="open = false" aria-hidden="true"></div>
 </div>

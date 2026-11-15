@@ -324,3 +324,14 @@
 .lp-hero {
     grid-template-columns: minmax(0, 1fr);
 }
+
+/* A visitor's bar has three long place names and the two sign-in links: a narrower pill (the shared grid keeps it centred) lets all three names
+   show from 1440px instead of two going into More. The signed-in bar keeps the shared width. */
+.ix-header--public {
+    --dh-search-w: clamp(280px, 26vw, 560px);
+}
+
+/* Scrolling to a control (a keyboard user, a script, an anchor) leaves it clear of the sticky bar. */
+html {
+    scroll-padding-top: calc(var(--dot-header-offset, 56px) + 12px);
+}

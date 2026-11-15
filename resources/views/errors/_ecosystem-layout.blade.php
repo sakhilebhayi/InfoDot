@@ -49,7 +49,7 @@
     </head>
     <body class="ix" data-area="home">
         <div class="ix-shell">
-            <x-ix.top-public way :search="false" fallback />
+            <x-ix.top-public way :search="false" fallback skip />
 
             <div class="ix-band">
                 <div class="ix-band__inner">

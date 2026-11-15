@@ -4,6 +4,7 @@ import type { Page } from '@playwright/test';
 import { fixture, rows, unique } from '../support/app';
 import { dataDir } from '../support/env';
 import { expect, register, signIn, signOut, test, verifyByEmailLink } from '../support/fixtures';
+import { accountLink, goTo } from '../support/nav';
 
 type Finding = { page: string; kind: 'width' | 'button'; what: string };
 
@@ -65,16 +66,13 @@ test.describe('E. On a phone or tablet', () => {
         await check(page, findings);
         await signIn(page, email);
 
-        // The menus: the company menu, the tab row, the account menu.
-        await page.getByRole('button', { name: 'Company menu' }).click();
-        await page.getByRole('link', { name: 'People' }).first().click();
+        // The menus (R-52): the menu drawer holds every place and the account, the bell stays in the bar.
+        await goTo(page, 'People', 'Network');
         await expect(page.getByRole('heading', { level: 1, name: 'People' })).toBeVisible();
         await check(page, findings);
-        const primary = page.getByRole('navigation', { name: 'Primary' });
-        for (const [tab, heading] of [['Knowledge', 'Questions'], ['Library', 'Verified library'], ['Seminars', 'Seminars'], ['Platforms', 'Platforms'], ['Analytics', /.+/]] as const) {
-            await primary.getByRole('link', { name: tab, exact: true }).click();
+        for (const [tab, group, heading] of [['Questions', 'Knowledge', 'Questions'], ['Library', 'Knowledge', 'Verified library'], ['Seminars', 'Knowledge', 'Seminars'], ['All platforms', 'Platforms', 'Platforms'], ['Analytics', 'Platforms', /.+/]] as const) {
+            await goTo(page, tab, group);
             await expect(page.getByRole('heading', { level: 1, name: heading }).first()).toBeVisible();
-            await expect(primary.getByRole('link', { name: tab, exact: true })).toBeInViewport();
             await check(page, findings);
         }
         await page.getByRole('link', { name: /^Notifications/ }).click();
@@ -82,19 +80,20 @@ test.describe('E. On a phone or tablet', () => {
         await check(page, findings);
 
         // A profile picture, straight from the camera roll.
-        await page.getByRole('button', { name: 'Account menu' }).click();
-        await page.getByRole('link', { name: 'Settings' }).click();
+        await accountLink(page, 'Settings');
         await check(page, findings);
         const profile = page.locator('form').filter({ has: page.locator('#photo') });
         await profile.locator('#photo').setInputFiles(fixture('photo-4032x3024.jpg'));
         await expect(profile.getByRole('button', { name: 'Save' })).toBeEnabled({ timeout: 30_000 });
         await profile.getByRole('button', { name: 'Save' }).click();
-        await expect(page.locator('header .ix-avatar img')).toBeVisible({ timeout: 30_000 });
+        await page.getByRole('button', { name: 'Menu', exact: true }).click();   // the photograph is in the drawer's account section on a phone
+        await expect(page.locator('.dh-dacct .dh-avatar img')).toBeVisible({ timeout: 30_000 });
+        await page.keyboard.press('Escape');
         expect(rows('users', { email })[0].profile_photo_path).toBeTruthy();
 
         // A question with a file attached.
         const question = `Which till roll fits the card machine ${unique()}?`;
-        await primary.getByRole('link', { name: 'Knowledge', exact: true }).click();
+        await goTo(page, 'Questions', 'Knowledge');
         await page.getByLabel('Ask', { exact: true }).fill(question);
         await page.getByRole('button', { name: 'Ask a question' }).click();
         await expect(page).toHaveURL(/\/questions\/ask\?question=/);
@@ -114,8 +113,7 @@ test.describe('E. On a phone or tablet', () => {
 
         // A business: created, then managed.
         const name = `Zanele Spaza ${unique()}`;
-        await page.getByRole('button', { name: 'Company menu' }).click();
-        await page.locator('.ix-pop__panel').getByRole('link', { name: 'Create a company' }).click();   // the company menu's link; Getting started on Home offers the same
+        await accountLink(page, 'Create a company');   // R-52: the company links are in the account section of the drawer; Getting started on Home offers the same
         await check(page, findings);
         await page.getByLabel('Company name').fill(name);
         await page.getByLabel('What the business does').fill('A spaza shop selling groceries, airtime and prepaid electricity in Soshanguve.');
@@ -135,7 +133,7 @@ test.describe('E. On a phone or tablet', () => {
         expect(rows('team_profiles', { team_id: team.id })[0].location).toBe('Soshanguve, Gauteng');
 
         // The directory: browse, search, open.
-        await primary.getByRole('link', { name: 'Businesses', exact: true }).click();
+        await goTo(page, 'Businesses', 'Network');
         await expect(page.getByRole('heading', { level: 1, name: 'Businesses' })).toBeVisible();
         await check(page, findings);
         await page.getByRole('searchbox', { name: 'What do you need, and where?' }).fill(name);
