@@ -98,13 +98,18 @@ class BrowserJourneyFixesTest extends TestCase
         $this->assertMatchesRegularExpression('/<select id="industry"[^>]*\sdisabled/', $forMember);
     }
 
-    /** Below 1200px the tab row scrolls sideways; the script that brings the current tab on screen stays in the bundle's source. */
-    public function test_the_tab_row_starts_at_the_current_page(): void
+    /**
+     * R-52: the swipe-hidden tab strip is gone. The shared header lists every place in a real drawer on a phone and keeps the
+     * current one open and marked, so no script has to scroll a strip to the page in view.
+     */
+    public function test_the_tab_row_is_a_drawer_with_the_current_page_marked(): void
     {
         $script = file_get_contents(resource_path('js/app.js'));
+        $this->assertStringNotContainsString('.ix-tabs', $script);
 
-        $this->assertStringContainsString('.ix-tabs [aria-current="page"]', $script);
-        $this->assertStringContainsString('row.scrollLeft', $script);
+        $html = $this->actingAs($this->person())->get('/questions')->assertOk()->getContent();
+        $this->assertStringContainsString('data-dh-menu-button', $html);
+        $this->assertMatchesRegularExpression('#<div class="dh-drawer" id="dh-drawer".*aria-current="page"#s', $html);
     }
 
     /**
@@ -128,7 +133,11 @@ class BrowserJourneyFixesTest extends TestCase
     {
         $html = $this->actingAs($this->person())->get('/home')->assertOk()->getContent();
 
-        $this->assertSame(3, substr_count($html, '@keydown.escape="if (open) { open = false; $el.querySelector(\'button\').focus() }"'));
+        // R-52: the header's menus (nav groups, More, the account menu, the drawer, the search sheet) are the shared dot-ui header, whose script
+        // closes on Escape and hands focus back to the opener (its own browser test). The one menu still written here is Dot Apps.
+        $this->assertSame(1, substr_count($html, '@keydown.escape="if (open) { open = false; $el.querySelector(\'button\').focus() }"'));
+        $this->assertStringContainsString('/dot-ui/js/dot-ui-core.min.js', $html);
+        $this->assertStringContainsString('data-dh-menu-trigger', $html);
     }
 
     /** Names a screen reader hears must contain the words on screen (WCAG 2.5.3), and every file field needs a name. */
@@ -139,11 +148,12 @@ class BrowserJourneyFixesTest extends TestCase
         $owner->forceFill(['current_team_id' => $company->id])->save();
 
         $home = $this->actingAs($owner)->get('/home')->assertOk()->getContent();
-        // The company menu button is named by its own text, with "Company menu:" in front for a screen reader.
-        $this->assertMatchesRegularExpression('/<span class="ix-sr">Company menu: <\/span><span class="ix-owner__name">Kestrel Drilling <small>Company<\/small>/', $home);
-        $this->assertStringNotContainsString('aria-label="Company menu"', $home);
+        // R-52: the company is named in the account menu button's accessible name's menu and in the drawer, and the company menu popover is gone.
+        $this->assertMatchesRegularExpression('/<span class="dh-menu__sub" title="Kestrel Drilling · Company">Kestrel Drilling · Company<\/span>/', $home);
+        $this->assertStringNotContainsString('Company menu: ', $home);
+        $this->assertMatchesRegularExpression('/aria-label="Account menu: [^"]+"/', $home, 'the account button is named for the person');
         // The quick links sit inside the suggestions list box, so they are options like everything else in it.
-        $this->assertSame(5, substr_count($home, 'class="ix-quick__chip" role="option"'));
+        $this->assertSame(5, substr_count($home, 'class="dsr-chip" role="option"'));
 
         $edit = $this->actingAs($owner)->get(route('business.edit', $company))->assertOk()->getContent();
         $this->assertStringContainsString('data-crop-file aria-label="Logo picture"', $edit);

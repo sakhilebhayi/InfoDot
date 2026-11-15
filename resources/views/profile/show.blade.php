@@ -51,7 +51,7 @@
     </div>
 
     <section class="mb-8 ix-contrib" aria-labelledby="profile-contribution">
-        <h2 id="profile-contribution" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Contribution</h2>
+        <h2 id="profile-contribution" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: var(--dot-text-h3-size);">Contribution</h2>
 
         <div class="ix-readouts">
             <div class="ix-readout" style="border-left: 0;">
@@ -128,7 +128,7 @@
 
     @if ($isOwner && $moderation->isNotEmpty())
         <section class="mb-8 ix-modstatus" aria-labelledby="profile-moderation">
-            <h2 id="profile-moderation" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Moderation of your content</h2>
+            <h2 id="profile-moderation" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: var(--dot-text-h3-size);">Moderation of your content</h2>
             <p class="ix-points__note">A moderator hid these. Open one to read why and, if you disagree, appeal it once.</p>
             <ul class="ix-modstatus__list">
                 @foreach ($moderation as $row)
@@ -161,7 +161,7 @@
     @endif
 
     <section class="mb-8" aria-labelledby="profile-questions">
-        <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Questions</h2>
+        <h2 id="profile-questions" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: var(--dot-text-h3-size);">Questions</h2>
 
         @if ($questions->isEmpty())
             <div class="ix-panel ix-panel__body" style="color: var(--ix-text-2);">
@@ -192,7 +192,7 @@
     </section>
 
     <section aria-labelledby="profile-solutions">
-        <h2 id="profile-solutions" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: 20px;">Solutions</h2>
+        <h2 id="profile-solutions" style="margin: 0 0 10px; font-family: var(--ix-font); font-weight: 700; font-size: var(--dot-text-h3-size);">Solutions</h2>
 
         @if ($solutions->isEmpty())
             <div class="ix-panel ix-panel__body" style="color: var(--ix-text-2);">

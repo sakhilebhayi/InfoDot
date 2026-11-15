@@ -118,8 +118,14 @@ export async function signIn(page: Page, email: string): Promise<void> {
 
 /** Sign out through the account menu. */
 export async function signOut(page: Page): Promise<void> {
-    await page.getByRole('button', { name: 'Account menu' }).click();
-    await page.getByRole('button', { name: 'Log out' }).click();
+    // R-52: on a phone the account is inside the menu drawer, on a desktop it is the avatar menu.
+    const avatar = page.getByRole('button', { name: /^Account menu/ });
+    if (await avatar.isVisible()) {
+        await avatar.click();
+    } else {
+        await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    }
+    await page.getByRole('button', { name: 'Log out' }).filter({ visible: true }).click();
     await expect(page).toHaveURL(new RegExp(`^${baseURL}/?$`));
 }
 

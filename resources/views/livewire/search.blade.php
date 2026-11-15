@@ -1,103 +1,96 @@
 @php
     $texts = array_map(fn ($s) => $s, $this->industry['searches']);
     $team = auth()->user()?->currentTeam;
+
+    // The attributes InfoDot's search input has always had (Alpine's placeholder rotation, Livewire's model with the configured
+    // debounce, the arrow-key and Enter handlers). A component tag cannot take an attribute whose NAME holds a Blade echo
+    // (wire:model.live.debounce.{{ n }}ms), so they travel as one bag.
+    $attributes = new \Illuminate\View\ComponentAttributeBag([
+        'x-ref' => 'q',
+        'x-bind:placeholder' => "'Try: ' + texts[ph]",
+        'wire:model.live.debounce.'.(int) config('search.debounce_ms').'ms' => 'query',
+        'wire:keydown.arrow-up.prevent' => 'decrementHighlight',
+        'wire:keydown.arrow-down.prevent' => 'incrementHighlight',
+        'wire:keydown.enter' => 'openHighlighted',
+        'x-on:keydown.enter' => "if (\$wire.query.trim() !== '') \$event.preventDefault()",
+    ]);
 @endphp
-<div class="ix-search"
-     x-data="{ open: false, ph: 0, texts: @js($texts), timer: null }"
-     x-init="if (! window.matchMedia('(prefers-reduced-motion: reduce)').matches) { timer = setInterval(() => { if (! open && document.activeElement !== $refs.q) ph = (ph + 1) % texts.length }, 4500) }"
-     @click.outside="open = false"
-     @keydown.window.prevent.ctrl.k="$refs.q.focus()"
-     @keydown.window.prevent.meta.k="$refs.q.focus()"
-     @keydown.escape="open = false; $refs.q.blur()">
-    <label for="ix-search-input" class="ix-sr">Search questions and solutions, jump to a reference, or start a new question</label>
-    <form action="{{ route('solution_search_results') }}" method="GET" role="search">
-        <input
-            id="ix-search-input"
-            name="search"
-            x-ref="q"
-            type="search"
-            placeholder="Try: {{ $texts[0] }}"
-            :placeholder="'Try: ' + texts[ph]"
-            autocomplete="off"
-            class="ix-input"
-            role="combobox"
-            aria-autocomplete="list"
-            aria-controls="ix-search-list"
-            :aria-expanded="open"
-            @focus="open = true"
-            wire:model.live.debounce.{{ (int) config('search.debounce_ms') }}ms="query"
-            wire:keydown.escape="$set('query', '')"
-            wire:keydown.arrow-up.prevent="decrementHighlight"
-            wire:keydown.arrow-down.prevent="incrementHighlight"
-            wire:keydown.enter="openHighlighted"
-            @keydown.enter="if ($wire.query.trim() !== '') $event.preventDefault()"
-        />
-        <kbd class="ix-kbd" aria-hidden="true" x-show="!open">Ctrl K</kbd>
-
-        <button type="submit" class="ix-search__go" aria-label="Search questions and solutions">
-            <x-ix.arrow />
-        </button>
-    </form>
-
-    <div id="ix-search-list" class="ix-results" x-show="open" x-cloak x-transition.opacity.duration.100ms role="listbox" aria-label="Suggestions">
-        @if(blank(trim($query)))
-            <div class="ix-quick">
-                <div class="ix-pop__head">Try asking <span class="ix-results__tag">{{ $this->industry['label'] }}</span></div>
-                @foreach($this->starters as $starter)
-                    <a class="ix-results__item" href="{{ route('seek', ['question' => $starter]) }}" role="option">
-                        <span class="material-symbols-rounded" aria-hidden="true">lightbulb</span>{{ $starter }}
-                    </a>
-                @endforeach
-
-                @if(count($this->recent))
-                    <div class="ix-pop__head">New in {{ $team?->name ?? 'your workspace' }}</div>
-                    @foreach($this->recent as $item)
-                        <a class="ix-results__item" href="{{ $item['url'] }}" role="option">
-                            <span class="ix-ref">{{ $item['ref'] }}</span>{{ $item['label'] }}
+{{-- The header search. Its behaviour is unchanged (R-52): the same Livewire component, query, debounce, states, keyboard model and
+     results; only the pill and the dropdown are drawn by the shared dot-ui search (x-dot.search, classes dsr-*), which was copied
+     from this bar, so the same box can be centred by the header's grid and open as a sheet on a phone. The rotating "Try:" placeholder
+     stays Alpine, the Ctrl K shortcut and the open and close are dot-search.js. --}}
+<div x-data="{ ph: 0, texts: @js($texts), timer: null }"
+     x-init="if (! window.matchMedia('(prefers-reduced-motion: reduce)').matches) { timer = setInterval(() => { if (! $root.querySelector('.dsr').classList.contains('is-open') && document.activeElement !== $refs.q) ph = (ph + 1) % texts.length }, 4500) }">
+    <x-dot.search
+        id="ix-search-input"
+        name="search"
+        :action="route('solution_search_results')"
+        label="Search questions and solutions, jump to a reference, or start a new question"
+        placeholder="Try: {{ $texts[0] }}"
+        hint="Ctrl K"
+        :escape-clears="true"
+        {{ $attributes }}
+        :root-attributes="['wire:ignore.self' => '']">
+        <x-slot:results>
+            @if(blank(trim($query)))
+                <div class="dsr-quick">
+                    <div class="dsr-head">Try asking <span class="dsr-tag">{{ $this->industry['label'] }}</span></div>
+                    @foreach($this->starters as $starter)
+                        <a class="dsr-item" href="{{ route('seek', ['question' => $starter]) }}" role="option">
+                            <span class="material-symbols-rounded dsr-glyph" aria-hidden="true">lightbulb</span>{{ $starter }}
                         </a>
                     @endforeach
-                @endif
 
-                <div class="ix-pop__head">Go to</div>
-                <div class="ix-quick__row">
-                    <a class="ix-quick__chip" role="option" href="{{ route('seek') }}"><span class="material-symbols-rounded" aria-hidden="true">add_comment</span>Ask a question</a>
-                    <a class="ix-quick__chip" role="option" href="{{ route('add') }}"><span class="material-symbols-rounded" aria-hidden="true">checklist</span>Add a solution</a>
-                    {{-- People, Files and Documents belong to a signed-in person's company: a visitor is not offered them (the two buttons did nothing when a visitor pressed them). --}}
-                    @auth
-                        <a class="ix-quick__chip" role="option" href="{{ route('people') }}"><span class="material-symbols-rounded" aria-hidden="true">groups</span>People</a>
-                        <button type="button" class="ix-quick__chip" role="option" wire:click="openPlatform('files')"><span class="material-symbols-rounded" aria-hidden="true">folder</span>Files</button>
-                        <button type="button" class="ix-quick__chip" role="option" wire:click="openPlatform('docs')"><span class="material-symbols-rounded" aria-hidden="true">description</span>Documents</button>
-                    @endauth
-                </div>
-                <p class="ix-results__foot">Type a reference such as <span class="ix-ref">{{ $team?->code ?? 'INFO' }}-Q-000001</span> to open that item.</p>
-            </div>
-        @else
-            @if(! $this->reference && $this->solutions->isEmpty() && $this->questions->isEmpty())
-                <p class="ix-results__foot">Nothing matches &ldquo;{{ $query }}&rdquo;. Try fewer words, or ask it as a question.</p>
-            @endif
-            {{-- Files and Documents answer a moment later; the key restarts the load for each new query. --}}
-            @if(mb_strlen(trim($query)) >= 3 && $externalFor !== trim($query))
-                <div wire:key="ext-{{ trim($query) }}" wire:init="loadExternal" class="ix-results__foot" aria-live="polite">Looking in Files and Documents&hellip;</div>
-            @endif
-            @php($lastKind = null)
-            @foreach($this->items as $i => $item)
-                @if($item['kind'] !== $lastKind)
-                    @php($lastKind = $item['kind'])
-                    @if(in_array($item['kind'], ['solution', 'question']))
-                        <div class="ix-pop__head">{{ $item['kind'] === 'solution' ? 'Solutions' : 'Questions' }}</div>
-                    @elseif($item['kind'] === 'external')
-                        <div class="ix-pop__head">In Files and Documents</div>
-                    @elseif($item['kind'] === 'ask')
-                        <div class="ix-pop__head">Not here?</div>
+                    @if(count($this->recent))
+                        <div class="dsr-head">New in {{ $team?->name ?? 'your workspace' }}</div>
+                        @foreach($this->recent as $item)
+                            <a class="dsr-item" href="{{ $item['url'] }}" role="option">
+                                <span class="dsr-ref">{{ $item['ref'] }}</span>{{ $item['label'] }}
+                            </a>
+                        @endforeach
                     @endif
+
+                    <div class="dsr-head">Go to</div>
+                    <div class="dsr-chips">
+                        <a class="dsr-chip" role="option" href="{{ route('seek') }}"><span class="material-symbols-rounded dsr-glyph" aria-hidden="true">add_comment</span>Ask a question</a>
+                        <a class="dsr-chip" role="option" href="{{ route('add') }}"><span class="material-symbols-rounded dsr-glyph" aria-hidden="true">checklist</span>Add a solution</a>
+                        {{-- People, Files and Documents belong to a signed-in person's company: a visitor is not offered them (the two buttons did nothing when a visitor pressed them). --}}
+                        @auth
+                            <a class="dsr-chip" role="option" href="{{ route('people') }}"><span class="material-symbols-rounded dsr-glyph" aria-hidden="true">groups</span>People</a>
+                            <button type="button" class="dsr-chip" role="option" wire:click="openPlatform('files')"><span class="material-symbols-rounded dsr-glyph" aria-hidden="true">folder</span>Files</button>
+                            <button type="button" class="dsr-chip" role="option" wire:click="openPlatform('docs')"><span class="material-symbols-rounded dsr-glyph" aria-hidden="true">description</span>Documents</button>
+                        @endauth
+                    </div>
+                    <p class="dsr-foot">Type a reference such as <span class="dsr-ref">{{ $team?->code ?? 'INFO' }}-Q-000001</span> to open that item.</p>
+                </div>
+            @else
+                @if(! $this->reference && $this->solutions->isEmpty() && $this->questions->isEmpty())
+                    <p class="dsr-foot">Nothing matches &ldquo;{{ $query }}&rdquo;. Try fewer words, or ask it as a question.</p>
                 @endif
-                <a href="{{ $item['url'] }}" class="ix-results__item {{ $highlightIndex === $i ? 'is-active' : '' }} {{ in_array($item['kind'], ['ask', 'all']) ? 'ix-results__item--action' : '' }}" role="option" aria-selected="{{ $highlightIndex === $i ? 'true' : 'false' }}">
-                    @if(isset($item['ref']))<span class="ix-ref">{{ $item['ref'] }}</span>
-                    @else<span class="material-symbols-rounded" aria-hidden="true">{{ $item['icon'] }}</span>@endif
-                    <span class="ix-results__label">@if(in_array($item['kind'], ['solution', 'question', 'external'])){{ $this->mark($item['label']) }}@else{{ $item['label'] }}@endif</span>
-                    @if($item['kind'] === 'external')<span class="ix-results__tag">{{ $item['platform'] }}</span>@endif
-                </a>
-            @endforeach
-        @endif
-    </div>
+                {{-- Files and Documents answer a moment later; the key restarts the load for each new query. --}}
+                @if(mb_strlen(trim($query)) >= 3 && $externalFor !== trim($query))
+                    <div wire:key="ext-{{ trim($query) }}" wire:init="loadExternal" class="dsr-foot" aria-live="polite">Looking in Files and Documents&hellip;</div>
+                @endif
+                @php($lastKind = null)
+                @foreach($this->items as $i => $item)
+                    @if($item['kind'] !== $lastKind)
+                        @php($lastKind = $item['kind'])
+                        @if(in_array($item['kind'], ['solution', 'question']))
+                            <div class="dsr-head">{{ $item['kind'] === 'solution' ? 'Solutions' : 'Questions' }}</div>
+                        @elseif($item['kind'] === 'external')
+                            <div class="dsr-head">In Files and Documents</div>
+                        @elseif($item['kind'] === 'ask')
+                            <div class="dsr-head">Not here?</div>
+                        @endif
+                    @endif
+                    <a href="{{ $item['url'] }}" class="dsr-item {{ $highlightIndex === $i ? 'is-active' : '' }} {{ in_array($item['kind'], ['ask', 'all']) ? 'dsr-item--action' : '' }}" role="option" aria-selected="{{ $highlightIndex === $i ? 'true' : 'false' }}">
+                        @if(isset($item['ref']))<span class="dsr-ref">{{ $item['ref'] }}</span>
+                        @else<span class="material-symbols-rounded dsr-glyph" aria-hidden="true">{{ $item['icon'] }}</span>@endif
+                        <span class="dsr-label">@if(in_array($item['kind'], ['solution', 'question', 'external'])){{ $this->mark($item['label']) }}@else{{ $item['label'] }}@endif</span>
+                        @if($item['kind'] === 'external')<span class="dsr-tag">{{ $item['platform'] }}</span>@endif
+                    </a>
+                @endforeach
+            @endif
+        </x-slot:results>
+    </x-dot.search>
 </div>

@@ -23,7 +23,7 @@ export function draw(el) {
 
     const base = themed();
     // The Yard's reading face, with the same fallbacks as --ix-font.
-    const font = token('--ix-font') || 'Archivo, system-ui, sans-serif';
+    const font = token('--ix-font') || 'Roboto, system-ui, sans-serif';
     const chart = new ApexCharts(el, {
         chart: {
             type: 'line',

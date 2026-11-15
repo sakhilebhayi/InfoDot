@@ -30,7 +30,7 @@ Only the application's own data; demonstration content is synthetic. No customer
 ## Product Principles
 - Ownership is the signature: owner code and reference on everything a company owns, and both are searchable.
 - Each area has its own layout and container colour; no identical card grids.
-- Stencil type for codes and big numerals only; everything read is set in Archivo.
+- Roboto for everything (the shared Dot type scale); owner codes and big numerals keep their capitals and tracking as plates.
 - Honest navigation: show only what works today.
 - Business, not social: state and accountability in words, a stencilled SOLVED stamp instead of counters.
 

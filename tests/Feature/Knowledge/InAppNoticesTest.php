@@ -238,7 +238,7 @@ class InAppNoticesTest extends TestCase
         $this->assertStringContainsString('NOTE', $page);
         $this->assertStringContainsString('id="notices-new"', $page);
         $this->assertStringContainsString('id="notices-earlier"', $page);
-        $this->assertStringContainsString('class="ix-bell"', $page, 'the bell is in the top bar');
+        $this->assertMatchesRegularExpression('#<a href="'.preg_quote(url('/notifications'), '#').'" class="dh-icon-btn dh-bell[^"]*" aria-label="Notifications#', $page, 'the bell is in the top bar');
     }
 
     public function test_newest_comes_first(): void

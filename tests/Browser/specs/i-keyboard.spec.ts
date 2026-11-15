@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { makeUser } from '../support/app';
 import { expect, password, signIn, test } from '../support/fixtures';
+import { accountLink, goTo } from '../support/nav';
 
 type Reached = { key: string; visible: boolean };
 
@@ -119,7 +120,7 @@ test.describe('I. Keyboard only', () => {
         await signIn(page, person.email);
         await page.goto('/questions');
 
-        // Tab order from the top: skip link, brand, company menu, then the primary tabs in order.
+        // Tab order from the top (R-52, the shared header): skip link, brand, then the bar's places in order (Home, then the groups).
         await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
         const seen: string[] = [];
         for (let i = 0; i < 16; i += 1) {
@@ -131,11 +132,9 @@ test.describe('I. Keyboard only', () => {
             }));
         }
         expect(seen[0]).toBe('Skip to content');
-        const tabs = ['Home', 'Knowledge', 'Library', 'Seminars', 'Platforms', 'Businesses', 'People', 'Analytics'];
+        const tabs = ['Home', 'Knowledge', 'Network'];
         expect(seen.filter((label) => tabs.includes(label))).toEqual(tabs);
-        const companyMenu = seen.findIndex((label) => label.startsWith('Company menu'));
-        expect(companyMenu).toBeGreaterThan(0);
-        expect(companyMenu).toBeLessThan(seen.indexOf('Home'));
+        expect(seen[1]).toBe('InfoDot home');
 
         // The skip link works.
         await page.reload();
@@ -145,7 +144,7 @@ test.describe('I. Keyboard only', () => {
         await expect(page).toHaveURL(/#main$/);
 
         // A focused tab shows it.
-        const knowledge = page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Knowledge', exact: true });
+        const knowledge = page.getByRole('navigation', { name: 'Primary' }).getByRole('button', { name: 'Knowledge', exact: true });
         await knowledge.focus();
         await page.keyboard.press('Shift+Tab');
         await page.keyboard.press('Tab');
@@ -165,7 +164,7 @@ test.describe('I. Keyboard only', () => {
         await expect(page.getByRole('listbox', { name: 'Suggestions' })).toBeHidden();
 
         // Each menu: Enter opens it, Tab goes into it, Escape closes it and focus is back on its button.
-        for (const name of [/^Company menu/, /^Dot Apps$/, /^Account menu$/]) {
+        for (const name of [/^Knowledge$/, /^Dot Apps$/, /^Account menu/]) {
             const button = page.getByRole('button', { name });
             await button.focus();
             await page.keyboard.press('Enter');

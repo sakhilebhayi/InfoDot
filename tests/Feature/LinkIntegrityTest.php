@@ -121,7 +121,7 @@ class LinkIntegrityTest extends TestCase
     {
         foreach (['/about', '/solution-results', '/policy', '/login'] as $from) {
             $html = $this->get($from)->assertOk()->getContent();
-            $this->assertMatchesRegularExpression('#<a href="[^"]*"[^>]*aria-label="InfoDot home"#', $html, $from);
+            $this->assertMatchesRegularExpression('#<a class="dh-brand" href="[^"]*" aria-label="InfoDot home"#', $html, $from);
             $this->get('/')->assertOk();
         }
     }

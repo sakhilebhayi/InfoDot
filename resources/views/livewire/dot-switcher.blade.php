@@ -4,14 +4,18 @@
     $team = auth()->user()?->currentTeam;
     $isCompany = $team && ! $team->personal_team;
 @endphp
-<div x-data="{ open: @entangle('open'), q: '' }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }" class="ix-yardwrap">
-    <button type="button" class="ix-btn" @click="open = !open; if (open) $nextTick(() => $refs.f.focus())" :aria-expanded="open" aria-haspopup="true" aria-controls="ix-yardmap" title="Switch Dot platform">
+{{-- R-52: the platform and entitlement logic is untouched (Dot Apps lists only what the company holds and the person may open). The panel is the
+     same full-width map under the bar on a tablet and a desktop; under 640px it is a bottom sheet with a scrim, a close button, 44px controls
+     and a locked page behind it (infodot.css). --}}
+<div x-data="{ open: @entangle('open'), q: '' }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }" x-effect="document.documentElement.classList.toggle('dot-scroll-locked', open && window.matchMedia('(max-width: 639px)').matches)" class="ix-yardwrap">
+    <button type="button" class="ix-btn" @click="open = !open; if (open) $nextTick(() => $refs.f.focus())" :aria-expanded="open" aria-haspopup="true" aria-controls="ix-yardmap" aria-label="Dot Apps" title="Switch Dot platform">
         <span class="material-symbols-rounded" aria-hidden="true">apps</span>
-        <span class="hidden sm:inline">Dot Apps</span>
+        <span class="ix-yardlabel">Dot Apps</span>
     </button>
 
     <div id="ix-yardmap" class="ix-yardmap" x-show="open" x-cloak x-transition.opacity.duration.100ms role="dialog" aria-label="Dot platforms">
         <div class="ix-yardmap__in">
+            <button type="button" class="ix-yardmap__close" @click="open = false; $el.closest('.ix-yardwrap').querySelector('button').focus()" aria-label="Close Dot Apps"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
             <div class="ix-yardmap__head">
                 <div>
                     <p class="ix-yardmap__title">Dot Apps</p>
@@ -54,4 +58,5 @@
             </div>
         </div>
     </div>
+    <div class="ix-yardscrim" x-show="open" x-cloak @click="open = false" aria-hidden="true"></div>
 </div>

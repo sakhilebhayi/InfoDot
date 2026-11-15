@@ -226,6 +226,13 @@ class ImageIntegrityTest extends TestCase
         $this->assertNotEmpty($named, 'the shared icon partial names the root icon files');
         foreach ($named as $path => $files) {
             $by = implode(', ', array_unique($files));
+            if (str_starts_with($path, 'dot-ui/')) {
+                // The shared header, search and Roboto (R-52): a tracked folder the deploy mirrors into the live web root as a whole.
+                $this->assertStringContainsString('rsync -a --delete public/dot-ui/ "$DOTUI/"', (string) file_get_contents(base_path('.github/workflows/deploy.yml')), "{$path} is named by {$by} but the deploy does not mirror public/dot-ui to the live web root");
+                $this->assertFileExists(public_path($path), "{$path} is named by {$by} but is not in public/");
+
+                continue;
+            }
             $this->assertFalse(str_starts_with($path, 'img/'), "{$path} is named by {$by}. public/img is not published to the live web root: put the picture in resources/img, add it to the import.meta.glob list in resources/js/app.js and name it with Vite::asset.");
             $this->assertContains($path, $published, "{$path} is named by {$by} but the deploy does not copy it to the live web root. Use resources/ and Vite::asset, or add it to the list in deploy.yml if it must live at a fixed root address.");
             $this->assertFileExists(public_path($path), "{$path} is named by {$by} but is not in public/");
@@ -370,7 +377,9 @@ class ImageIntegrityTest extends TestCase
     private function sources(): array
     {
         $sources = [];
-        foreach ((new Finder)->files()->in([resource_path('views'), app_path()])->name('*.php') as $file) {
+        // resources/views/components/dot/ is the shared dot-ui package, copied in (R-52), not this app's code: its switcher names
+        // /img/platforms, which InfoDot does not use (it keeps its own Dot Apps switcher, with logos from resources/img/apps).
+        foreach ((new Finder)->files()->in([resource_path('views'), app_path()])->exclude('components/dot')->name('*.php') as $file) {
             $sources[str_replace(base_path().'/', '', $file->getRealPath())] = $file->getContents();
         }
 

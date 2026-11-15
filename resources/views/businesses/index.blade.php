@@ -81,6 +81,9 @@
                 <button type="submit" class="ix-btn">Apply</button>
             </div>
             </details>
+            {{-- Folded here, as the page is parsed, so the first paint already has the folded filters: folding in app.js (a deferred module) moved the
+                 results up after the first paint on a phone (CLS 0.11 to 0.14). The same rule as app.js, which stays as the fallback. --}}
+            <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">(function (s) { var d = s.previousElementSibling; if (d && d.hasAttribute('data-fold-on-phone') && ! d.hasAttribute('data-active') && window.matchMedia('(max-width: 640px)').matches) { d.open = false; } })(document.currentScript);</script>
         </form>
     </header>
 

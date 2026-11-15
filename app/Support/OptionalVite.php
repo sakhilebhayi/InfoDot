@@ -16,8 +16,6 @@ class OptionalVite
      * named by a url() in resources/css/fonts.css, which is what puts it in the build and its manifest.
      */
     public const PRELOADABLE_FONTS = [
-        'archivo' => 'node_modules/@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2',
-        'stencil' => 'node_modules/@fontsource-variable/big-shoulders-stencil-display/files/big-shoulders-stencil-display-latin-wght-normal.woff2',
         'icons' => 'resources/fonts/material-symbols-rounded.woff2',
     ];
 

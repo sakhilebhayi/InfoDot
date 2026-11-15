@@ -120,7 +120,15 @@ class SeminarAccessMatrixTest extends TestCase
             $page = $this->actingAs($who)->get("/seminars/$id")->assertOk()->getContent();
             $this->assertStringNotContainsString('PRIVATE-NOTE-TO-HOST', $page);
             $this->assertStringNotContainsString('private-room-abc', $page, 'the meeting link is never printed on the page');
-            $this->assertStringNotContainsString('Buyer Person', $page);
+            // R-52: the shared header names the SIGNED-IN person in the account menu (and the buyer is signed in here); what must stay
+            // private is the page itself, so the attendee is looked for in the page's content, not in the bar.
+            preg_match('#<main id="main".*?</main>#s', $page, $main);
+            $this->assertNotEmpty($main);
+            if ($who->is($this->buyer)) {
+                $this->assertStringNotContainsString('Buyer Person', preg_replace('#<[^>]*>#', ' ', $main[0]));
+            } else {
+                $this->assertStringNotContainsString('Buyer Person', $page);
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { fixture, makeUser, rows, unique } from '../support/app';
 import { expect, openContext, signIn, signOut, test } from '../support/fixtures';
+import { accountLink, goTo } from '../support/nav';
 
 /** Choose a picture in one of the crop forms, move the frame, and put it up. */
 async function putPicture(page: Page, section: string, file: string, button: RegExp, done: string): Promise<void> {
@@ -27,8 +28,7 @@ test.describe('B. A business', () => {
 
         // Create the business from the company menu.
         await signIn(page, owner.email);
-        await page.getByRole('button', { name: 'Company menu' }).click();
-        await page.locator('.ix-pop__panel').getByRole('link', { name: 'Create a company' }).click();   // the company menu's link; Getting started on Home offers the same
+        await accountLink(page, 'Create a company');   // R-52: the company menu moved into the account menu; Getting started on Home offers the same
         await expect(page).toHaveURL(/\/teams\/create$/);
         await page.getByLabel('Company name').fill(name);
         await page.getByLabel('What the business does').fill('Borehole drilling, pump installation and water testing for farms and homes in Mpumalanga.');

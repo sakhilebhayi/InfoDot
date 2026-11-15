@@ -76,6 +76,9 @@ for (const scheme of ['light', 'dark'] as const) {
 
             for (const [size, width, height] of [['desktop', 1440, 900], ['phone', 375, 812]] as const) {
                 await page.setViewportSize({ width, height });
+                // R-52: the shared bar is sticky; a scan taken with the first radio scrolled under it measures the bar's own controls beside the
+                // radio. A person reads the page from the top, so the scan does too.
+                await page.evaluate(() => window.scrollTo(0, 0));
                 await expectNoSidewaysScroll(page);
                 const found = await scan(page, `platform-detail-${size}`, scheme);
                 expect(blocking(found), blocking(found).join('\n')).toEqual([]);

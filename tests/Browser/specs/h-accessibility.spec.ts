@@ -3,6 +3,7 @@ import { makeBusiness, makeUser, type Business, type Person } from '../support/a
 import { blocking, contrast, record, recorded, scan, type Violation } from '../support/a11y';
 import { expect, password, register, signIn, test } from '../support/fixtures';
 import { demo, moderatorStops, ownerStops, publicStops, type Stop } from '../support/pages';
+import { accountLink, goTo } from '../support/nav';
 
 async function scanStops(page: Page, stops: Stop[], scheme: string, found: Violation[], scanned: string[]): Promise<void> {
     for (const stop of stops) {
@@ -55,13 +56,13 @@ for (const scheme of ['light', 'dark'] as const) {
             await page.getByRole('button', { name: 'Account menu' }).click();
             found.push(...await scan(page, 'account-menu-open', scheme));
             await page.keyboard.press('Escape');
-            await page.getByRole('button', { name: 'Company menu' }).click();
-            found.push(...await scan(page, 'company-menu-open', scheme));
+            await page.locator('header.dh').getByRole('button', { name: 'Knowledge', exact: true }).click();   // R-52: the company menu is in the account menu; a nav group is the other menu
+            found.push(...await scan(page, 'nav-group-open', scheme));
             await page.keyboard.press('Escape');
             await page.getByRole('combobox', { name: /Search questions and solutions/ }).fill('VAT');
             await page.waitForLoadState('networkidle');
             found.push(...await scan(page, 'search-open', scheme));
-            scanned.push('/home (account menu, company menu and search open)');
+            scanned.push('/home (account menu, nav group and search open)');
 
             // The enquiry form, which only someone outside the business sees.
             await page.context().clearCookies();

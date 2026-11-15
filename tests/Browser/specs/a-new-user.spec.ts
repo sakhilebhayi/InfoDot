@@ -1,5 +1,6 @@
 import { fixture, rows } from '../support/app';
 import { expect, register, signIn, signOut, test, verifyByEmailLink } from '../support/fixtures';
+import { accountLink, goTo } from '../support/nav';
 
 test.describe('A. A new user', () => {
     test('visits, registers, verifies, sets up a profile, moves around, signs out and back in', async ({ page }) => {
@@ -28,25 +29,25 @@ test.describe('A. A new user', () => {
 
         // Profile: a new name and a photograph straight off a phone camera.
         await page.getByRole('button', { name: 'Account menu' }).click();
-        await page.getByRole('link', { name: 'Settings' }).click();
+        await page.getByRole('link', { name: 'Settings', exact: true }).click();
         await expect(page).toHaveURL(/\/user\/profile\/edit$/);
         const profile = page.locator('form').filter({ has: page.locator('#photo') });
         await profile.getByLabel('Name').fill('Thandi Mokoena');
         await profile.locator('#photo').setInputFiles(fixture('photo-4032x3024.jpg'));
         await expect(profile.getByRole('button', { name: 'Save' })).toBeEnabled({ timeout: 30_000 });
         await profile.getByRole('button', { name: 'Save' }).click();
-        await expect(page.locator('header .ix-avatar img')).toBeVisible({ timeout: 30_000 });
+        await expect(page.locator('header .dh-avatar img')).toBeVisible({ timeout: 30_000 });
         const saved = rows('users', { email })[0];
         expect(saved.name).toBe('Thandi Mokoena');
         expect(saved.profile_photo_path).toBeTruthy();
-        const avatar = page.locator('header .ix-avatar img');
+        const avatar = page.locator('header .dh-avatar img');
         await expect.poll(() => avatar.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 
         // The signed-in areas, through the top navigation.
-        const primary = page.getByRole('navigation', { name: 'Primary' });
-        for (const [tab, heading] of [['Knowledge', 'Questions'], ['Library', 'Verified library'], ['Seminars', 'Seminars'], ['Platforms', 'Platforms'], ['Businesses', 'Businesses'], ['People', 'People'], ['Analytics', /.+/], ['Home', /.+/]] as const) {
-            await primary.getByRole('link', { name: tab, exact: true }).click();
-            await expect(primary.getByRole('link', { name: tab, exact: true })).toHaveAttribute('aria-current', 'page');
+        // (R-52: Home is a link; the others are items inside the bar's groups, which `goTo` opens.)
+        for (const [tab, group, heading] of [['Questions', 'Knowledge', 'Questions'], ['Library', 'Knowledge', 'Verified library'], ['Seminars', 'Knowledge', 'Seminars'], ['All platforms', 'Platforms', 'Platforms'], ['Businesses', 'Network', 'Businesses'], ['People', 'Network', 'People'], ['Analytics', 'Platforms', /.+/], ['Home', undefined, /.+/]] as const) {
+            await goTo(page, tab, group);
+            await expect(page.locator('header.dh [aria-current="page"]').first()).toBeAttached();
             await expect(page.getByRole('heading', { level: 1, name: heading }).first()).toBeVisible();
         }
 
@@ -54,6 +55,6 @@ test.describe('A. A new user', () => {
         await signOut(page);
         await signIn(page, email);
         await page.getByRole('button', { name: 'Account menu' }).click();
-        await expect(page.getByText(email)).toBeVisible();
+        await expect(page.getByText(email).first()).toBeVisible();
     });
 });

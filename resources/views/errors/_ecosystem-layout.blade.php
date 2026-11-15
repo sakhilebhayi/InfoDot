@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dot-roboto">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,6 +26,8 @@
                 ->values()
                 ->all();
         @endphp
+        {{-- The shared header and Roboto are static files under /dot-ui: they do not depend on the build, so an error page keeps its header. --}}
+        @include('partials.head-dot-ui', ['part' => 'css'])
         @if (file_exists($viteManifest))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else
@@ -33,8 +35,8 @@
             <style>
                 body { margin: 0; font: 15px/1.55 system-ui, -apple-system, 'Segoe UI', sans-serif; background: #e3e6e7; color: #14181a; }
                 a { color: inherit; }
-                .ix-top, .ix-band { background: #1b2124; color: #f1f3f3; }
-                .ix-top__inner, .ix-band__inner, .ix-page, .ix-foot { max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
+                .ix-band { background: #1b2124; color: #f1f3f3; }
+                .ix-band__inner, .ix-page, .ix-foot { max-width: 1280px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
                 .ix-page { display: block; padding-top: 48px; padding-bottom: 64px; }
                 .ix-err__code { margin: 0; font-size: 96px; font-weight: 800; line-height: 1; }
                 .ix-btn { display: inline-block; padding: 10px 16px; border: 1px solid #8c959a; border-radius: 2px; font-weight: 600; text-decoration: none; }
@@ -43,30 +45,11 @@
                 @media (prefers-color-scheme: dark) { body { background: #111517; color: #e9ecec; } .ix-btn--primary { background: #e9ecec; border-color: #e9ecec; color: #14181a; } }
             </style>
         @endif
+        @include('partials.head-dot-ui', ['part' => 'script'])
     </head>
     <body class="ix" data-area="home">
         <div class="ix-shell">
-            <header class="ix-top ix-top--public">
-                <div class="ix-top__inner">
-                    <a href="/" class="ix-brand" aria-label="InfoDot home">
-                        {{-- The logo falls back to the name when the build does not hold it. --}}
-                        @if ($logo = \App\Support\OptionalVite::asset('resources/img/brand/logo_white.png'))
-                            <img src="{{ $logo }}" alt="InfoDot" width="64" height="26">
-                        @else
-                            <strong>InfoDot</strong>
-                        @endif
-                    </a>
-                    <div class="ix-top__actions">
-                        @auth
-                            <a href="{{ route('dashboard') }}" class="ix-btn">Open InfoDot</a>
-                        @else
-                            @if (Route::has('login'))
-                                <a href="{{ route('login') }}" class="ix-btn">Sign in</a>
-                            @endif
-                        @endauth
-                    </div>
-                </div>
-            </header>
+            <x-ix.top-public way :search="false" fallback skip />
 
             <div class="ix-band">
                 <div class="ix-band__inner">

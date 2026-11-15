@@ -57,7 +57,7 @@ class PublicPagesTest extends TestCase
             $this->assertSame(1, substr_count($html, '<h1'), $path);
             $this->assertStringContainsString($heading, $html, $path);
             $this->assertStringContainsString($text, $html, $path);
-            $this->assertStringContainsString('class="ix-top ix-top--public"', $html, $path);
+            $this->assertStringContainsString('ix-header--public', $html, $path);
         }
     }
 
@@ -145,7 +145,7 @@ class PublicPagesTest extends TestCase
 
         $results = $this->get('/solution-results?search=register')->assertOk()->getContent();
         $this->assertMatchesRegularExpression('/class="ix-btn ix-btn--arrow"[^>]*aria-label="Search"[^>]*><span class="ix-arrow"/', $results);
-        $this->assertMatchesRegularExpression('/class="ix-search__go"[^>]*aria-label="Search questions and solutions"[^>]*>\s*<span class="ix-arrow"/', $results, 'the top-bar search');
+        $this->assertMatchesRegularExpression('/class="dsr-go" aria-label="Search questions and solutions[^"]*"><span class="dsr-arrow"/', $results, 'the top-bar search');
         $this->assertStringContainsString('--ix-arrow-url', $results);
         $this->assertFileExists(resource_path('img/arrow-mask.png'));
     }
@@ -165,7 +165,7 @@ class PublicPagesTest extends TestCase
     public function test_the_visitor_tab_row_has_the_two_search_links_and_the_directory_and_nothing_else(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
-        preg_match('/<nav class="ix-tabs" aria-label="About InfoDot">(.*?)<\/nav>/s', $html, $m);
+        preg_match('/<nav class="dh-nav" aria-label="About InfoDot" data-dh-nav>(.*?)<\/nav>/s', $html, $m);
 
         $this->assertStringContainsString('Questions people ask', $m[1]);
         $this->assertStringContainsString('Browse public answers', $m[1]);
@@ -182,7 +182,7 @@ class PublicPagesTest extends TestCase
         foreach (['/policy' => ['Privacy Policy', 'Who we are', 'BluePin Inc'], '/terms' => ['Terms &amp; Conditions', 'Your account', 'BluePin'], '/cookies' => ['Cookie Policy', 'Cookies we set', 'infodot_session']] as $path => [$title, $heading, $text]) {
             $html = $this->get($path)->assertOk()->getContent();
 
-            $this->assertStringContainsString('class="ix-top ix-top--public"', $html, $path);
+            $this->assertStringContainsString('ix-header--public', $html, $path);
             $this->assertStringContainsString('class="ix-legal"', $html, $path);
             $this->assertStringContainsString('aria-label="On this page"', $html, $path);
             $this->assertSame(1, substr_count($html, '<h1'), $path);
