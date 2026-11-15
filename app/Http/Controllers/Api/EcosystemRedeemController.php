@@ -36,7 +36,10 @@ class EcosystemRedeemController extends Controller
         $platform = $input['platform'];
 
         if (! PlatformSecret::proves($request, $platform)) {
-            return $this->refuse($platform, 'service secret missing or wrong', 401);
+            // Which of the two it is tells an operator where to look: nothing configured on this side, or a value that differs.
+            $configured = (string) config('ecosystem.service_secrets.'.$platform, '') !== '';
+
+            return $this->refuse($platform, $configured ? 'service secret wrong or missing in the call' : 'service secret not configured on InfoDot (ECOSYSTEM_SECRET_'.strtoupper($platform).' empty)', 401);
         }
 
         if (! PlatformSecret::live($platform)) {

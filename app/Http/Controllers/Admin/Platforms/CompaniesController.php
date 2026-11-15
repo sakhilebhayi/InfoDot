@@ -77,7 +77,7 @@ class CompaniesController extends Controller
             'core' => $catalogue->where('is_core', true),
             // What an administrator can give: in the catalogue and shown, not core, launched, and switched on from here.
             'grantable' => $catalogue->filter(fn (PlatformCatalogue $entry) => ! $entry->is_core && $entry->discoverable && ! $entry->isNotLaunched()
-                && config('ecosystem.platforms.'.$entry->key) !== null && ! EcosystemHandoff::hasNoReceiver($entry->key)),
+                && config('ecosystem.platforms.'.$entry->key) !== null && ! EcosystemHandoff::managesOwnAccess($entry->key)),
             'trialPlans' => PlatformPlan::whereNotNull('trial_days')->orderBy('platform_key')->orderBy('name')->get()->filter->isSellable()->values(),
             'selected' => $selected,
             'events' => PlatformEntitlementEvent::with('actor')->where('team_id', $team->id)->orderByDesc('id')->limit(60)->get(),

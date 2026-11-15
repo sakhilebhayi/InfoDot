@@ -63,7 +63,7 @@ class CatalogueAdmin
     {
         $entry = $this->access->governs($platformKey) ? $this->access->entry($platformKey) : null;
 
-        if ($entry === null || $entry->is_core || EcosystemHandoff::hasNoReceiver($platformKey)) {
+        if ($entry === null || $entry->is_core || EcosystemHandoff::managesOwnAccess($platformKey)) {
             throw new EntitlementRefused('Plans belong to platforms a company switches on here. This one is core, has its own sign-in, or is not in the catalogue.');
         }
 
@@ -311,7 +311,7 @@ class CatalogueAdmin
         foreach ($keys as $key) {
             $entry = $this->access->governs($key) ? $this->access->entry($key) : null;
 
-            if ($entry === null || $entry->is_core || EcosystemHandoff::hasNoReceiver($key)) {
+            if ($entry === null || $entry->is_core || EcosystemHandoff::managesOwnAccess($key)) {
                 throw new EntitlementRefused('A bundle holds platforms a company switches on here: not the free core, and not a platform with its own sign-in.');
             }
         }

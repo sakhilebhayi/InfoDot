@@ -166,6 +166,7 @@ class PlatformLaunchTest extends TestCase
         $user = $this->user();
         config(['ecosystem.platforms.mines.url' => 'https://mines.infodot.co.za', 'ecosystem.platforms.mines.active' => true]);
 
+        // The shipped registry has Mines' sign-in handoff off (DOT_MINES_SSO, default false), so it behaves as before.
         $this->assertTrue(EcosystemHandoff::hasNoReceiver('mines'));
         $this->assertTrue(EcosystemHandoff::hasNoReceiver('charts'));
         $this->assertFalse(EcosystemHandoff::hasNoReceiver('files'));

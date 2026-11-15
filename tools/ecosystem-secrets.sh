@@ -17,7 +17,7 @@ command -v openssl >/dev/null || { echo "openssl is required" >&2; exit 1; }
 secret() { openssl rand -hex 32; }
 upper() { echo "$1" | tr '[:lower:]' '[:upper:]'; }
 
-SIGNIN="analytics auction design ehail emall finance hr notify pulse tasks tutor"
+SIGNIN="analytics auction design ehail emall finance hr mines notify pulse tasks tutor"
 NOTIFY_CALLERS="auction ehail hr tasks"
 ANALYTICS_PUBLISHERS="auction design ehail emall hr notify pulse tasks tutor"
 FINANCE_ENTITLEMENT_CALLERS="analytics auction ehail emall hr notify tasks tutor"   # optional: apps that ask Finance "what plan is this company on?"

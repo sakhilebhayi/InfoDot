@@ -55,7 +55,7 @@ class PaymentConfirmations
 
         $entry = $this->access->governs($key) ? $this->access->entry($key) : null;
 
-        if ($entry === null || $entry->is_core || EcosystemHandoff::hasNoReceiver($key)) {
+        if ($entry === null || $entry->is_core || EcosystemHandoff::managesOwnAccess($key)) {
             throw new PaymentEventRefused('unknown platform, or one that is not sold');
         }
 

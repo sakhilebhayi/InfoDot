@@ -3,7 +3,7 @@
 # Then `tools/apply-secrets.sh infodot <platform> ...` writes both sides to the hosts. Idempotent per platform:
 # a platform that already has its pair is left alone. Values are never printed.
 #
-#   [SECRETS_FILE=~/dot-ecosystem-secrets.env] tools/signin-secret.sh agents central engage forms press projects sheet
+#   [SECRETS_FILE=~/dot-ecosystem-secrets.env] tools/signin-secret.sh agents central engage forms press projects sheet mines
 set -euo pipefail
 [ $# -gt 0 ] || { echo "usage: $0 <platform> [...]" >&2; exit 2; }
 FILE="${SECRETS_FILE:-$HOME/dot-ecosystem-secrets.env}"
