@@ -254,6 +254,7 @@
     .ix-bizcard__tags a,
     .ixa-cover a,
     .ixa-cover__more a,
+    a.ix-notices__text,
     .ix-cat__suggest li p a {
         display: inline-block;
         padding-block: 14px;
@@ -304,8 +305,9 @@
     }
 
     .ix-legal__toc a {
-        display: block;
-        padding-block: 8px;
+        display: flex;
+        align-items: center;
+        min-height: 44px;
     }
 }
 
