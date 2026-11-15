@@ -303,6 +303,20 @@ jobs:
             echo "== docroot build/ did not exist; linked to $APPDIR/public/build"
           fi
 
+          # ---- dot-ui (R-52): the shared header, search, switcher styles and Roboto. public/dot-ui is tracked, so git has already
+          # refreshed it in the app folder; the docroot serves its OWN copy (like build/), so mirror it, or the new header
+          # never reaches the browser and every page loses its Roboto and its header styles.
+          DOTUI="$DOCROOT/dot-ui"
+          if [ -L "$DOTUI" ]; then
+            echo "== docroot dot-ui/ is a symlink; nothing to copy"
+          elif [ -d "$DOTUI" ]; then
+            rsync -a --delete public/dot-ui/ "$DOTUI/"
+            echo "== docroot dot-ui/ is a real directory; mirrored from public/dot-ui"
+          else
+            ln -s "$APPDIR/public/dot-ui" "$DOTUI"
+            echo "== docroot dot-ui/ did not exist; linked to $APPDIR/public/dot-ui"
+          fi
+
           # ---- static files the docroot serves as its own physical copies (not through PHP):
           # refresh the repo-owned ones, or edits to them never reach the browser (robots.txt
           # sat at its June copy until R-17). index.php is deliberately untouched — on this
@@ -487,6 +501,11 @@ jobs:
           for ASSET in $(python3 -c "import json; m=json.load(open('public/build/manifest.json')); print(' '.join(sorted({v['file'] for v in m.values() if v.get('isEntry')} | {f for v in m.values() if v.get('isEntry') for f in v.get('css', [])})))"); do
             CODE=$(curl -s --max-time 30 -o /dev/null -w '%{http_code}' "$SITE_URL/build/$ASSET" || true)
             if [ "$CODE" = "200" ]; then echo "200 $SITE_URL/build/$ASSET"; else echo "::error::$SITE_URL/build/$ASSET answered ${CODE:-no response} (expected 200): the docroot is not serving the new build"; FAILED=1; fi
+          done
+          # dot-ui (R-52): the header's stylesheet and script, and Roboto, are static files the docroot serves itself.
+          for ASSET in dot-ui/css/dot-ui.min.css dot-ui/js/dot-ui-core.min.js dot-ui/fonts/roboto/roboto-latin-wght-normal.woff2; do
+            CODE=$(curl -s --max-time 30 -o /dev/null -w '%{http_code}' "$SITE_URL/$ASSET" || true)
+            if [ "$CODE" = "200" ]; then echo "200 $SITE_URL/$ASSET"; else echo "::error::$SITE_URL/$ASSET answered ${CODE:-no response} (expected 200): the docroot is not serving dot-ui"; FAILED=1; fi
           done
           # A GET-only route answering POST is a harmless 405: ~1 KB in
           # production, an ~840 KB stack-trace page when APP_DEBUG is on.
