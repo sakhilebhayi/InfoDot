@@ -86,8 +86,14 @@ test.describe('E. On a phone or tablet', () => {
         await profile.locator('#photo').setInputFiles(fixture('photo-4032x3024.jpg'));
         await expect(profile.getByRole('button', { name: 'Save' })).toBeEnabled({ timeout: 30_000 });
         await profile.getByRole('button', { name: 'Save' }).click();
-        await page.getByRole('button', { name: 'Menu', exact: true }).click();   // the photograph is in the drawer's account section on a phone
-        await expect(page.locator('.dh-dacct .dh-avatar img')).toBeVisible({ timeout: 30_000 });
+        // the photograph is in the drawer's account section on a phone; saving a photo reloads the page, so open the drawer once it has settled
+        await page.waitForLoadState('networkidle');
+        await expect(async () => {
+            if (! (await page.locator('#dh-drawer').isVisible())) {
+                await page.getByRole('button', { name: 'Menu', exact: true }).click();
+            }
+            await expect(page.locator('.dh-dacct .dh-avatar img')).toBeVisible({ timeout: 2_000 });
+        }).toPass({ timeout: 30_000 });
         await page.keyboard.press('Escape');
         expect(rows('users', { email })[0].profile_photo_path).toBeTruthy();
 

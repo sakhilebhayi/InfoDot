@@ -306,8 +306,12 @@ jobs:
           # ---- dot-ui (R-52): the shared header, search, switcher styles and Roboto. public/dot-ui is tracked, so git has already
           # refreshed it in the app folder; the docroot serves its OWN copy (like build/), so mirror it, or the new header
           # never reaches the browser and every page loses its Roboto and its header styles.
+          # Guarded: it only ever touches "$DOCROOT/dot-ui" (an empty DOCROOT or a missing source is a no-op, never "/dot-ui"), the rsync
+          # --delete is scoped to that one folder, and a second run changes nothing.
           DOTUI="$DOCROOT/dot-ui"
-          if [ -L "$DOTUI" ]; then
+          if [ -z "${DOCROOT:-}" ] || [ -z "${APPDIR:-}" ] || [ ! -f public/dot-ui/css/dot-ui.min.css ]; then
+            echo "::warning::dot-ui mirror skipped: DOCROOT, APPDIR or public/dot-ui is missing"
+          elif [ -L "$DOTUI" ]; then
             echo "== docroot dot-ui/ is a symlink; nothing to copy"
           elif [ -d "$DOTUI" ]; then
             rsync -a --delete public/dot-ui/ "$DOTUI/"
