@@ -8,7 +8,7 @@
                     On this page
                     <span class="material-symbols-rounded" aria-hidden="true" x-text="open ? 'expand_less' : 'expand_more'">expand_less</span>
                 </button>
-                <ol x-show="open">
+                <ol x-show="open" x-cloak>
                     @foreach ($doc['toc'] as $item)
                         <li><a href="#{{ $item['id'] }}">{{ $item['text'] }}</a></li>
                     @endforeach

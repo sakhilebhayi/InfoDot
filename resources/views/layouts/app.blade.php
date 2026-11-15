@@ -8,8 +8,8 @@
     <title>{{ $title ?? \App\Support\NavSection::current() }} · InfoDot</title>
     @stack('meta')
     @include('partials.head-icons')
-    @include('partials.head-fonts', ['fonts' => ['icons']])
     @include('partials.head-dot-ui', ['part' => 'css'])
+    @include('partials.head-fonts', ['fonts' => ['icons']])
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.head-dot-ui', ['part' => 'script'])
     @livewireStyles

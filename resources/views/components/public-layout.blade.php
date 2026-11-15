@@ -19,8 +19,8 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary">
     @include('partials.head-icons')
-    @include('partials.head-fonts', ['fonts' => ['icons']])
     @include('partials.head-dot-ui', ['part' => 'css', 'preload' => ! $landing])
+    @include('partials.head-fonts', ['fonts' => ['icons']])
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.head-dot-ui', ['part' => 'script'])
     @if ($landing)

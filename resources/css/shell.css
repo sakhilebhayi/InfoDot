@@ -276,3 +276,49 @@
         min-height: 120px;
     }
 }
+
+/* The legal pages' contents list opens or folds with Alpine (open from 900px). Until Alpine starts, the list is hidden under 900px, so a phone
+   does not paint it open and then pull the whole article up when it folds (CLS 0.49 on /terms). From 900px it is open from the first paint. */
+@media (min-width: 900px) {
+    .ix .ix-legal__toc ol[x-cloak] {
+        display: block !important;
+    }
+}
+
+/* Long unbreakable values (an e-mail address, a web address) wrap inside their card instead of running off a 320px screen. */
+.ix-biz__facts dd,
+.ix-facts dd {
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+
+.ix-biz__facts dd a {
+    overflow-wrap: anywhere;
+}
+
+/* The way-in checkboxes (Remember me, accept the terms): the whole row is the 44px target up to 1024px */
+@media (max-width: 1024px), (pointer: coarse) {
+    label:has(> input[type='checkbox']),
+    label:has(> input[type='radio']) {
+        min-height: 44px;
+    }
+
+    .ix-legal__toc a {
+        display: block;
+        padding-block: 8px;
+    }
+}
+
+/* The business page's owner buttons (Preview, Edit profile, ...) sit under the plate on a phone and wrap among themselves: with flex-shrink 0 the
+   row was as wide as all three buttons (307px in a 266px plate at 320). */
+@media (max-width: 980px) {
+    .ix-biz__editbtn {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+}
+
+/* The landing hero is a one-column grid whose auto track took the widest unbreakable line (324px at 320). One flexible track. */
+.lp-hero {
+    grid-template-columns: minmax(0, 1fr);
+}

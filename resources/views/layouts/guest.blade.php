@@ -7,8 +7,8 @@
     @include('partials.head-icons')
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ? $title.' · InfoDot' : 'InfoDot' }}</title>
-    @include('partials.head-fonts', ['fonts' => ['icons']])
     @include('partials.head-dot-ui', ['part' => 'css'])
+    @include('partials.head-fonts', ['fonts' => ['icons']])
     @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.head-dot-ui', ['part' => 'script'])
