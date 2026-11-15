@@ -125,31 +125,62 @@ class SelfHostedAssetsTest extends TestCase
             }
         }
 
-        // Exactly what the pages set text in: nothing loaded that nothing uses (Inter, Manrope and Font Awesome are gone, and
-        // since the sign-in and error pages joined The Yard so are DM Sans, Baloo 2 and Space Mono).
+        // R-52: this build declares only the icon font. Text is Roboto, served by dot-ui from public/dot-ui (see the next tests), so
+        // Archivo, the stencil face, Inter, Manrope, DM Sans, Baloo 2 and Space Mono are all gone.
         ksort($families);
         $this->assertSame([
-            'Archivo' => ['400', '500', '600', '700'],
-            'Big Shoulders Stencil Display' => ['700', '800', '900'],
             'Material Symbols Rounded' => ['100 700'],
         ], array_map(fn (array $weights) => array_map('strval', array_keys($weights)), $families));
 
-        // Each family is one the stylesheets or the layouts actually ask for.
-        $users = (string) file_get_contents(resource_path('css/infodot.css')).file_get_contents(resource_path('views/layouts/guest.blade.php')).file_get_contents(resource_path('views/errors/_ecosystem-layout.blade.php'));
+        // The one family is one the stylesheets actually ask for.
+        $users = (string) file_get_contents(resource_path('css/fonts.css'));
         foreach (array_keys($families) as $family) {
             $this->assertStringContainsString("'".$family."'", $users, $family.' is declared but nothing uses it');
         }
     }
 
+    public function test_text_is_roboto_from_dot_ui_and_no_other_text_face_is_named(): void
+    {
+        // Roboto is declared by the shared package, from this site (R-52): two files split by unicode-range, no host in a url().
+        $roboto = (string) file_get_contents(public_path('dot-ui/css/dot-roboto.css'));
+        $this->assertStringContainsString("font-family: 'Roboto'", $roboto);
+        $this->assertSame(0, preg_match('#url\(\s*[\'"]?(https?:)?//#', $roboto), 'dot-roboto.css loads a font from another host');
+        foreach (['roboto-latin-wght-normal.woff2', 'roboto-latin-ext-wght-normal.woff2'] as $file) {
+            $this->assertFileExists(public_path('dot-ui/fonts/roboto/'.$file));
+        }
+
+        // The product's own tokens are the shared stack, not a face of their own.
+        $css = (string) file_get_contents(resource_path('css/infodot.css'));
+        $this->assertStringContainsString('--ix-font: var(--dot-font-sans);', $css);
+        $this->assertStringContainsString('--ix-stencil-font: var(--dot-font-sans);', $css);
+        foreach (['Archivo', 'Big Shoulders', 'Inter', 'Manrope', 'font-weight: 650'] as $gone) {
+            $this->assertStringNotContainsString($gone, preg_replace('#/\*.*?\*/#s', '', $css), 'infodot.css still names '.$gone);
+        }
+        $this->assertStringNotContainsString('Inter', (string) file_get_contents(base_path('tailwind.config.js')));
+        $this->assertStringContainsString('dot-ui/tailwind/tailwind-preset.cjs', (string) file_get_contents(base_path('tailwind.config.js')));
+        $package = (string) file_get_contents(base_path('package.json'));
+        $this->assertStringNotContainsString('fontsource', $package);
+
+        // No literal pixel font size is left on a text rule: sizes are the dot-ui type scale (icon fonts keep their own pixel sizes).
+        preg_match_all('/([^{}]+)\{([^{}]*)\}/', $css, $rules, PREG_SET_ORDER);
+        foreach ($rules as [, $selector, $body]) {
+            if (preg_match('/material-symbols|icon|__ico|::before|::after|\.sep\b|ix-arrow|__go\b|ix-out|\bcode\b/', $selector)) {
+                continue;
+            }
+            $this->assertSame(0, preg_match('/font-size:\s*[\d.]+(px|rem)\s*[;!]/', $body), trim($selector).' sets a literal font size: use a --dot-text-* step');
+        }
+    }
+
     public function test_the_layouts_preload_the_fonts_of_the_first_screen_from_this_site(): void
     {
-        $this->assertSame(['archivo', 'stencil', 'icons'], array_keys(OptionalVite::PRELOADABLE_FONTS));
+        // Only the icon font is preloaded: Roboto from dot-ui is deliberately not (docs/PERFORMANCE.md: a preload slowed the largest paint).
+        $this->assertSame(['icons'], array_keys(OptionalVite::PRELOADABLE_FONTS));
         $css = (string) file_get_contents(resource_path('css/fonts.css'));
         foreach (OptionalVite::PRELOADABLE_FONTS as $path) {
             $this->assertStringContainsString(str_starts_with($path, 'node_modules/') ? "url('../../{$path}')" : "url('../".substr($path, strlen('resources/'))."')", $css, $path.' is preloaded but not a font the stylesheet uses');
         }
 
-        foreach (['layouts/app.blade.php' => "['archivo', 'stencil', 'icons']", 'components/public-layout.blade.php' => "['archivo', 'stencil', 'icons']", 'layouts/guest.blade.php' => "['archivo', 'stencil', 'icons']"] as $layout => $fonts) {
+        foreach (['layouts/app.blade.php' => "['icons']", 'components/public-layout.blade.php' => "['icons']", 'layouts/guest.blade.php' => "['icons']"] as $layout => $fonts) {
             $this->assertStringContainsString("@include('partials.head-fonts', ['fonts' => {$fonts}])", (string) file_get_contents(resource_path('views/'.$layout)), $layout);
         }
         $partial = (string) file_get_contents(resource_path('views/partials/head-fonts.blade.php'));
@@ -207,8 +238,8 @@ class SelfHostedAssetsTest extends TestCase
 
         $css = (string) file_get_contents(public_path('build/'.$entry));
         preg_match_all('#url\(([^)]+\.woff2)\)#', $css, $urls);
-        // Archivo and the stencil face, each in Latin and Latin Extended, and the icons.
-        $this->assertCount(5, array_unique($urls[1]));
+        // The icon font only (Roboto is served from /dot-ui).
+        $this->assertCount(1, array_unique($urls[1]));
         foreach (array_unique($urls[1]) as $url) {
             $this->assertStringStartsWith('/build/assets/', $url);
             $this->assertFileExists(public_path(ltrim($url, '/')));

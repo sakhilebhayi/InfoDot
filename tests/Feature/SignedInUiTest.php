@@ -68,10 +68,10 @@ class SignedInUiTest extends TestCase
             }
         }
 
-        // The pages used to name Archivo in a Google Fonts link. Since R-49 the typeface is served from this site and
-        // declared in the stylesheet every page loads, so that is where it is looked for.
-        $this->assertStringContainsString("--ix-font: 'Archivo'", (string) file_get_contents(resource_path('css/infodot.css')));
-        $this->assertStringContainsString("font-family: 'Archivo';", (string) file_get_contents(resource_path('css/fonts.css')));
+        // The pages used to name Archivo in a Google Fonts link; since R-49 the typeface was served from this site, and since R-52 it is
+        // Roboto from dot-ui (/dot-ui/css/dot-roboto.css, linked first in <head>), so the product's font token is the shared stack.
+        $this->assertStringContainsString('--ix-font: var(--dot-font-sans);', (string) file_get_contents(resource_path('css/infodot.css')));
+        $this->assertStringNotContainsString("'Archivo'", (string) file_get_contents(resource_path('css/fonts.css')));
     }
 
     public function test_the_questions_page_offers_unsolved_and_solved_filters(): void

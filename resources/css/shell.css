@@ -1,0 +1,278 @@
+/*
+ * R-52: the shared Dot header on InfoDot. dot-ui (public/dot-ui, 0.6.1) draws the bar, the menus, the drawer, the search pill and its
+ * phone sheet; this file only maps InfoDot's tokens onto it and keeps the things that are InfoDot's own: the Dot Apps switcher
+ * (a Livewire component, kept as the reference) made to fit a phone, and the touch sizes of the page content.
+ * Nothing here restyles a dot-ui control; a host rule on a class of equal weight wins only because this file loads after dot-ui.
+ */
+
+/* ------------------------------------------------------------- tokens: dot-ui reads InfoDot's surfaces */
+:root {
+    /* the pill's dropdown, the menus and the drawer take the page's panel surfaces (light and dark follow the system, like the rest of the page) */
+    --dsr-panel: var(--ix-panel);
+    --dsr-hover: var(--ix-hover);
+    --dsr-rule: var(--ix-rule);
+    --dsr-rule-strong: var(--ix-rule-strong);
+    --dsr-text: var(--ix-text);
+    --dsr-text-2: var(--ix-text-2);
+    --dsr-text-3: var(--ix-text-3);
+    --dsr-icon: #aeb8bc;
+    /* the bar is InfoDot's graphite, its accent the owner gold; the logo is the 64x26 mark */
+    --dh-bg: var(--ix-top);
+    --dh-accent: var(--ix-stencil);
+    --dh-logo-h: 26px;
+    --dh-badge-bg: var(--ix-danger);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --dh-badge-bg: #a82a1e;
+    }
+}
+
+.ix-header {
+    z-index: 40;
+}
+
+/* the logo is a link of its own: keep it from squeezing when the status area is long */
+.ix-header .dh-brand img {
+    height: var(--dh-logo-h);
+    width: auto;
+}
+
+.ix-brand__name {
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+/* ------------------------------------------------------------- the search: InfoDot's own, in the shared pill */
+
+/* the Material icon rows in the dropdown take the pill's row rhythm (18px, the icon colour), as the .ix-results__item icons did */
+.dsr .dsr-item .dsr-glyph,
+.dsr .dsr-chip .dsr-glyph {
+    flex: none;
+    font-size: 18px;
+    color: var(--dsr-icon);
+    position: static;
+    transform: none;
+}
+
+.dsr .dsr-chip .dsr-glyph {
+    color: inherit;
+}
+
+/* ------------------------------------------------------------- Dot Apps (InfoDot's switcher), mobile-fit */
+
+.ix-yardwrap {
+    position: static;
+}
+
+.ix-yardwrap .ix-btn {
+    min-width: 44px;
+}
+
+.ix-yardscrim,
+.ix-yardmap__close {
+    display: none;
+}
+
+/* up to the desktop width the label folds away and the trigger is a 44px icon button, like the other header tools */
+.ix-yardlabel {
+    display: none;
+}
+
+@media (min-width: 1280px) {
+    .ix-yardlabel {
+        display: inline;
+    }
+}
+
+@media (max-width: 1279px) {
+    .ix-yardwrap .ix-btn {
+        width: 44px;
+        padding: 0;
+    }
+}
+
+@media (max-width: 1024px), (pointer: coarse) {
+    .ix-yardwrap .ix-btn {
+        height: 44px;
+    }
+
+    .ix-yardmap__filter input {
+        height: 44px;
+        font-size: max(1rem, 16px);
+    }
+
+    .ix-yardmap__all {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+    }
+}
+
+.ix-yardmap {
+    max-height: calc(100vh - var(--dot-header-offset, 56px) - 16px);
+    max-height: calc(100dvh - var(--dot-header-offset, 56px) - 16px);
+    overscroll-behavior: contain;
+}
+
+@media (max-width: 639px) {
+    /* a bottom sheet under 640px: reachable with a thumb, the page behind it locked and dimmed, 44px controls, a visible close */
+    .ix-yardscrim {
+        position: fixed;
+        inset: 0;
+        z-index: 59;
+        display: block;
+        background: var(--dh-scrim, rgba(10, 14, 16, 0.55));
+    }
+
+    .ix-yardmap {
+        position: fixed;
+        inset: auto 0 0 0;
+        top: auto;
+        z-index: 60;
+        max-height: 88vh;
+        max-height: min(88dvh, 100dvh - var(--dot-header-offset, 52px));
+        border-bottom: 0;
+        border-top: 6px solid var(--ix-stencil);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .ix-yardmap__in {
+        position: relative;
+        padding-top: 12px;
+    }
+
+    .ix-yardmap__close {
+        position: absolute;
+        top: 4px;
+        right: 8px;
+        z-index: 1;
+        display: inline-grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border: 0;
+        border-radius: var(--ix-radius-sm);
+        background: transparent;
+        color: #1b2124;
+        cursor: pointer;
+    }
+
+    .ix-yardmap__head {
+        padding-right: 44px;
+    }
+
+    /* the tiles are single, wide, 44px-plus rows of the platform's own logo and name */
+    .ix-bays__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* ------------------------------------------------------------- content under a sticky bar */
+:target,
+[id] {
+    scroll-margin-top: calc(var(--dot-header-offset, 56px) + 8px);
+}
+
+/* ------------------------------------------------------------- the bar's own controls on the graphite */
+
+/* InfoDot's .ix-btn on the dark bar (the Dot Apps trigger): the outline button the old bar had, readable in both schemes */
+.ix-header .ix-btn {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.28);
+    color: var(--dh-ink);
+}
+
+.ix-header .ix-btn:hover,
+.ix-header .ix-btn:active {
+    background: #2b3439;
+}
+
+/* a bar with no search (the landing, the way in, error pages): the shared grid keeps its three tracks, so the end area would land in
+   the middle one. Two tracks instead: the start takes the room (the nav has it), the end sits at the right edge. */
+@media (min-width: 861px) {
+    .dh--nosearch .dh-bar {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+}
+
+/* ------------------------------------------------------------- touch sizes and the narrow phone (R-52: 44px up to 1024px) */
+
+/* the Knowledge sub-bar (Questions, Solutions, Topics, Library): four 44px links that fit 320px (Roboto is wider than the face this replaced) */
+.ix-subnav a {
+    display: inline-flex;
+    align-items: center;
+}
+
+@media (max-width: 1024px), (pointer: coarse) {
+    .ix-subnav a {
+        min-height: 44px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .ix-attach__tool {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (max-width: 479px) {
+    .ix-subnav__inner {
+        gap: 0;
+    }
+
+    .ix-subnav a {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .ix-subnav a[aria-current='page']::after {
+        left: 8px;
+        right: 8px;
+    }
+}
+
+/* An icon is typed as its name ("chevron_right") and drawn by the icon font, which BLOCKS until it arrives. Until then the name's width is
+   laid out, so a breadcrumb or a row wrapped and then shifted when the font came (CLS 0.2 on a phone under the harness's slow profile).
+   One em of box, the rest clipped: the layout is the same before and after the font. */
+.material-symbols-rounded {
+    width: 1em;
+    height: 1em;
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+/* Text links inside dense content (a person's name in a facts list, a business name on a card, a tag, a platform in a list) are 16 to 24px high:
+   a real 44px box up to 1024px, with the same amount taken back by the margin so the page keeps its rhythm. */
+@media (max-width: 1024px), (pointer: coarse) {
+    .ix-facts dd a,
+    .ix-biz__facts dd a,
+    .ix-bizcard__name h3 a,
+    .ix-bizcard__tags a,
+    .ixa-cover a,
+    .ixa-cover__more a,
+    .ix-cat__suggest li p a {
+        display: inline-block;
+        padding-block: 14px;
+        margin-block: -14px;
+    }
+
+    .ix-lib__title {
+        padding-block: 11px;
+        margin-block: -11px;
+    }
+
+    .ix-input,
+    .ix-select,
+    .ix-dir__check {
+        min-height: 44px;
+        height: 44px;
+    }
+
+    .ix-textarea {
+        min-height: 120px;
+    }
+}

@@ -1,128 +1,94 @@
 @php
-    $company = Auth::user()->currentTeam;
+    use App\Support\EcosystemHandoff;
+    use App\Support\NavSection;
+    use Illuminate\Support\Facades\Auth;
+    use Laravel\Jetstream\Jetstream;
+
+    $user = Auth::user();
+    $company = $user->currentTeam;
+    $routeIs = fn (string ...$names) => request()->routeIs(...$names);
+
+    // A platform opens from the bar only when it is live (the same test the old tabs used); the link is the platform launch route the
+    // Platforms page and the Dot Apps menu use, so the R-50 entitlement check and its explanation apply (nothing is bypassed).
+    $live = fn (string $key) => (bool) (config('ecosystem.platforms.'.$key.'.active') ?? false)
+        && EcosystemHandoff::endpointFor(config('ecosystem.platforms.'.$key)) !== null;
+
+    // R-52: the bar shows Home and three named groups (Knowledge, Network, Platforms), plus Admin for staff; every item is also in the drawer. The same array prints the drawer on a phone.
+    $platformItems = array_values(array_filter([
+        ['label' => 'All platforms', 'href' => route('ecosystem.widget'), 'current' => $routeIs('ecosystem.widget', 'platforms.*', 'platform.access')],
+        ['label' => 'Analytics', 'href' => route('analytics.dashboard'), 'current' => $routeIs('analytics.*')],
+        $live('files') ? ['label' => 'Files', 'href' => route('platform.launch', ['platform' => 'files'])] : null,
+        $live('docs') ? ['label' => 'Documents', 'href' => route('platform.launch', ['platform' => 'docs'])] : null,
+    ]));
+
+    $nav = [
+        ['label' => 'Home', 'href' => route('dashboard'), 'current' => $routeIs('dashboard')],
+        ['label' => 'Knowledge', 'items' => [
+            ['label' => 'Questions', 'href' => route('questions'), 'current' => $routeIs('questions*', 'seek')],
+            ['label' => 'Solutions', 'href' => route('solutions'), 'current' => $routeIs('solutions*', 'add')],
+            ['label' => 'Topics', 'href' => route('topics'), 'current' => $routeIs('topics*')],
+            ['label' => 'Library', 'href' => route('library'), 'current' => $routeIs('library')],
+            ['label' => 'Seminars', 'href' => route('seminars'), 'current' => $routeIs('seminars*')],
+        ]],
+        ['label' => 'Network', 'items' => [
+            ['label' => 'Businesses', 'href' => route('businesses.index'), 'current' => $routeIs('businesses.*', 'business.show')],
+            ['label' => 'People', 'href' => route('people'), 'current' => $routeIs('people', 'teams.*', 'api-tokens.*')],
+        ]],
+        ['label' => 'Platforms', 'items' => $platformItems],
+    ];
+
+    $staff = array_values(array_filter([
+        $user->isModerator() ? ['label' => 'Moderation', 'href' => route('moderation'), 'current' => $routeIs('moderation*')] : null,
+        Gate::allows('administer-platforms') ? ['label' => 'Platform admin', 'href' => route('admin.platforms'), 'current' => $routeIs('admin.platforms*')] : null,
+    ]));
+    if ($staff !== []) {
+        $nav[] = ['label' => 'Admin', 'items' => $staff];
+    }
+
+    $inboxUnread = app(\App\Services\Enquiries\EnquiryService::class)->unreadCount($user);
+    $bellUnread = app(\App\Services\Knowledge\InAppNotices::class)->unreadCount($user);
+
+    // The account menu: the person's own places, then the company they are working in (its settings and the switch between
+    // companies, which used to be a second popover beside the logo). Notifications are the bell's: they are not repeated here.
+    $links = array_values(array_filter([
+        ['label' => 'Profile', 'href' => route('profile.show', ['id' => $user->id]), 'current' => $routeIs('profile.show')],
+        config('reputation.enabled') ? ['label' => 'Your progress', 'href' => route('reputation'), 'current' => $routeIs('reputation*')] : null,
+        ['label' => 'Inbox', 'href' => route('inbox'), 'badge' => $inboxUnread > 0 ? ($inboxUnread > 99 ? '99+' : $inboxUnread) : null, 'current' => $routeIs('inbox*', 'business.inbox*')],
+        ['label' => 'Collections', 'href' => route('collections'), 'current' => $routeIs('collections*')],
+        ['label' => 'Points', 'href' => route('points'), 'current' => $routeIs('points*')],
+        ['label' => 'Settings', 'href' => route('profile.edit'), 'current' => $routeIs('profile.edit')],
+        ['rule' => true],
+        ['heading' => $company?->name ?? 'Personal workspace'],
+        $company && NavSection::administersTeam($user) ? ['label' => 'Company settings', 'href' => route('teams.show', $company->id), 'current' => $routeIs('teams.show')] : null,
+        $company && NavSection::administersTeam($user) && Jetstream::hasApiFeatures() ? ['label' => 'API tokens', 'href' => route('api-tokens.index'), 'current' => $routeIs('api-tokens.*')] : null,
+        Gate::allows('create', Jetstream::newTeamModel()) ? ['label' => 'Create a company', 'href' => route('teams.create'), 'current' => $routeIs('teams.create')] : null,
+    ]));
+
+    if ($user->allTeams()->count() > 1) {
+        $links[] = ['heading' => __('Switch company')];
+        foreach ($user->allTeams() as $team) {
+            $links[] = ['label' => $team->name, 'current' => $user->isCurrentTeam($team), 'form' => ['action' => route('current-team.update'), 'method' => 'PUT', 'fields' => ['team_id' => $team->id]]];
+        }
+    }
+
+    $account = [
+        'name' => (string) $user->name,
+        'email' => (string) $user->email,
+        'team' => $company ? $company->name.' · '.(($company->personal_team ?? true) ? 'Personal workspace' : 'Company') : 'Personal workspace',
+        'avatar' => $user->photoUrl(),
+        'initials' => $user->initial(),
+        'links' => $links,
+        'signOut' => ['action' => route('logout'), 'label' => __('Log out')],
+    ];
 @endphp
-<header class="ix-top">
-    <div class="ix-top__inner">
-        <a href="{{ route('dashboard') }}" class="ix-brand" aria-label="InfoDot home">
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/brand/logo_white.png') }}" alt="InfoDot" width="64" height="26">
-        </a>
-
-        <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }">
-            <button type="button" class="ix-owner" style="background:none;border-top:0;border-bottom:0;border-left:0;color:inherit;cursor:pointer;text-align:left" @click="open = !open" :aria-expanded="open" aria-haspopup="true">
-                <span class="ix-sr">Company menu: </span><span class="ix-owner__name">{{ $company?->name ?? 'Personal workspace' }} <small>{{ ($company?->personal_team ?? true) ? 'Personal workspace' : 'Company' }}</small></span>
-                <span class="material-symbols-rounded" aria-hidden="true" style="opacity:.7">expand_more</span>
-            </button>
-            <div class="ix-pop__panel" style="left:0;right:auto" x-show="open" x-cloak x-transition.opacity.duration.100ms>
-                @if ($company)
-                    <div class="ix-pop__head">{{ $company->name }}</div>
-                    <a class="ix-pop__item" href="{{ route('people') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">groups</span>{{ __('People') }}
-                    </a>
-                    @if (\App\Support\NavSection::administersTeam(Auth::user()))
-                        <a class="ix-pop__item" href="{{ route('teams.show', $company->id) }}">
-                            <span class="material-symbols-rounded" aria-hidden="true">settings</span>{{ __('Company settings') }}
-                        </a>
-                        @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
-                            <a class="ix-pop__item" href="{{ route('api-tokens.index') }}">
-                                <span class="material-symbols-rounded" aria-hidden="true">key</span>{{ __('API tokens') }}
-                            </a>
-                        @endif
-                    @endif
-                @endif
-                @can('create', Laravel\Jetstream\Jetstream::newTeamModel())
-                    <a class="ix-pop__item" href="{{ route('teams.create') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">add</span>Create a company
-                    </a>
-                @endcan
-
-                @if (Auth::user()->allTeams()->count() > 1)
-                    <div class="ix-pop__rule"></div>
-                    <div class="ix-pop__head">{{ __('Switch company') }}</div>
-                    @foreach (Auth::user()->allTeams() as $team)
-                        <x-jet-switchable-team :team="$team" />
-                    @endforeach
-                @endif
-            </div>
-        </div>
-
-        <nav class="ix-tabs" aria-label="Primary">
-            <a href="{{ route('dashboard') }}" class="ix-tab" data-area="home" @if(request()->routeIs('dashboard')) aria-current="page" @endif>Home</a>
-            <a href="{{ route('questions') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('questions*', 'seek', 'solutions*', 'add', 'topics*')) aria-current="page" @endif>Knowledge</a>
-            <a href="{{ route('library') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('library')) aria-current="page" @endif>Library</a>
-            <a href="{{ route('seminars') }}" class="ix-tab" data-area="knowledge" @if(request()->routeIs('seminars*')) aria-current="page" @endif>Seminars</a>
-            <livewire:platform-link platform="files" label="Files" icon="folder" variant="tab" />
-            <livewire:platform-link platform="docs" label="Documents" icon="description" variant="tab" />
-            <a href="{{ route('ecosystem.widget') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('ecosystem.widget', 'platforms.*', 'platform.access')) aria-current="page" @endif>Platforms</a>
-            <a href="{{ route('businesses.index') }}" class="ix-tab" data-area="people" @if(request()->routeIs('businesses.*', 'business.show')) aria-current="page" @endif>Businesses</a>
-            <a href="{{ route('people') }}" class="ix-tab" data-area="people" @if(request()->routeIs('people', 'teams.*', 'api-tokens.*')) aria-current="page" @endif>People</a>
-            <a href="{{ route('analytics.dashboard') }}" class="ix-tab" data-area="analytics" @if(request()->routeIs('analytics.*')) aria-current="page" @endif>Analytics</a>
-            @if (Auth::user()->isModerator())
-                <a href="{{ route('moderation') }}" class="ix-tab" data-area="people" @if(request()->routeIs('moderation*')) aria-current="page" @endif>Moderation</a>
-            @endif
-            @can('administer-platforms')
-                <a href="{{ route('admin.platforms') }}" class="ix-tab" data-area="platforms" @if(request()->routeIs('admin.platforms*')) aria-current="page" @endif>Platform admin</a>
-            @endcan
-        </nav>
-
-        <div class="ix-top__search">
-            <livewire:search />
-        </div>
-
-        <div class="ix-top__actions">
-            <livewire:dot-switcher />
-
-            @php($inboxUnread = app(\App\Services\Enquiries\EnquiryService::class)->unreadCount(Auth::user()))
-            <a href="{{ route('inbox') }}" class="ix-bell" aria-label="{{ $inboxUnread > 0 ? __('Inbox, :n conversations with something new', ['n' => $inboxUnread]) : __('Inbox') }}" @if(request()->routeIs('inbox*', 'business.inbox*')) aria-current="page" @endif>
-                <span class="material-symbols-rounded" aria-hidden="true">inbox</span>
-                @if ($inboxUnread > 0)<span class="ix-bell__count" aria-hidden="true">{{ $inboxUnread > 99 ? '99+' : $inboxUnread }}</span>@endif
-            </a>
-
-            @php($bellUnread = app(\App\Services\Knowledge\InAppNotices::class)->unreadCount(Auth::user()))
-            <a href="{{ route('notices') }}" class="ix-bell" aria-label="{{ $bellUnread > 0 ? __('Notifications, :n unread', ['n' => $bellUnread]) : __('Notifications') }}" @if(request()->routeIs('notices*')) aria-current="page" @endif>
-                <span class="material-symbols-rounded" aria-hidden="true">notifications</span>
-                @if ($bellUnread > 0)<span class="ix-bell__count" aria-hidden="true">{{ $bellUnread > 99 ? '99+' : $bellUnread }}</span>@endif
-            </a>
-
-            <div class="ix-pop" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }">
-                <button type="button" class="ix-avatar" @click="open = !open" :aria-expanded="open" aria-haspopup="true" aria-label="{{ __('Account menu') }}">
-                    @if ($photo = Auth::user()->photoUrl())
-                        <img src="{{ $photo }}" alt="">
-                    @else
-                        {{ Auth::user()->initial() }}
-                    @endif
-                </button>
-                <div class="ix-pop__panel" x-show="open" x-cloak x-transition.opacity.duration.100ms>
-                    <div class="ix-pop__head">{{ Auth::user()->email }}</div>
-                    <a class="ix-pop__item" href="{{ route('profile.show', ['id' => Auth::id()]) }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">person</span>{{ __('Profile') }}
-                    </a>
-                    @php($unreadNotices = $bellUnread)
-                    @if (config('reputation.enabled'))
-                    <a class="ix-pop__item" href="{{ route('reputation') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">trending_up</span>{{ __('Your progress') }}
-                    </a>
-                    @endif
-                    <a class="ix-pop__item" href="{{ route('notices') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">notifications</span>{{ __('Notifications') }}@if ($unreadNotices > 0) <span class="ix-pop__count" aria-label="{{ $unreadNotices }} unread">{{ $unreadNotices > 99 ? '99+' : $unreadNotices }}</span>@endif
-                    </a>
-                    <a class="ix-pop__item" href="{{ route('collections') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">bookmarks</span>{{ __('Collections') }}
-                    </a>
-                    <a class="ix-pop__item" href="{{ route('points') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">redeem</span>{{ __('Points') }}
-                    </a>
-                    <a class="ix-pop__item" href="{{ route('profile.edit') }}">
-                        <span class="material-symbols-rounded" aria-hidden="true">tune</span>{{ __('Settings') }}
-                    </a>
-                    <div class="ix-pop__rule"></div>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="ix-pop__item">
-                            <span class="material-symbols-rounded" aria-hidden="true">logout</span>{{ __('Log out') }}
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
+<x-dot.header
+    brand-href="{{ route('dashboard') }}" brand-label="InfoDot home"
+    :nav="$nav" :account="$account" :context="$company?->name ?? 'Personal workspace'" skip="#main" drawer-title="Menu"
+    class="ix-header">
+    <x-slot:brand><x-ix.brand /></x-slot:brand>
+    <x-slot:search><livewire:search /></x-slot:search>
+    <x-slot:tools>
+        <livewire:dot-switcher />
+        <x-dot.bell :href="route('notices')" :count="$bellUnread" always />
+    </x-slot:tools>
+</x-dot.header>

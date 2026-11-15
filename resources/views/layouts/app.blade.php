@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dot-roboto">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,8 +8,10 @@
     <title>{{ $title ?? \App\Support\NavSection::current() }} · InfoDot</title>
     @stack('meta')
     @include('partials.head-icons')
-    @include('partials.head-fonts', ['fonts' => ['archivo', 'stencil', 'icons']])
+    @include('partials.head-fonts', ['fonts' => ['icons']])
+    @include('partials.head-dot-ui', ['part' => 'css'])
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.head-dot-ui', ['part' => 'script'])
     @livewireStyles
     {{-- No stand-alone Alpine here: Livewire 3 bundles and starts its own (@livewireScripts below). A second copy fights it. --}}
 </head>
@@ -21,7 +23,10 @@
 
     <div class="ix-shell">
         @auth
-            @livewire('navigation-menu')
+            {{-- R-52: plain Blade, not Jetstream's Livewire navigation-menu: a header drawn inside a Livewire component gets morph markers inside the
+                 drawer's slot, which the shared component reads as "custom drawer markup" and prints no menu. The search and the Dot Apps
+                 switcher inside it stay Livewire components. --}}
+            @include('navigation-menu')
         @else
             {{-- Public business pages and the directory open without signing in (R-33). --}}
             @include('layouts.guest-top')

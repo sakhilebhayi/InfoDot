@@ -444,6 +444,11 @@ final class PageInspector
             if ($name === 'id' && $attribute->value !== '' && preg_match('/[\'"#]'.preg_quote($attribute->value, '/').'[\'"\]\s,.:)]/', $this->scripts())) {
                 return true;
             }
+            // The shared dot-ui header (R-52): its buttons carry data-dh-* hooks that js/dot-nav.js listens for on the document (menus, the
+            // drawer, the search sheet, disclosure groups, the theme buttons), so they are not dead controls even with no Alpine attribute.
+            if (preg_match('/^data-dh-(menu-trigger|menu-button|search-toggle|search-close|close|disclosure|theme-set)$/', $name)) {
+                return true;
+            }
             if (str_starts_with($name, 'data-') && str_contains($this->scripts(), '['.$name)) {
                 return true;
             }

@@ -1,6 +1,6 @@
 @props(['title' => 'InfoDot', 'band' => null, 'crumb' => null, 'description' => null, 'landing' => false])
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dot-roboto">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,8 +19,10 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary">
     @include('partials.head-icons')
-    @include('partials.head-fonts', ['fonts' => ['archivo', 'stencil', 'icons']])
+    @include('partials.head-fonts', ['fonts' => ['icons']])
+    @include('partials.head-dot-ui', ['part' => 'css', 'preload' => ! $landing])
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('partials.head-dot-ui', ['part' => 'script'])
     @if ($landing)
         {{-- Motion is added on top of a page that is complete without it: the flag is set before first paint only when the visitor has not asked for reduced motion. --}}
         {{-- Items that animate in start hidden. The timer here, not the motion script, brings them back: if that script is slow, blocked
@@ -35,31 +37,7 @@
     <a href="#main" class="ix-skip">Skip to content</a>
 
     <div class="ix-shell">
-        <header @class(['ix-top', 'ix-top--public', 'is-landing' => $landing])>
-            <div class="ix-top__inner">
-                <a href="{{ url('/') }}" class="ix-brand" aria-label="InfoDot home">
-                    <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/brand/logo_white.png') }}" alt="InfoDot" width="64" height="26">
-                </a>
-
-                @unless ($landing)
-                    <div class="ix-top__search">
-                        <livewire:search />
-                    </div>
-                @endunless
-
-                <div class="ix-top__actions">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="ix-btn ix-btn--primary">Open InfoDot</a>
-                    @else
-                        @if (Route::has('login'))<a href="{{ route('login') }}" class="ix-btn">Sign in</a>@endif
-                        @if (Route::has('register'))<a href="{{ route('register') }}" class="ix-btn ix-btn--primary">Create account</a>@endif
-                    @endauth
-                </div>
-            </div>
-            <div class="ix-top__inner ix-top__inner--nav">
-                @include('layouts.public-tabs')
-            </div>
-        </header>
+        <x-ix.top-public :landing="$landing" />
 
         @if ($band)
             <div class="ix-band">

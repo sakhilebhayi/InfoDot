@@ -67,14 +67,20 @@ class EnterpriseShellTest extends TestCase
         $this->assertMatchesRegularExpression('#NOFI-Q-0000\d\d#', $html, 'items on Home carry their reference');
     }
 
-    public function test_the_top_bar_has_the_area_tabs_and_marks_the_current_one(): void
+    /** R-52: the bar is the shared dot-ui header: Home and three named groups, every place also in the drawer, the current one marked. */
+    public function test_the_top_bar_has_the_area_groups_and_marks_the_current_one(): void
     {
         $html = $this->actingAs($this->owner())->get('/questions')->assertOk()->getContent();
 
-        foreach (['Home', 'Knowledge', 'Platforms', 'People', 'Analytics'] as $tab) {
-            $this->assertMatchesRegularExpression('#class="ix-tab"[^>]*>\s*'.$tab.'#', $html, $tab);
+        $this->assertStringContainsString('class="dh ix-header"', $html);
+        foreach (['Home', 'Knowledge', 'Network', 'Platforms'] as $item) {
+            $this->assertMatchesRegularExpression('#class="dh-nav__link"[^>]*>\s*'.$item.'#', $html, $item);
         }
-        $this->assertMatchesRegularExpression('#href="'.preg_quote(url('/questions'), '#').'" class="ix-tab"[^>]*aria-current="page"#', $html);
+        // Questions sits in the Knowledge group, both in the bar and in the drawer, and is the page in view.
+        $this->assertMatchesRegularExpression('#href="'.preg_quote(url('/questions'), '#').'"[^>]*aria-current="page"#', $html);
+        foreach (['Questions', 'Solutions', 'Topics', 'Library', 'Seminars', 'Businesses', 'People', 'All platforms', 'Analytics'] as $place) {
+            $this->assertGreaterThanOrEqual(2, preg_match_all('#<a class="dh-(?:menu__item|dnav__link)"[^>]*>(?:<span class="dh-menu__label">)?\s*'.$place.'\b#', $html), $place.' is in the bar menu and in the drawer');
+        }
     }
 
     public function test_each_area_sets_its_colour_and_the_band_shows_code_and_area(): void

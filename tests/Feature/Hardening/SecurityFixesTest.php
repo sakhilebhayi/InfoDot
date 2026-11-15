@@ -104,7 +104,7 @@ class SecurityFixesTest extends TestCase
         $last->assertHeader('Retry-After');
         $this->assertGreaterThan(0, (int) $last->headers->get('Retry-After'));
         $last->assertSee('Slow down a little')->assertSee('Error 429')->assertSee('Try again in about')
-            ->assertSee('class="ix-top ix-top--public"', false)->assertSee('Go back and try again');
+            ->assertSee('ix-header--public', false)->assertSee('Go back and try again');
 
         // A JSON caller gets JSON, with the same header.
         $json = $this->postJson('/register', ['name' => 'Person', 'email' => 'taken@example.test', 'password' => 'x']);
