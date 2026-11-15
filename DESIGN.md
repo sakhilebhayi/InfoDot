@@ -11,12 +11,12 @@ A company yard. Owner code and reference on everything owned; area colours like 
 - Stencil gold for owner codes on graphite.
 
 ## Type
-- Big Shoulders Stencil Display: owner codes, references headers, big numerals, area codes. Never body text.
-- Archivo: everything read.
-- These are the only two typefaces loaded, on every page including the way in and the error pages.
+- Roboto (R-52, shared dot-ui package, `/dot-ui/css/dot-roboto.css`, self-hosted): everything, on every page including the way in and the error pages. Sizes are the dot-ui type scale (`--dot-text-*`); there are no literal pixel font sizes on text.
+- Owner codes, reference headers, big numerals and area codes keep their plate treatment (capitals, tracking, weight 700) in Roboto, not in a display face. The old Archivo and Big Shoulders Stencil Display files are gone.
+- Material Symbols Rounded is the only other font loaded (the icons).
 
 ## Components
-- `ix-top` (owner code menu, tabs, search, Dot Apps, account), `ix-band` (AREACODE plus breadcrumbs), `ix-subnav` (Knowledge: Questions, Solutions).
+- The top bar is the shared dot-ui header (`x-dot.header`, R-52): 56px on a desktop and one 52px row on a phone, logo, the search centred by a CSS grid, Home plus the groups Knowledge, Network and Platforms (and Admin for staff), Dot Apps, the notifications bell and the account menu (which also holds Inbox and the company switch); a real drawer holds every place on a phone. `ix-band` (AREACODE plus breadcrumbs), `ix-subnav` (Knowledge: Questions, Solutions).
 - `ix-gate` (Home owner code), `ix-fieldblock`, `ix-door`, `ix-roster`.
 - `ix-ref` (reference), `ix-copy` (copy reference), `ix-stencil-num`, `ix-stamp` (SOLVED, animated once, reduced-motion safe), `ix-kbd`.
 - Existing form, table, panel and popover primitives share the same tokens.
@@ -40,7 +40,7 @@ Each page is laid out for its job, not from one card template.
 - A panel, list item or note is marked with a top rule in its area colour, never a stripe down one side. The Home gate has no stripe either: its mark is the company's owner code, stencilled in gold at the far end of the gate (`ix-gate__code`).
 
 ## Behaviour
-Search matches content, references (`CODE-Q|S-000014`, visibility-scoped) and quick actions (Ctrl/Cmd K). Page changes use the view-transition API on the area band. Below 1200px the tabs move to their own scrolling row; search stays reachable at every width.
+Search matches content, references (`CODE-Q|S-000014`, visibility-scoped) and quick actions (Ctrl/Cmd K). Page changes use the view-transition API on the area band. On a phone the search is a full-screen sheet opened from the bar, and the places are in the drawer; the search stays reachable at every width.
 
 ## Don'ts
 Sidebar, gradient text, side-stripe borders, identical card grids, decorative hero blocks, stencil for paragraphs.
