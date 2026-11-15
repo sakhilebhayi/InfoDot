@@ -47,7 +47,7 @@
                     @if ($photo = $this->user->photoUrl())
                         <img src="{{ $photo }}" alt="{{ $this->user->name }}" class="h-20 w-20 cursor-pointer rounded-full object-cover" style="border: 1px solid var(--ix-rule-strong);">
                     @else
-                        <span class="ix-avatar" style="width: 80px; height: 80px; font-size: 28px; cursor: pointer;">{{ $this->user->initial() }}</span>
+                        <span class="ix-avatar" style="width: 80px; height: 80px; font-size: var(--dot-text-h2-size); cursor: pointer;">{{ $this->user->initial() }}</span>
                     @endif
                 </div>
 

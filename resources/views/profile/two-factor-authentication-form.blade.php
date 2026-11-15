@@ -8,7 +8,7 @@
     </x-slot>
 
     <x-slot name="content">
-        <h3 style="margin: 0; font-size: 15px; font-weight: 600;">
+        <h3 style="margin: 0; font-size: var(--dot-text-body-size); font-weight: 600;">
             @if ($this->enabled && $showingConfirmation)
                 {{ __('Finish turning on two factor authentication.') }}
             @elseif ($this->enabled)

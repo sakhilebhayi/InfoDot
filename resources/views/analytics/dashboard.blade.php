@@ -18,45 +18,45 @@
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; } }
         .ixa h2.ix-panel__head { margin: 0; }
         .ixa .ix-state-bar { margin-bottom: 0; }
-        .ixa-stamp { font-family: var(--ix-font); font-size: 12px; color: var(--ix-text-3); }
+        .ixa-stamp { font-family: var(--ix-font); font-size: var(--dot-text-caption-size); color: var(--ix-text-3); }
         .ixa-verdict { min-width: 0; }
         .ixa-verdict b { display: block; }
-        .ixa-verdict span { display: block; margin-top: 2px; font-weight: 400; font-size: 13px; color: var(--ix-text-2); }
-        .ixa-stat-sub { display: block; margin-top: 2px; font-family: var(--ix-font); font-size: 12px; color: var(--ix-text-2); }
-        .ixa-stat-sub small { display: block; font-size: 12px; color: var(--ix-text-3); }
+        .ixa-verdict span { display: block; margin-top: 2px; font-weight: 400; font-size: var(--dot-text-body-sm-size); color: var(--ix-text-2); }
+        .ixa-stat-sub { display: block; margin-top: 2px; font-family: var(--ix-font); font-size: var(--dot-text-caption-size); color: var(--ix-text-2); }
+        .ixa-stat-sub small { display: block; font-size: var(--dot-text-caption-size); color: var(--ix-text-3); }
         .ixa-trend { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
         @media (max-width: 899px) { .ixa-trend { grid-template-columns: minmax(0, 1fr); } }
-        .ixa-legend { display: inline-flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--ix-font); font-size: 12px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ix-text-2); }
+        .ixa-legend { display: inline-flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--ix-font); font-size: var(--dot-text-caption-size); font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--ix-text-2); }
         .ixa-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
         .ixa-legend .s-sol { background: var(--ix-signal-text); border-radius: 50%; }
         .ixa-legend .s-que { background: var(--ix-text); }
         .ixa-chart { padding: 12px 8px 4px 4px; min-height: 252px; }
         .ixa-none { margin: 0; padding: 20px 16px; color: var(--ix-text-2); max-width: 60ch; text-wrap: pretty; }
-        .ixa-eng-label { font-family: var(--ix-font); font-weight: 700; font-size: 24px; line-height: 1.2; }
-        .ixa-eng-score { margin-top: 2px; color: var(--ix-text-2); font-size: 13px; }
+        .ixa-eng-label { font-family: var(--ix-font); font-weight: 700; font-size: var(--dot-text-h3-size); line-height: 1.2; }
+        .ixa-eng-score { margin-top: 2px; color: var(--ix-text-2); font-size: var(--dot-text-body-sm-size); }
         .ixa-bar { height: 4px; margin: 12px 0 16px; background: var(--ix-rule); }
         .ixa-bar span { display: block; height: 100%; background: var(--ix-text); }
         .ixa-dl { margin: 0; border-top: 1px solid var(--ix-rule); }
         .ixa-dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--ix-rule); }
-        .ixa-dl dt { color: var(--ix-text-2); font-size: 13px; }
+        .ixa-dl dt { color: var(--ix-text-2); font-size: var(--dot-text-body-sm-size); }
         .ixa-dl dd { margin: 0; font-family: var(--ix-font); font-weight: 500; font-variant-numeric: tabular-nums; }
-        .ixa-note { margin: 12px 0 0; font-size: 12px; color: var(--ix-text-3); text-wrap: pretty; }
+        .ixa-note { margin: 12px 0 0; font-size: var(--dot-text-caption-size); color: var(--ix-text-3); text-wrap: pretty; }
         .ixa-rows { list-style: none; margin: 0; padding: 0; }
         .ixa-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--ix-rule); transition: background-color .15s var(--ix-ease); }
         .ixa-row--av { grid-template-columns: 28px 28px minmax(0, 1fr) auto; }
         .ixa-rows li:last-child .ixa-row { border-bottom: 0; }
         a.ixa-row:hover { background: var(--ix-hover); }
-        .ixa-rank { font-family: var(--ix-font); font-size: 13px; color: var(--ix-text-3); }
+        .ixa-rank { font-family: var(--ix-font); font-size: var(--dot-text-body-sm-size); color: var(--ix-text-3); }
         .ixa-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
         .ixa-cnt { text-align: right; white-space: nowrap; }
-        .ixa-cnt .ix-fig { font-size: 16px; }
-        .ixa-cnt small { margin-left: 6px; font-size: 12px; color: var(--ix-text-3); }
+        .ixa-cnt .ix-fig { font-size: var(--dot-text-body-size); }
+        .ixa-cnt small { margin-left: 6px; font-size: var(--dot-text-caption-size); color: var(--ix-text-3); }
         .ixa-bays-wrap { overflow: hidden; }
         .ixa-bays { margin: 0 -1px -1px 0; background: transparent; gap: 0; }
         .ixa-bays .ix-bay { cursor: default; box-shadow: inset -1px -1px 0 var(--ix-rule); }
         .apexcharts-tooltip { background: var(--ix-panel) !important; border: 1px solid var(--ix-rule-strong) !important; color: var(--ix-text) !important; box-shadow: none !important; border-radius: var(--ix-radius) !important; font-family: var(--ix-font) !important; }
-        .apexcharts-tooltip-title { background: var(--ix-sunken) !important; border-bottom: 1px solid var(--ix-rule) !important; color: var(--ix-text) !important; font-family: var(--ix-font) !important; font-size: 12px !important; }
-        .apexcharts-tooltip-text, .apexcharts-tooltip-y-group { font-size: 13px !important; }
+        .apexcharts-tooltip-title { background: var(--ix-sunken) !important; border-bottom: 1px solid var(--ix-rule) !important; color: var(--ix-text) !important; font-family: var(--ix-font) !important; font-size: var(--dot-text-caption-size) !important; }
+        .apexcharts-tooltip-text, .apexcharts-tooltip-y-group { font-size: var(--dot-text-body-sm-size) !important; }
         .apexcharts-tooltip-text-y-value { font-family: var(--ix-font) !important; }
         .apexcharts-xaxistooltip, .apexcharts-yaxistooltip { background: var(--ix-panel) !important; border-color: var(--ix-rule-strong) !important; color: var(--ix-text) !important; }
         .apexcharts-xaxistooltip-bottom::before, .apexcharts-xaxistooltip-bottom::after { border-bottom-color: var(--ix-rule-strong) !important; }

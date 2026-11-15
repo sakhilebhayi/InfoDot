@@ -93,7 +93,7 @@
         <div class="ix-split" style="grid-template-columns:minmax(0,7fr) minmax(0,5fr);margin-top:28px">
             <section aria-labelledby="sols">
                 <div class="ix-pagehead" style="margin-bottom:12px">
-                    <h2 id="sols" class="ix-h1" style="font-size:16px">Recent solutions</h2>
+                    <h2 id="sols" class="ix-h1" style="font-size:var(--dot-text-body-size)">Recent solutions</h2>
                     <a href="{{ route('solutions') }}" class="ix-btn ix-btn--sm ix-btn--ghost">All solutions</a>
                 </div>
                 @if ($solutions->isEmpty())
@@ -118,7 +118,7 @@
 
             <section aria-labelledby="crew">
                 <div class="ix-pagehead" style="margin-bottom:12px">
-                    <h2 id="crew" class="ix-h1" style="font-size:16px">People</h2>
+                    <h2 id="crew" class="ix-h1" style="font-size:var(--dot-text-body-size)">People</h2>
                     <a href="{{ route('people') }}" class="ix-btn ix-btn--sm ix-btn--ghost">Everyone</a>
                 </div>
                 <div class="ix-panel">

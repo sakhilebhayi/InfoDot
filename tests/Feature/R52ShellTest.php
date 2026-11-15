@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
+use Symfony\Component\Finder\Finder;
 use Tests\TestCase;
 
 /**
@@ -260,6 +261,24 @@ class R52ShellTest extends TestCase
         // A visitor's search finds public content only.
         auth()->logout();
         $this->get('/solution-results?search=Zebra')->assertOk()->assertSee('Zebra globex public')->assertDontSee('Zebra acme private')->assertDontSee('Zebra globex private');
+    }
+
+    public function test_no_view_sets_a_literal_pixel_font_size_on_text(): void
+    {
+        // Sizes are the dot-ui type scale (var(--dot-text-*-size)). Icon spans keep their pixel size; the hand-over page (a strict CSP of its own and
+        // system type), the no-build error fallback and the HTML mail theme are the three places that cannot link the shared stylesheet.
+        $skipped = ['launch.blade.php', 'errors/_ecosystem-layout.blade.php'];
+        foreach ((new Finder)->files()->in(resource_path('views'))->exclude(['components/dot', 'vendor/mail', 'emails'])->name('*.blade.php') as $file) {
+            if (in_array($file->getRelativePathname(), $skipped, true)) {
+                continue;
+            }
+            foreach (preg_split('/\R/', $file->getContents()) as $number => $line) {
+                if (str_contains($line, 'material-symbols')) {
+                    continue;
+                }
+                $this->assertSame(0, preg_match('/font-size:\s*[\d.]+(px|rem)/', $line), $file->getRelativePathname().':'.($number + 1).' sets a literal font size: use a --dot-text-* step');
+            }
+        }
     }
 
     // ---- the tidied sizes and the phone sheet -----------------------------------------------------------------------
