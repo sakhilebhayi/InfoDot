@@ -42,6 +42,7 @@ use App\Http\Controllers\SeminarPayoutsController;
 use App\Http\Controllers\SeminarRoomController;
 use App\Http\Controllers\SeminarsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\TeamLicencesController;
 use App\Http\Controllers\TopicAssignmentController;
 use App\Http\Controllers\TopicsController;
 use App\Http\Controllers\TopicSuggestionsController;
@@ -149,6 +150,16 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/platforms/{platform}/trial', [PlatformCatalogueController::class, 'startTrial'])->middleware('throttle:20,1,platforms.switch')->name('platforms.trial');
     Route::put('/platforms/{platform}/people', [PlatformCatalogueController::class, 'people'])->middleware('throttle:30,1,platforms.people')->name('platforms.people');
     Route::post('/platforms/{platform}/recommendation/dismiss', [PlatformCatalogueController::class, 'dismiss'])->middleware('throttle:30,1,platforms.dismiss')->name('platforms.recommendation.dismiss');
+
+    // -------------------------------------------------------
+    // R-53: Team Licences. The upgrade page, the owner's actions (each behind a page that names who loses access and when) and the
+    // pages Dot.Finance sends the owner back to. Nothing here activates a licence; only Finance's signed confirmation does.
+    // -------------------------------------------------------
+    Route::get('/teams/{team:uuid}/licences/buy', [TeamLicencesController::class, 'buy'])->name('licences.buy');
+    Route::post('/teams/{team:uuid}/licences/buy', [TeamLicencesController::class, 'checkout'])->middleware('throttle:10,1,licences.checkout')->name('licences.checkout');
+    Route::get('/licences/return/{result?}', [TeamLicencesController::class, 'returned'])->whereIn('result', ['success', 'failed'])->middleware('throttle:60,1,licences.return')->name('licences.return');
+    Route::get('/teams/{team:uuid}/licences/{action}', [TeamLicencesController::class, 'confirm'])->whereIn('action', ['release', 'assign', 'reassign', 'reduce', 'cancel', 'close'])->name('licences.confirm');
+    Route::post('/teams/{team:uuid}/licences/{action}', [TeamLicencesController::class, 'perform'])->whereIn('action', ['release', 'assign', 'reassign', 'reduce', 'cancel', 'close'])->middleware('throttle:20,1,licences.act')->name('licences.act');
 
     // -------------------------------------------------------
     // People: the members of the company the person is acting for

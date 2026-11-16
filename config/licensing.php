@@ -70,6 +70,28 @@ return [
         'timeout_seconds' => 3,
         'cache_seconds' => 300,
         'failure_backoff_seconds' => (int) env('LICENCE_FINANCE_FAILURE_BACKOFF', 30),   // after a failed read, do not ask again for this long
+
+        // R-53 phase 3: the signed server-to-server call that starts a checkout for one purchase batch (POST, idempotent on batch uuid).
+        'checkout_path' => env('LICENCE_FINANCE_CHECKOUT_PATH', '/api/licences/checkout'),
+        'checkout_timeout_seconds' => (int) env('LICENCE_FINANCE_CHECKOUT_TIMEOUT', 8),
+        // Cancelling or reducing a purchase has to reach Finance, or Paystack keeps charging. Finance has no such endpoint yet, so the owner
+        // actions are OFF until it does (then set the path and switch this on). While off the screens say how to ask for it instead.
+        'cancel_enabled' => (bool) env('LICENCE_FINANCE_CANCEL_ENABLED', false),
+        'cancel_path' => env('LICENCE_FINANCE_CANCEL_PATH', '/api/licences/cancel'),
+    ],
+
+    // The success and failure pages never activate anything; they wait for Finance's signed confirmation. They refresh themselves this
+    // often while waiting, and stop refreshing (and say it is taking longer) after this many minutes.
+    'return_refresh_seconds' => (int) env('LICENCE_RETURN_REFRESH_SECONDS', 8),
+    'return_wait_minutes' => (int) env('LICENCE_RETURN_WAIT_MINUTES', 10),
+
+    // Reminders (phase 4). Days before a renewal, per interval; reminders while a failed payment or a shortfall is in its grace (days left);
+    // and days after the freeze for companies on `grandfathered_until`.
+    'reminders' => [
+        'renewal_days' => ['month' => [3], 'year' => [30, 7]],
+        'grace_days_left' => [14, 7, 1],
+        'grandfather_offsets' => [0, 30, 60, 80, 89],
+        'support_email' => env('LICENCE_SUPPORT_EMAIL'),
     ],
 
     // Whether a real payment backend is connected for seat purchases. Off until Dot.Finance (or the chosen provider) can charge and confirm.

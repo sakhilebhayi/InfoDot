@@ -18,7 +18,7 @@ class LicenceBatches
     /** A company with this many unpaid purchases open cannot start another until some are paid or closed. */
     private const MAX_PENDING = 5;
 
-    public function __construct(private SeatLedger $ledger, private LicencePricing $pricing) {}
+    public function __construct(private SeatLedger $ledger, private LicencePricing $pricing, private FinanceCheckout $finance) {}
 
     /**
      * Starts a purchase: a pending batch priced from configuration. Nothing is charged and nothing is active. The caller sends the batch
@@ -52,6 +52,62 @@ class LicenceBatches
 
             return $batch;
         });
+    }
+
+    /**
+     * The owner presses Pay: finds (or makes) the pending batch for exactly these terms and asks Dot.Finance for its checkout. A repeat press
+     * or a retry after a failure reuses the same pending batch (Finance is idempotent on its uuid), so failures never pile up purchases. If
+     * Finance cannot be reached the batch stays pending, holds nothing, charges nothing and is closed by `licence:sweep`.
+     *
+     * @return array{batch: LicenceBatch, url: string}
+     *
+     * @throws LicenceRefused
+     */
+    public function startPurchase(Team $team, User $owner, int $quantity, string $interval): array
+    {
+        Gate::forUser($owner)->authorize('changeLicence', $team);
+
+        if (! $this->finance->configured()) {
+            throw new LicenceRefused('Paid licences cannot be bought just now: payments are not connected yet. Nothing has been charged.');
+        }
+
+        $quote = $this->pricing->quote($team, $quantity, $interval);   // refuses with no price, or above the online limit
+        $batch = LicenceBatch::where('team_id', $team->getKey())->where('status', LicenceBatch::PENDING)->where('quantity', $quantity)
+            ->where('interval', $interval)->where('total_minor', $quote['total_minor'])->where('currency', $quote['currency'])
+            ->where('created_at', '>', now()->subDay())->orderByDesc('id')->first() ?? $this->createPending($team, $owner, $quantity, $interval);
+
+        return ['batch' => $batch, 'url' => $this->finance->start($batch, $team, $owner->name, $owner->email)];
+    }
+
+    /** The owner closes a purchase that was started and never paid. It held nothing, so nothing changes for anyone. */
+    public function cancelPending(LicenceBatch $batch, User $owner): LicenceBatch
+    {
+        Gate::forUser($owner)->authorize('changeLicence', $batch->team);
+
+        return DB::transaction(function () use ($batch, $owner) {
+            $locked = LicenceBatch::whereKey($batch->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->status === LicenceBatch::PENDING) {
+                $locked->forceFill(['status' => LicenceBatch::ENDED])->save();
+                $this->ledger->record($batch->team, $owner, 'batch_ended', $locked->uuid, ['reason' => 'owner_closed_unpaid']);
+            }
+
+            return $locked;
+        });
+    }
+
+    /**
+     * Cancel (null) or reduce a paid purchase from its next renewal. Finance is told first; if it cannot be told, nothing changes here, so
+     * InfoDot never shows a subscription as stopping while the payment provider still charges it.
+     *
+     * @throws LicenceRefused
+     */
+    public function changeAtPeriodEnd(LicenceBatch $batch, User $owner, ?int $newQuantity): LicenceBatch
+    {
+        Gate::forUser($owner)->authorize('changeLicence', $batch->team);
+        $this->finance->requestChange($batch, $batch->team, $newQuantity);
+
+        return $newQuantity === null ? $this->cancelAtPeriodEnd($batch, $owner) : $this->reduceAtPeriodEnd($batch, $owner, $newQuantity);
     }
 
     /**

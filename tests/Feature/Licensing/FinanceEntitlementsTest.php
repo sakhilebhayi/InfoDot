@@ -194,7 +194,7 @@ class FinanceEntitlementsTest extends TestCase
         $this->assertSame(3, app(SeatLedger::class)->summary($team)['capacity']);
     }
 
-    public function test_the_seats_panel_links_the_owner_to_finance_through_the_signed_in_handoff(): void
+    public function test_the_licences_panel_links_the_owner_to_buy_and_others_to_how_it_works(): void
     {
         config(['licensing.finance_connected' => true]);
         $owner = User::factory()->create(['email_verified_at' => now()]);
@@ -202,7 +202,7 @@ class FinanceEntitlementsTest extends TestCase
         $member = User::factory()->create(['email_verified_at' => now()]);
         $team->users()->attach($member, ['role' => 'admin']);
 
-        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Add or change licences in Dot.Finance')->assertSee('/go/finance?redirect=%2Fseats', false);
-        $this->actingAs($member)->get('/teams/'.$team->id)->assertOk()->assertDontSee('Add or change licences in Dot.Finance');
+        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Buy licences')->assertSee('/licences/buy', false);
+        $this->actingAs($member)->get('/teams/'.$team->id)->assertOk()->assertDontSee('Buy licences')->assertSee('How licences work')->assertSee('Only the owner can buy or change licences');
     }
 }

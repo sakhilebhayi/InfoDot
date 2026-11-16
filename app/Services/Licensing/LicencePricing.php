@@ -55,6 +55,24 @@ class LicencePricing
         ];
     }
 
+    /**
+     * What `$count` paid licences cost together, from configuration (ex VAT), or null when no price is set. Shown on the licences screen as
+     * "what this would cost monthly / yearly"; the amount actually charged is each batch's own `total_minor`.
+     *
+     * @return array{total_minor: int, currency: string}|null
+     */
+    public function costOf(int $count, string $interval): ?array
+    {
+        $unit = config($interval === LicenceBatch::YEAR ? 'licensing.price.annual_amount_minor_units' : 'licensing.price.amount_minor_units');
+        $currency = config('licensing.price.currency');
+
+        if (! filled($unit) || ! filled($currency) || (int) $unit < 1 || $count < 1) {
+            return null;
+        }
+
+        return ['total_minor' => $this->cost($count, (int) $unit, $this->bands()), 'currency' => (string) $currency];
+    }
+
     /** The paid licences the company holds now (batches that count today, plus any legacy purchased seats). */
     public function heldBy(Team $team): int
     {
@@ -94,5 +112,27 @@ class LicencePricing
         }
 
         return $bands === [] ? [['up_to' => null, 'percent' => 100]] : $bands;
+    }
+
+    /** One plain sentence about the volume bands, from configuration. */
+    public function bandText(): ?string
+    {
+        $bands = (array) config('licensing.price.bands', []);
+        $parts = [];
+        $from = 1;
+
+        foreach ($bands as $band) {
+            $percent = (int) ($band['percent'] ?? 100);
+
+            if ($percent < 100) {
+                $parts[] = "from licence {$from} onwards you pay {$percent}% of the price for each licence";
+            }
+
+            if (isset($band['up_to'])) {
+                $from = (int) $band['up_to'] + 1;
+            }
+        }
+
+        return $parts === [] ? null : 'The more licences you hold, the less each extra one costs: '.implode('; ', $parts).'.';
     }
 }
