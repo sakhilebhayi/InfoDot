@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\CompanyPlatformsController;
 use App\Http\Controllers\Api\EcosystemRedeemController;
 use App\Http\Controllers\Api\FinancePlatformPlansController;
 use App\Http\Controllers\Api\KnowledgeCandidatesController;
+use App\Http\Controllers\Api\LicenceReconcileController;
 use App\Http\Controllers\Api\PlatformSubscriptionEventsController;
 use App\Http\Controllers\Api\ResourceRegistryController;
 use App\Http\Controllers\Api\SeminarRoomWebhookController;
@@ -61,6 +62,12 @@ Route::post('/finance/platform-subscription-events', PlatformSubscriptionEventsC
 Route::get('/finance/platform-plans', FinancePlatformPlansController::class)
     ->middleware('throttle:finance-callbacks')
     ->name('api.finance.platform-plans');
+
+// R-53: Dot.Finance's read-only licence reconcile reads what InfoDot holds for one company's batches. Same secret and signature as the confirmations
+// above; refused entirely while that secret is unset. See LicenceReconcileController.
+Route::get('/licences/reconcile/{teamUuid}', LicenceReconcileController::class)
+    ->middleware('throttle:finance-callbacks')
+    ->name('api.licences.reconcile');
 
 // LiveKit tells InfoDot who connected to a seminar room. Signed with the LiveKit API secret; see SeminarRoomWebhookController.
 Route::post('/seminars/livekit-webhook', SeminarRoomWebhookController::class)

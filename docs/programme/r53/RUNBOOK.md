@@ -68,15 +68,46 @@ Effects: `paid` activates a pending batch (never anything else); `renewed` exten
 
 `LicenceBatches::createPending / reduceAtPeriodEnd / cancelAtPeriodEnd`, `LicenceAssignments::release / assign / reassign`, and the free licence moving with `TransferTeamOwnership`. All owner-only (`changeLicence`), all audited.
 
-### Not in these PRs
+### Not in the phase 2 PR
 
-Team Licences and upgrade screens; the call to Finance's `/api/licences/checkout` and the checkout redirect; the banner and email on a failed payment; the daily reminder emails. Finance's side is built separately against the same contract.
+The screens and the Finance checkout call (phase 3, below) and the banner, reminder emails, reconcile read and ops report (phase 4, below). Finance's side is built separately against the same contract.
 
 ## Phase 3: Team Licences screens and the upgrade journey
 
-- Settings: Company settings, section "Team licences" (`resources/views/teams/_seats.blade.php`, data from `LicenceOverview`). Owner and administrators see it; only the owner can buy or change anything (`changeLicence`).
+- Settings: Company settings, section "Licences" (`resources/views/teams/_seats.blade.php`, data from `LicenceOverview`). Owner and administrators see it; only the owner can buy or change anything (`changeLicence`).
 - Upgrade: when no licence is free the "Add a person" form is replaced by the upgrade panel (why, what it includes, cost, monthly or yearly, how to buy more). The buy page is `GET /teams/{uuid}/licences/buy`; the quantity and interval are the only things taken from the browser, the total is worked out from configuration.
 - Paying: `POST /teams/{uuid}/licences/buy` makes (or reuses) the pending batch and calls `POST {LICENCE_FINANCE_URL}/api/licences/checkout`, signed with `FINANCE_ENTITLEMENT_SECRET` (X-InfoDot-Timestamp / X-InfoDot-Signature), then redirects to the `checkout_url` (https only). Any failure shows "nothing has been charged"; the batch stays pending and is closed by `licence:sweep` after `LICENCE_PENDING_BATCH_DAYS`. Needs `LICENCE_FINANCE_CONNECTED=true`, `LICENCE_FINANCE_URL`, `FINANCE_ENTITLEMENT_SECRET` and the price variables.
 - Return: set Finance's `LICENCE_CHECKOUT_RETURN_URL` to `https://<infodot host>/licences/return`. Paystack appends `?reference=lic_<batch uuid without dashes>`; the page maps that to the batch, checks the signed-in person may see it, and only ever reads the ledger (waiting / active / closed). `/licences/return/failed` is the same page worded for a failed attempt. It refreshes every `LICENCE_RETURN_REFRESH_SECONDS` for `LICENCE_RETURN_WAIT_MINUTES`, then stops and says it is taking longer.
 - Owner actions (take back, give, move, close unpaid purchase) each open a page that names who loses access and when before anything happens. Reduce and cancel call Finance first and are OFF (`LICENCE_FINANCE_CANCEL_ENABLED`, default false) because Finance has no cancel endpoint: switching them on before it exists would show a subscription as stopping while Paystack still charges. While off the page says so and nothing changes.
 - The older R-13 Finance pull no longer adds `purchased_seats` once a company has any licence batch (it would count every paid licence twice, because Finance's `seat_limit` includes them).
+
+## Phase 4: lifecycle jobs, banner, reconcile read, ops report
+
+All scheduled work is idempotent: running any of it twice changes and sends nothing the second time. Nothing deletes data; the owner and administrators never lapse.
+
+| Command | Schedule | What it does |
+|---|---|---|
+| `licence:sweep` | every 5 min | (phase 2) closes unpaid purchases after `LICENCE_PENDING_BATCH_DAYS` (7), moves batches whose paid period is over to grace or ends cancelled ones, ends batches whose grace has run out, and applies the D5 lapse rule (`LicenceLifecycle::rebalance`): over capacity gives a 14-day company grace, then the newest non-admin members lapse; capacity coming back reactivates lapsed people, longest-standing first. A renewal at a smaller quantity is the reduction taking effect. |
+| `licence:remind` | hourly at :20 | emails reminders (below). Each is recorded in `licence_notices_sent` (unique per company, kind, reference) before it is sent and removed again if the send fails, so a failed send is retried and nothing is sent twice. |
+| `licence:report` | on demand | read-only table or `--json` of every company's licence state; `--problems` lists only those over capacity, in a grace or with lapsed people; `--team=<uuid>`. |
+
+### Reminders (config `licensing.reminders`)
+
+- Renewal: monthly purchases 3 days before, yearly 30 and 7 days before; owner only; never for a purchase that is cancelled. The text states a reduction already requested.
+- Failed payment or refund (batch in grace) and shortfall (company grace after a cancel or reduction): at 14, 7 and 1 days left; owner and administrators. A late first run sends only the reminder that is current, never a backlog.
+- Free period for frozen companies (`grandfathered_until`): day 0, 30, 60, 80 and 89 after `licence:grandfather --apply`; owner and administrators; shows the cost for the company's own headcount from configuration (omitted when no price is set); stops when the period ends.
+- Set `LICENCE_SUPPORT_EMAIL` to show an address where the screens say to ask us (cancel and reduce, while they are off).
+
+### Banner
+
+Owners and administrators of a company (nobody else) see one banner on every page while a purchase is in failed-payment or refund grace, while the company is over capacity inside its grace, and in the last 30 days of a free period. It links to the licences section.
+
+### The read Finance's `licences:reconcile` expects
+
+`GET /api/licences/reconcile/{team_uuid}`, signed like Finance's confirmations (X-InfoDot-Timestamp / X-InfoDot-Signature over the empty body, secret `PLATFORM_SUBSCRIPTION_CALLBACK_SECRET`, 300 s window; refused while the secret is unset). Answer `{"team_uuid", "batches":[{"batch_uuid","status","quantity","interval","period_end","counts_now"}]}`; pending batches are not listed; refunded shows as `grace`; unknown company is 404 (which Finance reads as "no batches"). No person, email or price is carried. This matches the shape Finance's reconciler assumes. It is NOT the R-13 path: `/api/entitlements/{uuid}` is Finance's own (InfoDot reads it), so InfoDot does not serve that path. Set Finance's `LICENCE_RECONCILE_INFODOT_URL` to `https://<infodot host>/api/licences/reconcile/{team_uuid}`.
+
+### Gaps that need a person
+
+- Cancel and "reduce at renewal" must reach Finance or Paystack keeps charging. Finance has no cancel endpoint in the contract, so the owner actions stay OFF (`LICENCE_FINANCE_CANCEL_ENABLED=false`) and the screen says so. When Finance adds one at `LICENCE_FINANCE_CANCEL_PATH` (body `{batch_uuid, team_uuid, action: cancel|reduce, quantity_next, effective}`, same signing), set the flag. Until then a smaller renewal only happens if Finance renews at a smaller quantity.
+- Invoices: the screen says they are emailed by the payment service. A signed hand-off to Finance's invoice list was not built.
+- Refund 7-day window and the "no VAT field" gap are Finance and legal decisions (see Finance's report).

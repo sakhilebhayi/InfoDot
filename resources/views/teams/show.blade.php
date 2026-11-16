@@ -5,7 +5,7 @@
         $sections = array_values(array_filter([
             ['name', 'Company name'],
             ['members', 'People and roles'],
-            Gate::check('viewLicence', $team) && ! $team->personal_team ? ['seats', 'Team licences'] : null,
+            Gate::check('viewLicence', $team) && ! $team->personal_team ? ['seats', 'Licences'] : null,
             $canTransfer ? ['transfer', 'Transfer ownership'] : null,
             $canDelete ? ['delete', 'Delete company'] : null,
         ]));

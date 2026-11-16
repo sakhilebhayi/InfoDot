@@ -66,6 +66,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('platforms:lifecycle')->everyMinute()->withoutOverlapping(30)->onOneServer();
         // Paid licence batches whose period or grace has run out, and the people who then lose or regain a licence (R-53).
         $schedule->command('licence:sweep')->everyFiveMinutes()->withoutOverlapping(30)->onOneServer();
+        // Renewal, failed-payment, shortfall and end-of-free-period reminders. Idempotent, so the hourly runs only retry a failed send.
+        $schedule->command('licence:remind')->hourlyAt(20)->withoutOverlapping(30)->onOneServer();
     }
 
     /**
