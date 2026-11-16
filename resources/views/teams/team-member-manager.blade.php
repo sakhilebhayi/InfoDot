@@ -91,7 +91,7 @@
                                 <div class="text-xs" style="color: var(--ix-text-3);">
                                     @if ($invitation->isExpired())
                                         <span class="ix-chip ix-chip--open">{{ __('Expired') }}</span>
-                                        {{ __('Ran out on :date and holds no seat. Send it again to give it another :days days.', ['date' => $invitation->expires_at->timezone(config('app.timezone'))->format('j M Y'), 'days' => config('licensing.invitation_days', 14)]) }}
+                                        {{ __('Ran out on :date and holds no licence. Send it again to give it another :days days.', ['date' => $invitation->expires_at->timezone(config('app.timezone'))->format('j M Y'), 'days' => config('licensing.invitation_days', 14)]) }}
                                     @elseif ($invitation->expires_at)
                                         {{ __('Can be accepted until :date.', ['date' => $invitation->expires_at->timezone(config('app.timezone'))->format('j M Y')]) }}
                                     @endif

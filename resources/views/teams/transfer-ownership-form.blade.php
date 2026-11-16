@@ -18,7 +18,7 @@
         @else
             <div class="col-span-6">
                 <p class="max-w-xl text-sm" style="color: var(--ix-text-2);">
-                    {{ __('The person you choose becomes the owner: they alone can change seats, transfer the company again or delete it. You stay in the company with the role they hold today.') }}
+                    {{ __('The person you choose becomes the owner: they alone can change licences, transfer the company again or delete it. You stay in the company with the role they hold today.') }}
                 </p>
             </div>
 

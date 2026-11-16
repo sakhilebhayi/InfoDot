@@ -3,6 +3,7 @@
 namespace Tests\Feature\Stabilisation;
 
 use App\Models\Team;
+use App\Models\TeamLicence;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
@@ -27,6 +28,7 @@ class InvitationMailFailureTest extends TestCase
         $owner = User::factory()->create();
         $company = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
         $owner->forceFill(['current_team_id' => $company->id])->save();
+        TeamLicence::create(['team_id' => $company->id, 'purchased_seats' => 1, 'payment_status' => 'active']);   // one free licence is the owner's
 
         Livewire::actingAs($owner->fresh())->test(TeamMemberManager::class, ['team' => $company])
             ->set('addTeamMemberForm', ['email' => 'colleague@example.com', 'role' => 'admin'])

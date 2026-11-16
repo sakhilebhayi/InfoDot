@@ -192,11 +192,11 @@ If a host uses their own meeting service (for example Google Meet, Zoom, Microso
 > - **Retention:** the link is stored with the seminar and not removed; the link report row (seminar and reporter ids) is deleted only when the host changes the link; none defined otherwise.
 > - **Checked in code:** `app/Services/Seminars/MeetingLinkCheck.php` (https only, public addresses only, request pinned to the checked address, redirects re-checked, `Cache::remember(..., 600)`, user agent `InfoDot-LinkCheck/1.0`); `SeminarService::save` (stores `join_url_status`, `join_url_checked_at`; deletes `seminar_link_reports` when the link changes), `joinUrl`, `reportLink`; `database/migrations/2026_10_29_100010_seminar_links.php`; the report notice contains no reporter (`InAppNotices` wording for `SEMINAR_LINK_BROKEN`). The check cache stores the result keyed by a hash of the link, in the application's cache store, for 10 minutes.
 
-## R6. Company seats and roles
+## R6. Company licences and roles
 
-*Switch: seat limits apply as soon as the licensing code is deployed (free seats only). Reading seat counts from Dot.Finance needs `LICENCE_FINANCE_CONNECTED`. Selling extra seats is not available yet.*
+*Switch: seat limits apply as soon as the licensing code is deployed (one free licence per company from R-53; was three free seats). Reading licence counts from Dot.Finance needs `LICENCE_FINANCE_CONNECTED`. Selling extra seats is not available yet.*
 
-A company on InfoDot (a team that is not a personal workspace) has a number of seats. The first 3 are free. The owner holds one seat, every member holds one, and an invitation that has not been answered holds one until it is accepted, declined or cancelled. When a company is full, we do not remove anyone: new invitations are refused with an explanation.
+A company on InfoDot (a team that is not a personal workspace) has a number of licences. The first one is free and is held by the owner. Every member needs a paid licence, and an invitation that has not been answered holds one until it is accepted, declined or cancelled. When a company is full, we do not delete anyone's account or content: new invitations are refused with an explanation.
 
 **What we keep**
 

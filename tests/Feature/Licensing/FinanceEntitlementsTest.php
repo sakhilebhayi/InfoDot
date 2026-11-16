@@ -81,8 +81,33 @@ class FinanceEntitlementsTest extends TestCase
         app(FinanceEntitlements::class)->sync($team);
 
         $s = app(SeatLedger::class)->summary($team);
-        $this->assertSame(3, $s['capacity'], 'never below the three free seats');
+        $this->assertSame(3, $s['capacity'], 'never below the free licences');
         $this->assertSame('past_due', $s['status']);
+    }
+
+    public function test_with_one_free_licence_a_plan_limit_of_three_means_two_paid(): void
+    {
+        config(['licensing.included_seats' => 1]);
+        $team = $this->company();
+        Http::fake(['finance.test/*' => Http::response($this->answer(['seat_limit' => 3]))]);
+
+        app(FinanceEntitlements::class)->sync($team);
+
+        $s = app(SeatLedger::class)->summary($team);
+        $this->assertSame([2, 3], [$s['purchased'], $s['capacity']]);
+    }
+
+    public function test_a_frozen_company_is_not_re_priced_by_the_finance_read(): void
+    {
+        config(['licensing.included_seats' => 1]);
+        $team = $this->company();
+        TeamLicence::create(['team_id' => $team->id, 'included_seats' => 4, 'grandfathered_until' => now()->addDays(30)]);
+        Http::fake(['finance.test/*' => Http::response($this->answer(['seat_limit' => 5]))]);
+
+        app(FinanceEntitlements::class)->sync($team);
+
+        $s = app(SeatLedger::class)->summary($team);
+        $this->assertSame([4, 1, 5], [$s['included'], $s['purchased'], $s['capacity']], 'the frozen headcount is the free part; the plan adds on top only what exceeds it');
     }
 
     public function test_an_unlimited_plan_is_stored_as_a_large_capacity(): void
@@ -177,7 +202,7 @@ class FinanceEntitlementsTest extends TestCase
         $member = User::factory()->create(['email_verified_at' => now()]);
         $team->users()->attach($member, ['role' => 'admin']);
 
-        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Add or change seats in Dot.Finance')->assertSee('/go/finance?redirect=%2Fseats', false);
-        $this->actingAs($member)->get('/teams/'.$team->id)->assertOk()->assertDontSee('Add or change seats in Dot.Finance');
+        $this->actingAs($owner)->get('/teams/'.$team->id)->assertOk()->assertSee('Add or change licences in Dot.Finance')->assertSee('/go/finance?redirect=%2Fseats', false);
+        $this->actingAs($member)->get('/teams/'.$team->id)->assertOk()->assertDontSee('Add or change licences in Dot.Finance');
     }
 }

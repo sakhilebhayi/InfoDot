@@ -1,40 +1,51 @@
 @php
-    $money = $seats['price']
-        ? number_format($seats['price']['amount_minor_units'] / 100, 2).' '.$seats['price']['currency']
-        : null;
-    $labels = ['invited' => 'Invitation sent', 'joined' => 'Joined', 'left' => 'Left or removed', 'blocked' => 'Invitation blocked: no seat free', 'capacity_changed' => 'Seats changed', 'ownership_transferred' => 'Ownership transferred to'];
+    // Prices come from configuration only (SeatLedger::price); with none configured nothing about price is shown.
+    $money = $seats['price'] ? \App\Services\Licensing\SeatLedger::formatMoney($seats['price']['amount_minor_units'], $seats['price']['currency']) : null;
+    $moneyYear = $seats['price'] ? \App\Services\Licensing\SeatLedger::formatMoney($seats['price']['annual_amount_minor_units'], $seats['price']['currency']) : null;
+    $priceText = $money ? $money.' '.__('per person per month').($moneyYear ? ', '.$moneyYear.' '.__('per person per year') : '').', '.__('excluding VAT') : null;
+    $labels = ['invited' => 'Invitation sent', 'joined' => 'Joined', 'left' => 'Left or removed', 'blocked' => 'Invitation blocked: no licence free', 'capacity_changed' => 'Licences changed', 'ownership_transferred' => 'Ownership transferred to', 'grandfathered' => 'Current people kept free for a transition period', 'grandfather_rolled_back' => 'Transition period undone'];
 @endphp
 <x-jet-action-section>
-    <x-slot name="title">{{ __('Seats') }}</x-slot>
-    <x-slot name="description">{{ __('A seat is one licensed person in :team. The first :n are free.', ['team' => $team->name, 'n' => $seats['included']]) }}</x-slot>
+    <x-slot name="title">{{ __('Licences') }}</x-slot>
+    <x-slot name="description">{{ $seats['included'] === 1
+        ? __('A licence is one person in :team. The owner holds the one free licence; every other person needs a paid licence.', ['team' => $team->name])
+        : __('A licence is one person in :team. The first :n are free; every other person needs a paid licence.', ['team' => $team->name, 'n' => $seats['included']]) }}</x-slot>
     <x-slot name="content">
         <div data-seats>
             <table class="ix-table">
                 <tbody>
-                    <tr><th scope="row">{{ __('Seats in use') }}</th><td>{{ $seats['people'] }} {{ __('of') }} {{ $seats['capacity'] }}</td></tr>
+                    <tr><th scope="row">{{ __('Licences in use') }}</th><td>{{ $seats['people'] }} {{ __('of') }} {{ $seats['capacity'] }}</td></tr>
                     <tr><th scope="row">{{ __('Held by unanswered invitations') }}</th><td>{{ $seats['reserved'] }}</td></tr>
-                    <tr><th scope="row">{{ __('Free seats left') }}</th><td>{{ $seats['available'] }}</td></tr>
-                    <tr><th scope="row">{{ __('Paid seats') }}</th><td>{{ $seats['purchased'] }}</td></tr>
+                    <tr><th scope="row">{{ __('Licences available') }}</th><td>{{ $seats['available'] }}</td></tr>
+                    <tr><th scope="row">{{ __('Paid licences') }}</th><td>{{ $seats['purchased'] }}</td></tr>
                 </tbody>
             </table>
 
+            @if ($seats['grandfathered'])
+                <p class="ix-hint">{{ __('This company keeps the people it has now free until :date. Nobody is removed. Anyone added beyond them needs a paid licence.', ['date' => $seats['grandfathered_until']->format('j F Y')]) }}</p>
+            @endif
+
             @if ($seats['over_by'] > 0)
-                <p class="ix-hint">{{ __('This company has :n more people than seats. Nobody is removed; you just cannot add anyone until there is room.', ['n' => $seats['over_by']]) }}</p>
+                <p class="ix-hint">{{ __('This company has :n more people than licences. Nobody is removed; you just cannot add anyone until there is room.', ['n' => $seats['over_by']]) }}</p>
+            @endif
+
+            @if ($priceText)
+                <p class="ix-hint">{{ __('An extra licence costs :price.', ['price' => $priceText]) }}</p>
             @endif
 
             @if ($seats['can_buy'] && Gate::check('changeLicence', $team))
                 <p style="margin-top: 16px;">
-                    <a class="ix-btn ix-btn--primary" href="{{ \App\Support\EcosystemHandoff::launchUrl(auth()->user(), 'finance', '/seats') }}">{{ __('Add or change seats in Dot.Finance') }}</a>
+                    <a class="ix-btn ix-btn--primary" href="{{ \App\Support\EcosystemHandoff::launchUrl(auth()->user(), 'finance', '/seats') }}">{{ __('Add or change licences in Dot.Finance') }}</a>
                 </p>
-                <p class="ix-hint">{{ __('Seats beyond the free :n are bought in Dot.Finance. Extra seats count only after the payment is confirmed.', ['n' => $seats['included']]) }}</p>
+                <p class="ix-hint">{{ __('Licences beyond the free :n are bought in Dot.Finance. An extra licence counts only after the payment is confirmed.', ['n' => $seats['included']]) }}</p>
             @endif
 
             @if ($seats['available'] === 0)
                 <p class="ix-hint">
                     @if ($seats['can_buy'])
-                        {{ $money ? __('Add a seat to invite another person (:price per seat).', ['price' => $money]) : __('Add a seat in Dot.Finance to invite another person.') }}
+                        {{ $priceText ? __('Add a licence to invite another person (:price).', ['price' => $priceText]) : __('Add a licence in Dot.Finance to invite another person.') }}
                     @else
-                        {{ __('Seats beyond the free :n are paid, and paid seats are not available yet. Nothing has been charged. You can cancel an unanswered invitation to free its seat.', ['n' => $seats['included']]) }}
+                        {{ __('Every person beyond the free :n needs a paid licence, and paid licences are not available yet. Nothing has been charged. You can cancel an unanswered invitation to free its licence.', ['n' => $seats['included']]) }}
                     @endif
                 </p>
             @endif

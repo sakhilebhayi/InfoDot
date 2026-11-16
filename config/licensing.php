@@ -5,9 +5,12 @@
 | Organisation licensing (R-13)
 |--------------------------------------------------------------------------
 |
-| A company (a team that is not someone's personal workspace) has a number of licensed user seats. The first `included_seats` are free; more
-| are bought. A seat is used by the owner and by every member who accepted; a pending invitation reserves a seat (so concurrent invitations
-| cannot promise more places than exist) until it is accepted or cancelled.
+| A company (a team that is not someone's personal workspace) has a number of licensed user seats. The first `included_seats` are free (R-53:
+| ONE, the owner's); every other person needs a paid licence. A seat is used by the owner and by every member who accepted; a pending
+| invitation reserves a seat (so concurrent invitations cannot promise more places than exist) until it is accepted or cancelled.
+|
+| The free allowance is read in exactly one place (SeatLedger::freeAllowance). The cutover is this one setting: LICENCE_INCLUDED_SEATS.
+| Rollback is the same setting (put the old number back); nothing is deleted either way. See docs/programme/r53/RUNBOOK.md.
 |
 | NOTHING HERE INVENTS A PRICE. `price` stays empty until the owner approves one; seats cannot be bought until a price is set AND Dot.Finance is
 | connected (see docs/programme/R13_INSPECTION.md). Until then a company with all its free seats used is
@@ -15,7 +18,12 @@
 */
 
 return [
-    'included_seats' => (int) env('LICENCE_INCLUDED_SEATS', 3),
+    // The free allowance per company: ONE licence, held by the owner. A company-level override (team_licences.included_seats, set by
+    // `licence:grandfather` for companies that existed before R-53) beats this number until its `grandfathered_until` date.
+    'included_seats' => (int) env('LICENCE_INCLUDED_SEATS', 1),
+
+    // Days an existing company keeps its current headcount free after `licence:grandfather --apply` (owner decision D7).
+    'grandfather_days' => (int) env('LICENCE_GRANDFATHER_DAYS', 90),
 
     // An invitation can be accepted for this many days after it is sent (or sent again). After that it holds no seat, and
     // `invitations:prune` removes it once it has been expired for `invitation_prune_days`.
@@ -25,10 +33,12 @@ return [
     // true: a pending invitation holds a seat until it is accepted, declined, cancelled or expired.
     'pending_invitations_reserve_a_seat' => (bool) env('LICENCE_INVITATIONS_RESERVE', true),
 
-    // The approved price of one extra seat. Both must be set by the owner's pricing decision; they are never defaulted.
+    // The approved price of one extra licence, in minor units (cents), excluding VAT. Nothing here is a default: with the values empty no
+    // price is shown anywhere and nothing can be bought. The owner's approved figures are set in the environment, never in code.
     'price' => [
-        'amount_minor_units' => env('LICENCE_SEAT_PRICE_MINOR'),   // e.g. cents; empty until decided
-        'currency' => env('LICENCE_CURRENCY'),                      // e.g. ZAR; empty until decided
+        'amount_minor_units' => env('LICENCE_SEAT_PRICE_MINOR'),          // per user per month
+        'annual_amount_minor_units' => env('LICENCE_SEAT_PRICE_ANNUAL_MINOR'), // per user per year
+        'currency' => env('LICENCE_CURRENCY'),
         'periods' => ['month', 'year'],
     ],
 

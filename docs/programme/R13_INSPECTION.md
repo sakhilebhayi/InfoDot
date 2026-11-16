@@ -21,7 +21,7 @@ Caveat: the Memory, Dopemine and Brain working trees were behind `origin/main` (
 Seat licensing, because it needs no payment provider to be correct and it is the part that can harm people if wrong.
 
 - `team_licences` and `team_licence_events` tables (additive, guarded). A company with no row has the included seats, free.
-- `config/licensing.php`: included seats (3), whether pending invitations hold a seat (yes), grace days, and a **price that is empty until the owner approves one**. Nothing is hardcoded and no currency amount exists in code.
+- `config/licensing.php`: included seats (3 when written; R-53 changed it to 1, see r53/RUNBOOK.md), whether pending invitations hold a seat (yes), grace days, and a **price that is empty until the owner approves one**. Nothing is hardcoded and no currency amount exists in code.
 - `SeatLedger`: the owner holds one seat and every member holds one; a pending invitation holds one. `guard()` runs the check and the change in one transaction with a row lock on the company, so two invitations at once cannot both take the last seat. Personal workspaces are not licensed. A company already over capacity keeps everyone; only new additions are blocked. The refusal says what is true and that nothing was charged and nobody removed. Refusals are audited even though the attempted change rolls back.
 - Hooked into `InviteTeamMember` and `AddTeamMember` (the only two ways a person is added). Leaving or removal is audited and the person's account and content are untouched.
 - `TeamPolicy::viewLicence` (owner and administrators) and `changeLicence` (owner). Reputation and tier play no part: nothing about a person's InfoDot standing can grant organisation permissions.
@@ -100,7 +100,7 @@ Until one of these exists, seminars are listed, registered for, reminded and att
 
 | Piece | State |
 |---|---|
-| Seat licensing (3 free seats incl. owner, race-safe, audit, Seats panel) | merged (#139) |
+| Seat licensing (3 free seats incl. owner; R-53 changed this to 1 free licence, race-safe, audit, Seats panel) | merged (#139) |
 | Roles owner/admin/manager/member (wire-compatible) | merged (#141) |
 | InfoDot reads purchased seats from Dot.Finance's signed entitlements | merged (#142), off until configured |
 | Free seminars (host, register, waitlist, join window, attendance, reminders, ratings) | PR #143 |

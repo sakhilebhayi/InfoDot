@@ -1,5 +1,8 @@
 # Requirement R-13: InfoDot entrepreneur tiers, knowledge reputation, business seminars and account licensing
 
+> **Superseded in part by R-53 (2026-11-16).** The owner's brief below is kept exactly as received. Its three-free-users rule ("up to three", "up to two additional users", "eight active users means three included") is replaced: every company has ONE free licence, the owner's, and every other person needs a paid licence. Companies that existed before the change keep their current headcount free for 90 days (see `docs/programme/r53/RUNBOOK.md`).
+
+
 Source: owner brief of 2026-10-29, stored as received. The chat interface's own markup around the tier list (image queries and layout tags) is removed; every word of the requirement is kept. **Status: inspected and planned, not built; see `R13_INSPECTION.md`.**
 
 ## INFODOT — ENTREPRENEUR TIERS, KNOWLEDGE REPUTATION, BUSINESS SEMINARS & ACCOUNT LICENSING

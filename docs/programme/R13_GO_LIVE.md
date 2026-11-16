@@ -44,7 +44,7 @@ Needs Dot.Finance to provide the entitlements API first (`R13_FINANCE_CONTRACT.m
        LICENCE_FINANCE_URL=https://finance.infodot.co.za
        FINANCE_ENTITLEMENT_SECRET=<secret A, the same value>
 
-3. Check: open a company's team settings, the Seats panel loads, and `storage/logs` has no "Finance entitlements" warning. Until Finance has an active subscription with extra seats for a company, nothing changes: every company still has its 3 free seats.
+3. Check: open a company's team settings, the Seats panel loads, and `storage/logs` has no "Finance entitlements" warning. Until Finance has an active subscription with extra seats for a company, nothing changes: every company still has the free licence allowance (R-53: one, the owner's; existing companies are frozen at their current headcount by `licence:grandfather --apply`, see r53/RUNBOOK.md).
 
 ## 3. Paid seminars (Paystack, host sets the price, InfoDot keeps 10% of each ticket)
 

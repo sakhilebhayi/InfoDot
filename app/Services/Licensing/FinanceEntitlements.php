@@ -103,7 +103,7 @@ class FinanceEntitlements
     private function apply(Team $team, array $e): void
     {
         $licence = $this->ledger->licenceFor($team);
-        $included = $licence->included_seats ?? (int) config('licensing.included_seats', 3);
+        $included = $this->ledger->freeAllowance($licence);
         $limit = $e['seat_limit'];
 
         if ($limit !== null && ! is_int($limit) && ! (is_string($limit) && ctype_digit($limit))) {
