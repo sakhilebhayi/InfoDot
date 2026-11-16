@@ -15,7 +15,7 @@
     $without = collect($ov['people'])->filter(fn ($p) => in_array($p['state'], ['lapsed', 'released'], true));
 @endphp
 <x-jet-action-section>
-    <x-slot name="title">{{ __('Team licences') }}</x-slot>
+    <x-slot name="title">{{ __('Licences') }}</x-slot>
     <x-slot name="description">{{ $seats['included'] === 1
         ? __('A licence is one person in :team. The owner holds the one free licence; every other person needs a paid licence.', ['team' => $team->name])
         : __('A licence is one person in :team. The first :n are free; every other person needs a paid licence.', ['team' => $team->name, 'n' => $seats['included']]) }}</x-slot>

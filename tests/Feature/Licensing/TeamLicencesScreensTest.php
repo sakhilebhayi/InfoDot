@@ -60,7 +60,7 @@ class TeamLicencesScreensTest extends LicenceTestCase
         $this->assertSame(1, $s['capacity']);
         $this->assertSame(0, $s['available']);
         $this->assertSame(0, LicenceBatch::count());
-        $this->actingAs($team->owner)->get(route('teams.show', $team))->assertOk()->assertSee('Team licences')->assertSee('data-upgrade-panel', false);
+        $this->actingAs($team->owner)->get(route('teams.show', $team))->assertOk()->assertSee('Licences in use')->assertSee('data-upgrade-panel', false);
         $this->actingAs($team->owner)->get('/people')->assertOk();   // the free account works with no purchase
         Http::assertNotSent(fn (HttpRequest $r) => str_contains($r->url(), '/api/licences/'));
     }
