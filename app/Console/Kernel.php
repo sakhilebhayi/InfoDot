@@ -64,6 +64,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('platforms:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
         // Trials, dated complimentary grants and grace periods that have run out (R-50). Before the next outbox flush picks the changes up.
         $schedule->command('platforms:lifecycle')->everyMinute()->withoutOverlapping(30)->onOneServer();
+        // Paid licence batches whose period or grace has run out, and the people who then lose or regain a licence (R-53).
+        $schedule->command('licence:sweep')->everyFiveMinutes()->withoutOverlapping(30)->onOneServer();
     }
 
     /**

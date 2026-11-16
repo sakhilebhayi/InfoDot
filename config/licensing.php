@@ -40,7 +40,25 @@ return [
         'annual_amount_minor_units' => env('LICENCE_SEAT_PRICE_ANNUAL_MINOR'), // per user per year
         'currency' => env('LICENCE_CURRENCY'),
         'periods' => ['month', 'year'],
+
+        // Volume bands (owner decision D3): marginal, applied to the company's total number of PAID licences. Each band prices the licences
+        // from the previous band's end up to `up_to` at `percent` of the unit price; `up_to` null = no limit. These are percentages of a
+        // configured price, not prices.
+        'bands' => [
+            ['up_to' => 5, 'percent' => 100],
+            ['up_to' => 20, 'percent' => 90],
+            ['up_to' => null, 'percent' => 80],
+        ],
     ],
+
+    // Above this many people in one company (owner included) licences are by custom agreement and cannot be bought online (D12).
+    'max_online_users' => (int) env('LICENCE_MAX_ONLINE_USERS', 100),
+
+    // A purchase that was started and never paid is closed after this many days. It never held a licence.
+    'pending_batch_days' => (int) env('LICENCE_PENDING_BATCH_DAYS', 7),
+
+    // How late a renewal confirmation may be before the batch stops counting, in minutes.
+    'period_tolerance_minutes' => (int) env('LICENCE_PERIOD_TOLERANCE_MINUTES', 60),
 
     // Dot.Finance is the only place seats are bought and paid for (Paystack lives there). InfoDot only READS what a company is entitled to,
     // over Finance's signed server-to-server API, and never from a checkout redirect. Without a URL and a secret nothing is read and the

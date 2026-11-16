@@ -18,6 +18,7 @@
  */
 
 use App\Models\Answer;
+use App\Models\LicenceBatch;
 use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\Team;
@@ -27,6 +28,7 @@ use App\Models\User;
 use App\Services\Insights\BusinessInsights;
 use App\Services\Knowledge\AnswerService;
 use App\Services\Licensing\Grandfathering;
+use App\Services\Licensing\LicenceBatchEvents;
 use App\Services\Licensing\SeatLedger;
 use App\Services\Seminars\SeminarService;
 use Illuminate\Contracts\Console\Kernel;
@@ -58,6 +60,9 @@ if (($argv[1] ?? null) === 'worker') {
                 $owner = User::findOrFail((int) $actorId);
                 app(SeatLedger::class)->guard($team, fn () => $team->teamInvitations()->create(['email' => $extra, 'role' => 'member']), null, $owner, 'invited', $extra);
                 echo "OK\n";
+                break;
+            case 'licence_event':
+                echo 'STATUS:'.app(LicenceBatchEvents::class)->apply(json_decode(base64_decode((string) $extra), true))."\n";
                 break;
             case 'capacity':
                 echo 'STATUS:'.app(SeminarService::class)->register(Seminar::findOrFail((int) $subject), User::findOrFail((int) $actorId))."\n";
@@ -152,6 +157,25 @@ app(Grandfathering::class)->apply([$frozen->id]);
 TeamLicence::where('team_id', $frozen->id)->update(['purchased_seats' => 1, 'payment_status' => 'active']);
 $seatRace($frozen, $frozenOwner, 1, 'a grandfathered company that bought one licence');
 $check($frozen->users()->count() === 2, 'the grandfathered company still has both its members');
+
+// licence confirmations ------------------------------------------------------------------------------------------------------
+// R-53 phase 2: Dot.Finance may deliver the same signed `paid` more than once at the same instant (retries). Exactly one delivery is applied, the
+// rest are duplicates, the batch is active once, one confirmation row exists, and capacity grew by the quantity once.
+$payOwner = $user('Licence Owner');
+$payTeam = Team::factory()->create(['user_id' => $payOwner->id, 'personal_team' => false]);
+$payBatch = LicenceBatch::create(['team_id' => $payTeam->id, 'quantity' => 3, 'interval' => 'month', 'unit_price_minor' => 9900, 'total_minor' => 29700, 'currency' => 'ZAR']);
+$payEvent = ['kind' => 'licence_batch', 'event_id' => 'race-paid-1', 'type' => 'paid', 'batch_uuid' => $payBatch->uuid, 'team_uuid' => $payTeam->uuid, 'quantity' => 3, 'interval' => 'month',
+    'period_start' => now()->toIso8601String(), 'period_end' => now()->addMonth()->toIso8601String(), 'amount_minor' => 29700, 'currency' => 'ZAR', 'paystack_reference' => 'PSK-RACE'];
+$say('licences: the same signed paid event delivered 6 times at the same instant');
+$out = $race('licence_event', array_map(fn () => [$payBatch->id, $payOwner->id, base64_encode((string) json_encode($payEvent))], range(1, 6)));
+$applied = count(array_filter($out, fn ($o) => $o === 'STATUS:applied'));
+$dupes = count(array_filter($out, fn ($o) => $o === 'STATUS:duplicate'));
+$check($applied === 1, "exactly one delivery applied (got {$applied}): ".implode(' ', $out));
+$check($dupes === 5, "and the other 5 were duplicates (got {$dupes})");
+$check(DB::table('platform_payment_confirmations')->where('event_id', 'race-paid-1')->count() === 1, 'one confirmation row');
+$check($payBatch->fresh()->status === 'active', 'the batch is active');
+$check(app(SeatLedger::class)->summary($payTeam)['capacity'] === 4, 'capacity is the free licence plus 3, once');
+$check(TeamLicenceEvent::where('team_id', $payTeam->id)->where('type', 'batch_activated')->count() === 1, 'and it was audited once');
 
 // capacity ------------------------------------------------------------------------------------------------------------------
 $host = $user('Seminar Host');

@@ -2,6 +2,7 @@
 
 namespace App\Services\Licensing;
 
+use App\Models\LicenceBatch;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\TeamLicence;
@@ -55,7 +56,7 @@ class SeatLedger
     }
 
     /**
-     * @return array{applies: bool, included: int, purchased: int, capacity: int, people: int, members: int, reserved: int, used: int, available: int, over_by: int, extra_in_use: int, status: string, grace_until: mixed, grandfathered: bool, grandfathered_until: mixed, price: ?array{amount_minor_units: int, annual_amount_minor_units: ?int, currency: string}, can_buy: bool}
+     * @return array{applies: bool, included: int, purchased: int, batch_seats: int, capacity: int, people: int, members: int, reserved: int, used: int, available: int, over_by: int, extra_in_use: int, status: string, grace_until: mixed, grandfathered: bool, grandfathered_until: mixed, price: ?array{amount_minor_units: int, annual_amount_minor_units: ?int, currency: string}, can_buy: bool}
      */
     public function summary(Team $team): array
     {
@@ -64,14 +65,17 @@ class SeatLedger
         $members = $team->users()->count();
         $people = $members + 1; // the owner holds a seat
         $reserved = config('licensing.pending_invitations_reserve_a_seat', true) ? TeamInvitation::live()->where('team_id', $team->getKey())->count() : 0;   // an expired invitation holds no seat
-        $capacity = $included + $licence->purchased_seats;
+        $batchSeats = $this->batchSeats($team);
+        $purchased = $licence->purchased_seats + $batchSeats;   // bought licences: the paid batches that count today, plus any the older Finance read recorded
+        $capacity = $included + $purchased;
         $used = $people + $reserved;
         $price = $this->price();
 
         return [
             'applies' => $this->applies($team),
             'included' => $included,
-            'purchased' => $licence->purchased_seats,
+            'purchased' => $purchased,
+            'batch_seats' => $batchSeats,
             'capacity' => $capacity,
             'people' => $people,
             'members' => $members,
@@ -87,6 +91,12 @@ class SeatLedger
             'price' => $price,
             'can_buy' => (bool) config('licensing.finance_connected', false),
         ];
+    }
+
+    /** The licences in this company's paid batches that count right now (active, or inside their grace). Never includes a batch that is only pending. */
+    public function batchSeats(Team $team): int
+    {
+        return (int) LicenceBatch::where('team_id', $team->getKey())->whereIn('status', [LicenceBatch::ACTIVE, LicenceBatch::GRACE, LicenceBatch::REFUNDED])->get()->filter->covers()->sum('quantity');
     }
 
     /** The approved price of one extra licence (ex VAT), or null when no price has been decided: it comes from configuration only and is never defaulted. */

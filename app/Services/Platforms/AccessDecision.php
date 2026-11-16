@@ -16,6 +16,8 @@ final class AccessDecision
 
     public const NOT_A_MEMBER = 'not_a_member';
 
+    public const NOT_LICENSED = 'not_licensed';
+
     public const NOT_ACTIVATED = 'not_activated';
 
     public const NO_PERSONAL_ACCESS = 'no_personal_access';
@@ -42,7 +44,7 @@ final class AccessDecision
 
     /** Every reason a person can be refused for (R-50 section 5). */
     public const REFUSALS = [
-        self::NOT_SIGNED_IN, self::NOT_A_MEMBER, self::NOT_ACTIVATED, self::NO_PERSONAL_ACCESS, self::PAYMENT_REQUIRED, self::TRIAL_ENDED,
+        self::NOT_SIGNED_IN, self::NOT_A_MEMBER, self::NOT_LICENSED, self::NOT_ACTIVATED, self::NO_PERSONAL_ACCESS, self::PAYMENT_REQUIRED, self::TRIAL_ENDED,
         self::EXPIRED, self::SUSPENDED, self::CANCELLED, self::NOT_PERMITTED_FOR_YOU, self::TEMPORARILY_UNAVAILABLE, self::NOT_LAUNCHED,
     ];
 

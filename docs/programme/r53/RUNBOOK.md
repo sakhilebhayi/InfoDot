@@ -25,3 +25,49 @@ Owner decisions D1-D12 are recorded in the R-53 strategy (2026-11-16). This file
 ## What the freeze means for a company
 
 It keeps everyone it has. It cannot add anyone above the frozen headcount without a paid licence. When `grandfathered_until` passes, the frozen people are no longer free; what happens to them then is decided by the licence lifecycle rules (phase 2 of R-53), never by deleting anything.
+
+## Phase 2: paid licences (batches, assignments, lifecycle)
+
+### Tables (additive)
+
+- `licence_batches`: one purchase = one batch = one Paystack subscription with its own renewal date (D4). `uuid`, `team_id`, `quantity`, `interval` (month|year), `unit_price_minor`, `total_minor` (ex VAT, fixed by InfoDot from configuration), `currency`, `status` (pending|active|grace|ended|refunded), `period_start`, `period_end`, `grace_until`, `cancelled_at`, `quantity_next` (a reduction scheduled for the next renewal), `payment_ref`, `price_snapshot`.
+- `licence_assignments`: `team_id`, `user_id`, `batch_id` (nullable), `state` (active|reserved|lapsed|released), `assigned_at`, `released_at`. A member with no row is licensed (so existing companies need no backfill). `reserved` is part of the vocabulary; a pending invitation still holds its place through `SeatLedger` rather than a row.
+- History is `team_licence_events` (`batch_created`, `batch_activated`, `batch_renewed`, `batch_payment_failed`, `batch_cancelled`, `batch_cancel_requested`, `batch_reduction_scheduled`, `batch_refunded`, `batch_ended`, `batch_payment_overdue`, `licence_assigned`, `licence_released`, `licence_lapsed`, `licence_reactivated`, `licence_grace_started`, `licence_grace_cleared`, `ownership_licence_swapped`).
+
+### Capacity
+
+`capacity = free allowance + legacy purchased_seats + sum(quantity of batches that count now)`. A batch counts when it is `active` and inside its paid period (plus `LICENCE_PERIOD_TOLERANCE_MINUTES`, default 60, for a renewal that is minutes late), or in `grace`/`refunded` until `grace_until`. This is computed from the dates on every read, so a missed scheduler run cannot leave an expired batch counting. A `pending` batch never counts.
+
+### The confirmation Dot.Finance sends (same endpoint, same HMAC, same 300 s window)
+
+`POST /api/finance/platform-subscription-events`, headers `X-InfoDot-Timestamp` and `X-InfoDot-Signature: sha256=HMAC_SHA256("{timestamp}.{raw body}")` with `PLATFORM_SUBSCRIPTION_CALLBACK_SECRET`. A body with no `kind` is a platform subscription event exactly as before. A body with `"kind": "licence_batch"`:
+
+```json
+{
+  "kind": "licence_batch",
+  "event_id": "unique-per-event",
+  "type": "paid | renewed | payment_failed | refunded | cancelled",
+  "batch_uuid": "...", "team_uuid": "...",
+  "quantity": 3, "interval": "month",
+  "period_start": "ISO-8601", "period_end": "ISO-8601",
+  "amount_minor": 29700, "currency": "ZAR",
+  "paystack_reference": "...",
+  "occurred_at": "ISO-8601 (optional, used to ignore events that arrive out of order)"
+}
+```
+
+`period_start`, `period_end`, `amount_minor`, `currency` are required on `paid` and `renewed`. Answers: `{"status":"applied|duplicate|ignored"}`, 400 malformed, 401 signature, 422 unknown/mismatched (a `paid` whose quantity, interval, total or currency differs from what InfoDot priced is refused and stores nothing). Finance never sends a price InfoDot did not set: the batch's `total_minor` is what `POST {FINANCE}/api/licences/checkout` is given.
+
+Effects: `paid` activates a pending batch (never anything else); `renewed` extends the period (a smaller `quantity` is a reduction); `payment_failed` starts 14 days of grace from the period end; `cancelled` ends the batch at the period end (a pending one just closes); `refunded` gives 14 days of grace then lapses. Duplicates answer `duplicate`; an event the batch has already moved past is stored and answered `ignored`. `ops:check` reports `licence_batch_active_without_activation_record` (must be 0).
+
+### Lapse rules (D5, D8)
+
+`LicenceLifecycle::rebalance()` is the one rule. Room: lapsed people get their licence back, longest-standing member first; any running grace is cleared. Over capacity: nothing happens on the day; a 14-day grace starts (`team_licences.grace_until`); when it ends and the company is still over, the most recently added people lapse. A batch that already had its own grace (failed payment, refund) lapses its people straight away. The owner and administrators never lapse. Nothing is deleted: a lapsed person keeps their account, content and place in the company, and loses the company's platforms (`PlatformAccess` refuses with `not_licensed`; the SSO redeem answer shows the company as not entitled for them). `php artisan licence:sweep` (every five minutes) moves batches along by date.
+
+### Owner actions (services, no screens yet)
+
+`LicenceBatches::createPending / reduceAtPeriodEnd / cancelAtPeriodEnd`, `LicenceAssignments::release / assign / reassign`, and the free licence moving with `TransferTeamOwnership`. All owner-only (`changeLicence`), all audited.
+
+### Not in these PRs
+
+Team Licences and upgrade screens; the call to Finance's `/api/licences/checkout` and the checkout redirect; the banner and email on a failed payment; the daily reminder emails. Finance's side is built separately against the same contract.

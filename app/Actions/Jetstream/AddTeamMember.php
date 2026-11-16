@@ -2,6 +2,7 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Services\Licensing\LicenceAssignments;
 use App\Services\Licensing\SeatLedger;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
@@ -31,9 +32,10 @@ class AddTeamMember implements AddsTeamMembers
         AddingTeamMember::dispatch($team, $newTeamMember);
 
         // A pending invitation for this address already holds this seat, so it is not counted twice (SeatLedger::guard).
-        app(SeatLedger::class)->guard($team, fn () => $team->users()->attach(
-            $newTeamMember, ['role' => $role]
-        ), $email, $user, 'joined');
+        app(SeatLedger::class)->guard($team, function () use ($team, $newTeamMember, $role) {
+            $team->users()->attach($newTeamMember, ['role' => $role]);
+            app(LicenceAssignments::class)->recordJoin($team, $newTeamMember);
+        }, $email, $user, 'joined');
 
         TeamMemberAdded::dispatch($team, $newTeamMember);
     }
