@@ -1,7 +1,6 @@
 <x-guest-layout title="Reset your password">
     <x-jet-authentication-card>
-        <h1 class="ix-auth-title">Reset your password</h1>
-        <p class="ix-entry__lede">Enter the email address of your account and we will send a link for choosing a new password.</p>
+        <x-auth.heading title="Reset your password" lede="Enter the email address of your account and we will send a link for choosing a new password." />
 
         @if (session('status'))
             <p class="ix-alert" role="status">{{ session('status') }}</p>
@@ -9,7 +8,7 @@
 
         <x-jet-validation-errors />
 
-        <form class="ix-entry__form" method="POST" action="{{ route('password.email') }}">
+        <form class="ix-entry__form" method="POST" action="{{ route('password.email') }}" x-data="{ sending: false }" x-on:submit="sending = true" x-on:pageshow.window="sending = false">
             @csrf
 
             <div class="ix-field">
@@ -17,7 +16,7 @@
                 <x-jet-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
             </div>
 
-            <x-jet-button class="ix-entry__go">Send the reset link</x-jet-button>
+            <x-auth.submit label="Send the reset link" busy="Sending…" />
         </form>
 
         <p class="ix-entry__links">

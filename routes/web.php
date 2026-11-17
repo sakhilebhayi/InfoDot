@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountsDeskController;
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\BrandingAssetController;
 use App\Http\Controllers\BrandingImageController;
 use App\Http\Controllers\BusinessCollectionController;
 use App\Http\Controllers\BusinessDirectoryController;
@@ -98,6 +99,7 @@ Route::get('/attachments/{attachment:uuid}', [AttachmentController::class, 'show
 Route::get('/storage/profile-photos/{file}', ProfilePhotoController::class)->where('file', '[A-Za-z0-9]{1,80}\.(jpg|jpeg|png|webp)')->middleware('throttle:600,1,profile-photos')->name('profile-photos.show');
 // R-54: a platform's branding image, from our own origin (kind is one of three slots; the path is never taken from the address).
 Route::get('/brand/platform/{slug}/{kind}', BrandingImageController::class)->where('slug', '[a-z0-9-]{1,40}')->whereIn('kind', ['logo', 'hero', 'background'])->middleware('throttle:600,1,branding-image')->name('branding.image');
+Route::get('/brand/platform/{slug}/{file}', BrandingAssetController::class)->where('slug', '[a-z0-9-]{1,40}')->where('file', '(hero|background)-(480|960|1600)\.webp|logo-on-dark\.png')->middleware('throttle:600,1,branding-image')->name('branding.asset');
 Route::get('/sitemap.xml', SitemapController::class)->middleware('throttle:30,1,sitemap')->name('sitemap');
 
 // The web manifest (R-49), with its registered content type. No session and no cookies: the answer is the same for

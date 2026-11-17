@@ -1,7 +1,6 @@
 <x-guest-layout title="Sign in">
     <x-jet-authentication-card>
-        <h1 class="ix-auth-title">Sign in</h1>
-        <p class="ix-entry__lede">One account opens InfoDot and every live Dot platform.</p>
+        <x-auth.heading title="Sign in" kind="login" :brand="$platformBranding" :lede="$platformBranding ? 'Sign in with your InfoDot account. One account opens every Dot platform you are allowed to use.' : 'One account opens InfoDot and every live Dot platform.'" />
 
         <x-jet-validation-errors />
 
@@ -9,7 +8,7 @@
             <p class="ix-alert" role="status">{{ session('status') }}</p>
         @endif
 
-        <form class="ix-entry__form" method="POST" action="{{ route('login') }}">
+        <form class="ix-entry__form" method="POST" action="{{ route('login') }}" x-data="{ sending: false }" x-on:submit="sending = true" x-on:pageshow.window="sending = false">
             @csrf
 
             <div class="ix-field">
@@ -27,7 +26,7 @@
                 <span>{{ __('Remember me') }}</span>
             </label>
 
-            <x-jet-button class="ix-entry__go">{{ __('Sign in') }}</x-jet-button>
+            <x-auth.submit :label="$platformBranding?->ctaLogin ?? __('Sign in')" busy="Signing in…" />
         </form>
 
         <p class="ix-entry__links">

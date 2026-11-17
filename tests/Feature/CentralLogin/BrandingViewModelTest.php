@@ -16,9 +16,19 @@ class BrandingViewModelTest extends CentralLoginTestCase
         $this->assertSame('Welcome back to Dot.Central', $view->headlineLogin);
         $this->assertSame('Get started with Dot.Central', $view->headlineRegister);
         $this->assertSame('The control room for a mining shift', $view->description);
+        $this->assertSame('#f2a70b', $view->primary, 'the recorded identity of Dot.Central (config/platform_branding.php)');
+        $this->assertSame('dark', $view->mode);
+        $this->assertSame(0, $view->version);
+    }
+
+    public function test_a_platform_with_no_recorded_identity_uses_the_registry_accent(): void
+    {
+        config(['platform_branding.central' => null]);
+
+        $view = PlatformBrandingView::forPlatform($this->platform->fresh());
+
         $this->assertSame(strtolower(config('ecosystem.platforms.central.accent')), $view->primary);
         $this->assertSame('light', $view->mode);
-        $this->assertSame(0, $view->version);
     }
 
     public function test_a_row_overrides_the_fallback(): void
@@ -47,7 +57,7 @@ class BrandingViewModelTest extends CentralLoginTestCase
         $array = PlatformBrandingView::forPlatform($this->platform->fresh())->toArray();
 
         $this->assertEqualsCanonicalizing(
-            ['slug', 'name', 'headlineLogin', 'headlineRegister', 'description', 'promo', 'ctaLogin', 'ctaRegister', 'primary', 'secondary', 'accent', 'onPrimary', 'mode', 'logoUrl', 'heroUrl', 'heroAlt', 'backgroundUrl', 'version'],
+            ['slug', 'name', 'headlineLogin', 'headlineRegister', 'description', 'promo', 'ctaLogin', 'ctaRegister', 'primary', 'secondary', 'accent', 'onPrimary', 'mode', 'logoUrl', 'heroUrl', 'heroAlt', 'backgroundUrl', 'version', 'logoDarkUrl', 'heroSet'],
             array_keys($array),
         );
 
@@ -71,7 +81,21 @@ class BrandingViewModelTest extends CentralLoginTestCase
         PlatformBranding::create(['dot_platform_id' => $this->platform->id, 'primary_color' => 'red;}</style><script>', 'secondary_color' => 'javascript:1', 'accent_color' => '#12']);
         $view = PlatformBrandingView::forPlatform($this->platform->fresh());
 
-        $this->assertMatchesRegularExpression('/\A--brand-primary:#[0-9a-f]{6};--brand-secondary:#[0-9a-f]{6};--brand-accent:#[0-9a-f]{6};--brand-on-primary:#[0-9a-f]{6};\z/', $view->cssVariables());
+        $this->assertMatchesRegularExpression('/\A--brand-primary:#[0-9a-f]{6};--brand-secondary:#[0-9a-f]{6};--brand-accent:#[0-9a-f]{6};--brand-on-primary:#[0-9a-f]{6};--brand-action:#[0-9a-f]{6};--brand-on-action:#[0-9a-f]{6};--brand-action-dk:#[0-9a-f]{6};--brand-on-action-dk:#[0-9a-f]{6};\z/', $view->cssVariables());
+    }
+
+    public function test_the_action_colour_never_sinks_into_the_form_ground(): void
+    {
+        PlatformBranding::create(['dot_platform_id' => $this->platform->id, 'primary_color' => '#14181f', 'accent_color' => '#5a6371']);
+        $dark = PlatformBrandingView::forPlatform($this->platform->fresh());
+        $this->assertSame('#14181f', $dark->actionColour(false));
+        $this->assertSame('#e9ecec', $dark->actionColour(true), 'near-black on the dark page falls back to light ink when the accent is also dark');
+
+        PlatformBranding::query()->update(['primary_color' => '#f8f8f0']);
+        $this->assertSame('#1b2124', PlatformBrandingView::forPlatform($this->platform->fresh())->actionColour(false));
+
+        PlatformBranding::query()->update(['primary_color' => '#0b0e12', 'accent_color' => '#f2a70b']);
+        $this->assertSame('#f2a70b', PlatformBrandingView::forPlatform($this->platform->fresh())->actionColour(true));
     }
 
     public function test_html_in_words_is_stripped(): void
