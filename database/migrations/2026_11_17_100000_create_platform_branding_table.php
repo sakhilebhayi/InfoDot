@@ -35,8 +35,11 @@ return new class extends Migration
             $table->json('approved_redirect_domains')->nullable();
             $table->boolean('active')->default(true);
             $table->unsignedInteger('version')->default(1);
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            // users.id is a legacy unsigned INT (increments), so the referencing column is an unsigned INT too (MySQL refuses a bigint).
+            $table->unsignedInteger('updated_by')->nullable();
             $table->timestamps();
+
+            $table->foreign('updated_by')->references('id')->on('users')->nullOnDelete();
         });
     }
 
