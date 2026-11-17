@@ -20,7 +20,7 @@
      R-54: when a registered platform started the sign-in ($platformBranding, resolved server-side), the page is the
      platform's: its colour, logo and real screen beside the form, and InfoDot's "Powered by" strip at the bottom. --}}
 @php($brand = $platformBranding ?? null)
-<body class="ix{{ $brand ? ' ix-auth-body' : '' }}" data-area="people" @if ($brand) data-brand-mode="{{ $brand->mode }}" style="{{ $brand->cssVariables() }}" @endif>
+<body class="ix{{ $brand ? ' ix-auth-body' : '' }}" data-area="people"@if ($brand) data-brand-mode="{{ $brand->mode }}" style="{{ $brand->cssVariables() }}"@endif>mode }}" style="{{ $brand->cssVariables() }}" @endif>
     <a href="#main" class="ix-skip">Skip to content</a>
 
     @if ($brand)
