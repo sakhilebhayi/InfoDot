@@ -3,8 +3,10 @@
 namespace App\Http\Middleware\Oidc;
 
 use App\Models\DotPlatform;
+use App\Services\Platforms\AccessDecision;
 use App\Services\Platforms\PlatformAccess;
 use App\Services\Platforms\PlatformRefusal;
+use App\Services\Sso\BusinessOnboarding;
 use App\Support\Input;
 use Closure;
 use Illuminate\Http\Request;
@@ -19,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnforcePlatformEntitlement
 {
-    public function __construct(private readonly PlatformAccess $access, private readonly PlatformRefusal $refusal) {}
+    public function __construct(private readonly PlatformAccess $access, private readonly PlatformRefusal $refusal, private readonly BusinessOnboarding $onboarding) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -37,6 +39,14 @@ class EnforcePlatformEntitlement
         }
 
         $decision = $this->access->decide($user, (string) $platform->slug);
+
+        // R-54: a person who has no business yet is not refused, they are asked to set one up and then continue. The
+        // pending request stays in their session (the authorize route remembered it), so nothing is lost on the way.
+        if ($decision->reason === AccessDecision::NO_PERSONAL_ACCESS && $this->onboarding->needsBusiness($user)) {
+            Log::info('sso.authorize_onboarding', ['reason' => 'no_business_yet', 'client_id' => $platform->oauth_client_id]);
+
+            return redirect()->route('onboarding.business');
+        }
 
         if ($decision->refused()) {
             Log::info('sso.authorize_rejected', ['reason' => 'not_entitled:'.$decision->reason, 'client_id' => $platform->oauth_client_id]);

@@ -15,6 +15,7 @@ use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RecordUxSignals;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\RefuseDemonstrationAccount;
+use App\Http\Middleware\RememberPendingAuthorize;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\ThrottleAccountForms;
 use App\Http\Middleware\TrimStrings;
@@ -25,14 +26,18 @@ use Illuminate\Auth\Middleware\AuthenticateWithBasicAuth;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Auth\Middleware\RequirePassword;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
+use Illuminate\Contracts\Session\Middleware\AuthenticatesSessions;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests;
 use Illuminate\Foundation\Http\Middleware\ValidatePostSize;
 use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Http\Middleware\SetCacheHeaders;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Routing\Middleware\ValidateSignature;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
@@ -60,6 +65,30 @@ class Kernel extends HttpKernel
         SecurityHeaders::class,
         ThrottleAccountForms::class,
         RecordUxSignals::class, // R-12: counts only (also sees addresses no route answers); off unless UX_SIGNALS=true
+    ];
+
+    /**
+     * Laravel's own priority list with two additions (R-54). `Authenticate` is on that list, so it always runs ahead of
+     * middleware that is not, whatever order a route names them in. The authorize endpoint's house rules and the step that
+     * remembers a valid pending request must see a signed-out visitor BEFORE the redirect to sign-in, or a bad request would
+     * be parked as "where to go after sign-in" and a good one would never be remembered.
+     *
+     * @var string[]
+     */
+    protected $middlewarePriority = [
+        HandlePrecognitiveRequests::class,
+        \Illuminate\Cookie\Middleware\EncryptCookies::class,
+        AddQueuedCookiesToResponse::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        EnforceOidcRules::class,
+        RememberPendingAuthorize::class,
+        AuthenticatesRequests::class,
+        ThrottleRequests::class,
+        ThrottleRequestsWithRedis::class,
+        AuthenticatesSessions::class,
+        SubstituteBindings::class,
+        Authorize::class,
     ];
 
     /**
@@ -102,6 +131,7 @@ class Kernel extends HttpKernel
         'knowledge.signed' => VerifyKnowledgeSignature::class,
         'moderator' => EnsureModerator::class,
         'platform.admin' => EnsurePlatformAdmin::class,
+        'sso.pending' => RememberPendingAuthorize::class,
         'platform.entitled' => EnforcePlatformEntitlement::class,
         'not-demo' => RefuseDemonstrationAccount::class,
         'oidc.enforce' => EnforceOidcRules::class,

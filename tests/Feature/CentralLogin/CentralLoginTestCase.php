@@ -1,0 +1,38 @@
+<?php
+
+namespace Tests\Feature\CentralLogin;
+
+use App\Models\Team;
+use App\Models\User;
+use Illuminate\Support\Carbon;
+use Tests\Feature\Oidc\OidcTestCase;
+
+/** Shared ground for the R-54 suites: Dot.Central registered as a sign-in client (OidcTestCase) and people at each stage of arriving. */
+abstract class CentralLoginTestCase extends OidcTestCase
+{
+    /** The address a platform sends the browser to. */
+    protected function authorizeUrl(array $overrides = []): string
+    {
+        [, $challenge] = $this->pkcePair();
+
+        return '/oauth/authorize?'.http_build_query($this->authorizeQuery($challenge, $overrides));
+    }
+
+    /** A person who has only the personal workspace every account gets at sign-up (no business yet). */
+    protected function newcomer(bool $verified = true): User
+    {
+        $user = User::factory()->create(['email_verified_at' => $verified ? Carbon::now() : null]);
+        $team = Team::forceCreate(['user_id' => $user->id, 'name' => 'Personal', 'personal_team' => true]);
+        $user->forceFill(['current_team_id' => $team->id])->save();
+
+        return $user->fresh();
+    }
+
+    protected function administrator(): User
+    {
+        $user = $this->newcomer();
+        $user->forceFill(['is_platform_admin' => true])->save();
+
+        return $user->fresh();
+    }
+}

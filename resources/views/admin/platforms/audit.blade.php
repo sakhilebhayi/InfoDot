@@ -10,7 +10,7 @@
 
     <nav class="ix-filters" aria-label="What the entry is about">
         <a class="ix-pill" href="{{ route('admin.platforms.audit') }}" @if ($about === null) aria-current="true" @endif>Everything</a>
-        @foreach (['platform' => 'Platforms', 'plan' => 'Plans', 'bundle' => 'Bundles', 'administrator' => 'Administrators', 'outbox' => 'Deliveries'] as $value => $text)
+        @foreach (['platform' => 'Platforms', 'plan' => 'Plans', 'bundle' => 'Bundles', 'administrator' => 'Administrators', 'outbox' => 'Deliveries', 'branding' => 'Sign-in branding'] as $value => $text)
             <a class="ix-pill" href="{{ route('admin.platforms.audit', ['about' => $value]) }}" @if ($about === $value) aria-current="true" @endif>{{ $text }}</a>
         @endforeach
     </nav>

@@ -32,6 +32,7 @@ use App\Models\Solutions;
 use App\Models\Team;
 use App\Services\Demo\DemoRegistry;
 use App\Services\Platforms\PlatformNotices;
+use App\Services\Sso\PlatformContext;
 use App\Support\CanonicalUrl;
 use App\Support\Input;
 use App\Support\PlatformSecret;
@@ -42,6 +43,7 @@ use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
 use Livewire\Livewire;
@@ -75,6 +77,14 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->isProduction()) {
             CanonicalUrl::apply($this->app->runningInConsole() ? null : $this->app['request']);
         }
+
+        // R-54: the way-in pages know which platform started the sign-in, and only the allowlisted branding of it (null on a
+        // direct visit). Resolved lazily from the server-side pending request; nothing in the address is read.
+        View::composer(['auth.*', 'onboarding.*', 'layouts.guest'], function ($view) {
+            if (! array_key_exists('platformBranding', $view->getData())) {
+                $view->with('platformBranding', request()->hasSession() ? app(PlatformContext::class)->branding() : null);
+            }
+        });
 
         // R-50: the owner and administrators of a company are told when its entitlement to a platform changes.
         PlatformNotices::register();
