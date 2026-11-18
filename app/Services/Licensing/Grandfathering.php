@@ -135,7 +135,7 @@ class Grandfathering
         $purchased = $licence === null ? 0 : $licence->purchased_seats;
         $headcount = $team->users()->count() + 1   // the owner
             + (config('licensing.pending_invitations_reserve_a_seat', true) ? TeamInvitation::live()->where('team_id', $team->id)->count() : 0);
-        $base = max(0, (int) config('licensing.included_seats'));
+        $base = max(0, (int) config('licensing.target_included_seats'));
         // Capacity after freezing is exactly the headcount: whatever has been bought stays on top of the frozen free part.
         $needed = $headcount - $purchased;
 

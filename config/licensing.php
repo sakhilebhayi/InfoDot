@@ -18,9 +18,15 @@
 */
 
 return [
-    // The free allowance per company: ONE licence, held by the owner. A company-level override (team_licences.included_seats, set by
-    // `licence:grandfather` for companies that existed before R-53) beats this number until its `grandfathered_until` date.
-    'included_seats' => (int) env('LICENCE_INCLUDED_SEATS', 1),
+    // The free allowance per company TODAY. The default is 3, the rule that was live before R-53, so merging and deploying R-53 changes
+    // nothing. The cutover to ONE free licence (the owner's) is a deliberate host setting: LICENCE_INCLUDED_SEATS=1, made after
+    // `licence:grandfather --apply` (see docs/programme/r53/RUNBOOK.md). A company-level override (team_licences.included_seats, set by
+    // `licence:grandfather`) beats this number until its `grandfathered_until` date.
+    'included_seats' => (int) env('LICENCE_INCLUDED_SEATS', 3),
+
+    // The allowance the cutover is heading for: `licence:grandfather` freezes every company that has more people than this, so it works
+    // while `included_seats` is still the old number. One free licence, the owner's.
+    'target_included_seats' => (int) env('LICENCE_TARGET_INCLUDED_SEATS', 1),
 
     // Days an existing company keeps its current headcount free after `licence:grandfather --apply` (owner decision D7).
     'grandfather_days' => (int) env('LICENCE_GRANDFATHER_DAYS', 90),
