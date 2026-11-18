@@ -56,11 +56,11 @@ class LoginStartTest extends DotSsoTestCase
 
     public function test_the_deep_link_is_kept_server_side_and_never_put_in_the_url(): void
     {
-        $location = $this->withSession(['url.intended' => 'https://platform.test/tasks/42?tab=files'])
+        $location = $this->withSession(['url.intended' => 'https://platform.test/zzmarker/deep-path?tab=files'])
             ->get('https://platform.test/sso/login')->headers->get('Location');
 
-        $this->assertStringNotContainsString('tasks', $location);
-        $this->assertStringNotContainsString('42', $location);
+        $this->assertStringNotContainsString('zzmarker', $location);
+        $this->assertStringNotContainsString('deep-path', $location);
     }
 
     #[DataProvider('hostileDeepLinks')]
