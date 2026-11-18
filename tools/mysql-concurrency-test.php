@@ -34,6 +34,11 @@ use App\Services\Seminars\SeminarService;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 
+// These races describe the R-53 rule (one free licence). The shipped default is still today's three until the owner sets the host, so the
+// test sets the rule itself; the worker processes inherit it.
+putenv('LICENCE_INCLUDED_SEATS=1');
+$_ENV['LICENCE_INCLUDED_SEATS'] = $_SERVER['LICENCE_INCLUDED_SEATS'] = '1';
+
 require __DIR__.'/../vendor/autoload.php';
 
 $app = require __DIR__.'/../bootstrap/app.php';
