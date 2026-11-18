@@ -2,6 +2,7 @@
 
 namespace Dot\SsoClient\Jwt;
 
+use Dot\SsoClient\Support\Sso;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
@@ -15,10 +16,14 @@ class ProviderMetadata
     /** @return array<string, mixed> */
     public static function discovery(): array
     {
-        $issuer = config('dotsso.issuer');
+        $issuer = (string) config('dotsso.issuer');
 
-        return Cache::remember('dotsso:discovery', config('dotsso.jwks_cache_seconds'), function () use ($issuer) {
-            $doc = Http::timeout(5)->get($issuer.'/.well-known/openid-configuration')->throw()->json();
+        if (! Sso::issuerIsAcceptable($issuer)) {
+            throw new \RuntimeException('The configured issuer must be an https URL (http only for localhost, 127.0.0.1 and *.test).');
+        }
+
+        return Cache::remember('dotsso:discovery:'.md5($issuer), config('dotsso.jwks_cache_seconds'), function () use ($issuer) {
+            $doc = Http::timeout((int) config('dotsso.http_timeout_seconds', 10))->get($issuer.'/.well-known/openid-configuration')->throw()->json();
 
             if (rtrim($doc['issuer'] ?? '', '/') !== $issuer) {
                 throw new \RuntimeException('Identity provider discovery document does not match the configured issuer.');
@@ -32,7 +37,7 @@ class ProviderMetadata
     {
         $url = static::discovery()[$name] ?? null;
 
-        if (! is_string($url) || ! str_starts_with($url, rtrim(config('dotsso.issuer'), '/'))) {
+        if (! is_string($url) || ! str_starts_with($url, rtrim((string) config('dotsso.issuer'), '/').'/')) {
             throw new \RuntimeException("Identity provider metadata is missing a usable {$name}.");
         }
 
@@ -45,21 +50,28 @@ class ProviderMetadata
      */
     public static function signingKey(?string $kid): string
     {
-        $keys = Cache::remember('dotsso:jwks', config('dotsso.jwks_cache_seconds'), function () {
-            return Http::timeout(5)->get(static::endpoint('jwks_uri'))->throw()->json('keys') ?? [];
-        });
+        $match = fn (array $keys) => collect($keys)->first(
+            fn ($key) => ($key['kty'] ?? '') === 'RSA' && ($key['alg'] ?? 'RS256') === 'RS256'
+                && ($kid === null || ($key['kid'] ?? null) === $kid)
+        );
 
-        foreach ($keys as $key) {
-            if (($key['kty'] ?? '') !== 'RSA' || ($key['alg'] ?? 'RS256') !== 'RS256') {
-                continue;
-            }
+        $cacheKey = 'dotsso:jwks:'.md5((string) config('dotsso.issuer'));
+        $fetch = fn () => Http::timeout((int) config('dotsso.http_timeout_seconds', 10))->get(static::endpoint('jwks_uri'))->throw()->json('keys') ?? [];
 
-            if ($kid === null || ($key['kid'] ?? null) === $kid) {
-                return static::rsaPem($key['n'], $key['e']);
-            }
+        $key = $match(Cache::remember($cacheKey, config('dotsso.jwks_cache_seconds'), $fetch));
+
+        // A rotated key: refresh once when the named kid is unknown, then give up.
+        if ($key === null && $kid !== null && Cache::add($cacheKey.':refresh', 1, 60)) {
+            $keys = $fetch();
+            Cache::put($cacheKey, $keys, config('dotsso.jwks_cache_seconds'));
+            $key = $match($keys);
         }
 
-        throw new \RuntimeException('No matching signing key in the identity provider JWKS.');
+        if ($key === null || ! isset($key['n'], $key['e'])) {
+            throw new \RuntimeException('No matching signing key in the identity provider JWKS.');
+        }
+
+        return static::rsaPem($key['n'], $key['e']);
     }
 
     /** Assemble a SubjectPublicKeyInfo PEM from the JWK's modulus and exponent. */

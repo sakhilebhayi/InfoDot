@@ -46,7 +46,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Dot\\SsoClient\\": "packages/dot-sso-client/src/",
+            "Dot\\SsoClient\\Tests\\": "packages/dot-sso-client/tests/"
         }
     },
     "scripts": {
