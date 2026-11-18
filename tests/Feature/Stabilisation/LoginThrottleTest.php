@@ -25,16 +25,21 @@ class LoginThrottleTest extends TestCase
         $limits = RateLimiter::limiter('login')($request);
 
         $this->assertIsArray($limits);
-        $this->assertCount(2, $limits);
+        $this->assertCount(3, $limits); // R-54 added the account-wide limit
         $this->assertContainsOnlyInstancesOf(Limit::class, $limits);
 
-        [$pair, $address] = $limits;
+        [$pair, $address, $account] = $limits;
         $this->assertSame(5, $pair->maxAttempts);
         $this->assertStringContainsString('pat@example.com', (string) $pair->key);
         $this->assertSame(30, $address->maxAttempts);
         $this->assertStringNotContainsString('pat@example.com', (string) $address->key);
         $this->assertStringContainsString('203.0.113.9', (string) $address->key);
         $this->assertNotSame($pair->key, $address->key);
+
+        // R-54: the account on its own, across every address: twenty in fifteen minutes, keyed by a hash (never the address in clear).
+        $this->assertSame(20, $account->maxAttempts);
+        $this->assertSame(900, $account->decaySeconds);
+        $this->assertStringNotContainsString('pat@example.com', (string) $account->key);
     }
 
     public function test_the_sixth_try_for_one_email_is_refused(): void

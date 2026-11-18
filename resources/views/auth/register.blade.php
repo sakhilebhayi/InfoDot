@@ -1,11 +1,10 @@
 <x-guest-layout title="Create your account">
     <x-jet-authentication-card>
-        <h1 class="ix-auth-title">Create your account</h1>
-        <p class="ix-entry__lede">Free. We email you a link to confirm the address before you start.</p>
+        <x-auth.heading title="Create your account" kind="register" :brand="$platformBranding" lede="Free. We email you a link to confirm the address first, because other Dot platforms trust it." />
 
         <x-jet-validation-errors />
 
-        <form class="ix-entry__form" method="POST" action="{{ route('register') }}" x-data="{ sending: false }" x-on:submit="sending = true">
+        <form class="ix-entry__form" method="POST" action="{{ route('register') }}" x-data="{ sending: false }" x-on:submit="sending = true" x-on:pageshow.window="sending = false">
             @csrf
 
             <div class="ix-field">
@@ -21,6 +20,7 @@
             <div class="ix-field">
                 <x-jet-label for="password" value="{{ __('Password') }}" />
                 <x-password-input id="password" name="password" required autocomplete="new-password" />
+                <x-auth.strength for="password" />
             </div>
 
             <div class="ix-field">
@@ -35,7 +35,7 @@
                 </label>
             @endif
 
-            <x-jet-button class="ix-entry__go" x-bind:disabled="sending">Create account</x-jet-button>
+            <x-auth.submit :label="$platformBranding?->ctaRegister ?? 'Create account'" busy="Creating your account…" />
         </form>
 
         <p class="ix-entry__links">

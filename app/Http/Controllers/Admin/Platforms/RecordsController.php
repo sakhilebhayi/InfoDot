@@ -78,7 +78,7 @@ class RecordsController extends Controller
 
     public function audit(Request $request): View
     {
-        $data = $request->validate(['about' => ['nullable', Rule::in(['platform', 'plan', 'bundle', 'administrator', 'outbox'])]]);
+        $data = $request->validate(['about' => ['nullable', Rule::in(['platform', 'plan', 'bundle', 'administrator', 'outbox', 'branding'])]]);
 
         return view('admin.platforms.audit', [
             'about' => $data['about'] ?? null,

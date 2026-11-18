@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\DotPlatform;
+use App\Support\Platforms;
 use Illuminate\Console\Command;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
@@ -16,14 +17,15 @@ use Laravel\Passport\Passport;
 class SsoPlatform extends Command
 {
     protected $signature = 'sso:platform
-        {action : register | list | suspend | activate | rotate-secret}
+        {action : register | register-all | list | suspend | activate | rotate-secret}
         {slug? : The platform slug, e.g. central}
         {--name= : Display name, e.g. "Dot.Central"}
         {--domain= : The platform origin, e.g. https://central.infodot.co.za}
         {--redirect=* : Exact redirect URI(s), e.g. https://central.infodot.co.za/sso/callback}
         {--post-logout=* : Exact post-logout redirect URI(s)}
         {--backchannel= : Back-channel logout URI}
-        {--environment=production : Environment label}';
+        {--environment=production : Environment label}
+        {--dry-run : register-all only: list what would be registered (this is the only mode it has, and creates nothing)}';
 
     protected $description = 'Manage the Dot ecosystem platform registry (OIDC relying parties)';
 
@@ -31,6 +33,7 @@ class SsoPlatform extends Command
     {
         return match ($this->argument('action')) {
             'register' => $this->register($clients),
+            'register-all' => $this->registerAll(),
             'list' => $this->listPlatforms(),
             'suspend' => $this->setStatus('suspended'),
             'activate' => $this->setStatus('active'),
@@ -101,6 +104,54 @@ class SsoPlatform extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * R-54: what registering every active platform as a sign-in client would involve, without doing any of it. It reads
+     * the registry (config/ecosystem.php) and the platform records and prints the callback each platform would be
+     * given (the satellite package's documented path, /sso/callback). It creates no client, writes nothing and never
+     * prints a secret: registration stays one platform at a time with `register`, on the host, by the owner.
+     */
+    private function registerAll(): int
+    {
+        $rows = [];
+
+        foreach (Platforms::visible() as $key => $platform) {
+            $key = (string) $key;
+
+            if (($platform['active'] ?? false) !== true || $key === 'infodot') {
+                continue;
+            }
+
+            $origin = rtrim((string) ($platform['url'] ?? ''), '/');
+            $registered = DotPlatform::where('slug', $key)->first();
+            $notes = [];
+
+            if (! str_starts_with($origin, 'https://') && ! $this->isLocalDev($origin)) {
+                $notes[] = 'origin is not https: cannot be registered';
+            }
+
+            if (($platform['sso'] ?? true) === false) {
+                $notes[] = 'no receiver yet (needs its own phase)';
+            }
+
+            if (($platform['access'] ?? null) === 'own') {
+                $notes[] = 'decides its own access';
+            }
+
+            $rows[] = [
+                $key, $platform['name'] ?? $key, $origin,
+                $registered ? 'registered ('.$registered->status.')' : 'would register',
+                $origin.'/sso/callback', $origin.'/', $origin.'/sso/backchannel-logout',
+                implode('; ', $notes) ?: '-',
+            ];
+        }
+
+        $this->table(['Slug', 'Name', 'Origin', 'State', 'Redirect URI', 'Post-logout', 'Back-channel', 'Notes'], $rows);
+        $this->line('Dry run only: no client was created and nothing was written. Internal bridge services (Memory, Dopemine) are not listed.');
+        $this->line('To register one platform, run on the host: php artisan sso:platform register <slug> --name="<name>" --domain=<origin> --redirect=<redirect uri> --post-logout=<post-logout> --backchannel=<back-channel>');
+
+        return self::SUCCESS;
+    }
+
     private function listPlatforms(): int
     {
         $this->table(
@@ -159,7 +210,7 @@ class SsoPlatform extends Command
 
     private function unknownAction(): int
     {
-        $this->error('Unknown action. Use register | list | suspend | activate | rotate-secret.');
+        $this->error('Unknown action. Use register | register-all | list | suspend | activate | rotate-secret.');
 
         return self::FAILURE;
     }

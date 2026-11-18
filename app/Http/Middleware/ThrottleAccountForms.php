@@ -20,6 +20,13 @@ class ThrottleAccountForms
 {
     private const FORMS = ['register' => 30, 'forgot-password' => 6, 'reset-password' => 10];
 
+    /**
+     * R-54: a second, per-address limit for the two forms that send mail or change a password. The per-source limit
+     * above stops one machine; this one stops many machines (or one rotating its address) aimed at a single mailbox
+     * or account. Counted in ten minutes, on the lower-cased address so `A@x.com` and `a@x.com` are one.
+     */
+    private const PER_EMAIL = ['forgot-password' => 5, 'reset-password' => 5];
+
     public function handle(Request $request, Closure $next): Response
     {
         $form = trim($request->path(), '/');
@@ -33,6 +40,16 @@ class ThrottleAccountForms
             }
 
             RateLimiter::hit($key, 600);
+
+            if (isset(self::PER_EMAIL[$form]) && is_string($email = $request->input('email')) && $email !== '') {
+                $emailKey = 'account-form-email:'.$form.':'.sha1(mb_strtolower(trim($email)));
+
+                if (RateLimiter::tooManyAttempts($emailKey, self::PER_EMAIL[$form])) {
+                    throw new TooManyRequestsHttpException(RateLimiter::availableIn($emailKey), 'Too many attempts. Please wait a few minutes and try again.');
+                }
+
+                RateLimiter::hit($emailKey, 600);
+            }
         }
 
         return $next($request);

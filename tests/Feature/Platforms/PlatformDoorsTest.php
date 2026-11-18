@@ -325,6 +325,17 @@ class PlatformDoorsTest extends PlatformTestCase
         $person = $this->person();
 
         $this->actingAs($person)->get('/oauth/authorize?'.http_build_query($this->authorizeQuery('files')))->assertRedirect();
+
+        // R-54: a person with NO business at all is not refused, they are asked to set one up (the step then continues the request).
+        $this->actingAs($person)->get('/oauth/authorize?'.http_build_query($this->authorizeQuery('hr')))->assertRedirect(route('onboarding.business'));
+    }
+
+    public function test_oauth_authorize_still_refuses_a_personal_workspace_for_someone_who_already_has_a_business(): void
+    {
+        $person = $this->person();
+        $company = Team::factory()->create(['user_id' => $person->id, 'personal_team' => false]);
+
+        $this->assertNotNull($company);
         $this->actingAs($person)->get('/oauth/authorize?'.http_build_query($this->authorizeQuery('hr')))->assertStatus(403)->assertSee('Dot.HR is for companies');
     }
 }

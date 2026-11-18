@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * A registered relying party in the Dot ecosystem (R-20 §2). The identity provider only answers
@@ -25,6 +26,12 @@ class DotPlatform extends Model
     public function sessions(): HasMany
     {
         return $this->hasMany(SsoPlatformSession::class);
+    }
+
+    /** @return HasOne<PlatformBranding, $this> */
+    public function branding(): HasOne
+    {
+        return $this->hasOne(PlatformBranding::class);
     }
 
     public function isActive(): bool

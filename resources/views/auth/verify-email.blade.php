@@ -1,7 +1,6 @@
 <x-guest-layout title="Verify your email">
     <x-jet-authentication-card>
-        <h1 class="ix-auth-title">Verify your email</h1>
-        <p class="ix-entry__lede">We sent a link to {{ auth()->user()?->email ?? 'your email address' }}. Open it to confirm the address and you will arrive on your Home page. Other Dot platforms trust this address, which is why it is checked first.</p>
+        <x-auth.heading title="Verify your email" :lede="'We sent a link to '.(auth()->user()?->email ?? 'your email address').'. Open it to confirm the address and '.($platformBranding ? 'you will carry on to '.$platformBranding->name : 'you will arrive on your Home page').'. Other Dot platforms trust this address, which is why it is checked first. Check your spam folder if it does not arrive within a few minutes.'" />
 
         @if (session('verification_mail_failed'))
             <p class="ix-alert ix-alert--danger" role="alert">Your account is ready, but we could not send the verification email just now. Send the link again in a minute.</p>

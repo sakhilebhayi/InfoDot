@@ -29,17 +29,7 @@ class EnforceOidcRules
     {
         $platform = DotPlatform::findByClientId(Input::text($request->query('client_id')) ?: null);
 
-        $reason = match (true) {
-            ! $platform => 'unregistered_client',
-            ! $platform->isActive() => 'platform_suspended',
-            $request->query('response_type') !== 'code' => 'response_type_not_code',
-            ! in_array('openid', preg_split('/[\s+]+/', Input::text($request->query('scope'))) ?: [], true) => 'missing_openid_scope',
-            strlen(Input::text($request->query('state'))) < config('sso.min_state_length') => 'state_missing_or_short',
-            strlen(Input::text($request->query('nonce'))) < config('sso.min_nonce_length') => 'nonce_missing_or_short',
-            $request->query('code_challenge_method') !== 'S256' => 'pkce_method_not_s256',
-            ! preg_match('/^[A-Za-z0-9\-._~]{43,128}$/', Input::text($request->query('code_challenge'))) => 'pkce_challenge_invalid',
-            default => null,
-        };
+        $reason = self::rejectionReason($request->query(), $platform);
 
         if ($reason !== null) {
             Log::info('sso.authorize_rejected', ['reason' => $reason, 'client_id' => Input::text($request->query('client_id'))]);
@@ -48,6 +38,27 @@ class EnforceOidcRules
         }
 
         return $next($request);
+    }
+
+    /**
+     * The house rules for an authorize request as a pure function, so the sign-in pages (R-54) judge a pending request
+     * by exactly the same rules the endpoint does. Null means acceptable.
+     *
+     * @param  array<string, mixed>  $query
+     */
+    public static function rejectionReason(array $query, ?DotPlatform $platform): ?string
+    {
+        return match (true) {
+            ! $platform => 'unregistered_client',
+            ! $platform->isActive() => 'platform_suspended',
+            ($query['response_type'] ?? null) !== 'code' => 'response_type_not_code',
+            ! in_array('openid', preg_split('/[\s+]+/', Input::text($query['scope'] ?? null)) ?: [], true) => 'missing_openid_scope',
+            strlen(Input::text($query['state'] ?? null)) < config('sso.min_state_length') => 'state_missing_or_short',
+            strlen(Input::text($query['nonce'] ?? null)) < config('sso.min_nonce_length') => 'nonce_missing_or_short',
+            ($query['code_challenge_method'] ?? null) !== 'S256' => 'pkce_method_not_s256',
+            ! preg_match('/^[A-Za-z0-9\-._~]{43,128}$/', Input::text($query['code_challenge'] ?? null)) => 'pkce_challenge_invalid',
+            default => null,
+        };
     }
 
     private function enforceToken(Request $request, Closure $next): Response

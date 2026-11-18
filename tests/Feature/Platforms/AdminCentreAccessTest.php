@@ -95,7 +95,10 @@ class AdminCentreAccessTest extends AdminCentreTestCase
         $registered = collect(app('router')->getRoutes())->filter(fn ($route) => str_starts_with((string) $route->getName(), 'admin.platforms'));
 
         // Each registered route appears in doors() (decision and action routes several times), and each carries the gate.
-        $this->assertCount(20, $registered);
+        // R-54's four sign-in branding routes need a registered platform to act on and are walked, gate included, in
+        // tests/Feature/CentralLogin/BrandingAdminTest; the loop below still checks that they carry the gate.
+        $this->assertCount(20, $registered->reject(fn ($route) => str_contains((string) $route->getName(), '.branding')));
+        $this->assertCount(4, $registered->filter(fn ($route) => str_contains((string) $route->getName(), '.branding')));
 
         foreach ($registered as $route) {
             $this->assertContains('platform.admin', $route->gatherMiddleware(), $route->uri());

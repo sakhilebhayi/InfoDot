@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\Platforms\BrandingController;
 use App\Http\Controllers\Admin\Platforms\BundlesController;
 use App\Http\Controllers\Admin\Platforms\CatalogueController;
 use App\Http\Controllers\Admin\Platforms\CompaniesController;
@@ -37,6 +38,14 @@ Route::middleware(['web', 'auth:sanctum', 'verified', 'platform.admin'])->prefix
         Route::get('/companies', 'index')->middleware('throttle:60,1,admin.platforms.view')->name('.companies');
         Route::get('/companies/{team:uuid}', 'show')->whereUuid('team')->middleware('throttle:60,1,admin.platforms.view')->name('.company');
         Route::post('/companies/{team:uuid}/{action}', 'act')->whereUuid('team')->whereIn('action', ['grant', 'trial', 'suspend', 'restore', 'cancel', 'access'])->middleware('throttle:30,1,admin.platforms.act')->name('.company.act');
+    });
+
+    // R-54: how each platform looks on the central sign-in and registration pages.
+    Route::controller(BrandingController::class)->group(function () {
+        Route::get('/branding', 'index')->middleware('throttle:60,1,admin.platforms.view')->name('.branding');
+        Route::get('/branding/{platform:slug}', 'edit')->middleware('throttle:60,1,admin.platforms.view')->name('.branding.edit');
+        Route::post('/branding/{platform:slug}/preview', 'preview')->middleware('throttle:60,1,admin.platforms.view')->name('.branding.preview');
+        Route::post('/branding/{platform:slug}', 'publish')->middleware('throttle:30,1,admin.platforms.act')->name('.branding.publish');
     });
 
     // What InfoDot has on record about each platform: read only, and never shown to a business.

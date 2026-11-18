@@ -1,6 +1,6 @@
 <x-guest-layout title="Check it is you">
     <x-jet-authentication-card>
-        <h1 class="ix-auth-title">Check it is you</h1>
+        <x-auth.heading title="Check it is you" />
 
         <div x-data="{ recovery: false }">
             <div class="ix-entry__lede" x-show="! recovery">

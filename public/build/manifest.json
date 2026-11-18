@@ -1,8 +1,12 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-DOn_0ZU5.css",
+    "file": "assets/app-CV38YLCS.css",
     "src": "resources/css/app.css",
     "isEntry": true
+  },
+  "resources/fonts/material-symbols-rounded.woff2": {
+    "file": "assets/material-symbols-rounded-oGcp1CHd.woff2",
+    "src": "resources/fonts/material-symbols-rounded.woff2"
   },
   "resources/img/apps/agents.png": {
     "file": "assets/agents-CAk666RZ.png",
@@ -107,6 +111,10 @@
   "resources/img/arrow-mask.png": {
     "file": "assets/arrow-mask-BvtlvTEr.png",
     "src": "resources/img/arrow-mask.png"
+  },
+  "resources/img/brand/logo_white.png": {
+    "file": "assets/logo_white-C3-KiFFF.png",
+    "src": "resources/img/brand/logo_white.png"
   },
   "resources/img/landing/couturiere.jpg": {
     "file": "assets/couturiere-CDo3s3_6.jpg",
@@ -236,14 +244,26 @@
     "file": "assets/files-C9XIb1Vh.png",
     "src": "resources/img/platforms/files.png"
   },
+  "resources/js/analytics-chart.js": {
+    "file": "assets/analytics-chart-CwkFNGI7.js",
+    "name": "analytics-chart",
+    "src": "resources/js/analytics-chart.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "resources/js/app.js": {
-    "file": "assets/app-BqjL0q5r.js",
+    "file": "assets/app-CFMroKwT.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/analytics-chart.js"
+    ]
   },
   "resources/js/landing.js": {
-    "file": "assets/landing-BirDQNgK.js",
+    "file": "assets/landing-COBkqijA.js",
     "name": "landing",
     "src": "resources/js/landing.js",
     "isEntry": true
