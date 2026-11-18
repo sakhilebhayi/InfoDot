@@ -105,7 +105,12 @@ def ensure(text, section, ns, path):
     entry = '"%s": "%s"' % (key, path)
     m = re.search(r'"%s"\s*:\s*\{\s*"psr-4"\s*:\s*\{' % section, text)
     if not m:
-        sys.exit("composer.json has no %s psr-4 block; add the mapping by hand: %s" % (section, entry))
+        if re.search(r'"%s"\s*:' % section, text):
+            sys.exit("composer.json has a %s block without psr-4; add the mapping by hand: %s" % (section, entry))
+        end = text.rstrip().rfind("}")
+        head = text[:end].rstrip()
+        block = ',\n    "%s": {\n        "psr-4": {\n            %s\n        }\n    }\n' % (section, entry)
+        return head + block + text[end:], True
     close = text.index("}", m.end())
     block = text[m.end():close]
     if entry in block:
