@@ -1,43 +1,65 @@
-# dot/sso-client — STATUS: INCOMPLETE, DO NOT ENABLE
+# dot/sso-client 0.1.0 (R-54 phase 2)
 
-Relying-party integration for the Dot ecosystem's central identity provider (InfoDot, R-20).
-This package is **not finished and not installed by any platform yet**. `DOTSSO_ENABLED`
-must stay `false` (the default) until the missing pieces below exist and the pilot platform's
-test suite covers them.
+The relying-party package that lets a Laravel platform sign people in through InfoDot (OIDC authorisation code with PKCE).
+**Off by default**: `DOTSSO_ENABLED=false` means every `/sso/*` route answers 404 and both middleware pass straight
+through, so merging it into a platform changes nothing until the host `.env` turns it on. Flipping the flag back is the
+instant rollback.
 
-## What is here (done)
+## Where it lives and how a platform gets it (the dot-ui pattern)
 
-- `config/dotsso.php` — issuer, client credentials from env, rollout flag, linking policy.
-- `src/DotSsoServiceProvider.php` — env-gated wiring (config merge, routes, middleware groups).
-- `routes/sso.php` — the relying-party endpoints.
-- `database/migrations/…add_sso_columns.php` — `users.sso_sub` (immutable subject link) and
-  `sso_revocations` (back-channel logout honoured regardless of session driver).
-- `src/Jwt/ProviderMetadata.php` — OIDC discovery + JWKS retrieval, cached, issuer-pinned,
-  JWK→PEM conversion.
-- `src/Jwt/TokenVerifier.php` — strict RS256 verification for id_tokens (iss/aud/exp/iat/nonce/azp)
-  and logout tokens (events claim, freshness, jti replay cache).
+InfoDot's `packages/dot-sso-client` is the **only** place this code is edited. `sync.sh <repo>` copies it into a platform at
+`packages/dot-sso-client`, writes `VERSION` (line 1 InfoDot commit, line 2 package version) and `MANIFEST.sha256`, installs
+the drift test `tests/Feature/DotSsoClientDriftTest.php` (editing the copy, or leaving a stray file in it, fails the test
+run) and makes three additive host edits: the composer psr-4 mappings, the provider in `bootstrap/providers.php`, and a
+`DotSsoClient` suite in `phpunit.xml`. Run `composer dump-autoload` after the first sync. No new repository, no registry.
 
-## What is missing (the classes the routes and provider reference)
+## What the platform provides
 
-- `src/Http/Controllers/SsoController.php` — `redirect` (build the authorize URL with state,
-  nonce and a PKCE S256 pair kept in the session), `callback` (single-use state check, code→token
-  exchange at the discovered token endpoint, `TokenVerifier::verifyIdToken`, account resolution,
-  session login + regenerate, safe local-path redirect), `logout` (local logout then the provider's
-  end-session endpoint with `id_token_hint` and the registered post-logout URI).
-- `src/Http/Controllers/BackchannelLogoutController.php` — accept `logout_token`, run
-  `TokenVerifier::verifyLogoutToken`, record the subject in `sso_revocations`, answer 200.
-- `src/Http/Middleware/InterceptLocalAuth.php` — while enabled, send the local login/register
-  GET routes to `dotsso.redirect` / the provider's registration, and refuse credential POSTs to
-  the local Fortify endpoints (R-20 §6).
-- `src/Http/Middleware/EnforceSsoRevocation.php` — log out any session whose `sso_sub` has a
-  revocation newer than the session's sign-in time.
-- `src/UserProvisioner.php` — find the local user by `sso_sub`; else link an existing account by
-  email only when both the claim and the local account are verified (configurable); else create
-  one when provisioning is on (with a personal team on Jetstream platforms). Never merge by bare
-  email match (R-20 §12).
+1. A class implementing `Dot\SsoClient\Contracts\UserProvisioner` (read and write its own users table; never replace a
+   password), named in `config('dotsso.provisioner')`.
+2. A nullable, unique column for the InfoDot user id (`users.infodot_user_uuid`) in its own migration.
+3. Optionally its own look for `resources/views/vendor/dotsso/claim.blade.php` and `error.blade.php`.
+4. Its policy in config: `auto_provision`, `landing`, `deep_link.allow`, `allow_paths`.
 
-## Rollout contract (unchanged)
+## Routes (all 404 while disabled)
 
-Platform repos vendor this package (composer path repository), merge it disabled, and switch on
-per host via `.env` after the owner registers the platform on InfoDot (`php artisan sso:platform
-register …`) — which prints the one-time client credentials. Rollback = flip the flag off.
+| Route | What |
+|---|---|
+| `GET /sso/login` | Starts authorisation code + PKCE (S256) + state + nonce. All three secrets live in the server-side session, never in a URL. The deep link is the platform's own `url.intended`, validated as a same-origin path against the allowlist, kept in the same server-side record. `?screen=register` (the only accepted value) adds `prompt=create`. |
+| `GET /sso/callback` | Spends the state, exchanges the code server to server, verifies the id_token (RS256 only, issuer, audience, azp, nonce, `iat`/`exp` and lifetimes, JWKS with one key-rotation refresh), resolves the account, signs in, regenerates the session, redirects to the deep link or the landing path. |
+| `POST /sso/logout` | Signs out here, then RP-initiated logout at InfoDot with `id_token_hint`, which signs the person out of every platform by back-channel. |
+| `POST /sso/backchannel-logout` | Server to server: verifies the logout token (signature, issuer, audience, events, no nonce, freshness, one-time `jti`), records the revocation, deletes the person's database sessions. No session, no CSRF cookie. |
+| `GET/POST /sso/claim`, `/resend`, `/cancel` | The claim flow below. |
+
+## Matching a person (never any other order)
+
+1. the local account already holding their InfoDot user id (`sub`);
+2. a local account with their email, linked **only** when InfoDot says `email_verified` **and** the local account is
+   email-verified, and it is not already linked to someone else;
+3. otherwise the **claim flow**: nothing is replaced or detached; a six-digit code goes to the address on file through the
+   platform's own mailer (HMAC at rest, 10 minutes, 5 tries, 3 sends per address and 10 per IP per 15 minutes, 30 guesses per
+   IP); only the right code links the account and confirms the email;
+4. a new account, only if `auto_provision` is true, with the InfoDot id stored.
+
+## Local-auth interception
+
+While enabled, GET `/login`, `/register` (to `?screen=register`), `/forgot-password`, `/reset-password*` go to `/sso/login`,
+and credential POSTs to them are refused (303). Never touched: JSON and bearer requests, `api/*`, `sanctum/*`,
+`webhooks/*`, broadcasting, health checks, signed URLs, the platform's `allow_paths`. `DOTSSO_ALLOW_LOCAL_LOGIN=true` is the
+administrator's break-glass: the local pages work again while it is set.
+
+## Failure handling and logging
+
+Every failure ends on a plain page (reason code printed as a reference, one next step, no automatic redirect, so no loop).
+Logging is `dotsso.<event>` with reason codes only; tokens, codes, secrets, passwords and whole email addresses are never
+logged (identities appear as a short keyed tag).
+
+## Tests
+
+`tests/` is part of the package and runs in every host (`DotSsoClient` suite). They use a fake provider that signs real
+RS256 tokens and checks PKCE like InfoDot does.
+
+## Not in this version
+
+Company/team data in the token (the legacy `/go` redeem carries teams; OIDC claims do not yet), `sid`-level logout,
+refresh-token use (none is stored), a configurable claim-code length below 4.

@@ -59,12 +59,15 @@ class EcosystemRedeemController extends Controller
 
         $user = $accessToken->tokenable;
 
+        // R-54 F7: a person whose email is not verified yet must not lose their one try. This check comes before the
+        // token is spent, so the same 60-second token works once they have verified. Everything after it is a decision
+        // about the person (suspended, not entitled) and the code is spent for it.
+        if (! $user instanceof User || $user->email_verified_at === null) {
+            return $this->refuse($platform, 'user missing or email not verified (token kept)');
+        }
+
         // Single use: gone whatever happens next.
         $accessToken->delete();
-
-        if (! $user instanceof User || $user->email_verified_at === null) {
-            return $this->refuse($platform, 'user missing or email not verified');
-        }
 
         if ($user->isSuspended()) {
             return $this->refuse($platform, 'account suspended');

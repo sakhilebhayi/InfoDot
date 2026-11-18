@@ -136,6 +136,21 @@ class EcosystemRedeemTest extends TestCase
         $this->redeem($this->mint($user, 'files'))->assertForbidden();
     }
 
+    public function test_an_unverified_person_does_not_burn_the_handoff_token(): void
+    {
+        $user = $this->member(['email_verified_at' => null]);
+        $token = $this->mint($user, 'files');
+
+        $this->redeem($token)->assertForbidden();
+        $this->assertDatabaseHas('personal_access_tokens', ['tokenable_id' => $user->id, 'name' => 'ecosystem-handoff:files']);
+
+        // They verify, and the same token (still inside its short life) now opens the platform; then it is spent.
+        $user->forceFill(['email_verified_at' => now()])->save();
+        $this->redeem($token)->assertOk()->assertJsonPath('user.email', $user->email);
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id, 'name' => 'ecosystem-handoff:files']);
+        $this->redeem($token)->assertForbidden();
+    }
+
     public function test_garbage_and_missing_input_is_rejected(): void
     {
         $this->redeem('not-a-real-token')->assertForbidden();

@@ -7,6 +7,9 @@
     <testsuite name="Unit">
       <directory suffix="Test.php">./tests/Unit</directory>
     </testsuite>
+    <testsuite name="DotSsoClient">
+      <directory suffix="Test.php">./packages/dot-sso-client/tests</directory>
+    </testsuite>
     <testsuite name="Feature">
       <directory suffix="Test.php">./tests/Feature</directory>
     </testsuite>

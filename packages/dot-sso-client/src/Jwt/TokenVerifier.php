@@ -18,16 +18,29 @@ class TokenVerifier
     {
         $claims = $this->verifySignatureAndBasics($jwt);
 
-        if (! hash_equals($expectedNonce, (string) ($claims['nonce'] ?? ''))) {
+        if ($expectedNonce === '' || ! hash_equals($expectedNonce, (string) ($claims['nonce'] ?? ''))) {
             throw new \RuntimeException('id_token nonce mismatch.');
         }
 
-        if (isset($claims['azp']) && $claims['azp'] !== config('dotsso.client_id')) {
+        if (isset($claims['azp']) && $claims['azp'] !== (string) config('dotsso.client_id')) {
             throw new \RuntimeException('id_token azp mismatch.');
         }
 
-        if (! isset($claims['sub']) || $claims['sub'] === '') {
-            throw new \RuntimeException('id_token has no subject.');
+        if (! isset($claims['sub']) || ! is_string($claims['sub']) || $claims['sub'] === '' || strlen($claims['sub']) > 64) {
+            throw new \RuntimeException('id_token has no usable subject.');
+        }
+
+        // Lifetimes: a token for this exchange was minted moments ago and does not promise an absurd lifetime.
+        if (! isset($claims['iat']) || ! is_numeric($claims['iat'])) {
+            throw new \RuntimeException('id_token has no issue time.');
+        }
+
+        if ($claims['iat'] < time() - (int) config('dotsso.id_token_max_age_seconds', 600) - (int) config('dotsso.leeway_seconds')) {
+            throw new \RuntimeException('id_token is too old for this exchange.');
+        }
+
+        if ((int) config('dotsso.id_token_max_lifetime_seconds', 86400) < $claims['exp'] - $claims['iat']) {
+            throw new \RuntimeException('id_token lifetime is longer than allowed.');
         }
 
         return $claims;
@@ -37,6 +50,10 @@ class TokenVerifier
     public function verifyLogoutToken(string $jwt): array
     {
         $claims = $this->verifySignatureAndBasics($jwt, requireExp: false);
+
+        if (isset($claims['exp']) && time() > $claims['exp'] + (int) config('dotsso.leeway_seconds')) {
+            throw new \RuntimeException('Logout token is expired.');
+        }
 
         $events = $claims['events'] ?? [];
 
@@ -77,7 +94,11 @@ class TokenVerifier
 
         [$encodedHeader, $encodedPayload, $encodedSignature] = $parts;
 
-        $header = json_decode($this->b64url($encodedHeader), true) ?: [];
+        $header = json_decode($this->b64url($encodedHeader), true);
+
+        if (! is_array($header)) {
+            throw new \RuntimeException('Malformed token header.');
+        }
 
         if (($header['alg'] ?? null) !== 'RS256') {
             throw new \RuntimeException('Token algorithm is not RS256.');
@@ -96,16 +117,21 @@ class TokenVerifier
             throw new \RuntimeException('Token signature verification failed.');
         }
 
-        $claims = json_decode($this->b64url($encodedPayload), true) ?: [];
+        $claims = json_decode($this->b64url($encodedPayload), true);
+
+        if (! is_array($claims)) {
+            throw new \RuntimeException('Malformed token payload.');
+        }
+
         $leeway = (int) config('dotsso.leeway_seconds');
 
-        if (rtrim((string) ($claims['iss'] ?? ''), '/') !== config('dotsso.issuer')) {
+        if (rtrim((string) ($claims['iss'] ?? ''), '/') !== rtrim((string) config('dotsso.issuer'), '/')) {
             throw new \RuntimeException('Token issuer mismatch.');
         }
 
         $audience = (array) ($claims['aud'] ?? []);
 
-        if (! in_array(config('dotsso.client_id'), $audience, true)) {
+        if (! config('dotsso.client_id') || ! in_array((string) config('dotsso.client_id'), array_map('strval', $audience), true)) {
             throw new \RuntimeException('Token audience mismatch.');
         }
 

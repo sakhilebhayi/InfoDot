@@ -7,6 +7,7 @@ use App\Services\Platforms\EntitlementRefused;
 use App\Services\Platforms\Entitlements;
 use App\Services\Platforms\PlatformAccess;
 use App\Services\Platforms\PlatformRefusal;
+use App\Services\Sso\ResumeAuthorize;
 use App\Support\EcosystemHandoff;
 use App\Support\Input;
 use Illuminate\Http\RedirectResponse;
@@ -58,6 +59,12 @@ class PlatformAccessController extends Controller
 
     private function onward(Request $request, string $platform, ?string $redirect): RedirectResponse
     {
+        // R-54: a person who came here from a refused OIDC sign-in goes back to THAT sign-in (the platform's own state,
+        // and so its deep link, are in the parked request), not to the legacy handoff.
+        if (($resume = ResumeAuthorize::take($request, $platform)) !== null) {
+            return redirect($resume);
+        }
+
         return redirect()->away(EcosystemHandoff::launchUrl($request->user(), $platform, $redirect) ?? route('ecosystem.widget'));
     }
 }
