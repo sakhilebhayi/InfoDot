@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Team;
+use App\Models\TeamLicence;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -21,6 +22,8 @@ class InviteTeamMemberTest extends TestCase
         $user = User::factory()->create();
         $company = Team::factory()->create(['user_id' => $user->id, 'personal_team' => false]);
         $user->forceFill(['current_team_id' => $company->id])->save();
+        // The owner holds the one free licence; inviting anyone else needs a paid one (R-53).
+        TeamLicence::create(['team_id' => $company->id, 'purchased_seats' => 1, 'payment_status' => 'active']);
 
         return $user;
     }

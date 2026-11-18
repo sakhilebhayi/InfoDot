@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\InAppNotices;
+use App\Services\Licensing\LicenceAssignments;
 use App\Services\Licensing\SeatLedger;
 use App\Support\TeamRoles;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,7 @@ class TransferTeamOwnership
             $locked->users()->syncWithoutDetaching([$owner->getKey() => ['role' => $role]]);
 
             $this->ledger->record($locked, $owner, 'ownership_transferred', $newOwner->email, ['from' => $owner->getKey(), 'to' => $newOwner->getKey(), 'former_owner_role' => $role]);
+            app(LicenceAssignments::class)->swapFreeLicence($locked, $newOwner, $owner, $role);   // the free licence goes with ownership (R-53 D6)
 
             return $role;
         });

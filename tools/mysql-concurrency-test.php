@@ -5,7 +5,7 @@
  * `lockForUpdate()` calls in the seat ledger, seminar registration and answer acceptance actually hold. This script starts several PHP processes
  * at the same instant against one MySQL database and checks the invariants afterwards:
  *
- *   seats      N people invited at once into a company with F free seats: exactly F succeed
+ *   seats      6 people invited at once into companies with F free licences (paid, none, grandfathered+1): exactly F succeed each time
  *   capacity   N people register at once for C places: exactly C are registered, the rest wait
  *   accept     the asker and a moderator accept two different answers at once: exactly one answer ends up accepted
  *   counters   (not a race) the directory insight upsert inserts and then adds on MySQL, whose update clause differs from SQLite's
@@ -18,16 +18,26 @@
  */
 
 use App\Models\Answer;
+use App\Models\LicenceBatch;
 use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\Team;
+use App\Models\TeamLicence;
+use App\Models\TeamLicenceEvent;
 use App\Models\User;
 use App\Services\Insights\BusinessInsights;
 use App\Services\Knowledge\AnswerService;
+use App\Services\Licensing\Grandfathering;
+use App\Services\Licensing\LicenceBatchEvents;
 use App\Services\Licensing\SeatLedger;
 use App\Services\Seminars\SeminarService;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
+
+// These races describe the R-53 rule (one free licence). The shipped default is still today's three until the owner sets the host, so the
+// test sets the rule itself; the worker processes inherit it.
+putenv('LICENCE_INCLUDED_SEATS=1');
+$_ENV['LICENCE_INCLUDED_SEATS'] = $_SERVER['LICENCE_INCLUDED_SEATS'] = '1';
 
 require __DIR__.'/../vendor/autoload.php';
 
@@ -55,6 +65,9 @@ if (($argv[1] ?? null) === 'worker') {
                 $owner = User::findOrFail((int) $actorId);
                 app(SeatLedger::class)->guard($team, fn () => $team->teamInvitations()->create(['email' => $extra, 'role' => 'member']), null, $owner, 'invited', $extra);
                 echo "OK\n";
+                break;
+            case 'licence_event':
+                echo 'STATUS:'.app(LicenceBatchEvents::class)->apply(json_decode(base64_decode((string) $extra), true))."\n";
                 break;
             case 'capacity':
                 echo 'STATUS:'.app(SeminarService::class)->register(Seminar::findOrFail((int) $subject), User::findOrFail((int) $actorId))."\n";
@@ -113,17 +126,61 @@ $race = function (string $scenario, array $jobs): array {
 $user = fn (string $name, array $extra = []) => User::factory()->create(array_merge(['name' => $name, 'email_verified_at' => now()], $extra));
 
 // seats ---------------------------------------------------------------------------------------------------------------------
+// R-53: a company has ONE free licence (the owner's), so room only exists when licences are paid for or a frozen headcount leaves room. Three
+// races: a company with two paid licences (exactly 2 of 6 succeed), a brand-new company (none succeed), and a grandfathered company that
+// bought one licence (exactly 1 succeeds, and the people it already has are not touched).
+$seatRace = function (Team $team, User $owner, int $expectedFree, string $label) use ($race, $say, $check) {
+    $ledger = app(SeatLedger::class);
+    $s = $ledger->summary($team);
+    $free = $s['capacity'] - $s['people'] - $s['reserved'];
+    $say("seats ({$label}): company with {$free} free licence(s), 6 invitations at the same instant");
+    $check($free === $expectedFree, "the company really has {$expectedFree} free licence(s) to race for (has {$free})");
+    $out = $race('seats', array_map(fn ($i) => [$team->id, $owner->id, "race{$i}-{$team->id}@example.test"], range(1, 6)));
+    $ok = count(array_filter($out, fn ($o) => $o === 'OK'));
+    $bad = array_filter($out, fn ($o) => $o !== 'OK' && ! str_starts_with($o, 'ERROR:SeatLimitReached'));
+    $check($ok === $expectedFree, "exactly {$expectedFree} invitation(s) succeeded (got {$ok}): ".implode(' ', $out));
+    $check($team->teamInvitations()->count() === $expectedFree, 'and exactly that many invitations exist');
+    $check($bad === [], 'every refusal was the seat limit, nothing else: '.implode(' ', $bad));
+    $check(TeamLicenceEvent::where('team_id', $team->id)->where('type', 'blocked')->count() === 6 - $expectedFree, 'and every refusal was audited as blocked');
+};
+
 $owner = $user('Seat Owner');
 $team = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false]);
-$free = app(SeatLedger::class)->summary($team)['capacity'] - app(SeatLedger::class)->summary($team)['people'] - app(SeatLedger::class)->summary($team)['reserved'];
-$say("seats: company with {$free} free seat(s), 6 invitations at the same instant");
-$out = $race('seats', array_map(fn ($i) => [$team->id, $owner->id, "race{$i}@example.test"], range(1, 6)));
-$ok = count(array_filter($out, fn ($o) => $o === 'OK'));
-$bad = array_filter($out, fn ($o) => $o !== 'OK' && ! str_starts_with($o, 'ERROR:SeatLimitReached'));
-$check($free >= 1, 'the company has at least one free seat to race for');
-$check($ok === $free, "exactly {$free} invitation(s) succeeded (got {$ok}): ".implode(' ', $out));
-$check($team->teamInvitations()->count() === $free, 'and exactly that many invitations exist');
-$check($bad === [], 'every refusal was the seat limit, nothing else: '.implode(' ', $bad));
+TeamLicence::create(['team_id' => $team->id, 'purchased_seats' => 2, 'payment_status' => 'active']);
+$seatRace($team, $owner, 2, 'two paid licences');
+
+$newOwner = $user('New Company Owner');
+$newTeam = Team::factory()->create(['user_id' => $newOwner->id, 'personal_team' => false]);
+$seatRace($newTeam, $newOwner, 0, 'a new company: only the free licence');
+
+$frozenOwner = $user('Frozen Owner');
+$frozen = Team::factory()->create(['user_id' => $frozenOwner->id, 'personal_team' => false]);
+foreach ([$user('Frozen Member 1'), $user('Frozen Member 2')] as $member) {
+    $frozen->users()->attach($member, ['role' => 'member']);
+}
+app(Grandfathering::class)->apply([$frozen->id]);
+TeamLicence::where('team_id', $frozen->id)->update(['purchased_seats' => 1, 'payment_status' => 'active']);
+$seatRace($frozen, $frozenOwner, 1, 'a grandfathered company that bought one licence');
+$check($frozen->users()->count() === 2, 'the grandfathered company still has both its members');
+
+// licence confirmations ------------------------------------------------------------------------------------------------------
+// R-53 phase 2: Dot.Finance may deliver the same signed `paid` more than once at the same instant (retries). Exactly one delivery is applied, the
+// rest are duplicates, the batch is active once, one confirmation row exists, and capacity grew by the quantity once.
+$payOwner = $user('Licence Owner');
+$payTeam = Team::factory()->create(['user_id' => $payOwner->id, 'personal_team' => false]);
+$payBatch = LicenceBatch::create(['team_id' => $payTeam->id, 'quantity' => 3, 'interval' => 'month', 'unit_price_minor' => 9900, 'total_minor' => 29700, 'currency' => 'ZAR']);
+$payEvent = ['kind' => 'licence_batch', 'event_id' => 'race-paid-1', 'type' => 'paid', 'batch_uuid' => $payBatch->uuid, 'team_uuid' => $payTeam->uuid, 'quantity' => 3, 'interval' => 'month',
+    'period_start' => now()->toIso8601String(), 'period_end' => now()->addMonth()->toIso8601String(), 'amount_minor' => 29700, 'currency' => 'ZAR', 'paystack_reference' => 'PSK-RACE'];
+$say('licences: the same signed paid event delivered 6 times at the same instant');
+$out = $race('licence_event', array_map(fn () => [$payBatch->id, $payOwner->id, base64_encode((string) json_encode($payEvent))], range(1, 6)));
+$applied = count(array_filter($out, fn ($o) => $o === 'STATUS:applied'));
+$dupes = count(array_filter($out, fn ($o) => $o === 'STATUS:duplicate'));
+$check($applied === 1, "exactly one delivery applied (got {$applied}): ".implode(' ', $out));
+$check($dupes === 5, "and the other 5 were duplicates (got {$dupes})");
+$check(DB::table('platform_payment_confirmations')->where('event_id', 'race-paid-1')->count() === 1, 'one confirmation row');
+$check($payBatch->fresh()->status === 'active', 'the batch is active');
+$check(app(SeatLedger::class)->summary($payTeam)['capacity'] === 4, 'capacity is the free licence plus 3, once');
+$check(TeamLicenceEvent::where('team_id', $payTeam->id)->where('type', 'batch_activated')->count() === 1, 'and it was audited once');
 
 // capacity ------------------------------------------------------------------------------------------------------------------
 $host = $user('Seminar Host');

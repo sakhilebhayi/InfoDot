@@ -9,6 +9,7 @@ use App\Models\PlatformPlan;
 use App\Models\PlatformUserAccess;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Licensing\LicenceAssignments;
 use App\Support\EcosystemHandoff;
 use App\Support\Platforms;
 use App\Support\TeamRoles;
@@ -59,6 +60,13 @@ class PlatformAccess
 
         if ($team !== null && ! $user->belongsToTeam($team)) {
             return AccessDecision::refuse(AccessDecision::NOT_A_MEMBER, $team);
+        }
+
+        // R-53: a company's platforms are for the people who hold a licence in it. Someone whose licence has lapsed or been released keeps
+        // their account, their content and their place in the company, and opens everything of their own; the company's platforms wait
+        // until the owner gives them a licence. The owner and administrators always hold one.
+        if ($team !== null && ! $team->personal_team && ! app(LicenceAssignments::class)->isLicensed($team, $user)) {
+            return AccessDecision::refuse(AccessDecision::NOT_LICENSED, $team);
         }
 
         if (! $entry->is_core) {

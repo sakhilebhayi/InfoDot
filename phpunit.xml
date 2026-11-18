@@ -17,6 +17,7 @@
   <php>
     <ini name="memory_limit" value="512M"/>
     <server name="APP_ENV" value="testing"/>
+    <server name="LICENCE_INCLUDED_SEATS" value="1"/>
     <server name="SEMINARS_LINK_CHECK" value="false"/>
     <server name="BCRYPT_ROUNDS" value="4"/>
     <server name="CACHE_DRIVER" value="array"/>

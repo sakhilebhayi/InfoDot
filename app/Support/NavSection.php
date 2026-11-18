@@ -35,7 +35,7 @@ class NavSection
             request()->routeIs('collections*') => 'Collections',
             request()->routeIs('reputation*', 'moderation.reputation*') => 'Progress',
             request()->routeIs('profile.*') => 'Account',
-            request()->routeIs('teams.*', 'api-tokens.*') => 'Administration',
+            request()->routeIs('teams.*', 'api-tokens.*', 'licences.*') => 'Administration',
             default => 'InfoDot',
         };
     }
@@ -64,7 +64,7 @@ class NavSection
             request()->routeIs('inbox*') => ['people', 'INBX'],
             request()->routeIs('collections*') => ['people', 'SAVE'],
             request()->routeIs('profile.*') => ['people', 'ACCT'],
-            request()->routeIs('teams.*', 'api-tokens.*') => ['people', 'ADMN'],
+            request()->routeIs('teams.*', 'api-tokens.*', 'licences.*') => ['people', 'ADMN'],
             default => ['home', 'GATE'],
         };
     }
@@ -135,6 +135,7 @@ class NavSection
             request()->routeIs('business.edit', 'business.update', 'business.media', 'business.media.remove') => [['Businesses', route('businesses.index')], ['Edit profile', null]],
             request()->routeIs('teams.show') => [['Administration', null], ['Company settings', null]],
             request()->routeIs('teams.create') => [['Administration', null], ['New company', null]],
+            request()->routeIs('licences.*') => [['Administration', null], ['Company settings', auth()->user()?->currentTeam ? route('teams.show', auth()->user()->currentTeam).'#seats' : null], ['Licences', null]],
             request()->routeIs('api-tokens.*') => [['Administration', null], ['API tokens', null]],
             default => [['InfoDot', null]],
         };

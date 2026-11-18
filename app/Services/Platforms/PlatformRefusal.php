@@ -76,6 +76,10 @@ class PlatformRefusal
                 "You have not been added to {$platform}",
                 "{$company} uses {$platform} with selected people, and you are not one of them yet. {$ask} to add you.",
             ],
+            AccessDecision::NOT_LICENSED => [
+                "You do not have a licence in {$company} right now",
+                $owns ? 'Open Team Licences to give someone a licence. Nothing was deleted.' : "Your account, your content and your place in {$company} are all still here. {$ask} to give you a licence; it takes them a moment.",
+            ],
             AccessDecision::NO_PERSONAL_ACCESS => [
                 "{$platform} is for companies",
                 'Your personal workspace includes '.$this->coreNames().". To use {$platform}, switch to a company you belong to or create one.",

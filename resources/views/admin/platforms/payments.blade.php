@@ -35,7 +35,7 @@
                             <tr>
                                 <td class="muted"><time datetime="{{ $c->occurred_at?->toIso8601String() }}">{{ $c->occurred_at?->format('j M Y, H:i') }}</time></td>
                                 <td class="title">{{ ucfirst(str_replace('_', ' ', $c->event)) }}</td>
-                                <td data-label="Company">@if ($c->team)<a class="title" href="{{ route('admin.platforms.company', ['team' => $c->team, 'platform' => $c->platform_key]) }}">{{ $c->team->name }}</a>@endif</td>
+                                <td data-label="Company">@if ($c->team) @if ($c->platform_key === \App\Services\Licensing\LicenceBatchEvents::LEDGER_KEY) <span class="title">{{ $c->team->name }}</span> @else <a class="title" href="{{ route('admin.platforms.company', ['team' => $c->team, 'platform' => $c->platform_key]) }}">{{ $c->team->name }}</a> @endif @endif</td>
                                 <td data-label="Platform">{{ $c->platform_key }}</td>
                                 <td class="muted" data-label="Plan">{{ $c->plan?->name ?? 'None named' }}</td>
                                 <td class="num" data-label="Amount">{{ $c->amount_minor === null ? '' : \App\Support\Money::format($c->amount_minor, $c->currency) }}</td>

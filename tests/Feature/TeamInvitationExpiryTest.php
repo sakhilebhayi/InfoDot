@@ -36,6 +36,7 @@ class TeamInvitationExpiryTest extends TestCase
         parent::setUp();
         Mail::fake();
         Http::fake();
+        config(['licensing.included_seats' => 10]);   // these tests are about invitation lifetimes, not about how many people are free
         $this->owner = User::factory()->create();
         $this->company = Team::factory()->create(['user_id' => $this->owner->id, 'personal_team' => false, 'name' => 'Ledger Works']);
         $this->owner->forceFill(['current_team_id' => $this->company->id])->save();

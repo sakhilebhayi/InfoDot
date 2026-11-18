@@ -197,7 +197,7 @@ class InAppNotices
 
             return [
                 'text' => $side === 'owner'
-                    ? "You are now the owner of $name. Seats, ownership and deleting the company are yours to decide."
+                    ? "You are now the owner of $name. Licences, ownership and deleting the company are yours to decide."
                     : "You transferred ownership of $name. You are still in the company as $role.",
                 'url' => route('teams.show', $team->getKey()),
             ];

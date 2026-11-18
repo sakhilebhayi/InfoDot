@@ -2,6 +2,7 @@
 
 namespace App\Services\Licensing;
 
+use App\Models\LicenceBatch;
 use App\Models\Team;
 use App\Support\Knowledge\Signature;
 use Illuminate\Support\Facades\Cache;
@@ -103,7 +104,7 @@ class FinanceEntitlements
     private function apply(Team $team, array $e): void
     {
         $licence = $this->ledger->licenceFor($team);
-        $included = $licence->included_seats ?? (int) config('licensing.included_seats', 3);
+        $included = $this->ledger->freeAllowance($licence);
         $limit = $e['seat_limit'];
 
         if ($limit !== null && ! is_int($limit) && ! (is_string($limit) && ctype_digit($limit))) {
@@ -112,6 +113,12 @@ class FinanceEntitlements
 
         $total = $limit === null ? self::UNLIMITED : min((int) $limit, self::UNLIMITED);
         $purchased = max(0, $total - $included); // never below the free seats
+
+        // R-53: once a company has licence batches, those are the only source of paid capacity. Finance's seat_limit also counts the same
+        // licences, so adding it would count every paid licence twice. The pull then only records the payment status.
+        if (LicenceBatch::where('team_id', $team->getKey())->exists()) {
+            $purchased = 0;
+        }
         $status = match ($e['status']) {
             'active', 'trialing' => 'active',
             'past_due' => 'past_due',

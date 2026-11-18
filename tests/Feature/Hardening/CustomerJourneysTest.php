@@ -8,6 +8,7 @@ use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\SeminarRegistration;
 use App\Models\Team;
+use App\Models\TeamLicence;
 use App\Models\Topic;
 use App\Models\User;
 use App\Support\Knowledge\Signature;
@@ -142,7 +143,7 @@ class CustomerJourneysTest extends TestCase
         $this->switchTo($host)->get("/seminars/{$seminar->id}")->assertOk()->assertSee('Tickets sold');
     }
 
-    public function test_a_business_registers_invites_its_team_and_the_seat_limit_holds(): void
+    public function test_a_business_registers_with_one_free_licence_and_pays_to_invite_its_team(): void
     {
         $owner = $this->registerThrough('Olwethu Owner', 'olwethu@example.test');
         $this->switchTo($owner);
@@ -150,6 +151,13 @@ class CustomerJourneysTest extends TestCase
         $company = Team::where('name', 'Olwethu Logistics')->firstOrFail();
         $this->assertFalse((bool) $company->personal_team);
 
+        // One business, one free user: the owner holds the free licence, so the first invitation is refused with a plain explanation.
+        Livewire::actingAs($owner->fresh())->test('teams.team-member-manager', ['team' => $company->fresh()])->set('addTeamMemberForm', ['email' => 'thabo@example.test', 'role' => 'admin'])->call('addTeamMember')->assertHasErrors();
+        $this->assertSame(0, $company->teamInvitations()->count());
+        $this->assertSame(1, DB::table('team_licence_events')->where('type', 'blocked')->count(), 'the refusal is audited');
+
+        // Two paid licences (a verified purchase writes this row) let two people in; a third is refused, and nothing is removed.
+        TeamLicence::updateOrCreate(['team_id' => $company->id], ['purchased_seats' => 2, 'payment_status' => 'active']);
         $manager = Livewire::actingAs($owner->fresh());
 
         foreach ([['thabo@example.test', 'admin'], ['lerato@example.test', 'member']] as [$email, $role]) {
@@ -158,10 +166,9 @@ class CustomerJourneysTest extends TestCase
 
         $this->assertSame(2, $company->teamInvitations()->count());
 
-        // The third free seat is the owner's, so a third invitation must be refused with a plain explanation, and nothing removed.
         Livewire::actingAs($owner->fresh())->test('teams.team-member-manager', ['team' => $company->fresh()])->set('addTeamMemberForm', ['email' => 'four@example.test', 'role' => 'member'])->call('addTeamMember')->assertHasErrors();
         $this->assertSame(2, $company->teamInvitations()->count());
-        $this->assertStringContainsString('seat', strtolower(DB::table('team_licence_events')->where('type', 'blocked')->value('type') !== null ? 'seat limit' : ''));
+        $this->assertSame(2, DB::table('team_licence_events')->where('type', 'blocked')->count());
     }
 
     public function test_a_person_exercises_their_data_rights_end_to_end(): void

@@ -32,6 +32,15 @@
             @include('layouts.guest-top')
         @endauth
 
+        @auth
+            @php($licenceBanner = app(\App\Services\Licensing\LicenceBanner::class)->for($company, auth()->user()))
+            @if ($licenceBanner)
+                <div class="ix-page" style="flex: none; padding-top: 16px; padding-bottom: 0;" data-licence-banner="{{ $licenceBanner['tone'] }}">
+                    <p class="ix-alert" role="status" style="margin: 0;">{{ $licenceBanner['text'] }} <a href="{{ route('teams.show', $company) }}#seats" style="text-decoration: underline;">{{ __('See licences') }}</a></p>
+                </div>
+            @endif
+        @endauth
+
         @unless ($area === 'home')
             <div class="ix-band">
                 <div class="ix-band__inner">

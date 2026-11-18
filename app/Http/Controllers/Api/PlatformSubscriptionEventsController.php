@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PlatformPaymentConfirmation;
+use App\Services\Licensing\LicenceBatchEvents;
 use App\Services\Platforms\PaymentConfirmations;
 use App\Services\Platforms\PaymentEventRefused;
 use App\Support\Knowledge\Signature;
@@ -25,7 +26,7 @@ use Throwable;
  */
 class PlatformSubscriptionEventsController extends Controller
 {
-    public function __invoke(Request $request, PaymentConfirmations $confirmations): JsonResponse
+    public function __invoke(Request $request, PaymentConfirmations $confirmations, LicenceBatchEvents $licences): JsonResponse
     {
         $secret = (string) config('platform_subscriptions.confirmation_secret');
 
@@ -34,6 +35,12 @@ class PlatformSubscriptionEventsController extends Controller
         }
 
         $body = json_decode($request->getContent(), true);
+
+        // R-53: the same signed channel carries confirmations for paid user licences (`kind: licence_batch`). An event with any other `kind`
+        // is refused; an event with no `kind` is a platform subscription event, exactly as before.
+        if (is_array($body) && array_key_exists('kind', $body)) {
+            return $this->licenceEvent($body, $licences);
+        }
 
         if (! is_array($body) || ! $this->wellFormed($body)) {
             return response()->json(['error' => 'bad_request'], 400);
@@ -47,6 +54,63 @@ class PlatformSubscriptionEventsController extends Controller
 
             return response()->json(['error' => 'unprocessable'], 422);
         }
+    }
+
+    /** @param  array<mixed>  $body */
+    private function licenceEvent(array $body, LicenceBatchEvents $licences): JsonResponse
+    {
+        if ($body['kind'] !== 'licence_batch' || ! $this->wellFormedLicence($body)) {
+            return response()->json(['error' => 'bad_request'], 400);
+        }
+
+        try {
+            return response()->json(['status' => $licences->apply($body)]);
+        } catch (PaymentEventRefused $e) {
+            Log::warning('A signed licence event was refused.', ['event_id' => $body['event_id'], 'type' => $body['type'], 'why' => $e->getMessage()]);
+
+            return response()->json(['error' => 'unprocessable'], 422);
+        }
+    }
+
+    /**
+     * The R-53 contract: event_id, type, batch_uuid, team_uuid, quantity, interval, paystack_reference always; period_start, period_end,
+     * amount_minor and currency on the two events that say money was received; occurred_at when Finance has it.
+     *
+     * @param  array<mixed>  $body
+     */
+    private function wellFormedLicence(array $body): bool
+    {
+        $type = $body['type'] ?? null;
+
+        if (! is_string($type) || ! in_array($type, PlatformPaymentConfirmation::EVENTS, true)) {
+            return false;
+        }
+
+        $string = fn (string $field, int $max) => is_string($body[$field] ?? null) && $body[$field] !== '' && strlen($body[$field]) <= $max;
+        $uuid = fn (string $field) => is_string($body[$field] ?? null) && preg_match('/\A[0-9a-fA-F-]{36}\z/', $body[$field]) === 1;
+        $date = function (string $field, bool $required) use ($body): bool {
+            if (! array_key_exists($field, $body)) {
+                return ! $required;
+            }
+
+            try {
+                return is_string($body[$field]) && preg_match('/\A\d{4}-\d{2}-\d{2}T/', $body[$field]) === 1 && CarbonImmutable::parse($body[$field])->year < 2200;
+            } catch (Throwable) {
+                return false;
+            }
+        };
+
+        $received = in_array($type, [PlatformPaymentConfirmation::PAID, PlatformPaymentConfirmation::RENEWED], true);
+        $amount = $body['amount_minor'] ?? null;
+
+        return $string('event_id', 100) && preg_match('/\A[A-Za-z0-9._:-]+\z/', $body['event_id']) === 1
+            && $uuid('batch_uuid') && $uuid('team_uuid') && $string('paystack_reference', 120)
+            && is_int($body['quantity'] ?? null) && $body['quantity'] >= 1 && $body['quantity'] <= 1000
+            && in_array($body['interval'] ?? null, ['month', 'year'], true)
+            && ($amount === null ? ! $received : is_int($amount) && $amount >= ($received ? 1 : 0))
+            && (array_key_exists('currency', $body) ? is_string($body['currency']) && preg_match('/\A[A-Z]{3}\z/', $body['currency']) === 1 : $amount === null)
+            && $date('period_start', $received) && $date('period_end', $received) && $date('occurred_at', false)
+            && (! $received || (CarbonImmutable::parse($body['period_end'])->isFuture() && CarbonImmutable::parse($body['period_end'])->gt(CarbonImmutable::parse($body['period_start']))));
     }
 
     /** @param  array<mixed>  $body */

@@ -65,6 +65,12 @@ class OpsCheck
                 ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('platform_payment_confirmations as c')->whereColumn('c.team_id', 'e.team_id')
                     ->whereColumn('c.platform_key', 'e.platform_key')->whereIn('c.event', ['paid', 'renewed'])->where('c.outcome', 'applied'))->count();
 
+            // R-53: a licence batch that counts towards capacity but has no activation record means a row was written around the services.
+            if (Schema::hasTable('licence_batches')) {
+                $found['licence_batch_active_without_activation_record'] = (int) DB::table('licence_batches as b')->whereIn('b.status', ['active', 'grace'])
+                    ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('team_licence_events as e')->whereColumn('e.team_id', 'b.team_id')->whereColumn('e.subject', 'b.uuid')->where('e.type', 'batch_activated'))->count();
+            }
+
             $approved = DB::table('platform_catalogue_events')->where('type', 'price_approved');
             $found['plan_on_sale_without_approval_record'] = (int) DB::table('platform_plans')->whereNotNull('approved_at')->get(['platform_key', 'slug'])
                 ->reject(fn ($plan) => (clone $approved)->where('subject_type', 'plan')->where('subject_key', $plan->platform_key.'/'.$plan->slug)->exists())->count()

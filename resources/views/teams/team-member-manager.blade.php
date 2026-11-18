@@ -1,5 +1,24 @@
 <div>
-    @if (Gate::check('addTeamMember', $team))
+    @php($lic = app(\App\Services\Licensing\SeatLedger::class)->summary($team))
+    @if (Gate::check('addTeamMember', $team) && $lic['applies'] && $lic['available'] < 1)
+        {{-- R-53: no licence is free, so the way to add someone is to buy one. This is the upgrade moment: why, what it includes, the cost,
+             monthly or yearly, and how to buy more. Nothing is withheld to push a sale, and no email is asked for until there is a licence. --}}
+        <x-jet-action-section>
+            <x-slot name="title">{{ __('Add a person') }}</x-slot>
+            <x-slot name="description">{{ __('Your free licence covers you. Each extra person needs a licence.') }}</x-slot>
+            <x-slot name="content">
+                <div data-upgrade-panel>
+                    @include('licences._why', ['team' => $team, 'price' => $lic['price'], 'bands' => app(\App\Services\Licensing\LicencePricing::class)->bandText()])
+                    @if (Gate::check('changeLicence', $team))
+                        <div class="ix-actions"><a class="ix-btn ix-btn--primary" href="{{ route('licences.buy', $team->uuid) }}" data-upgrade-buy>{{ $lic['price'] ? __('Choose licences') : __('See how licences work') }}</a></div>
+                    @else
+                        <p class="ix-hint" data-upgrade-ask-owner>{{ __('Only the owner can buy licences. Ask :owner to buy one, and you can invite the person once it appears here.', ['owner' => $team->owner?->name ?? __('the owner')]) }}</p>
+                    @endif
+                    @if ($lic['reserved'] > 0)<p class="ix-hint">{{ __('You can also free a licence by cancelling an invitation that has not been answered, below.') }}</p>@endif
+                </div>
+            </x-slot>
+        </x-jet-action-section>
+    @elseif (Gate::check('addTeamMember', $team))
         <!-- Add Team Member -->
         <x-jet-form-section submit="addTeamMember">
             <x-slot name="title">
@@ -91,7 +110,7 @@
                                 <div class="text-xs" style="color: var(--ix-text-3);">
                                     @if ($invitation->isExpired())
                                         <span class="ix-chip ix-chip--open">{{ __('Expired') }}</span>
-                                        {{ __('Ran out on :date and holds no seat. Send it again to give it another :days days.', ['date' => $invitation->expires_at->timezone(config('app.timezone'))->format('j M Y'), 'days' => config('licensing.invitation_days', 14)]) }}
+                                        {{ __('Ran out on :date and holds no licence. Send it again to give it another :days days.', ['date' => $invitation->expires_at->timezone(config('app.timezone'))->format('j M Y'), 'days' => config('licensing.invitation_days', 14)]) }}
                                     @elseif ($invitation->expires_at)
                                         {{ __('Can be accepted until :date.', ['date' => $invitation->expires_at->timezone(config('app.timezone'))->format('j M Y')]) }}
                                     @endif
@@ -246,7 +265,12 @@
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you would like to remove this person from the company?') }}
+            @php($leaving = $teamMemberIdBeingRemoved ? $team->users->firstWhere('id', $teamMemberIdBeingRemoved) : null)
+            @if ($leaving)
+                {{ __(':name loses access to :team on InfoDot and on every platform it has switched on, straight away. Their account and anything they wrote stay; nothing is deleted. The licence they held becomes free for you to use for someone else.', ['name' => $leaving->name, 'team' => $team->name]) }}
+            @else
+                {{ __('Are you sure you would like to remove this person from the company?') }}
+            @endif
         </x-slot>
 
         <x-slot name="footer">

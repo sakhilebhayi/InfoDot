@@ -182,7 +182,7 @@ class OwnershipTransferAndAccountDeletionTest extends TestCase
 
         $toNew = UserNotice::where('user_id', $admin->id)->where('kind', UserNotice::BUSINESS_OWNERSHIP)->firstOrFail();
         $toOld = UserNotice::where('user_id', $owner->id)->where('kind', UserNotice::BUSINESS_OWNERSHIP)->firstOrFail();
-        $this->assertSame('You are now the owner of “Acme Boreholes”. Seats, ownership and deleting the company are yours to decide.', app(InAppNotices::class)->describe($toNew)['text']);
+        $this->assertSame('You are now the owner of “Acme Boreholes”. Licences, ownership and deleting the company are yours to decide.', app(InAppNotices::class)->describe($toNew)['text']);
         $this->assertSame('You transferred ownership of “Acme Boreholes”. You are still in the company as administrator.', app(InAppNotices::class)->describe($toOld)['text']);
         $this->assertSame(0, UserNotice::where('user_id', $member->id)->count());
         $this->actingAs($admin)->get('/notifications')->assertOk()->assertSee('You are now the owner of');
