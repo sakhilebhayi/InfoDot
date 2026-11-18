@@ -96,21 +96,33 @@ shutil.copyfile(os.path.join(here, "sync", "DotSsoClientDriftTest.php"), os.path
 
 changed = []
 
-# composer.json autoload mappings (an autoload mapping, not a dependency, exactly like dot-ui).
+# composer.json autoload mappings (an autoload mapping, not a dependency, exactly like dot-ui). Edited as text so the
+# host's formatting is left alone.
 cj = os.path.join(repo, "composer.json")
-data = json.load(open(cj), object_pairs_hook=__import__("collections").OrderedDict)
-def ensure(section, ns, path):
-    sec = data.setdefault(section, {}).setdefault("psr-4", {})
-    if sec.get(ns) != path:
-        sec[ns] = path
-        return True
-    return False
-if ensure("autoload", "Dot\\SsoClient\\", "packages/dot-sso-client/src/"): changed.append("composer.json autoload")
-if ensure("autoload-dev", "Dot\\SsoClient\\Tests\\", "packages/dot-sso-client/tests/"): changed.append("composer.json autoload-dev")
-if changed:
-    with open(cj, "w") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-        f.write("\n")
+text = open(cj).read()
+def ensure(text, section, ns, path):
+    key = json.dumps(ns)[1:-1]
+    entry = '"%s": "%s"' % (key, path)
+    m = re.search(r'"%s"\s*:\s*\{\s*"psr-4"\s*:\s*\{' % section, text)
+    if not m:
+        sys.exit("composer.json has no %s psr-4 block; add the mapping by hand: %s" % (section, entry))
+    close = text.index("}", m.end())
+    block = text[m.end():close]
+    if entry in block:
+        return text, False
+    if '"%s"' % key in block:
+        sys.exit("composer.json maps %s to something else; fix by hand" % ns)
+    last = block.rstrip()
+    indent = re.search(r"\n([ \t]*)\"", block)
+    pad = indent.group(1) if indent else "            "
+    new_block = last + ",\n" + pad + entry + "\n" + pad[:-4] if pad.endswith("    ") else last + ", " + entry
+    return text[:m.end()] + new_block + text[close:], True
+text, c1 = ensure(text, "autoload", "Dot\\SsoClient\\", "packages/dot-sso-client/src/")
+text, c2 = ensure(text, "autoload-dev", "Dot\\SsoClient\\Tests\\", "packages/dot-sso-client/tests/")
+if c1 or c2:
+    json.loads(text)  # still valid
+    open(cj, "w").write(text)
+    changed.append("composer.json autoload mappings")
 
 # Provider registration (Laravel 11+ bootstrap/providers.php).
 bp = os.path.join(repo, "bootstrap", "providers.php")
@@ -128,8 +140,11 @@ px = os.path.join(repo, "phpunit.xml")
 if os.path.exists(px):
     src = open(px).read()
     if "packages/dot-sso-client/tests" not in src:
-        suite = '        <testsuite name="DotSsoClient">\n            <directory suffix="Test.php">packages/dot-sso-client/tests</directory>\n        </testsuite>\n'
-        src = src.replace("</testsuites>", suite + "    </testsuites>", 1)
+        m = re.search(r"\n([ \t]*)</testsuites>", src)
+        pad = m.group(1) if m else "    "
+        inner = pad + "    "
+        suite = '%s<testsuite name="DotSsoClient">\n%s    <directory suffix="Test.php">packages/dot-sso-client/tests</directory>\n%s</testsuite>\n' % (inner, inner, inner)
+        src = src.replace("\n" + pad + "</testsuites>", "\n" + suite.rstrip("\n") + "\n" + pad + "</testsuites>", 1)
         open(px, "w").write(src)
         changed.append("phpunit.xml")
 
