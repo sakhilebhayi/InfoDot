@@ -2,9 +2,12 @@
 
 namespace Dot\SsoClient\Tests\Feature;
 
+use Dot\SsoClient\Support\ClaimService;
 use Dot\SsoClient\Tests\DotSsoTestCase;
 use Dot\SsoClient\Tests\Support\FakeIdp;
+use Dot\SsoClient\Tests\Support\TestProvisioner;
 use Dot\SsoClient\Tests\Support\TestUser;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -266,6 +269,20 @@ class CallbackTest extends DotSsoTestCase
         $this->get('https://platform.test/sso/login')->assertNotFound();
         $this->get('https://platform.test/sso/callback')->assertNotFound();
         $this->get('https://platform.test/sso/claim')->assertNotFound();
+        $this->post('https://platform.test/sso/claim', ['code' => '123456'])->assertNotFound();
         $this->post('https://platform.test/sso/backchannel-logout')->assertNotFound();
+    }
+
+    public function test_a_claim_started_by_the_platforms_fallback_can_be_finished_while_the_switch_is_off(): void
+    {
+        $local = $this->localUser();
+        $request = Request::create('https://platform.test/auth/ecosystem', 'POST');
+        $request->setLaravelSession(app('session.store'));
+        app(ClaimService::class)->begin($request, $local, ['sub' => 'uuid-1111', 'email' => 'ada@example.test', 'name' => 'Ada'], '/tasks/2', '');
+        $code = TestProvisioner::$mails[0]['code'];
+        config(['dotsso.enabled' => false]);
+
+        $this->post('https://platform.test/sso/claim', ['code' => $code])->assertRedirect('/tasks/2');
+        $this->assertSame('uuid-1111', $local->fresh()->infodot_user_uuid);
     }
 }
