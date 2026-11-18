@@ -4,6 +4,7 @@ namespace App\Services\Platforms;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Sso\ResumeAuthorize;
 use App\Support\EcosystemHandoff;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
@@ -19,6 +20,9 @@ class PlatformRefusal
 
     public function response(User $user, string $key, AccessDecision $decision, ?string $redirect = null, int $status = 403): Response
     {
+        // R-54: a refused OIDC sign-in is parked so that switching the platform on resumes it (see ResumeAuthorize).
+        ResumeAuthorize::remember(request());
+
         return response()->view('platforms.access', $this->explain($user, $key, $decision, $redirect), $status)
             ->header('Cache-Control', 'no-store, private')
             ->header('X-Robots-Tag', 'noindex, nofollow');
