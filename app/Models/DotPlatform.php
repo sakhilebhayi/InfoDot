@@ -44,9 +44,28 @@ class DotPlatform extends Model
         return $clientId ? static::where('oauth_client_id', $clientId)->first() : null;
     }
 
-    /** Exact-match check against the registered post-logout redirect URIs (no wildcards, R-20 §7E). */
+    /**
+     * Exact-match check against the registered post-logout redirect URIs (no wildcards, R-20 §7E).
+     * The one tolerance: a bare origin and the same origin with a lone trailing slash are the same
+     * address (https://x and https://x/ both mean the origin root), so a client that sends either
+     * form for a registered origin root still lands back on its platform. Paths, queries and hosts
+     * are still compared exactly.
+     */
     public function allowsPostLogoutRedirect(string $uri): bool
     {
-        return in_array($uri, $this->post_logout_redirect_uris ?? [], true);
+        $wanted = self::canonicalOriginRoot($uri);
+
+        foreach ($this->post_logout_redirect_uris ?? [] as $registered) {
+            if (is_string($registered) && self::canonicalOriginRoot($registered) === $wanted) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function canonicalOriginRoot(string $uri): string
+    {
+        return preg_match('#^(https?://[^/?\#]+)/?$#i', $uri, $m) === 1 ? $m[1].'/' : $uri;
     }
 }
