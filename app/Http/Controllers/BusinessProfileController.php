@@ -11,6 +11,7 @@ use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\TeamProfile;
+use App\Rules\DeliverableEmailDomain;
 use App\Services\Attachments\TeamMediaService;
 use App\Services\Directory\BusinessDirectory;
 use App\Services\Directory\FeaturedPlacement;
@@ -152,7 +153,7 @@ class BusinessProfileController extends Controller
             'location' => ['nullable', 'string', 'max:160'],
             'regions' => ['nullable', 'string', 'max:160'],
             'website' => ['nullable', 'url:http,https', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
+            'contact_email' => array_filter(['bail', 'nullable', $request->input('contact_email') !== $team->profile?->contact_email ? new DeliverableEmailDomain : null, 'email', 'max:255']),
             'contact_phone' => ['nullable', 'string', 'max:40'],
             'registration_number' => ['nullable', 'string', 'max:60'],
             'registration_country' => ['nullable', 'string', 'max:60'],

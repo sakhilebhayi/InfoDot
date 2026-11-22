@@ -3,6 +3,7 @@
 namespace App\Actions\Fortify;
 
 use App\Notifications\EmailAddressChanged;
+use App\Rules\DeliverableEmailDomain;
 use App\Services\Profile\ProfilePhoto;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Log;
@@ -24,7 +25,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => array_filter(['bail', 'required', ($input['email'] ?? null) !== $user->email ? new DeliverableEmailDomain : null, 'email', 'max:255', Rule::unique('users')->ignore($user->id)]),
             'photo' => ['nullable', 'image', 'mimes:'.ProfilePhoto::MIMES, 'max:'.ProfilePhoto::MAX_KILOBYTES],
         ], [
             'photo.image' => 'Choose a picture: JPG, PNG or WebP.',
