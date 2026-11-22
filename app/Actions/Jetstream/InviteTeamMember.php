@@ -2,6 +2,7 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Rules\DeliverableEmailDomain;
 use App\Services\Licensing\SeatLedger;
 use App\Support\TeamRoles;
 use Illuminate\Support\Facades\Gate;
@@ -129,7 +130,7 @@ class InviteTeamMember implements InvitesTeamMembers
     protected function rules($team)
     {
         return array_filter([
-            'email' => ['required', 'email', Rule::unique('team_invitations')->where(function ($query) use ($team) {
+            'email' => ['bail', 'required', new DeliverableEmailDomain, 'email', Rule::unique('team_invitations')->where(function ($query) use ($team) {
                 $query->where('team_id', $team->id);
             })],
             'role' => Jetstream::hasRoles()

@@ -20,6 +20,7 @@
     <server name="LICENCE_INCLUDED_SEATS" value="1"/>
     <server name="SEMINARS_LINK_CHECK" value="false"/>
     <server name="BCRYPT_ROUNDS" value="4"/>
+    <server name="BLOCK_RESERVED_EMAIL_DOMAINS" value="false"/>
     <server name="CACHE_DRIVER" value="array"/>
     <server name="DB_CONNECTION" value="sqlite"/>
     <server name="DB_DATABASE" value=":memory:"/>

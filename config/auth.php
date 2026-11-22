@@ -116,4 +116,18 @@ return [
 
     'password_timeout' => 10800,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Block reserved email domains
+    |--------------------------------------------------------------------------
+    |
+    | When true, a NEW email address on a domain that can never receive mail
+    | (example, test, invalid, localhost, example.com/.net/.org and their
+    | subdomains) is refused wherever InfoDot accepts one. Existing accounts
+    | are never touched. See App\Rules\DeliverableEmailDomain.
+    |
+    */
+
+    'block_reserved_email_domains' => (bool) env('BLOCK_RESERVED_EMAIL_DOMAINS', true),
+
 ];

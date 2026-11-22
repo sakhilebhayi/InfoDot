@@ -8,6 +8,7 @@ use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Topic;
 use App\Models\User;
+use App\Rules\DeliverableEmailDomain;
 use App\Services\Knowledge\AchievementService;
 use App\Services\Knowledge\SimilarContent;
 use App\Services\Knowledge\TopicBadges;
@@ -38,7 +39,7 @@ class PagesController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email:rfc', 'max:190'],
+            'email' => ['bail', 'required', new DeliverableEmailDomain, 'email:rfc', 'max:190'],
             'message' => ['required', 'string', 'min:10', 'max:4000'],
             'website' => ['nullable', 'max:0'], // a field people never see: only a script fills it
         ]);

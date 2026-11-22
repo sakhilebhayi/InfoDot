@@ -6,6 +6,7 @@ use App\Models\BusinessRelationship;
 use App\Models\BusinessVerification;
 use App\Models\IdentityConflict;
 use App\Models\Team;
+use App\Rules\DeliverableEmailDomain;
 use App\Services\Identity\IdentityProtection;
 use App\Services\Verification\VerificationService;
 use Illuminate\Http\RedirectResponse;
@@ -122,7 +123,7 @@ class BusinessVerificationController extends Controller
     public function sendCode(Request $request, Team $team): RedirectResponse
     {
         $open = $this->openFor($team);
-        $data = $request->validate(['official_email' => ['required', 'email', 'max:255']]);
+        $data = $request->validate(['official_email' => ['bail', 'required', new DeliverableEmailDomain, 'email', 'max:255']]);
 
         $this->verification->sendEmailCode($request->user(), $open, $data['official_email']);
 
