@@ -70,8 +70,8 @@ class StructuralUxItemsTest extends TestCase
         $this->assertMatchesRegularExpression('/@media \(max-width: 899px\)\s*\{.*?\.ix-settings__up\s*\{[^}]*position:\s*sticky;[^}]*min-height:\s*44px;/s', $css);
     }
 
-    public function test_the_contact_page_uses_the_reading_layout_of_the_other_public_pages(): void
+    public function test_the_contact_page_opens_on_a_hero_and_one_lane_per_reason_to_write(): void
     {
-        $this->get('/contact')->assertOk()->assertSee('<article class="ix-prose ix-prose--ledger">', false)->assertSee('privacy@infodot.co.za');
+        $this->get('/contact')->assertOk()->assertSee('class="pg-hero"', false)->assertSee('privacy@infodot.co.za')->assertSee('support@infodot.co.za');
     }
 }

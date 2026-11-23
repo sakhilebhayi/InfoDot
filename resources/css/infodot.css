@@ -10286,3 +10286,447 @@ button.ix-avatar,
 .bt-cta :focus-visible {
     outline-color: var(--ix-top-ink);
 }
+
+/* ===== R-57: the public inner pages (Contact, Businesses, About, What InfoDot does, Questions people ask) ===== */
+
+/* A page opens on a plate, a large heading and a photograph: copy on one side, the picture uncovered on the other. */
+.pg-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: center;
+    margin: 0 0 clamp(36px, 5vw, 64px);
+}
+
+.pg-hero__copy {
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+}
+
+.pg-plate {
+    display: inline-block;
+    justify-self: start;
+    padding: 6px 14px;
+    border-radius: var(--ix-radius);
+    background: var(--pg-tone, var(--ix-knowledge));
+    color: #fff;
+    font-family: var(--ix-stencil-font);
+    font-weight: 700;
+    font-size: var(--dot-text-caption-size);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pg-plate--mustard { color: #1a1300; }
+
+.pg-hero__title {
+    margin: 0;
+    max-width: 12ch;
+    color: var(--ix-text);
+    font-weight: 700;
+    font-size: var(--dot-text-display-size);
+    line-height: 1.04;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+}
+
+.pg-hero__lede {
+    margin: 0;
+    max-width: 52ch;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.55;
+    text-wrap: pretty;
+}
+
+.pg-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    align-items: center;
+}
+
+.pg-photo {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--ix-radius);
+    background: var(--ix-analytics);
+    aspect-ratio: 5 / 4;
+}
+
+.pg-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pg-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 55%, rgb(10 14 16 / 0.55));
+    pointer-events: none;
+}
+
+.pg-photo figcaption {
+    position: absolute;
+    z-index: 1;
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
+    color: #fff;
+    font-size: var(--dot-text-caption-size);
+    line-height: 1.35;
+}
+
+.pg-photo figcaption a { color: inherit; }
+
+/* Contact: every reason to write has its own lane, with the address and the next step in plain sight. */
+.pg-routes {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 clamp(36px, 5vw, 64px);
+    padding: 0;
+    list-style: none;
+}
+
+.pg-route {
+    grid-column: span 2;
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 10px;
+    padding: 20px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+    transition: border-color 0.2s ease, translate 0.2s ease;
+}
+
+.pg-route:hover,
+.pg-route:focus-within {
+    border-color: var(--pg-tone, var(--ix-knowledge));
+    translate: 0 -3px;
+}
+
+.pg-route h3 {
+    margin: 0;
+    font-size: var(--dot-text-h2-size);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.pg-route p {
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.5;
+}
+
+.pg-route:nth-child(n+4) { grid-column: span 3; }
+
+.pg-route__go {
+    margin-top: 4px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.pg-route__go::after { content: ' \2192'; }
+
+.pg-split {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: start;
+    margin: 0 0 clamp(36px, 5vw, 64px);
+}
+
+.pg-split > div > h2 {
+    margin: 0 0 10px;
+    font-size: var(--dot-text-h2-size);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+}
+
+.pg-split > div > p {
+    margin: 0 0 12px;
+    max-width: 48ch;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.55;
+}
+
+.pg-form {
+    display: grid;
+    gap: 16px;
+    padding: clamp(18px, 3vw, 28px);
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.pg-form .ix-input,
+.pg-form .ix-textarea { width: 100%; }
+
+.pg-note {
+    margin: 0 0 clamp(36px, 5vw, 64px);
+    padding: 18px 22px;
+    border-left: 4px solid var(--ix-platforms);
+    background: var(--ix-panel);
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.55;
+}
+
+/* Businesses: the hero carries the search, and categories with nobody in them step back behind one disclosure. */
+.pg-dir {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: center;
+}
+
+.pg-dir .ix-dir__head { margin: 0; }
+
+.pg-dir .pg-photo { aspect-ratio: 4 / 3; }
+
+.ix-dir__cats--live a { border-left: 4px solid var(--ix-people); }
+
+.ix-dir__more-cats {
+    margin-top: 12px;
+}
+
+.ix-dir__more-cats > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ix-dir__more-cats[open] > summary { margin-bottom: 12px; }
+
+/* The photograph strip that opens the long reading pages: wide, short and cropped for the page, not for the picture. */
+.pg-strip {
+    position: relative;
+    margin: 0 0 clamp(28px, 4vw, 48px);
+    overflow: hidden;
+    border-radius: var(--ix-radius);
+    aspect-ratio: 21 / 8;
+    background: var(--ix-analytics);
+}
+
+.pg-strip img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.pg-strip figcaption {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    padding: 4px 10px;
+    border-radius: var(--ix-radius);
+    background: rgb(10 14 16 / 0.7);
+    color: #fff;
+    font-size: var(--dot-text-caption-size);
+}
+
+@media (max-width: 900px) {
+    .pg-route,
+    .pg-route:nth-child(n+4) { grid-column: span 6; }
+    .pg-hero,
+    .pg-dir,
+    .pg-split { grid-template-columns: 1fr; }
+    .pg-hero__title { max-width: 20ch; }
+    .pg-photo { aspect-ratio: 16 / 10; }
+    .pg-strip { aspect-ratio: 16 / 9; }
+}
+
+/* Motion: parts start hidden only while the motion script is running, and the layout's timer shows them if it is late. */
+.has-motion [data-pg-in],
+.has-motion [data-pg-reveal] { opacity: 0; }
+
+.has-motion.motion-failsafe [data-pg-in],
+.has-motion.motion-failsafe [data-pg-reveal] { opacity: 1; }
+
+.has-motion.motion-failsafe [data-pg-plate],
+.has-motion.motion-failsafe [data-pg-photo],
+.has-motion.motion-failsafe [data-pg-stamp] { clip-path: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pg-route { transition: none; }
+    .pg-route:hover, .pg-route:focus-within { translate: none; }
+}
+
+/* R-57: the Discover, Manage and Grow plates carry a photograph under their colour: the colour holds the word at the top, the picture
+   shows through below, and a scrim keeps the tag readable. The plate keeps its area colour if the picture does not load. */
+.hp-pillar__plate {
+    --pillar-tone: var(--ix-knowledge);
+    isolation: isolate;
+    overflow: hidden;
+    background-image: var(--pillar-img, none);
+    background-size: cover;
+    background-position: center;
+}
+
+.hp-pillar--discover .hp-pillar__plate { --pillar-tone: var(--ix-knowledge); background-color: var(--ix-knowledge); }
+.hp-pillar--manage .hp-pillar__plate { --pillar-tone: var(--ix-platforms); background-color: var(--ix-platforms); }
+.hp-pillar--grow .hp-pillar__plate { --pillar-tone: var(--ix-documents); background-color: var(--ix-documents); }
+
+.hp-pillar__plate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        linear-gradient(180deg, var(--pillar-tone) 0%, var(--pillar-tone) 18%, color-mix(in srgb, var(--pillar-tone) 40%, transparent) 55%, transparent 80%),
+        linear-gradient(0deg, rgb(8 12 14 / 0.78) 0%, transparent 45%);
+}
+
+.hp-pillar__tag { color: #fff; }
+
+@media (min-width: 901px) {
+    .hp-pillar__plate { min-height: 320px; }
+}
+
+/* The long reading pages: the plate and heading arrive first, the photograph spans both columns, and each question or heading rises as it is reached. */
+.pg-prose > .pg-plate { margin-bottom: 14px; }
+
+.pg-prose .pg-title {
+    font-size: var(--dot-text-h1-size);
+    font-weight: 700;
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+}
+
+@media (min-width: 1024px) {
+    .pg-prose > .pg-plate,
+    .pg-prose > .pg-strip { grid-column: 1 / -1; }
+    .pg-prose > .pg-plate { justify-self: start; }
+}
+
+.has-motion .pg-prose > h2,
+.has-motion .pg-prose > h2 + * { opacity: 0; }
+
+.has-motion.motion-failsafe .pg-prose > h2,
+.has-motion.motion-failsafe .pg-prose > h2 + * { opacity: 1; }
+
+@media (min-width: 1024px) {
+    .pg-prose { grid-template-columns: 280px minmax(0, 1fr); }
+    .pg-prose > :not(.pg-strip):not(.pg-plate):not(.ix-h1):not(.ix-lede) { max-width: 68ch; }
+}
+
+.hp-pillar--discover .hp-pillar__plate,
+.hp-pillar--manage .hp-pillar__plate,
+.hp-pillar--grow .hp-pillar__plate { background-image: var(--pillar-img, none); background-size: cover; background-position: center; }
+
+/* The platform logos have thin, pale wordmarks: bigger tiles and a lift in brightness let every name read at full strength on the graphite ground. */
+.hp-group .lp-logos { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.hp-group .lp-logos li { height: 104px; }
+.hp-group .lp-logos img { filter: brightness(1.35) contrast(1.08); }
+
+/* Links in running text read as links: underlined at rest, in the page's own link colour. */
+.ix-prose p a,
+.ix-prose li a,
+.pg-route p a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.ix-prose p a:hover,
+.ix-prose li a:hover { text-decoration-thickness: 2px; }
+
+/* Lists in the long pages keep their markers and a steady rhythm. */
+.ix-legal__body ul,
+.ix-prose ul { padding-left: 1.25em; }
+.ix-legal__body li + li,
+.ix-prose li + li { margin-top: 0.5em; }
+
+/* A photograph or plate is never glued to the heading under it. */
+.pg-prose > .ix-h1 { margin-bottom: 14px; }
+.pg-prose > .ix-lede { margin-bottom: 24px; }
+.pg-prose > .pg-strip { margin-top: 4px; }
+.ix-legal__body ul { list-style: disc; }
+.ix-legal__body ol { list-style: decimal; padding-left: 1.4em; }
+.ix-legal__body li > p { margin: 0; }
+.ix-legal__body { white-space: normal; }
+
+/* The brand gold carries every primary action on the public pages, the way Create account does in the top bar. */
+body[data-area="home"] .ix-btn--primary,
+.pg-hero__actions .ix-btn--primary,
+.pg-form .ix-btn--primary,
+.ix-dir__bar .ix-btn--primary,
+.pg-route__go-btn {
+    background: #eab31f;
+    border-color: #eab31f;
+    color: #1a1300;
+}
+
+body[data-area="home"] .ix-btn--primary:hover,
+.pg-hero__actions .ix-btn--primary:hover,
+.pg-form .ix-btn--primary:hover,
+.ix-dir__bar .ix-btn--primary:hover { filter: brightness(1.08); }
+
+/* Contact: the whole card is the link, and the card answers the pointer. */
+.pg-route { position: relative; }
+.pg-route__go::before { content: ''; position: absolute; inset: 0; }
+.pg-route__go:focus-visible { outline: none; }
+.pg-route:has(.pg-route__go:focus-visible) { outline: 3px solid #eab31f; outline-offset: 2px; }
+
+/* Features: three small pieces of the real interface, drawn from the system's own components, not screenshots. */
+.pg-vignettes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 clamp(28px, 4vw, 48px);
+    padding: 0;
+    list-style: none;
+}
+
+.pg-vignettes li {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 16px;
+    padding: 22px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.pg-vignettes p { margin: 0; color: var(--ix-text-2); font-size: var(--dot-text-body-size); line-height: 1.5; }
+.pg-vignettes strong { color: var(--ix-text); }
+.pg-vignettes__stamp { font-size: var(--dot-text-h2-size); }
+.pg-vignettes__ref { padding: 8px 12px; border: 2px solid var(--ix-text); border-radius: var(--ix-radius); }
+
+@media (min-width: 1024px) {
+    .pg-prose > .pg-vignettes { grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px) {
+    .pg-vignettes { grid-template-columns: 1fr; }
+    .hp-pillar--manage .hp-pillar__tag { color: #1a1300; }
+}
+
+/* Directory: the filters sit on one aligned grid, and Apply lines up with the fields. */
+.pg-dir .ix-dir__filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    align-items: end;
+    gap: 12px;
+}
+
+.pg-dir .ix-dir__filter .ix-input { width: 100%; min-width: 0; }
+.pg-dir .ix-dir__check { align-self: center; }
+
+/* Photographs that hold a person keep the face in the crop. */
+.pg-strip img { object-position: 50% 28%; }

@@ -1,7 +1,13 @@
-<x-public-layout title="About" band="INFO" crumb="About" description="InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.">
-    <article class="ix-prose ix-prose--ledger">
-        <h1 class="ix-h1">About InfoDot</h1>
-        <p class="ix-lede">InfoDot helps people start, manage and grow their businesses. It brings together practical business knowledge, people who share what works, and digital tools in one place, so nobody has to work it all out alone.</p>
+<x-public-layout title="About" reveal band="INFO" crumb="About" description="InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.">
+    <article class="ix-prose ix-prose--ledger pg-prose">
+        <span class="pg-plate" data-pg-plate>About</span>
+        <h1 class="ix-h1 pg-title" data-pg-in>About InfoDot</h1>
+        <p class="ix-lede" data-pg-in>InfoDot helps people start, manage and grow their businesses. It brings together practical business knowledge, people who share what works, and digital tools in one place, so nobody has to work it all out alone.</p>
+
+        <figure class="pg-strip" data-pg-photo>
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/couturiere.jpg') }}" alt="A seamstress smiling at her sewing machine, scissors in hand" width="1000" height="666" loading="eager" decoding="async">
+            <figcaption>A business at work: the people InfoDot is for</figcaption>
+        </figure>
 
         <h2>Why it exists</h2>
         <p>A growing business has a sales system, an accounting package, a stock sheet, a job board and a few WhatsApp groups. Each holds a slice of the truth, and what the business has learned lives in people's heads. The people who have to decide are never quite sure the figure is current, or that anyone has solved the same problem before. InfoDot is where a business, and the businesses around it, write down what they know so the next person does not start from nothing.</p>
@@ -30,7 +36,14 @@
         </ul>
 
         <h2 id="photo-credits">Photograph credits</h2>
-        <p>The photographs on the home page come from Wikimedia Commons. Each was cropped and resized, and each is shared under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).</p>
+        <p>Some photographs on the Contact, Businesses, home and What InfoDot does pages come from Unsplash and are used under the <a href="https://unsplash.com/license" rel="noopener">Unsplash licence</a>. Each was cropped and resized.</p>
+        <ul>
+            <li><a href="https://unsplash.com/photos/woman-using-laptop-in-workspace-HA-0i0E7sq4" rel="noopener">Woman using laptop in workspace</a> by Daniel Thomas</li>
+            <li><a href="https://unsplash.com/photos/a-group-of-colorful-bags-sitting-on-top-of-a-table-9o5zeS6QbgM" rel="noopener">Rosebank Sunday Market in Johannesburg</a> by Vije Vijendranath</li>
+            <li><a href="https://unsplash.com/photos/two-women-near-tables-GFrBMipOd_E" rel="noopener">Two women near tables</a> by Blake Wisz</li>
+            <li><a href="https://unsplash.com/photos/a-person-sitting-at-a-table-with-a-laptop-oUbzU87d1Gc" rel="noopener">A person sitting at a table with a laptop</a> by Microsoft 365</li>
+        </ul>
+        <p>The other photographs, on the home, About and Questions pages, come from Wikimedia Commons. Each was cropped and resized, and each is shared under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).</p>
         <ul>
             <li><a href="https://commons.wikimedia.org/wiki/File:Openspace_wao_coworking.jpg" rel="noopener">"Openspace wao coworking"</a> by WAO Coworking</li>
             <li><a href="https://commons.wikimedia.org/wiki/File:A_seamstress_at_work.jpg" rel="noopener">"A seamstress at work"</a> by Rwebogora</li>

@@ -32,9 +32,14 @@
         return $html;
     };
 @endphp
-<x-public-layout title="Questions people ask" band="INFO" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, what you can do with it, who can see your questions, how answers are trusted, and how to contact us.">
-    <article class="ix-prose ix-prose--ledger">
-        <h1 class="ix-h1">Questions people ask</h1>
+<x-public-layout title="Questions people ask" reveal band="INFO" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, what you can do with it, who can see your questions, how answers are trusted, and how to contact us.">
+    <article class="ix-prose ix-prose--ledger pg-prose">
+        <span class="pg-plate" data-pg-plate>Answers</span>
+        <h1 class="ix-h1 pg-title" data-pg-in>Questions people ask</h1>
+        <figure class="pg-strip" data-pg-photo>
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/seamstress.jpg') }}" alt="A seamstress at her machine in a shop full of printed fabric" width="1200" height="800" loading="eager" decoding="async">
+            <figcaption>Questions from people running small businesses</figcaption>
+        </figure>
 
         @foreach ($faqs as [$question, $answer])
             <h2>{{ $question }}</h2>

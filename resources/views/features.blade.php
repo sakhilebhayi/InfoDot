@@ -1,7 +1,28 @@
-<x-public-layout title="What InfoDot does" band="INFO" crumb="What InfoDot does" description="What InfoDot does today: discover practical business knowledge, manage your business with connected tools, and grow with what you learn.">
-    <article class="ix-prose ix-prose--ledger">
-        <h1 class="ix-h1">What InfoDot does</h1>
-        <p class="ix-lede">Everything on this page works today. InfoDot has three jobs: help you discover what works, manage your business with connected tools, and grow with what you learn.</p>
+<x-public-layout title="What InfoDot does" reveal band="INFO" crumb="What InfoDot does" description="What InfoDot does today: discover practical business knowledge, manage your business with connected tools, and grow with what you learn.">
+    <article class="ix-prose ix-prose--ledger pg-prose">
+        <span class="pg-plate" data-pg-plate>Features</span>
+        <h1 class="ix-h1 pg-title" data-pg-in>What InfoDot does</h1>
+        <p class="ix-lede" data-pg-in>Everything on this page works today. InfoDot has three jobs: help you discover what works, manage your business with connected tools, and grow with what you learn.</p>
+
+        <figure class="pg-strip" data-pg-photo>
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/features-1600.jpg') }}" alt="A desk seen from above: a laptop with a spreadsheet, a calculator, invoices and a notebook" width="1600" height="1067" loading="eager" decoding="async">
+            <figcaption>Photograph by <a href="https://unsplash.com/photos/a-person-sitting-at-a-table-with-a-laptop-oUbzU87d1Gc" rel="noopener">Microsoft 365</a> on Unsplash</figcaption>
+        </figure>
+
+        <ul class="pg-vignettes" role="list" aria-label="Three things you will see on InfoDot">
+            <li data-pg-reveal>
+                <span class="ix-stamp pg-vignettes__stamp" aria-hidden="true">Solved</span>
+                <p><strong>The stamp.</strong> The person who asked accepts the answer that worked, and the question is marked solved.</p>
+            </li>
+            <li data-pg-reveal>
+                <span class="ix-ref ix-ref--lg pg-vignettes__ref">NWFN-Q-000014</span>
+                <p><strong>The reference.</strong> Everything a company owns carries its owner code, and every reference can be searched.</p>
+            </li>
+            <li data-pg-reveal>
+                <span class="pg-plate pg-plate--mustard pg-vignettes__plate" style="--pg-tone: var(--ix-platforms)">One account</span>
+                <p><strong>The handoff.</strong> Sign in once and open the platforms your business can use, without signing in again.</p>
+            </li>
+        </ul>
 
         <h2>Discover: learn what works</h2>
 

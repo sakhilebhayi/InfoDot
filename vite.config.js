@@ -4,7 +4,8 @@ import laravel from 'laravel-vite-plugin'
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/landing.js', 'resources/js/tools.js', 'resources/js/seminar-room.js', 'resources/js/seminar-p2p.js'],
+            input: ['resources/css/app.css', 'resources/js/app.js', 'resources/js/landing.js', 'resources/js/tools.js',
+                'resources/js/pages.js', 'resources/js/seminar-room.js', 'resources/js/seminar-p2p.js'],
             refresh: true,
         }),
     ],

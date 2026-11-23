@@ -6,7 +6,7 @@ import Alpine from 'alpinejs';
 
 // The site logo, platform logos and landing photographs are emitted into the build (public/build is the one folder every host serves from),
 // so Blade can reach them with Vite::asset().
-import.meta.glob(['../img/platforms/*.png', '../img/apps/*.png', '../img/landing/*.jpg', '../img/landing/platforms/*.png', '../img/arrow-mask.png', '../img/brand/logo_white.png']);
+import.meta.glob(['../img/platforms/*.png', '../img/apps/*.png', '../img/landing/*.jpg', '../img/pages/*.jpg', '../img/landing/platforms/*.png', '../img/arrow-mask.png', '../img/brand/logo_white.png']);
 
 // The Analytics trend chart. The charting library is large, so it is fetched only on a page that has a chart to draw.
 const trendChart = document.getElementById('activityChart');
