@@ -28,7 +28,8 @@ const preloaded = [...php.matchAll(/=> '((?:node_modules|resources)\/[^']+\.woff
 if (preloaded.length !== 1) fail(`expected 1 preloadable font in OptionalVite, found ${preloaded.length}`);
 preloaded.forEach(entry);
 entry('resources/img/brand/logo_white.png');
-entry('resources/img/landing/hero-1920.jpg');
+entry('resources/img/pages/jhb-skyline-1920.jpg');
+entry('resources/img/pages/rosebank-1600.jpg');
 
 const chart = entry('resources/js/analytics-chart.js');
 if (!chart.isDynamicEntry) fail('the chart module is not a separate, dynamically imported file');
