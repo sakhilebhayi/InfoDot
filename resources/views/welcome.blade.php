@@ -65,7 +65,6 @@
                     <a href="#how-it-works" class="ix-btn lp-btn">See how it works</a>
                 @endauth
             </div>
-            <p class="lp-hero__ask" data-hero>One account. Connected tools. People who share what works.</p>
         </div>
     </section>
 

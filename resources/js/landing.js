@@ -46,8 +46,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         .fromTo('.lp-hero__title', { y: 28, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.1)
         .fromTo('.lp-hero__sub', { y: 20, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9 }, 0.3)
         .fromTo('.lp-search', { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.45)
-        .fromTo('.hp-hero__actions', { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8 }, 0.75)
-        .fromTo('.lp-hero__ask', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 }, 1.2);
+        .fromTo('.hp-hero__actions', { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8 }, 0.75);
 
     // Leaving the hero: the photograph drifts down slower than the page, the words lift away a little faster.
     const heroEnd = { trigger: '.lp-hero', start: 'top top', end: 'bottom top', scrub: true };

@@ -6237,18 +6237,6 @@ body {
     transform: scale(0.97);
 }
 
-.lp-hero__ask {
-    margin: 18px 0 0;
-    color: var(--ix-text);
-    font-size: var(--dot-text-body-size);
-}
-
-.lp-hero__ask a {
-    color: var(--ix-text);
-    font-weight: 600;
-    text-underline-offset: 3px;
-}
-
 /* Sections under the hero */
 .lp-split {
     max-width: 1280px;
@@ -6470,8 +6458,7 @@ body {
 .has-motion.motion-failsafe .lp-hero__sub,
 .has-motion.motion-failsafe .lp-search,
 .has-motion.motion-failsafe .lp-chips,
-.has-motion.motion-failsafe .lp-chips li,
-.has-motion.motion-failsafe .lp-hero__ask {
+.has-motion.motion-failsafe .lp-chips li {
     opacity: 1 !important;
     visibility: visible !important;
     transform: none !important;
@@ -8648,12 +8635,6 @@ button.ix-avatar,
 
 .hp-hero__actions .ix-btn {
     min-height: 48px;
-}
-
-.lp-hero__ask {
-    margin-top: 18px;
-    color: var(--ix-text);
-    font-weight: 500;
 }
 
 .lp-btn:active {
