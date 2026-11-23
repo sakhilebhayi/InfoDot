@@ -60,6 +60,7 @@ use App\Livewire\EcosystemWidget;
 use App\Livewire\Moderation\Library as ModerationLibrary;
 use App\Livewire\Moderation\Queue as ModerationQueue;
 use App\Livewire\Moderation\Topics as ModerationTopics;
+use App\Services\Sso\PlatformContext;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\DB;
@@ -119,6 +120,13 @@ Route::get('/.well-known/security.txt', function () {
 
 // InfoDot's own copy of the platform sign-in address. It used to turn a launch code into an InfoDot session; no
 // platform ever posts here (they redeem server to server), so it signs nobody in and a stale link reaches sign-in.
+// "Not signing in to that platform?": drops the sign-in that was started from a platform and shows InfoDot's own page.
+Route::get('/login/infodot', function (PlatformContext $context) {
+    $context->forget();
+
+    return redirect()->route('login');
+})->middleware('guest')->name('login.infodot');
+
 Route::match(['get', 'post'], '/auth/ecosystem', fn () => redirect('/login', 303)->with('status', 'We could not sign you in from that link. Please sign in below.'))
     ->withoutMiddleware(['Illuminate\Foundation\Http\Middleware\PreventRequestForgery', 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken', 'Illuminate\Foundation\Http\Middleware\ValidateCsrfToken'])
     ->middleware('throttle:30,1,auth-ecosystem')
