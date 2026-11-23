@@ -73,6 +73,38 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('Nothing is shown as verified unless it has been checked', $text);
     }
 
+    public function test_the_other_public_pages_carry_the_same_message_as_the_landing_page(): void
+    {
+        $about = strip_tags($this->get('/about')->assertOk()->getContent());
+        $features = strip_tags($this->get('/features')->assertOk()->getContent());
+        $faqs = strip_tags(str_replace('&#039;', "'", $this->get('/faqs')->assertOk()->getContent()));
+
+        // R-55: Discover, Manage and Grow are the frame everywhere, and nobody is told they need a company or experience to join.
+        foreach (['Discover.', 'Manage.', 'Grow.', 'You do not need a company, a plan or any experience to join.', 'start, manage and grow their businesses'] as $words) {
+            $this->assertStringContainsString($words, $about, $words);
+        }
+        foreach (['Discover: learn what works', 'Manage: run your business', 'Grow: build your future', 'Company first, public by choice', 'not every tool comes with every account'] as $words) {
+            $this->assertStringContainsString($words, $features, $words);
+        }
+        foreach (['What can I do with InfoDot?', 'Which business tools can I use?', 'start, manage and grow your business'] as $words) {
+            $this->assertStringContainsString($words, $faqs, $words);
+        }
+        // The old positioning (a question-and-answer knowledge base with a list of platforms) is gone from all three.
+        foreach ([$about, $features, $faqs] as $page) {
+            foreach (['knowledge base', 'collective human experience', 'business intelligence', 'Dot.Eco-system'] as $old) {
+                $this->assertStringNotContainsStringIgnoringCase($old, $page, $old);
+            }
+        }
+    }
+
+    public function test_a_public_page_with_no_description_of_its_own_gets_the_new_one(): void
+    {
+        $layout = (string) file_get_contents(resource_path('views/components/public-layout.blade.php'));
+
+        $this->assertStringContainsString('InfoDot brings together practical business knowledge, people who share what works', $layout);
+        $this->assertStringNotContainsString('follow verified solutions, and open every Dot platform', $layout);
+    }
+
     public function test_the_landing_page_makes_no_claim_that_is_not_true(): void
     {
         $html = $this->get('/')->assertOk()->getContent();

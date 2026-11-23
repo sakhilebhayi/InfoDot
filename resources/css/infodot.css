@@ -9318,3 +9318,13 @@ button.ix-avatar,
     background: var(--ix-platforms) !important;
     color: #1a1300 !important;
 }
+
+/* R-55: on the pages that group their items (What InfoDot does), the items sit one step under the group heading. */
+.ix-prose--ledger h3 {
+    font-size: var(--dot-text-body-size);
+    margin-top: 18px;
+}
+
+.ix-prose--ledger h2 + h3 {
+    margin-top: 0;
+}

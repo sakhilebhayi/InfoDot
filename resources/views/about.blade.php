@@ -1,19 +1,31 @@
-<x-public-layout title="About" band="INFO" crumb="About" description="InfoDot helps people start, operate, manage and grow successful businesses by combining collective human experience, practical knowledge and business intelligence.">
+<x-public-layout title="About" band="INFO" crumb="About" description="InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.">
     <article class="ix-prose ix-prose--ledger">
         <h1 class="ix-h1">About InfoDot</h1>
-        <p class="ix-lede">InfoDot exists to help people start, operate, manage and grow successful businesses by combining collective human experience, practical knowledge and business intelligence from across the Dot.Eco-system.</p>
+        <p class="ix-lede">InfoDot helps people start, manage and grow their businesses. It brings together practical business knowledge, people who share what works, and digital tools in one place, so nobody has to work it all out alone.</p>
 
         <h2>Why it exists</h2>
         <p>A growing business has a sales system, an accounting package, a stock sheet, a job board and a few WhatsApp groups. Each holds a slice of the truth, and what the business has learned lives in people's heads. The people who have to decide are never quite sure the figure is current, or that anyone has solved the same problem before. InfoDot is where a business, and the businesses around it, write down what they know so the next person does not start from nothing.</p>
+        <p>It also puts the tools a business runs on within reach of the same account, so what you learn and what you do sit together.</p>
+
+        <h2>What you can do here</h2>
+        <ul>
+            <li><strong>Discover.</strong> Find practical answers, guides and solutions, and learn from other businesses' experience. Ask your own questions and share what you know.</li>
+            <li><strong>Manage.</strong> Open the digital tools that help you run your business, such as finance, people, projects, documents and files, with one account.</li>
+            <li><strong>Grow.</strong> Use what you learn and the tools you connect to improve how you work and to find new opportunities.</li>
+        </ul>
+        <p><a href="{{ route('welcome') }}#how-it-works">See how getting started works</a>.</p>
+
+        <h2>Who it is for</h2>
+        <p>People with a business idea and no plan, people starting their first business, small businesses, growing businesses and established organisations. You do not need a company, a plan or any experience to join.</p>
 
         <h2>Where things stand</h2>
-        <p>Today InfoDot holds a knowledge base for a business's questions and verified solutions, and it connects the platforms around it. You can ask a question, answer one, write a solution as steps, have a moderator verify it, and find it again by topic or reference. One account opens every live platform in the Dot.Eco-system. We describe what is there now, not what is planned.</p>
+        <p>Today you can ask a question, answer one, write a solution as steps, have a moderator verify it, and find it again by topic or reference. One account opens the Dot platforms your business can use, grouped by what you want to get done. Which ones you can open depends on your business and how access is arranged. We describe what is there now, not what is planned.</p>
 
         <h2>How it is run</h2>
         <ul>
             <li><strong>Your company's work stays with your company</strong> unless someone chooses to make it public.</li>
             <li><strong>Nobody approves their own work.</strong> An answer is accepted by the person who asked; a solution is verified by a moderator who did not write it.</li>
-            <li><strong>A person is in charge of anything automated.</strong> Where the Dot.Eco-system suggests something, a person decides and the record shows who.</li>
+            <li><strong>A person is in charge of anything automated.</strong> Where one of InfoDot's tools suggests something, a person decides and the record shows who.</li>
             <li><strong>No guarantees.</strong> InfoDot shares experience. It does not replace an accountant, a lawyer or an adviser, and it cannot promise that a business will succeed.</li>
         </ul>
 
