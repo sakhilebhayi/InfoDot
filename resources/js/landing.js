@@ -42,7 +42,9 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     const hero = gsap.timeline({ defaults: { ease: 'expo.out' } });
     hero.call(() => window.clearTimeout(failsafe), [], 1.1);
     hero
-        .fromTo('.lp-hero__bg', { scale: 1.08 }, { scale: 1, duration: 2.4, ease: 'power2.out' }, 0)
+        .fromTo('[data-hx-photo]', { clipPath: 'inset(0 0 0 100%)', autoAlpha: 1 }, { clipPath: 'inset(0 0 0 0%)', duration: 1.3, clearProps: 'clipPath' }, 0)
+        .fromTo('[data-hx-ledger]', { y: 34, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.7)
+        .fromTo('.hx-ledger__list li', { x: 18, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.7, stagger: 0.12 }, 0.95)
         .fromTo('.lp-hero__title', { y: 28, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.1)
         .fromTo('.lp-hero__sub', { y: 20, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9 }, 0.3)
         .fromTo('.lp-search', { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.45)
@@ -50,7 +52,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
 
     // Leaving the hero: the photograph drifts down slower than the page, the words lift away a little faster.
     const heroEnd = { trigger: '.lp-hero', start: 'top top', end: 'bottom top', scrub: true };
-    gsap.to('.lp-hero__bg', { yPercent: 9, ease: 'none', scrollTrigger: heroEnd });
+    gsap.to('.hx-photo img', { yPercent: 6, scale: 1.06, ease: 'none', scrollTrigger: heroEnd });
     gsap.to('[data-hero-inner]', { y: -56, ease: 'none', scrollTrigger: heroEnd });
 
     // Below the hero: whatever comes into view rises into place, grouped so a section's parts arrive one after another.

@@ -42,9 +42,8 @@
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 
     {{-- 1. The hero says what InfoDot is, what it does for you and what to do next. The search box stays: it is the quickest way in. --}}
-    <section class="lp-hero" aria-labelledby="hero-title">
-        <img class="lp-hero__bg" src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-960.jpg') }} 960w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }} 1920w" sizes="100vw" width="1920" height="1280" alt="" fetchpriority="high" decoding="async">
-        <div class="lp-hero__veil" aria-hidden="true"></div>
+    <section class="lp-hero hx-hero" aria-labelledby="hero-title">
+        <div class="hx-hero__grid">
         <div class="lp-hero__inner" data-hero-inner>
             <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Your business, all in one place.' }}</h1>
             <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'Knowledge, people and tools to start, manage and grow your business.' }}</p>
@@ -65,6 +64,30 @@
                     <a href="#how-it-works" class="ix-btn lp-btn">See how it works</a>
                 @endauth
             </div>
+        </div>
+
+        <figure class="hx-art" aria-label="A market trader in Johannesburg, and recent researched solutions">
+            <div class="hx-photo" data-hx-photo>
+                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 44vw" alt="Colourful African print bags on a market table, a trader behind them, at Rosebank Sunday Market in Johannesburg" width="1600" height="1067" decoding="async" fetchpriority="high">
+                <figcaption>Rosebank Sunday Market, Johannesburg. Photograph by <a href="https://unsplash.com/photos/a-group-of-colorful-bags-sitting-on-top-of-a-table-9o5zeS6QbgM" rel="noopener">Vije Vijendranath</a> on Unsplash</figcaption>
+            </div>
+            @if ($library->isNotEmpty())
+                <div class="hx-ledger" data-hx-ledger>
+                    <p class="hx-ledger__head"><span class="pg-plate pg-plate--mustard" style="--pg-tone: var(--ix-platforms)">Library</span> <span>Researched, with named sources</span></p>
+                    <ol class="hx-ledger__list">
+                        @foreach ($library->take(3) as $entry)
+                            <li>
+                                <a href="{{ route('solutions.view', $entry->id) }}">
+                                    <span class="ix-ref">{{ \App\Support\Reference::for($entry) }}</span>
+                                    <strong>{{ $entry->solution_title }}</strong>
+                                    <span class="hx-ledger__meta">{{ $entry->steps }} steps</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+            @endif
+        </figure>
         </div>
     </section>
 
@@ -200,11 +223,6 @@
             </dl>
             <p data-reveal class="hp-know__lead">InfoDot is not just a place to post questions. It turns what businesses learn into knowledge the next business can use.</p>
         </div>
-        <figure class="lp-photo lp-photo--tall" data-reveal>
-            <div class="lp-photo__frame" data-parallax>
-                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/couturiere.jpg') }}" width="1000" height="1500" alt="A smiling tailor holding up the garment she is working on" loading="lazy" decoding="async">
-            </div>
-        </figure>
     </section>
 
     <section class="hp-chain" id="how-knowledge-grows" aria-labelledby="chain-title">
@@ -283,12 +301,6 @@
             </ol>
         </div>
     </section>
-
-    <figure class="lp-band" data-reveal>
-        <div class="lp-band__frame" data-parallax>
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}" width="1400" height="1050" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" loading="lazy" decoding="async">
-        </div>
-    </figure>
 
     {{-- 7. Trust: what is true today, in plain words. Detail lives on the pages linked below. --}}
     <section class="ix-pubsec ix-pubsec--tint hp-trust" aria-labelledby="trust-title">
