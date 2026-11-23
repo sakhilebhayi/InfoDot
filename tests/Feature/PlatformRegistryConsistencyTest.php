@@ -114,10 +114,15 @@ class PlatformRegistryConsistencyTest extends TestCase
         $this->assertSame([], array_values(array_diff($names, $known)));
 
         preg_match_all('/<li[^>]*>\s*<img[^>]* alt="(Dot\.[^"]+)"/', $html, $wall);
+        // R-55: the wall is grouped by what a visitor wants to get done, so its order is the groups' order, not the registry's.
+        // Central is live but has no agreed visitor-facing description yet, so no goal group holds it; a platform added to the
+        // registry fails here until it is placed in a group on the landing page or added to this short list on purpose.
+        $notPlacedYet = ['central'];
         $expected = collect(config('ecosystem.platforms'))
-            ->filter(fn (array $p, string $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && ! in_array($key, ['infodot', 'agents'], true))
-            ->pluck('name')->values()->all();
-        $this->assertSame($expected, $wall[1], 'the logo wall is the live, public platforms of the registry, in its order');
+            ->filter(fn (array $p, string $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && ! in_array($key, ['infodot', 'agents', ...$notPlacedYet], true))
+            ->pluck('name')->sort()->values()->all();
+        $this->assertSame($expected, collect($wall[1])->sort()->values()->all(), 'the logo wall shows exactly the live, public platforms of the registry that have been placed in a group');
+        $this->assertSame(count($wall[1]), count(array_unique($wall[1])), 'each platform appears once');
     }
 
     public function test_the_platforms_page_lists_only_platforms_from_the_registry(): void

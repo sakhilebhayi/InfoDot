@@ -6237,18 +6237,6 @@ body {
     transform: scale(0.97);
 }
 
-.lp-hero__ask {
-    margin: 18px 0 0;
-    color: var(--ix-text);
-    font-size: var(--dot-text-body-size);
-}
-
-.lp-hero__ask a {
-    color: var(--ix-text);
-    font-weight: 600;
-    text-underline-offset: 3px;
-}
-
 /* Sections under the hero */
 .lp-split {
     max-width: 1280px;
@@ -6470,8 +6458,7 @@ body {
 .has-motion.motion-failsafe .lp-hero__sub,
 .has-motion.motion-failsafe .lp-search,
 .has-motion.motion-failsafe .lp-chips,
-.has-motion.motion-failsafe .lp-chips li,
-.has-motion.motion-failsafe .lp-hero__ask {
+.has-motion.motion-failsafe .lp-chips li {
     opacity: 1 !important;
     visibility: visible !important;
     transform: none !important;
@@ -8633,4 +8620,692 @@ button.ix-avatar,
     .ix-auth__hero {
         display: none;
     }
+}
+
+/* ---------------------------------------------------------------- homepage messaging (R-55): discover / manage / grow, how it works, tools by goal, how knowledge grows
+   Everything here is complete without script. The motion in landing.js only adds to it, and nothing below hides content. */
+
+.hp-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin: 28px 0 0;
+}
+
+.hp-hero__actions .ix-btn {
+    min-height: 48px;
+}
+
+.lp-btn:active {
+    transform: scale(0.98);
+}
+
+.hp-textlink {
+    align-self: center;
+    color: var(--ix-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+}
+
+.hp-textlink:hover {
+    text-decoration-thickness: 2px;
+}
+
+/* Section headings share one voice with the existing landing sections */
+.hp-pillars h2,
+.hp-how h2,
+.hp-tools h2,
+.hp-chain h2,
+.hp-trust h2,
+.hp-who h2 {
+    margin: 0 0 12px;
+    font-weight: 600;
+    font-size: var(--dot-text-h2-size);
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+    text-wrap: balance;
+}
+
+/* Discover, Manage, Grow: the intro stays in view while the three plates pass beside it */
+.hp-pillars {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 96px 24px 72px;
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 56px;
+    align-items: start;
+}
+
+.hp-pillars__intro {
+    position: sticky;
+    top: 88px;
+}
+
+.hp-pillars__list {
+    display: grid;
+    gap: 72px;
+}
+
+.hp-pillar {
+    display: grid;
+    grid-template-columns: minmax(150px, 3fr) minmax(0, 7fr);
+    gap: 32px;
+    align-items: stretch;
+}
+
+.hp-pillar__plate {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0;
+    padding: 22px 20px;
+    min-height: 220px;
+    border-radius: var(--ix-radius);
+    color: #fff;
+    transform-origin: left center;
+}
+
+.hp-pillar--discover .hp-pillar__plate { background: var(--ix-knowledge); }
+.hp-pillar--manage .hp-pillar__plate { background: var(--ix-platforms); color: #1a1300; }
+.hp-pillar--grow .hp-pillar__plate { background: var(--ix-documents); }
+
+.hp-pillar__word {
+    font-family: var(--ix-stencil-font);
+    font-weight: 700;
+    font-size: clamp(1.3rem, 1.9vw, 1.8rem);
+    letter-spacing: 0.05em;
+    overflow-wrap: anywhere;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.hp-pillar__tag {
+    font-weight: 500;
+    font-size: var(--dot-text-body-size);
+    line-height: 1.35;
+}
+
+.hp-pillar__lede {
+    margin: 0 0 14px;
+    max-width: 58ch;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.55;
+    text-wrap: pretty;
+}
+
+.hp-pillar__list {
+    margin-bottom: 20px;
+}
+
+.hp-pillar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    margin: 0 0 22px;
+}
+
+.hp-stages__label {
+    margin: 0 0 8px;
+    color: var(--ix-text-2);
+    font-weight: 600;
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.hp-stages ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hp-stages a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: 999px;
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    font-weight: 600;
+    font-size: var(--dot-text-body-sm-size);
+    text-decoration: none;
+    transition: background-color 0.18s var(--lp-ease), transform 0.18s var(--lp-ease);
+}
+
+.hp-stages a:hover {
+    background: var(--ix-sunken);
+}
+
+.hp-stages a:active {
+    transform: scale(0.97);
+}
+
+/* How it works: three steps on a line that fills as you scroll */
+.hp-how {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 72px 24px 80px;
+}
+
+.hp-steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 40px;
+    margin: 36px 0 0;
+    padding: 36px 0 0;
+    list-style: none;
+}
+
+.hp-steps::before,
+.hp-steps::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.hp-steps::before {
+    right: 0;
+    background: var(--ix-rule);
+}
+
+.hp-steps::after {
+    width: 100%;
+    background: var(--ix-platforms);
+    transform: scaleX(var(--lp-progress, 1));
+    transform-origin: left center;
+}
+
+.hp-steps__n {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 16px;
+    border-radius: var(--ix-radius);
+    background: var(--ix-sunken);
+    color: var(--ix-text);
+    font-family: var(--ix-stencil-font);
+    font-weight: 700;
+    font-size: var(--dot-text-h2-size);
+    transition: background-color 0.4s var(--lp-ease), color 0.4s var(--lp-ease), transform 0.4s var(--lp-ease);
+}
+
+.hp-steps .is-passed .hp-steps__n {
+    background: var(--ix-platforms);
+    color: #1a1300;
+    transform: translateY(-2px);
+}
+
+.hp-steps h3 {
+    margin: 0 0 6px;
+    font-weight: 600;
+    font-size: var(--dot-text-h3-size);
+    line-height: 1.25;
+}
+
+.hp-steps p {
+    margin: 0;
+    max-width: 38ch;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.6;
+}
+
+.hp-how__cta {
+    margin: 36px 0 0;
+}
+
+/* Tools by what you want to get done: the head stays in view beside a register of groups */
+.hp-tools {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 72px 24px 96px;
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 56px;
+    align-items: start;
+}
+
+.hp-tools__head {
+    position: sticky;
+    top: 88px;
+}
+
+.hp-tools__note {
+    margin: 10px 0 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.hp-tools__groups {
+    display: grid;
+    gap: 14px;
+}
+
+.hp-group {
+    display: grid;
+    grid-template-columns: minmax(150px, 3fr) minmax(0, 8fr);
+    gap: 20px 28px;
+    align-items: center;
+    padding: 20px 22px;
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.hp-group:nth-child(even) {
+    background: var(--ix-sunken);
+}
+
+.hp-group h3 {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.25;
+}
+
+.hp-group .lp-logos {
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+    margin: 0;
+}
+
+.hp-group .lp-logos li {
+    height: 84px;
+}
+
+.hp-group .lp-logos img {
+    top: 12px;
+    right: 14px;
+    bottom: 12px;
+    left: 14px;
+    width: calc(100% - 28px);
+    height: calc(100% - 24px);
+}
+
+/* The collective knowledge section */
+.hp-know__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 32px;
+    margin: 0 0 24px;
+}
+
+.hp-know__list dt {
+    margin: 0 0 4px;
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+}
+
+.hp-know__list dd {
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.55;
+}
+
+.hp-know__lead {
+    margin: 0;
+    max-width: 58ch;
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.5;
+}
+
+/* How a question becomes knowledge: four stations; the stamp lands when the third is reached */
+.hp-chain {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 80px 24px 72px;
+}
+
+.hp-chain__head {
+    max-width: 68ch;
+}
+
+.hp-chain__steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0 32px;
+    margin: 36px 0 0;
+    padding: 36px 0 0;
+    list-style: none;
+}
+
+.hp-chain__steps::before,
+.hp-chain__steps::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 4px;
+    border-radius: 2px;
+}
+
+.hp-chain__steps::before {
+    right: 0;
+    background: var(--ix-rule);
+}
+
+.hp-chain__steps::after {
+    width: 100%;
+    background: var(--ix-knowledge);
+    transform: scaleX(var(--lp-progress, 1));
+    transform-origin: left center;
+}
+
+.hp-chain__steps h3 {
+    margin: 0 0 6px;
+    font-weight: 600;
+    font-size: var(--dot-text-h3-size);
+}
+
+.hp-chain__steps p {
+    margin: 0 0 12px;
+    max-width: 34ch;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.55;
+}
+
+.hp-chain__stamp {
+    font-size: var(--dot-text-h3-size);
+    padding: 4px 12px 2px;
+}
+
+.hp-chain__note {
+    max-width: 70ch;
+    margin: 32px 0 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.6;
+}
+
+/* Who it is for: a vertical line fills beside five places to start */
+.hp-who__list {
+    position: relative;
+    margin: 0;
+    padding: 0 0 0 32px;
+    list-style: none;
+}
+
+.hp-who__list::before,
+.hp-who__list::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    border-radius: 2px;
+}
+
+.hp-who__list::before {
+    background: var(--ix-rule);
+}
+
+.hp-who__list::after {
+    background: var(--ix-platforms);
+    transform: scaleY(var(--lp-progress, 1));
+    transform-origin: top center;
+}
+
+.hp-who__list li {
+    margin: 0 0 6px;
+}
+
+.hp-who__list a {
+    display: block;
+    padding: 10px 0 12px;
+    color: var(--ix-text);
+    text-decoration: none;
+}
+
+.hp-who__list strong {
+    display: block;
+    margin-bottom: 2px;
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.3;
+}
+
+.hp-who__list span {
+    display: block;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.5;
+}
+
+.hp-who__list a:hover strong {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.hp-trust__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    margin: 32px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hp-trust__links a {
+    color: var(--ix-text);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+}
+
+.hp-cta__lede {
+    flex: 1 1 100%;
+    max-width: 60ch;
+    margin: 0;
+    color: var(--ix-top-ink);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.55;
+}
+
+.hp-cta__support {
+    flex: 1 1 100%;
+    margin: 0;
+    color: var(--ix-top-ink);
+    font-weight: 600;
+}
+
+/* Motion states. The stamp is plain and visible without script; with script it starts hidden and lands when its station is reached. */
+.has-motion .hp-chain__stamp:not(.is-stamped) {
+    opacity: 0;
+}
+
+.has-motion .hp-chain__stamp.is-stamped {
+    animation: ix-stamp 0.28s var(--ix-ease) both;
+}
+
+.has-motion.motion-failsafe .hp-chain__stamp {
+    opacity: 0.92 !important;
+}
+
+@media (max-width: 900px) {
+    .hp-pillars,
+    .hp-tools {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
+        padding: 56px 16px;
+    }
+
+    .hp-pillars__intro,
+    .hp-tools__head {
+        position: static;
+    }
+
+    .hp-pillars__list {
+        gap: 48px;
+    }
+
+    .hp-pillar {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+    }
+
+    .hp-pillar__plate {
+        min-height: 0;
+        flex-direction: row;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .hp-pillar__tag {
+        margin: 0;
+    }
+
+    .hp-how,
+    .hp-chain {
+        padding: 56px 16px;
+    }
+
+    .hp-group {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .hp-know__list {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hp-chain__steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px 24px;
+    }
+}
+
+@media (max-width: 640px) {
+    .hp-steps {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+        padding: 0 0 0 28px;
+    }
+
+    .hp-steps::before,
+    .hp-steps::after {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: auto;
+        width: 4px;
+        height: auto;
+    }
+
+    .hp-steps::after {
+        transform: scaleY(var(--lp-progress, 1));
+        transform-origin: top center;
+    }
+
+    .hp-chain__steps {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 0 0 0 28px;
+    }
+
+    .hp-chain__steps::before,
+    .hp-chain__steps::after {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: auto;
+        width: 4px;
+        height: auto;
+    }
+
+    .hp-chain__steps::after {
+        transform: scaleY(var(--lp-progress, 1));
+        transform-origin: top center;
+    }
+
+    .hp-hero__actions .ix-btn {
+        flex: 1 1 100%;
+    }
+}
+
+/* Unlit steps exist only while the motion script is running; without it every step reads as reached. */
+.has-motion .hp-steps li:not(.is-passed) .hp-steps__n {
+    background: var(--ix-sunken);
+    color: var(--ix-text);
+    transform: none;
+}
+
+.hp-chain__steps li {
+    position: relative;
+}
+
+.hp-chain__steps li::before {
+    content: "";
+    position: absolute;
+    top: -42px;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--ix-knowledge);
+    transition: background-color 0.3s var(--lp-ease), transform 0.3s var(--lp-ease);
+}
+
+.has-motion .hp-chain__steps li:not(.is-lit)::before {
+    background: var(--ix-rule-strong);
+}
+
+.has-motion .hp-chain__steps li:not(.is-lit) h3 {
+    color: var(--ix-text-2);
+}
+
+.hp-chain__steps li.is-lit::before {
+    transform: scale(1.25);
+}
+
+/* If the script stalls the failsafe shows everything as it is meant to read at rest. */
+.has-motion.motion-failsafe .hp-pillar__plate,
+.has-motion.motion-failsafe .hp-pillar__list li,
+.has-motion.motion-failsafe [data-cta-title] {
+    clip-path: none !important;
+    transform: none !important;
+}
+
+.has-motion.motion-failsafe .hp-group .lp-logos li {
+    filter: none !important;
+    transform: none !important;
+}
+
+.has-motion.motion-failsafe .hp-chain__steps li::before {
+    background: var(--ix-knowledge) !important;
+}
+
+.has-motion.motion-failsafe .hp-chain__steps li h3 {
+    color: var(--ix-text) !important;
+}
+
+.has-motion.motion-failsafe .hp-steps .hp-steps__n {
+    background: var(--ix-platforms) !important;
+    color: #1a1300 !important;
+}
+
+/* R-55: on the pages that group their items (What InfoDot does), the items sit one step under the group heading. */
+.ix-prose--ledger h3 {
+    font-size: var(--dot-text-body-size);
+    margin-top: 18px;
+}
+
+.ix-prose--ledger h2 + h3 {
+    margin-top: 0;
 }

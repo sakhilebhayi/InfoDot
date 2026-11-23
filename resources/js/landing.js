@@ -46,11 +46,12 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         .fromTo('.lp-hero__title', { y: 28, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.1)
         .fromTo('.lp-hero__sub', { y: 20, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9 }, 0.3)
         .fromTo('.lp-search', { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.45)
-        .fromTo('.lp-chips li', { y: 14, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.7, stagger: 0.07 }, 0.75)
-        .fromTo('.lp-hero__ask', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 }, 1.2);
+        .fromTo('.hp-hero__actions', { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8 }, 0.75);
 
-    // The chips are children of a hidden list: let the list itself be visible so only they move.
-    gsap.set('.lp-chips', { autoAlpha: 1 });
+    // Leaving the hero: the photograph drifts down slower than the page, the words lift away a little faster.
+    const heroEnd = { trigger: '.lp-hero', start: 'top top', end: 'bottom top', scrub: true };
+    gsap.to('.lp-hero__bg', { yPercent: 9, ease: 'none', scrollTrigger: heroEnd });
+    gsap.to('[data-hero-inner]', { y: -56, ease: 'none', scrollTrigger: heroEnd });
 
     // Below the hero: whatever comes into view rises into place, grouped so a section's parts arrive one after another.
     ScrollTrigger.batch('[data-reveal]', {
@@ -69,20 +70,80 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         });
     });
 
-    // The journey line fills as the stages are passed, and each stage lights up once the line has reached it.
-    const list = document.querySelector('[data-journey]');
-    if (list) {
+    // Lines that fill as their steps are passed: how it works, and who InfoDot is for. Each step lights once the line has reached it.
+    gsap.utils.toArray('[data-journey]').forEach((list) => {
         const stages = gsap.utils.toArray('[data-stage]', list);
+        if (!stages.length) return;
         list.style.setProperty('--lp-progress', '0.02');
-        stages[0]?.classList.add('is-passed');
+        stages[0].classList.add('is-passed');
         ScrollTrigger.create({
             trigger: list, start: 'top 80%', end: 'bottom 55%', scrub: 0.4,
             onUpdate: (self) => {
                 list.style.setProperty('--lp-progress', String(Math.max(0.02, self.progress)));
-                stages.forEach((stage, index) => stage.classList.toggle('is-passed', index === 0 || self.progress >= index / (stages.length - 1) * 0.92));
+                stages.forEach((stage, index) => stage.classList.toggle('is-passed', index === 0 || self.progress >= index / Math.max(1, stages.length - 1) * 0.92));
+            },
+        });
+    });
+
+    // Discover, Manage, Grow: the coloured plate wipes in from the left, then the points under it appear one line at a time.
+    gsap.utils.toArray('[data-pillar]').forEach((pillar) => {
+        const plate = pillar.querySelector('.hp-pillar__plate');
+        const lines = pillar.querySelectorAll('.hp-pillar__list li');
+        if (plate) {
+            gsap.fromTo(plate, { clipPath: 'inset(0 100% 0 0)' }, {
+                clipPath: 'inset(0 0% 0 0)', duration: 1, ease: 'expo.out', clearProps: 'clipPath',
+                scrollTrigger: { trigger: pillar, start: 'top 82%', once: true },
+            });
+        }
+        if (lines.length) {
+            gsap.fromTo(lines, { clipPath: 'inset(0 0 100% 0)', y: 10 }, {
+                clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.7, stagger: 0.09, ease: 'power3.out', clearProps: 'clipPath,transform',
+                scrollTrigger: { trigger: pillar, start: 'top 72%', once: true },
+            });
+        }
+    });
+
+    // The tools: each group's names come into focus one after another as the group arrives.
+    gsap.utils.toArray('[data-group]').forEach((group) => {
+        const logos = group.querySelectorAll('[data-logo]');
+        if (!logos.length) return;
+        gsap.fromTo(logos, { filter: 'blur(9px)', scale: 0.9 }, {
+            filter: 'blur(0px)', scale: 1, duration: 0.8, stagger: 0.06, ease: 'power3.out', clearProps: 'filter,transform',
+            scrollTrigger: { trigger: group, start: 'top 88%', once: true },
+        });
+    });
+
+    // A question becomes knowledge: the line runs through four stations, and the stamp lands on the third.
+    const chain = document.querySelector('[data-chain]');
+    if (chain) {
+        const stations = gsap.utils.toArray('[data-station]', chain);
+        const stamp = chain.querySelector('[data-stamp]');
+        chain.style.setProperty('--lp-progress', '0.02');
+        stations[0]?.classList.add('is-lit');
+        ScrollTrigger.create({
+            trigger: chain, start: 'top 78%', end: 'bottom 50%', scrub: 0.4,
+            onUpdate: (self) => {
+                chain.style.setProperty('--lp-progress', String(Math.max(0.02, self.progress)));
+                stations.forEach((station, index) => station.classList.toggle('is-lit', index === 0 || self.progress >= index / Math.max(1, stations.length - 1) * 0.9));
+                if (stamp && self.progress >= 2 / Math.max(1, stations.length - 1) * 0.9) stamp.classList.add('is-stamped');
             },
         });
     }
+
+    // The closing line is written across the page once, and the photographs breathe in as they pass.
+    const ctaTitle = document.querySelector('[data-cta-title]');
+    if (ctaTitle) {
+        gsap.fromTo(ctaTitle, { clipPath: 'inset(0 100% 0 0)' }, {
+            clipPath: 'inset(0 0% 0 0)', duration: 1.1, ease: 'expo.out', clearProps: 'clipPath',
+            scrollTrigger: { trigger: '.hp-cta', start: 'top 78%', once: true },
+        });
+    }
+    gsap.utils.toArray('.lp-photo__frame img, .lp-band__frame img').forEach((img) => {
+        gsap.fromTo(img, { scale: 1.1 }, {
+            scale: 1, ease: 'none',
+            scrollTrigger: { trigger: img.parentElement, start: 'top bottom', end: 'center center', scrub: true },
+        });
+    });
 
     window.addEventListener('load', () => ScrollTrigger.refresh());
 }

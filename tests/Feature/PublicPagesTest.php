@@ -16,7 +16,7 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Find practical business solutions.', $html);
+        $this->assertStringContainsString('Your business, all in one place.', $html);
         $this->assertStringContainsString('role="search"', $html);
         $this->assertStringContainsString('name="search"', $html);
         $this->assertStringContainsString('has-motion', $html);
@@ -24,12 +24,85 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('__motionFailsafe', $html);
         $this->assertStringContainsString("classList.add('motion-failsafe')", $html);
         $this->assertStringContainsString('prefers-reduced-motion', $html);
-        $this->assertStringContainsString('knowledge base for a business', $html);
+        // R-55: the value proposition and the three pillars, in the visitor's words.
+        foreach (['Discover', 'Manage', 'Grow', 'Learn what works', 'Run your business', 'Build your future', 'Join InfoDot for Free', 'See how it works', 'Knowledge, people and tools to start, manage and grow your business.',
+            'Getting started with InfoDot is simple.', 'Your business. Your tools. One connected ecosystem.', "You don't have to figure it all out yourself.",
+            'Built for every stage of your business journey.', 'Your business journey starts here.'] as $words) {
+            $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
+        }
         $this->assertStringContainsString(route('register'), $html);
         $this->assertStringContainsString(route('solution_search_results'), $html);
         $this->assertSame(1, substr_count($html, '<h1'));
-        $this->assertStringContainsString('<title>InfoDot: build your business with collective intelligence</title>', $html);
+        $this->assertStringContainsString('<title>InfoDot: everything your business needs, in one place</title>', $html);
         $this->assertStringContainsString('<meta name="description"', $html);
+    }
+
+    public function test_the_landing_page_keeps_its_search_bar_and_every_anchor_it_links_to(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // The search box is part of the hero and stays there, above the two buttons.
+        $this->assertMatchesRegularExpression('/class="lp-hero".*role="search".*class="hp-hero__actions"/s', $html);
+        foreach (['#how-it-works', '#tools', '#pillars'] as $anchor) {
+            $id = ltrim($anchor, '#');
+            $this->assertStringContainsString('id="'.$id.'"', $html, "the page links to {$anchor} but has no such section");
+        }
+        $this->assertStringContainsString('href="#how-it-works"', $html);
+        $this->assertSame(1, substr_count($html, '<h1'));
+    }
+
+    public function test_the_tools_are_grouped_by_goal_and_only_show_platforms_that_exist(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        foreach (['Understand your business', 'Manage your money', 'Manage your people', 'Organise your work', 'Create and collaborate', 'Communicate and connect', 'Access specialised solutions'] as $goal) {
+            $this->assertStringContainsString($goal, $html, $goal);
+        }
+        // Retired platforms are never shown, and nothing implies every tool is in every account.
+        foreach (['Dot.Billing', 'Dot.Farms', 'Dot.Plug'] as $retired) {
+            $this->assertStringNotContainsString($retired, $html, $retired);
+        }
+        $this->assertStringContainsString('not every tool comes with every account', $html);
+    }
+
+    public function test_the_page_keeps_community_answers_accepted_solutions_and_verified_information_apart(): void
+    {
+        $text = strip_tags($this->get('/')->assertOk()->getContent());
+
+        $this->assertStringContainsString('A community answer is not the same as an accepted solution', $text);
+        $this->assertStringContainsString('Nothing is shown as verified unless it has been checked', $text);
+    }
+
+    public function test_the_other_public_pages_carry_the_same_message_as_the_landing_page(): void
+    {
+        $about = strip_tags($this->get('/about')->assertOk()->getContent());
+        $features = strip_tags($this->get('/features')->assertOk()->getContent());
+        $faqs = strip_tags(str_replace('&#039;', "'", $this->get('/faqs')->assertOk()->getContent()));
+
+        // R-55: Discover, Manage and Grow are the frame everywhere, and nobody is told they need a company or experience to join.
+        foreach (['Discover.', 'Manage.', 'Grow.', 'You do not need a company, a plan or any experience to join.', 'start, manage and grow their businesses'] as $words) {
+            $this->assertStringContainsString($words, $about, $words);
+        }
+        foreach (['Discover: learn what works', 'Manage: run your business', 'Grow: build your future', 'Company first, public by choice', 'not every tool comes with every account'] as $words) {
+            $this->assertStringContainsString($words, $features, $words);
+        }
+        foreach (['What can I do with InfoDot?', 'Which business tools can I use?', 'start, manage and grow your business'] as $words) {
+            $this->assertStringContainsString($words, $faqs, $words);
+        }
+        // The old positioning (a question-and-answer knowledge base with a list of platforms) is gone from all three.
+        foreach ([$about, $features, $faqs] as $page) {
+            foreach (['knowledge base', 'collective human experience', 'business intelligence', 'Dot.Eco-system'] as $old) {
+                $this->assertStringNotContainsStringIgnoringCase($old, $page, $old);
+            }
+        }
+    }
+
+    public function test_a_public_page_with_no_description_of_its_own_gets_the_new_one(): void
+    {
+        $layout = (string) file_get_contents(resource_path('views/components/public-layout.blade.php'));
+
+        $this->assertStringContainsString('InfoDot brings together practical business knowledge, people who share what works', $layout);
+        $this->assertStringNotContainsString('follow verified solutions, and open every Dot platform', $layout);
     }
 
     public function test_the_landing_page_makes_no_claim_that_is_not_true(): void

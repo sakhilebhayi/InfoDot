@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="color-scheme" content="light dark">
-    @php($fullTitle = $title === 'InfoDot' ? 'InfoDot: build your business with collective intelligence' : $title.' · InfoDot')
-    @php($metaDescription = $description ?? 'InfoDot: ask business questions, follow verified solutions, and open every Dot platform with one account.')
+    @php($fullTitle = $title === 'InfoDot' ? 'InfoDot: everything your business needs, in one place' : $title.' · InfoDot')
+    @php($metaDescription = $description ?? 'InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.')
     <title>{{ $fullTitle }}</title>
     <meta name="description" content="{{ $metaDescription }}">
     {{-- One address per page (R-17 §13): the canonical strips query strings so filters and trackers never split the page's identity. --}}
