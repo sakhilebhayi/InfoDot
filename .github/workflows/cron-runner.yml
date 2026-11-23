@@ -8,6 +8,9 @@ name: Cron Runner
 #   install   copy the runner to ~/bin and add its single crontab line (idempotent)
 #   migrate   move the named apps' `# dot-<key>` crontab lines into ~/.dot-cron.d/<key>.cron
 #   revert    undo migrate for the named apps
+#   disable   stop running the named apps' commands (their file is renamed *.cron.disabled; reversible)
+#   enable    undo disable
+#   rollback-runner   put back the previous runner copy (every install keeps one as ~/bin/dot-cron-runner.prev)
 #
 # Only run `migrate` for apps whose deploy pipeline already writes command files (an app that still writes
 # crontab lines would run twice). Every crontab write takes the shared lock, keeps a timestamped backup,
@@ -18,11 +21,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: status | install | migrate | revert
+        description: status | install | migrate | revert | disable | enable | rollback-runner
         required: true
         default: status
         type: choice
-        options: [status, install, migrate, revert]
+        options: [status, install, migrate, revert, disable, enable, rollback-runner]
       apps:
         description: "App keys for migrate/revert, space separated (e.g. tasks auction)"
         required: false
@@ -44,7 +47,7 @@ jobs:
           MODE: ${{ inputs.mode }}
           APPS: ${{ inputs.apps }}
         run: |
-          case "$MODE" in status|install) ;; migrate|revert) [ -n "$APPS" ] || { echo "::error::$MODE needs apps"; exit 1; } ;; esac
+          case "$MODE" in status|install|rollback-runner) ;; migrate|revert|disable|enable) [ -n "$APPS" ] || { echo "::error::$MODE needs apps"; exit 1; } ;; esac
           # printf adds the newline grep needs: an empty value has no line and would never match.
           printf '%s\n' "$APPS" | grep -Eq '^[a-z0-9 -]*$' || { echo "::error::apps may only contain a-z, 0-9, space and dash"; exit 1; }
 
@@ -58,12 +61,13 @@ jobs:
       - name: Copy the runner to the host
         if: ${{ inputs.mode == 'install' }}
         run: |
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
-              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" 'mkdir -p "$HOME/bin"'
+          SSH="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}"
+          $SSH 'mkdir -p "$HOME/bin"; [ -f "$HOME/bin/dot-cron-runner" ] && cp -p "$HOME/bin/dot-cron-runner" "$HOME/bin/dot-cron-runner.prev" || true'
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes tools/dot-queue-precheck.php \
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:bin/dot-queue-precheck.php"
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes tools/dot-cron-runner.sh \
-              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:bin/dot-cron-runner"
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
-              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" 'chmod 755 "$HOME/bin/dot-cron-runner"'
+              "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:bin/dot-cron-runner.new"
+          $SSH 'chmod 755 "$HOME/bin/dot-cron-runner.new" && bash -n "$HOME/bin/dot-cron-runner.new" && mv -f "$HOME/bin/dot-cron-runner.new" "$HOME/bin/dot-cron-runner"'
 
       - name: Run
         env:

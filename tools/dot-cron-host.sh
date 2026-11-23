@@ -6,6 +6,9 @@
 #   dot-cron-host.sh install                 add the one runner line to the crontab (runner script must be in ~/bin)
 #   dot-cron-host.sh migrate <key> [<key>]   move the app's `# dot-<key>` crontab lines into ~/.dot-cron.d/<key>.cron
 #   dot-cron-host.sh revert  <key> [<key>]   undo: put the app's lines back into the crontab, delete its file
+#   dot-cron-host.sh disable <key> [<key>]   stop running an app's commands: rename ~/.dot-cron.d/<key>.cron to <key>.cron.disabled
+#   dot-cron-host.sh enable  <key> [<key>]   undo disable (the runner only reads *.cron, so a .disabled file is ignored)
+#   dot-cron-host.sh rollback-runner         put back the previous runner (~/bin/dot-cron-runner.prev, kept by every install)
 #
 # Same safety rules as the deploy pipelines' crontab writer: one writer (flock on ~/.dot-crontab.lock), a read is
 # trusted only when non-empty or the host says "no crontab", a timestamped backup before every write, and a
@@ -55,12 +58,13 @@ case "$MODE" in
 status)
   echo "== tools the runner needs: $(for c in flock timeout xargs sh tr grep; do command -v $c >/dev/null 2>&1 && echo "$c=ok" || echo "$c=MISSING"; done | tr '\n' ' ')"
   echo "== xargs -0 -P works: $(printf 'a\0b\0' | xargs -0 -n 1 -P 2 echo 2>&1 | tr '\n' ' ')"
-  echo "== runner script: $( [ -x "$BIN" ] && echo "present ($BIN)" || echo "MISSING" )"
+  echo "== runner script: $( [ -x "$BIN" ] && echo "present ($BIN)" || echo "MISSING" ); previous copy: $( [ -f "$BIN.prev" ] && echo kept || echo none ); queue pre-check: $( [ -f "$HOME/bin/dot-queue-precheck.php" ] && echo present || echo "absent (every queue worker runs)" )"
   CT="$(mktemp)"; read_crontab "$CT"
   echo "== runner crontab line: $(grep -c "$RMARK" "$CT") (expected 1 once installed)"
   echo "== crontab lines still firing per app (marker lines): $(grep -c '^\* \* \* \* \*\|^[0-9*/,-]* \* \* \* \*' "$CT")"
   grep -o '# dot-[a-z0-9-]*' "$CT" | sort | uniq -c | sort -rn | sed 's/^/   /'
   echo "== command files in $DIR:"; ls -1 "$DIR"/*.cron 2>/dev/null | sed "s#^$HOME/##" || echo "   none"
+  echo "== disabled (ignored by the runner): $(ls -1 "$DIR"/*.cron.disabled 2>/dev/null | sed "s#^$DIR/##" | tr '\n' ' ')"
   echo "== last pass:"; cat "$DIR/last-run.log" 2>/dev/null || echo "   none yet"
   echo "== recent failures (tails of the failing commands' own logs):"; tail -30 "$DIR/failures.log" 2>/dev/null || echo "   none"
   rm -f "$CT" ;;
@@ -94,5 +98,18 @@ migrate|revert)
     fi
   done
   write_crontab "$NEW" "$OLD"; echo "crontab updated (backup kept as ~/.dot-crontab.backup-*)" ;;
+disable|enable)
+  [ $# -ge 1 ] || { echo "give at least one app key" >&2; exit 2; }
+  for K in "$@"; do
+    case "$K" in *[!a-z0-9-]*|'') echo "$K: not a valid app key; skipped"; continue ;; esac
+    if [ "$MODE" = disable ]; then
+      if [ -f "$DIR/$K.cron" ]; then mv "$DIR/$K.cron" "$DIR/$K.cron.disabled" && echo "$K: disabled (kept as $K.cron.disabled)"; else echo "$K: no $K.cron; skipped"; fi
+    else
+      if [ -f "$DIR/$K.cron.disabled" ] && [ ! -f "$DIR/$K.cron" ]; then mv "$DIR/$K.cron.disabled" "$DIR/$K.cron" && echo "$K: enabled again"; else echo "$K: no $K.cron.disabled (or $K.cron already exists); skipped"; fi
+    fi
+  done ;;
+rollback-runner)
+  [ -f "$BIN.prev" ] || { echo "no previous runner copy ($BIN.prev); nothing to roll back" >&2; exit 1; }
+  cp -p "$BIN.prev" "$BIN.new" && chmod 755 "$BIN.new" && mv -f "$BIN.new" "$BIN" && echo "previous runner restored" ;;
 *) echo "unknown mode $MODE" >&2; exit 2 ;;
 esac

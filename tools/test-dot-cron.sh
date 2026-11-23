@@ -5,6 +5,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 W="$(mktemp -d)"; trap 'rm -rf "$W"' EXIT
 export HOME="$W/home"; SHIM="$W/shim"; mkdir -p "$HOME/bin" "$SHIM" "$W/apps"
+REALPHP="$(command -v php || true)"
 export DOT_CRON_DELAY=0 PATH="$SHIM:$PATH" CRONTAB_FILE="$W/crontab.txt" RUN="$W/run"; mkdir -p "$RUN"
 FAIL=0; ok() { echo "ok   - $1"; }; bad() { echo "FAIL - $1"; FAIL=1; }
 check() { if eval "$2"; then ok "$1"; else bad "$1"; fi; }
@@ -16,10 +17,11 @@ SH
 # php shim: logs start/end, tracks concurrency, behaviour chosen per app dir name (cwd): slow, fail, hang
 cat > "$SHIM/php" <<'SH'
 #!/bin/sh
+case "$1" in *dot-queue-precheck.php) case "$(basename "$2")" in idle*) exit 10;; broken*) exit 2;; esac; exit 0;; esac
 app=$(basename "$PWD"); cmd="$2"
 touch "$RUN/active.$$"; n=$(ls "$RUN" | grep -c '^active\.'); m=$(cat "$RUN/max" 2>/dev/null || echo 0); [ "$n" -gt "$m" ] && echo "$n" > "$RUN/max"
 echo "$app $cmd" >> "$RUN/calls"
-case "$app" in slow*) sleep 1;; hang*) sleep 5;; esac
+case "$app" in slowq*) sleep 3;; slow*) sleep 1;; hang*) sleep 5;; esac
 rm -f "$RUN/active.$$"
 case "$app" in fail*) echo "Scheduled task X failed"; exit 3;; esac
 echo "No scheduled commands are ready to run."
@@ -27,6 +29,7 @@ SH
 chmod +x "$SHIM/crontab" "$SHIM/php"
 command -v flock >/dev/null || { printf '#!/bin/sh\nexit 0\n' > "$SHIM/flock"; chmod +x "$SHIM/flock"; echo "(no flock on this machine: shim used; CI runs the real one)"; }
 cp "$ROOT/tools/dot-cron-runner.sh" "$HOME/bin/dot-cron-runner"; chmod +x "$HOME/bin/dot-cron-runner"
+: > "$HOME/bin/dot-queue-precheck.php"
 HOSTSH="$ROOT/tools/dot-cron-host.sh"
 
 line() { echo "* * * * * cd $W/apps/$1 && exec $SHIM/php artisan $2 > storage/logs/cron-$3.log 2>&1 # dot-$1"; }
@@ -72,6 +75,66 @@ if command -v flock >/dev/null && [ -z "${SHIM_FLOCK:-}" ] && [ ! -f "$SHIM/floc
   ( bash "$HOME/bin/dot-cron-runner" & sleep 0.5; bash "$HOME/bin/dot-cron-runner"; wait )
   check "a second runner started during a pass skips (last-skip.log written)" "grep -q skipped '$HOME/.dot-cron.d/last-skip.log'"
 else echo "skip - overlap test needs real flock (runs in CI)"; fi
+
+# 5c. capacity changes: empty queues are skipped, any doubt runs the worker, the schedule lock is separate, nice is used
+D2="$W/d2"; mkdir -p "$D2" "$W/apps/idle1/storage/logs" "$W/apps/broken1/storage/logs" "$W/apps/busy1/storage/logs"
+for a in idle1 broken1 busy1; do
+  echo "cd $W/apps/$a && exec $SHIM/php artisan schedule:run > storage/logs/cron-scheduler.log 2>&1" > "$D2/$a.cron"
+  echo "cd $W/apps/$a && exec $SHIM/php artisan queue:work --stop-when-empty > storage/logs/cron-queue.log 2>&1" >> "$D2/$a.cron"
+done
+: > "$RUN/calls"
+DOT_CRON_DIR="$D2" bash "$HOME/bin/dot-cron-runner"
+check "empty queue (idle1): its queue:work is skipped, its schedule:run still runs" "! grep -q 'idle1 queue:work' '$RUN/calls' && grep -q 'idle1 schedule:run' '$RUN/calls'"
+check "pre-check unsure (broken1): the worker runs as before (fail-open)" "grep -q 'broken1 queue:work' '$RUN/calls'"
+check "pre-check says jobs waiting (busy1): the worker runs" "grep -q 'busy1 queue:work' '$RUN/calls'"
+check "last-run.log reports skipped_empty=1 and sched_seconds" "grep -q 'skipped_empty=1' '$D2/last-run.log' && grep -q 'sched_seconds=' '$D2/last-run.log'"
+check "the default parallelism is 2" "grep -q 'parallel=2' '$D2/last-run.log'"
+: > "$RUN/calls"; DOT_QUEUE_PRECHECK=/nonexistent DOT_CRON_DIR="$D2" bash "$HOME/bin/dot-cron-runner"
+check "no pre-check script installed: every queue worker runs (idle1 too)" "grep -q 'idle1 queue:work' '$RUN/calls' && grep -q 'skipped_empty=0' '$D2/last-run.log'"
+
+if command -v flock >/dev/null && [ ! -f "$SHIM/flock" ]; then
+  D3="$W/d3"; mkdir -p "$D3" "$W/apps/fastsched/storage/logs" "$W/apps/slowq/storage/logs"
+  echo "cd $W/apps/fastsched && exec $SHIM/php artisan schedule:run > storage/logs/cron-scheduler.log 2>&1" > "$D3/fastsched.cron"
+  echo "cd $W/apps/slowq && exec $SHIM/php artisan queue:work --stop-when-empty > storage/logs/cron-queue.log 2>&1" > "$D3/slowq.cron"
+  : > "$RUN/calls"; rm -f "$D3/last-skip.log"
+  ( DOT_CRON_DIR="$D3" bash "$HOME/bin/dot-cron-runner" & sleep 1; DOT_CRON_DIR="$D3" bash "$HOME/bin/dot-cron-runner"; wait )
+  check "a slow queue pass does not make the next minute's schedule pass skip (2 schedule runs)" "[ \$(grep -c 'fastsched schedule:run' '$RUN/calls') = 2 ] && [ ! -f '$D3/last-skip.log' ]"
+else echo "skip - lock-split test needs real flock (runs in CI)"; fi
+
+# the real pre-check script against a real SQLite file (skipped when this machine's php has no pdo_sqlite)
+if [ -n "$REALPHP" ] && "$REALPHP" -r 'exit(extension_loaded("pdo_sqlite") ? 0 : 1);' 2>/dev/null; then
+  PRE="$ROOT/tools/dot-queue-precheck.php"; RA="$W/apps/real1"; mkdir -p "$RA"
+  "$REALPHP" -r '$p = new PDO("sqlite:" . $argv[1]); $p->exec("create table jobs (id integer primary key, payload text)");' "$W/real1.sqlite"
+  printf 'QUEUE_CONNECTION=database\nDB_CONNECTION=sqlite\nDB_DATABASE=%s\n' "$W/real1.sqlite" > "$RA/.env"
+  "$REALPHP" "$PRE" "$RA" >/dev/null; check "real pre-check: empty jobs table exits 10 (skip)" "[ $? -eq 10 ]"
+  "$REALPHP" -r '$p = new PDO("sqlite:" . $argv[1]); $p->exec("insert into jobs (payload) values (\"x\")");' "$W/real1.sqlite"
+  "$REALPHP" "$PRE" "$RA" >/dev/null; check "real pre-check: a waiting job exits 0 (run the worker)" "[ $? -eq 0 ]"
+  printf 'QUEUE_CONNECTION=sync\nDB_CONNECTION=sqlite\nDB_DATABASE=%s\n' "$W/real1.sqlite" > "$RA/.env"
+  "$REALPHP" "$PRE" "$RA" >/dev/null; check "real pre-check: a non-database queue driver exits 20 (run)" "[ $? -eq 20 ]"
+  printf 'QUEUE_CONNECTION=database\nDB_CONNECTION=sqlite\nDB_DATABASE=%s\n' "$W/missing.sqlite" > "$RA/.env"
+  "$REALPHP" "$PRE" "$RA" >/dev/null; check "real pre-check: a missing database file exits 2 (unsure, run)" "[ $? -eq 2 ]"
+  printf 'QUEUE_CONNECTION=database\nDB_CONNECTION=sqlite\nDB_DATABASE=%s\nDB_QUEUE_TABLE=nope\n' "$W/real1.sqlite" > "$RA/.env"
+  "$REALPHP" "$PRE" "$RA" >/dev/null; check "real pre-check: a missing table exits 2 (unsure, run)" "[ $? -eq 2 ]"
+  rm -f "$RA/.env"; "$REALPHP" "$PRE" "$RA" >/dev/null; check "real pre-check: no .env exits 2 (unsure, run)" "[ $? -eq 2 ]"
+  printf 'QUEUE_CONNECTION=database\nDB_CONNECTION=mysql\nDB_HOST=${OTHER}\nDB_DATABASE=x\n' > "$RA/.env"
+  "$REALPHP" "$PRE" "$RA" >/dev/null; check "real pre-check: an interpolated env value exits 2 (unsure, run)" "[ $? -eq 2 ]"
+  OUTP="$("$REALPHP" "$PRE" "$RA" 2>&1)"; check "real pre-check prints no secrets" "! printf '%s' \"\$OUTP\" | grep -qi 'password\|secret'"
+else echo "skip - real pre-check tests need php with pdo_sqlite"; fi
+
+# 5d. disable / enable / rollback-runner
+bash "$HOSTSH" disable slow1 >/dev/null 2>&1
+check "disable renames the app's file so the runner ignores it" "[ ! -f '$HOME/.dot-cron.d/slow1.cron' ] && [ -f '$HOME/.dot-cron.d/slow1.cron.disabled' ]"
+: > "$RUN/calls"; bash "$HOME/bin/dot-cron-runner"
+check "a disabled app is not run (slow1 absent, slow2 present)" "! grep -q 'slow1 ' '$RUN/calls' && grep -q 'slow2 schedule:run' '$RUN/calls'"
+bash "$HOSTSH" enable slow1 >/dev/null 2>&1
+check "enable puts it back" "[ -f '$HOME/.dot-cron.d/slow1.cron' ] && [ ! -f '$HOME/.dot-cron.d/slow1.cron.disabled' ]"
+bash "$HOSTSH" disable 'bad key' >/dev/null 2>&1; check "disable refuses an invalid key without touching anything" "[ -f '$HOME/.dot-cron.d/slow2.cron' ]"
+bash "$HOSTSH" rollback-runner >/dev/null 2>&1; check "rollback-runner with no previous copy fails clearly" "[ $? -ne 0 ]"
+echo '#!/bin/sh
+echo previous' > "$HOME/bin/dot-cron-runner.prev"; bash "$HOSTSH" rollback-runner >/dev/null 2>&1
+check "rollback-runner restores the previous runner" "grep -q previous '$HOME/bin/dot-cron-runner'"
+cp "$ROOT/tools/dot-cron-runner.sh" "$HOME/bin/dot-cron-runner"; chmod +x "$HOME/bin/dot-cron-runner"
+
 # 6. revert
 bash "$HOSTSH" revert tasks auction >/dev/null 2>&1
 check "revert puts tasks' two lines back with the marker" "[ \$(grep -c '# dot-tasks' '$CRONTAB_FILE') = 2 ] && [ ! -f '$HOME/.dot-cron.d/tasks.cron' ]"
