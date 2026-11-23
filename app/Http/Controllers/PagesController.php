@@ -14,6 +14,7 @@ use App\Services\Knowledge\SimilarContent;
 use App\Services\Knowledge\TopicBadges;
 use App\Services\Points\PointsClient;
 use App\Services\Ux\UxSignals;
+use App\Support\BusinessTools;
 use App\Support\Input;
 use App\Support\Knowledge\ContributionStats;
 use App\Support\Knowledge\ModerationStatus;
@@ -79,7 +80,7 @@ class PagesController extends Controller
     /** R-56: the public Business Tools page, built from the platform catalogue and the marketing layer in config/business_tools.php. */
     public function businessTools(Request $request)
     {
-        return view('business-tools', ['page' => \App\Support\BusinessTools::page()]);
+        return view('business-tools', ['page' => BusinessTools::page()]);
     }
 
     /**
