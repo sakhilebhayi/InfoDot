@@ -40,7 +40,7 @@ class PublicDesignR57Test extends TestCase
     {
         $about = $this->get('/about')->assertOk()->getContent();
 
-        foreach (['Daniel Thomas', 'Vije Vijendranath', 'Blake Wisz', 'Microsoft 365'] as $author) {
+        foreach (['Vije Vijendranath', 'Simon Hurry', 'Mario Scheibl', 'Amy Harrison', 'Clodagh Da Paixao', 'Nigel SB Photography', 'FitNish Media'] as $author) {
             $this->assertStringContainsString($author, $about, "{$author} is credited");
         }
         $this->assertStringContainsString('unsplash.com/license', $about);
@@ -98,5 +98,25 @@ class PublicDesignR57Test extends TestCase
 
         $js = (string) file_get_contents(resource_path('js/landing.js'));
         $this->assertStringContainsString('userPaused = reduce', $js, 'nothing changes by itself when motion is reduced');
+    }
+
+    public function test_no_photograph_is_used_in_two_places(): void
+    {
+        $files = array_merge(
+            glob(resource_path('views/*.blade.php')) ?: [],
+            glob(resource_path('views/partials/home-hero*.blade.php')) ?: [],
+            glob(resource_path('views/businesses/index.blade.php')) ?: [],
+        );
+        $uses = [];
+        foreach ($files as $file) {
+            preg_match_all('#resources/img/(?:pages|landing)/([a-z0-9-]+?)(?:-\d+)?\.jpg#', (string) file_get_contents($file), $m);
+            foreach (array_unique($m[1]) as $name) {
+                $uses[$name][] = basename($file);
+            }
+        }
+        foreach ($uses as $name => $where) {
+            $this->assertCount(1, array_unique($where), "the photograph {$name} appears in more than one place: ".implode(', ', array_unique($where)));
+        }
+        $this->assertGreaterThanOrEqual(12, count($uses), 'the pages use a spread of different photographs');
     }
 }

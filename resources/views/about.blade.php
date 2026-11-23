@@ -5,7 +5,7 @@
         <p class="ix-lede" data-pg-in>InfoDot helps people start, manage and grow their businesses. It brings together practical business knowledge, people who share what works, and digital tools in one place, so nobody has to work it all out alone.</p>
 
         <figure class="pg-strip" data-pg-photo>
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/seamstress.jpg') }}" alt="A seamstress at her sewing machine in a shop full of printed fabric" width="1200" height="800" loading="eager" decoding="async">
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" width="1400" height="1050" loading="eager" decoding="async">
         </figure>
 
         <h2>Why it exists</h2>
@@ -35,19 +35,25 @@
         </ul>
 
         <h2 id="photo-credits">Photograph credits</h2>
-        <p>Some photographs on the Contact, Businesses, home and What InfoDot does pages come from Unsplash and are used under the <a href="https://unsplash.com/license" rel="noopener">Unsplash licence</a>. Each was cropped and resized.</p>
+        <p>Every photograph on InfoDot was taken in South Africa. Most come from Unsplash and are used under the <a href="https://unsplash.com/license" rel="noopener">Unsplash licence</a>; one comes from Wikimedia Commons. Each was cropped and resized. Where each one appears is noted after its title.</p>
         <ul>
-            <li><a href="https://unsplash.com/photos/woman-using-laptop-in-workspace-HA-0i0E7sq4" rel="noopener">Woman using laptop in workspace</a> by Daniel Thomas</li>
-            <li><a href="https://unsplash.com/photos/a-group-of-colorful-bags-sitting-on-top-of-a-table-9o5zeS6QbgM" rel="noopener">Rosebank Sunday Market in Johannesburg</a> by Vije Vijendranath</li>
-            <li><a href="https://unsplash.com/photos/two-women-near-tables-GFrBMipOd_E" rel="noopener">Two women near tables</a> by Blake Wisz</li>
-            <li><a href="https://unsplash.com/photos/a-person-sitting-at-a-table-with-a-laptop-oUbzU87d1Gc" rel="noopener">A person sitting at a table with a laptop</a> by Microsoft 365</li>
+            <li><a href="https://unsplash.com/photos/a-group-of-colorful-bags-sitting-on-top-of-a-table-9o5zeS6QbgM" rel="noopener">Rosebank Sunday Market, Johannesburg</a> by Vije Vijendranath (home page)</li>
+            <li><a href="https://unsplash.com/photos/johannesburg-skyline-at-golden-hour-_h-L45TSmGM" rel="noopener">Johannesburg skyline at golden hour</a> by Simon Hurry (home page)</li>
+            <li><a href="https://unsplash.com/photos/ODZIiIsn490" rel="noopener">Bo-Kaap, Cape Town</a> by Devon Janse van Rensburg (home page)</li>
+            <li><a href="https://unsplash.com/photos/tCLU5Ofe-Dg" rel="noopener">Kalk Bay Trading Post sign</a> by ryan mayes (home page)</li>
+            <li><a href="https://unsplash.com/photos/2GZvGZh4dJc" rel="noopener">Vineyard rows near Stellenbosch</a> by Nenad Gataric (home page)</li>
+            <li><a href="https://unsplash.com/photos/C77n2yK8brk" rel="noopener">Goods market, Cape Town</a> by FitNish Media (home page)</li>
+            <li><a href="https://unsplash.com/photos/y0njljTYxHA" rel="noopener">Market stall, Cape Town</a> by FitNish Media (home page)</li>
+            <li><a href="https://unsplash.com/photos/ime_dBOnmwY" rel="noopener">Fishing boats at Kalk Bay</a> by M Lagan (home page)</li>
+            <li><a href="https://unsplash.com/photos/mQ2mZMcI1dc" rel="noopener">Produce stall, Cape Town market</a> by FitNish Media (home page)</li>
+            <li><a href="https://unsplash.com/photos/hgm1xkVxsX0" rel="noopener">Outdoor cafe, Cape Town</a> by Mario Scheibl (Contact)</li>
+            <li><a href="https://unsplash.com/photos/NLVj-FTLwu4" rel="noopener">Stained glass door at a Cape Town market</a> by Amy Harrison (Businesses)</li>
+            <li><a href="https://unsplash.com/photos/xvJVDUoGpoU" rel="noopener">Johannesburg views</a> by Clodagh Da Paixao (What InfoDot does)</li>
+            <li><a href="https://unsplash.com/photos/D4l8jOd-7jI" rel="noopener">Bo-Kaap street and mural</a> by Nigel SB Photography (Questions people ask)</li>
         </ul>
-        <p>The other photographs, on the home and About pages, come from Wikimedia Commons. Each was cropped and resized, and each is shared under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).</p>
+        <p>On the home page and About page, one photograph comes from Wikimedia Commons under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>):</p>
         <ul>
-            <li><a href="https://commons.wikimedia.org/wiki/File:Openspace_wao_coworking.jpg" rel="noopener">"Openspace wao coworking"</a> by WAO Coworking</li>
-            <li><a href="https://commons.wikimedia.org/wiki/File:A_seamstress_at_work.jpg" rel="noopener">"A seamstress at work"</a> by Rwebogora</li>
-            <li><a href="https://commons.wikimedia.org/wiki/File:Couturi%C3%A8re_3.jpg" rel="noopener">"Couturière 3"</a> by Metchyves</li>
-            <li><a href="https://commons.wikimedia.org/wiki/File:Greenmarket,_Cape_Town_(P1050987).jpg" rel="noopener">"Greenmarket, Cape Town"</a> by Matti Blume</li>
+            <li><a href="https://commons.wikimedia.org/wiki/File:Greenmarket,_Cape_Town_(P1050987).jpg" rel="noopener">"Greenmarket, Cape Town"</a> by Matti Blume (About)</li>
         </ul>
 
         <h2>Get in touch</h2>

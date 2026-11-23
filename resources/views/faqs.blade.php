@@ -38,7 +38,7 @@
         <h1 class="ix-h1 pg-title" data-pg-in>Questions people ask</h1>
         <p class="ix-lede" data-pg-in>Straight answers about what InfoDot is, who can see what you write and how answers are checked.</p>
         <figure class="pg-strip" data-pg-photo>
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/faqs-1600.jpg') }}" alt="Two women at a shop counter with a card reader, a salon behind them" width="1600" height="1067" loading="eager" decoding="async">
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/bokaap-mural-1600.jpg') }}" alt="A Bo-Kaap street in Cape Town, painted houses and a mural of a footballer" width="1600" height="1067" loading="eager" decoding="async">
         </figure>
 
         @foreach ($faqs as [$question, $answer])

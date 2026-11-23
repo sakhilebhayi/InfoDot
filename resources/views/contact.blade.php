@@ -17,7 +17,7 @@
             <p class="pg-hero__lede" data-pg-in>Questions, ideas and concerns about InfoDot are welcome. Choose the lane that fits and your message reaches the right place first.</p>
         </div>
         <figure class="pg-photo" data-pg-photo>
-            <img src="{{ $img('contact-1600') }}" srcset="{{ $img('contact-800') }} 800w, {{ $img('contact-1600') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="A woman in a mustard cardigan working on a laptop at a dark desk by a window" width="1600" height="1067" decoding="async">
+            <img src="{{ $img('camps-bay-cafe-1600') }}" srcset="{{ $img('camps-bay-cafe-800') }} 800w, {{ $img('camps-bay-cafe-1600') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="People gathered at a Cape Town outdoor cafe with the mountain behind them" width="1600" height="1067" decoding="async">
         </figure>
     </section>
 

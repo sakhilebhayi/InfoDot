@@ -1,7 +1,7 @@
 <section class="lp-hero hd" data-hd data-scene="b" aria-labelledby="hero-title">
     <div class="hd__stage" aria-hidden="true">
         <div class="hd__scene hd__scene--a" data-scene-id="a">
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }} 1600w" sizes="100vw" alt="" width="1600" height="1067" decoding="async">
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-skyline-1920.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-skyline-960.jpg') }} 960w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-skyline-1920.jpg') }} 1920w" sizes="100vw" alt="" width="1920" height="1280" decoding="async">
         </div>
         <div class="hd__scene hd__scene--b" data-scene-id="b">
             <div class="hd__ground">
@@ -9,15 +9,15 @@
                 <span class="ix-stamp hd__stamp">Solved</span>
             </div>
             <figure class="hd__photo">
-                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 50vw" alt="" width="1600" height="1067" decoding="async" fetchpriority="high">
+                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/rosebank-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/rosebank-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/rosebank-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 50vw" alt="" width="1600" height="1067" decoding="async" fetchpriority="high">
             </figure>
         </div>
         <div class="hd__scene hd__scene--c" data-scene-id="c">
             <div class="hd__ground"></div>
             <ul class="hd__tiles" role="presentation">
-                <li class="hd__tile hd__tile--1"><img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/features-800.jpg') }}" alt="" width="800" height="533" decoding="async"><span class="pg-plate" style="--pg-tone: var(--ix-knowledge)">Discover</span></li>
-                <li class="hd__tile hd__tile--2"><img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }}" alt="" width="800" height="533" decoding="async"><span class="pg-plate pg-plate--mustard" style="--pg-tone: var(--ix-platforms)">Manage</span></li>
-                <li class="hd__tile hd__tile--3"><img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/seamstress.jpg') }}" alt="" width="1200" height="800" decoding="async"><span class="pg-plate" style="--pg-tone: var(--ix-documents)">Grow</span></li>
+                <li class="hd__tile hd__tile--1"><img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/bokaap-street-800.jpg') }}" alt="" width="800" height="533" decoding="async"><span class="pg-plate" style="--pg-tone: var(--ix-knowledge)">Discover</span></li>
+                <li class="hd__tile hd__tile--2"><img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/kalkbay-sign-800.jpg') }}" alt="" width="800" height="533" decoding="async"><span class="pg-plate pg-plate--mustard" style="--pg-tone: var(--ix-platforms)">Manage</span></li>
+                <li class="hd__tile hd__tile--3"><img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/vineyard-800.jpg') }}" alt="" width="800" height="533" decoding="async"><span class="pg-plate" style="--pg-tone: var(--ix-documents)">Grow</span></li>
             </ul>
         </div>
     </div>

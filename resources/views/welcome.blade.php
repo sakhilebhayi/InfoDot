@@ -54,7 +54,7 @@
 
         <div class="hp-pillars__list">
             <article class="hp-pillar hp-pillar--discover" id="discover" data-pillar aria-labelledby="discover-title">
-                <h3 id="discover-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/features-800.jpg') }}')"><span class="hp-pillar__word">Discover</span><span class="hp-pillar__tag">Learn what works</span></h3>
+                <h3 id="discover-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-jars-800.jpg') }}')"><span class="hp-pillar__word">Discover</span><span class="hp-pillar__tag">Learn what works</span></h3>
                 <div class="hp-pillar__body">
                     <p class="hp-pillar__lede" data-reveal>Find practical answers, business guides, proven solutions and experiences shared by other entrepreneurs and businesses.</p>
                     <ul class="lp-checks hp-pillar__list">
@@ -81,7 +81,7 @@
             </article>
 
             <article class="hp-pillar hp-pillar--manage" id="manage" data-pillar aria-labelledby="manage-title">
-                <h3 id="manage-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/pillar-manage-800.jpg') }}')"><span class="hp-pillar__word">Manage</span><span class="hp-pillar__tag">Run your business</span></h3>
+                <h3 id="manage-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-burger-800.jpg') }}')"><span class="hp-pillar__word">Manage</span><span class="hp-pillar__tag">Run your business</span></h3>
                 <div class="hp-pillar__body">
                     <p class="hp-pillar__lede" data-reveal>Access the digital tools you need to organise, manage and operate your business from one connected ecosystem.</p>
                     <ul class="lp-checks hp-pillar__list">
@@ -98,7 +98,7 @@
             </article>
 
             <article class="hp-pillar hp-pillar--grow" id="grow" data-pillar aria-labelledby="grow-title">
-                <h3 id="grow-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}')"><span class="hp-pillar__word">Grow</span><span class="hp-pillar__tag">Build your future</span></h3>
+                <h3 id="grow-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/kalkbay-boats-800.jpg') }}')"><span class="hp-pillar__word">Grow</span><span class="hp-pillar__tag">Build your future</span></h3>
                 <div class="hp-pillar__body">
                     <p class="hp-pillar__lede" data-reveal>Use knowledge, connected tools and shared experiences to improve how you work, make better decisions and discover opportunities to grow.</p>
                     <ul class="lp-checks hp-pillar__list">
@@ -240,7 +240,7 @@
     <section class="lp-split hp-who" aria-labelledby="who-title">
         <figure class="lp-photo" data-reveal>
             <div class="lp-photo__frame" data-parallax>
-                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/seamstress.jpg') }}" width="1200" height="800" alt="A seamstress at her sewing machine, with racks of colourful fabric behind her" loading="lazy" decoding="async">
+                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-vegetables-1200.jpg') }}" width="1200" height="800" alt="A vegetable stall at a Cape Town market: tomatoes, avocados, fennel, radishes and herbs in boxes" loading="lazy" decoding="async">
             </div>
         </figure>
         <div class="lp-split__body">

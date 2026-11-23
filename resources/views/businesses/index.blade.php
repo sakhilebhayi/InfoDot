@@ -96,7 +96,7 @@
         @endif
     </header>
     <figure class="pg-photo" data-pg-photo>
-        <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="Colourful African print bags on a market table, a trader behind them, at Rosebank Sunday Market in Johannesburg" width="1600" height="1067" decoding="async">
+        <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-door-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-door-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-door-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="A pine door with stained glass leaning against a car at an outdoor market in Cape Town" width="1600" height="1067" decoding="async">
     </figure>
     </div>
 
