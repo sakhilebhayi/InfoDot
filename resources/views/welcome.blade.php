@@ -47,7 +47,7 @@
         <div class="lp-hero__veil" aria-hidden="true"></div>
         <div class="lp-hero__inner" data-hero-inner>
             <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Everything your business needs. All in one place.' }}</h1>
-            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'From your first business idea to managing daily operations and finding new opportunities, InfoDot brings together the knowledge, people and digital tools to help you move forward.' }}</p>
+            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'Knowledge, people and tools to start, manage and grow your business.' }}</p>
 
             <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>
                 <label for="lp-q" class="ix-sr">Search practical business solutions</label>
@@ -62,10 +62,10 @@
                     <a href="{{ route('dashboard') }}" class="ix-btn lp-btn">Go to your Home</a>
                 @else
                     <a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for Free</a>
-                    <a href="#how-it-works" class="ix-btn lp-btn">Explore How It Works</a>
+                    <a href="#how-it-works" class="ix-btn lp-btn">See how it works</a>
                 @endauth
             </div>
-            <p class="lp-hero__ask" data-hero>One account. Connected business tools. A community that shares what works.</p>
+            <p class="lp-hero__ask" data-hero>One account. Connected tools. People who share what works.</p>
         </div>
     </section>
 
