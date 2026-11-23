@@ -52,10 +52,11 @@ class InteractionSweepTest extends TestCase
 
     /**
      * The only addresses a visitor may be shown that ask them to sign in first: the calls to action on the public
-     * pages (ask, write, browse, a topic, write to or report a business, a seminar's short link). Anything else a
-     * visitor is shown must open for a visitor, so a new sign-in wall is a decision, not an accident.
+     * pages (ask, write, browse, a topic, write to or report a business, a seminar's short link, and, since R-55, the tools
+     * register that the homepage's "Explore Business Tools" opens, with a note beside it saying you sign in first). Anything
+     * else a visitor is shown must open for a visitor, so a new sign-in wall is a decision, not an accident.
      */
-    private const VISITOR_SIGN_IN_WALLS = ['/questions/ask', '/solutions', '/question/view/{id}', '/solution/view/{id}', '/solution/create', '/topics', '/topics/*', '/business/{uuid}/message', '/business/{uuid}/report', '/j/*'];
+    private const VISITOR_SIGN_IN_WALLS = ['/questions/ask', '/solutions', '/question/view/{id}', '/solution/view/{id}', '/solution/create', '/topics', '/topics/*', '/business/{uuid}/message', '/business/{uuid}/report', '/j/*', '/platforms'];
 
     /** @var array<string, mixed> */
     private static array $report = [];

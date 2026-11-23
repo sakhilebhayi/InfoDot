@@ -275,7 +275,9 @@ class GettingStartedTest extends TestCase
     {
         $this->get('/home')->assertRedirect(route('login'));
         $this->post(route('getting-started.dismiss'))->assertRedirect(route('login'));
-        $this->get('/')->assertOk()->assertDontSee('Getting started')->assertDontSee('ix-start', false);
+        // The member's checklist panel is not on the guest's page. (R-55: the marketing homepage has its own section called
+        // "Getting started with InfoDot is simple.", so the check is for the panel itself, not for those words.)
+        $this->get('/')->assertOk()->assertDontSee('id="start-h"', false)->assertDontSee('ix-start', false)->assertDontSee('Getting started is put away');
 
         // An unverified person is sent to verify first.
         $unverified = User::factory()->unverified()->create();
