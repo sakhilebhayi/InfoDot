@@ -43,7 +43,7 @@
             <li><a href="https://unsplash.com/photos/two-women-near-tables-GFrBMipOd_E" rel="noopener">Two women near tables</a> by Blake Wisz</li>
             <li><a href="https://unsplash.com/photos/a-person-sitting-at-a-table-with-a-laptop-oUbzU87d1Gc" rel="noopener">A person sitting at a table with a laptop</a> by Microsoft 365</li>
         </ul>
-        <p>The other photographs, on the home, About and Questions pages, come from Wikimedia Commons. Each was cropped and resized, and each is shared under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).</p>
+        <p>The other photographs, on the home and About pages, come from Wikimedia Commons. Each was cropped and resized, and each is shared under the Creative Commons Attribution-ShareAlike 4.0 licence (<a href="https://creativecommons.org/licenses/by-sa/4.0/" rel="noopener">CC BY-SA 4.0</a>).</p>
         <ul>
             <li><a href="https://commons.wikimedia.org/wiki/File:Openspace_wao_coworking.jpg" rel="noopener">"Openspace wao coworking"</a> by WAO Coworking</li>
             <li><a href="https://commons.wikimedia.org/wiki/File:A_seamstress_at_work.jpg" rel="noopener">"A seamstress at work"</a> by Rwebogora</li>

@@ -219,7 +219,7 @@ class SelfHostedAssetsTest extends TestCase
 
         // The home page's photographs are still credited where they are used.
         $this->get('/about')->assertOk()
-            ->assertSee('The photographs on the home page come from Wikimedia Commons')
+            ->assertSee('The other photographs, on the home and About pages, come from Wikimedia Commons')
             ->assertSee('by WAO Coworking')
             ->assertDontSee('sign-in pages');
     }
