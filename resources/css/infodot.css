@@ -10273,6 +10273,10 @@ button.ix-avatar,
     }
 }
 
+.bt-gate {
+    width: max-content;
+}
+
 .bt-gate span {
     white-space: nowrap;
 }
