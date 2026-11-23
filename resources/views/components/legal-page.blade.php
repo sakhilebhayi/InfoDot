@@ -1,6 +1,6 @@
 @props(['title', 'description', 'body'])
 @php($doc = \App\Support\LegalDocument::prepare($body))
-<x-public-layout :title="$title" band="LEGL" :crumb="$title" :description="$description">
+<x-public-layout :title="$title" band="LEGAL" :crumb="$title" :description="$description">
     <div class="ix-legal">
         @if (count($doc['toc']) > 1)
             <nav class="ix-legal__toc" aria-label="On this page" x-data="{ open: window.matchMedia('(min-width: 900px)').matches }">

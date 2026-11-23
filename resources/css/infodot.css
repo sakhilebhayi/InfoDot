@@ -10621,7 +10621,7 @@ button.ix-avatar,
 
 @media (min-width: 1024px) {
     .pg-prose { grid-template-columns: 280px minmax(0, 1fr); }
-    .pg-prose > :not(.pg-strip):not(.pg-plate):not(.ix-h1):not(.ix-lede) { max-width: 68ch; }
+    .pg-prose > :not(.pg-strip):not(.pg-plate):not(.ix-h1):not(.ix-lede):not(.pg-vignettes) { max-width: 68ch; }
 }
 
 .hp-pillar--discover .hp-pillar__plate,
@@ -10730,3 +10730,57 @@ body[data-area="home"] .ix-btn--primary:hover,
 
 /* Photographs that hold a person keep the face in the crop. */
 .pg-strip img { object-position: 50% 28%; }
+
+/* ===== R-57 round 2 ===== */
+
+/* The cards under the Features photograph take the full width of the reading page. */
+.pg-prose > .pg-vignettes { max-width: none; }
+
+/* One page-title scale on every inner page. */
+.pg-prose .pg-title,
+.ix-legal__body > .ix-h1 {
+    font-size: var(--dot-text-display-size);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.022em;
+}
+
+/* Buttons inside reading text are buttons, not underlined links, and the primary one is gold. */
+.ix-prose .ix-btn { text-decoration: none; }
+.ix-prose .ix-btn--primary { background: #eab31f; border-color: #eab31f; color: #1a1300; }
+
+/* Photo credits stay white on their chip in both themes. */
+.pg-strip figcaption a,
+.pg-photo figcaption a { color: #fff; text-decoration: underline; }
+
+/* The footer rule and the footer links sit on the same edge as the page content. */
+.ix-foot { max-width: 1232px; width: calc(100% - 48px); padding-left: 0; padding-right: 0; }
+
+/* Contact: the lane headings hold two lines so the rows start level, and the page ends without a void. */
+@media (min-width: 901px) {
+    .pg-route h3 { min-height: 2.45em; }
+}
+.pg-note:last-child { margin-bottom: 8px; }
+
+/* Directory: the checkbox stays on one line and Apply sits level with the fields. */
+.pg-dir .ix-dir__check { white-space: nowrap; }
+.pg-dir .ix-dir__filters .ix-btn { justify-self: start; }
+.pg-dir .ix-hint { margin-top: 4px; }
+
+/* Home on a phone: the labels on the Discover, Manage and Grow plates sit on a solid scrim, whatever the photograph is. */
+@media (max-width: 900px) {
+    .hp-pillar__plate::before {
+        background:
+            linear-gradient(180deg, var(--pillar-tone) 0%, var(--pillar-tone) 30%, transparent 75%),
+            linear-gradient(0deg, rgb(8 12 14 / 0.88) 0%, rgb(8 12 14 / 0.4) 40%, transparent 70%);
+    }
+    .hp-pillar--manage .hp-pillar__tag { color: #fff; }
+}
+.ix-prose .pg-vignettes { padding: 0; }
+.pg-vignettes li { margin: 0; }
+
+/* Home timeline on a phone: the markers sit on the vertical line beside each step, not over the text above. */
+@media (max-width: 640px) {
+    .hp-chain__steps li::before { top: 7px; left: -34px; }
+}
+

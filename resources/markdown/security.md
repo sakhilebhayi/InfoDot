@@ -1,5 +1,3 @@
-# Vulnerability Disclosure Policy
-
 _Last updated: 30 October 2026_
 
 InfoDot takes the security of its platform and its members' data seriously. If you believe you have found a security vulnerability in InfoDot or another Dot ecosystem service, we want to hear from you, and we will work with you in good faith.

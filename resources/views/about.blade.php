@@ -1,11 +1,11 @@
-<x-public-layout title="About" reveal band="INFO" crumb="About" description="InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.">
+<x-public-layout title="About" reveal band="ABOUT" crumb="About" description="InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.">
     <article class="ix-prose ix-prose--ledger pg-prose">
-        <span class="pg-plate" data-pg-plate>About</span>
+        <span class="pg-plate" data-pg-plate>Who we are</span>
         <h1 class="ix-h1 pg-title" data-pg-in>About InfoDot</h1>
         <p class="ix-lede" data-pg-in>InfoDot helps people start, manage and grow their businesses. It brings together practical business knowledge, people who share what works, and digital tools in one place, so nobody has to work it all out alone.</p>
 
         <figure class="pg-strip" data-pg-photo>
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/couturiere.jpg') }}" alt="A seamstress smiling at her sewing machine, scissors in hand" width="1000" height="666" loading="eager" decoding="async">
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/seamstress.jpg') }}" alt="A seamstress at her sewing machine in a shop full of printed fabric" width="1200" height="800" loading="eager" decoding="async">
             <figcaption>A business at work: the people InfoDot is for</figcaption>
         </figure>
 

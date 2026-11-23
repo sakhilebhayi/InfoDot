@@ -1,4 +1,4 @@
-<x-public-layout title="Contact" band="INFO" crumb="Contact" reveal description="How to contact InfoDot: account help, your personal information, something wrong on the site, security reports and general questions.">
+<x-public-layout title="Contact" band="CONTACT" crumb="Contact" reveal description="How to contact InfoDot: account help, your personal information, something wrong on the site, security reports and general questions.">
     @php
         $img = fn (string $n) => \Illuminate\Support\Facades\Vite::asset('resources/img/pages/'.$n.'.jpg');
         $routes = [
@@ -12,7 +12,7 @@
 
     <section class="pg-hero" aria-labelledby="contact-h">
         <div class="pg-hero__copy">
-            <span class="pg-plate" data-pg-plate>Contact</span>
+            <span class="pg-plate" data-pg-plate>Write to us</span>
             <h1 id="contact-h" class="pg-hero__title" data-pg-in>Tell us what you need.</h1>
             <p class="pg-hero__lede" data-pg-in>Questions, ideas and concerns about InfoDot are welcome. Choose the lane that fits and your message reaches the right place first.</p>
             <p class="pg-hero__actions" data-pg-in><a class="ix-btn ix-btn--primary" href="#lanes">See the lanes</a></p>

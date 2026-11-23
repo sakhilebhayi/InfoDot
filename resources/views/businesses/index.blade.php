@@ -16,7 +16,7 @@
 
     <div class="pg-dir">
     <header class="ix-dir__head">
-        <span class="pg-plate" data-pg-plate style="--pg-tone: var(--ix-people)">Directory</span>
+        <span class="pg-plate" data-pg-plate style="--pg-tone: var(--ix-people)">Find a business</span>
         <h1 class="ix-h1 pg-hero__title" data-pg-in>Businesses</h1>
         <p class="ix-lede">Find a business by what it does, where it works or what it offers. Ask the way you would ask a person: “accounting firms in Johannesburg”.</p>
         @auth

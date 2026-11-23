@@ -32,13 +32,13 @@
         return $html;
     };
 @endphp
-<x-public-layout title="Questions people ask" reveal band="INFO" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, what you can do with it, who can see your questions, how answers are trusted, and how to contact us.">
+<x-public-layout title="Questions people ask" reveal band="ANSWERS" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, what you can do with it, who can see your questions, how answers are trusted, and how to contact us.">
     <article class="ix-prose ix-prose--ledger pg-prose">
-        <span class="pg-plate" data-pg-plate>Answers</span>
+        <span class="pg-plate" data-pg-plate>Plain answers</span>
         <h1 class="ix-h1 pg-title" data-pg-in>Questions people ask</h1>
         <figure class="pg-strip" data-pg-photo>
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/seamstress.jpg') }}" alt="A seamstress at her machine in a shop full of printed fabric" width="1200" height="800" loading="eager" decoding="async">
-            <figcaption>Questions from people running small businesses</figcaption>
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/faqs-1600.jpg') }}" alt="Two women at a shop counter with a card reader, a salon behind them" width="1600" height="1067" loading="eager" decoding="async">
+            <figcaption>Photograph by <a href="https://unsplash.com/photos/two-women-near-tables-GFrBMipOd_E" rel="noopener">Blake Wisz</a> on Unsplash</figcaption>
         </figure>
 
         @foreach ($faqs as [$question, $answer])
