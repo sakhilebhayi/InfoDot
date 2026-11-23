@@ -1,0 +1,44 @@
+name: Uptime
+
+# Probes every Dot host from GitHub's side every 10 minutes (so it still works when the host or the owner's
+# machine is down). A failed run makes GitHub email whoever last edited the schedule, which is the alert.
+#   - /up must answer 200 (one retry after 10 s). A slow answer (> 10 s) is only a warning.
+#   - /.env must never answer 200 (the app-folder exposure we have seen once, right after a deploy).
+# Read-only: no secrets, no checkout, no writes. Run it by hand from the Actions tab (workflow_dispatch).
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: probe every host
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Probe
+        run: |
+          hosts="infodot.co.za"
+          for s in tasks notify projects agents analytics auction forms engage pulse sheets hr emall ehail design files finance central doc pres tutor charts mines; do
+            hosts="$hosts $s.infodot.co.za"
+          done
+          probe() { curl -s -o /dev/null -m 20 -w '%{http_code} %{time_total}' "https://$1$2" || true; }
+          fail=0
+          { echo "| host | /up | seconds | /.env |"; echo "|---|---|---|---|"; } >> "$GITHUB_STEP_SUMMARY"
+          for h in $hosts; do
+            r="$(probe "$h" /up)"; code="${r%% *}"
+            if [ "$code" != 200 ]; then sleep 10; r="$(probe "$h" /up)"; code="${r%% *}"; fi
+            secs="${r##* }"
+            env_code="$(curl -s -o /dev/null -m 20 -w '%{http_code}' "https://$h/.env" || true)"
+            if [ "$code" != 200 ]; then fail=1; echo "::error::$h /up answered $code (twice)"; fi
+            if [ "$env_code" = 200 ]; then fail=1; echo "::error::$h served /.env with 200: possible exposure"; fi
+            if awk -v t="$secs" 'BEGIN{exit !(t+0 > 10)}'; then echo "::warning::$h /up took ${secs}s"; fi
+            echo "| $h | $code | $secs | $env_code |" >> "$GITHUB_STEP_SUMMARY"
+          done
+          exit $fail
