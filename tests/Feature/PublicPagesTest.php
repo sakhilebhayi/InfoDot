@@ -149,7 +149,7 @@ class PublicPagesTest extends TestCase
     {
         $about = $this->get('/about')->assertOk()->getContent();
 
-        foreach (['WAO Coworking', 'Rwebogora', 'Metchyves', 'Matti Blume', 'CC BY-SA 4.0'] as $credit) {
+        foreach (['Vije Vijendranath', 'Simon Hurry', 'Matti Blume', 'CC BY-SA 4.0', 'Unsplash licence'] as $credit) {
             $this->assertStringContainsString($credit, $about);
         }
         $this->assertStringContainsString('id="photo-credits"', $about);
@@ -286,11 +286,11 @@ class PublicPagesTest extends TestCase
         // An image kept anywhere else in public/ would be a 404 on the live site. (The committed manifest is stale by design, so the
         // source of the build is checked rather than the manifest.)
         $app = (string) file_get_contents(resource_path('js/app.js'));
-        foreach (['../img/landing/*.jpg', '../img/landing/platforms/*.png', '../img/arrow-mask.png'] as $glob) {
+        foreach (['../img/landing/*.jpg', '../img/pages/*.jpg', '../img/landing/platforms/*.png', '../img/arrow-mask.png'] as $glob) {
             $this->assertStringContainsString($glob, $app, $glob.' is not globbed into the build');
         }
 
-        foreach (['arrow-mask.png', 'landing/hero-1920.jpg', 'landing/hero-960.jpg', 'landing/seamstress.jpg', 'landing/couturiere.jpg', 'landing/market.jpg', 'landing/platforms/files.png'] as $file) {
+        foreach (['arrow-mask.png', 'landing/market.jpg', 'landing/platforms/files.png', 'pages/jhb-skyline-1920.jpg', 'pages/rosebank-1600.jpg', 'pages/soweto-street-1200.jpg', 'pages/market-door-1600.jpg', 'pages/bokaap-mural-1600.jpg', 'pages/jhb-city-1600.jpg', 'pages/camps-bay-cafe-1600.jpg'] as $file) {
             $this->assertFileExists(resource_path('img/'.$file));
         }
         $this->assertDirectoryDoesNotExist(public_path('img/landing'), 'landing images belong in resources/img so they ship with the build');

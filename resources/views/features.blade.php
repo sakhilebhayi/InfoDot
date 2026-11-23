@@ -5,7 +5,7 @@
         <p class="ix-lede" data-pg-in>Everything on this page works today. InfoDot has three jobs: help you discover what works, manage your business with connected tools, and grow with what you learn.</p>
 
         <figure class="pg-strip" data-pg-photo>
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/features-1600.jpg') }}" alt="A desk seen from above: a laptop with a spreadsheet, a calculator, invoices and a notebook" width="1600" height="1067" loading="eager" decoding="async">
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-1600.jpg') }}" alt="The Johannesburg city centre at sunset, seen from above" width="1600" height="1067" loading="eager" decoding="async">
         </figure>
 
         <ul class="pg-vignettes" role="list" aria-label="Three things you will see on InfoDot">
