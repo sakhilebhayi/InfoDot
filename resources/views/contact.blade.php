@@ -18,7 +18,6 @@
         </div>
         <figure class="pg-photo" data-pg-photo>
             <img src="{{ $img('contact-1600') }}" srcset="{{ $img('contact-800') }} 800w, {{ $img('contact-1600') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="A woman in a mustard cardigan working on a laptop at a dark desk by a window" width="1600" height="1067" decoding="async">
-            <figcaption>Photograph by <a href="https://unsplash.com/photos/woman-using-laptop-in-workspace-HA-0i0E7sq4" rel="noopener">Daniel Thomas</a> on Unsplash</figcaption>
         </figure>
     </section>
 

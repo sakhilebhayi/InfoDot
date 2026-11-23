@@ -23,7 +23,7 @@ class PublicDesignR57Test extends TestCase
         foreach (['mailto:support@infodot.co.za', 'mailto:privacy@infodot.co.za', route('complains'), route('security'), route('faqs')] as $href) {
             $this->assertStringContainsString('href="'.$href.'"', $html);
         }
-        $this->assertStringContainsString('Photograph by', $html, 'the photograph is credited on the page');
+        $this->assertStringNotContainsString('Photograph by', $html, 'credits live on the Photo credits section of the About page, not on the picture');
         $this->assertStringContainsString('Please do not send passwords', $html);
     }
 
@@ -63,7 +63,7 @@ class PublicDesignR57Test extends TestCase
 
         $this->assertStringContainsString('ix-dir__more-cats', $html);
         $this->assertStringContainsString('more categor', $html);
-        $this->assertStringContainsString('Photograph by', $html);
+        $this->assertStringNotContainsString('Photograph by', $html);
     }
 
     public function test_motion_for_these_pages_only_hides_things_while_the_motion_flag_is_set(): void
@@ -81,5 +81,22 @@ class PublicDesignR57Test extends TestCase
         $this->assertStringContainsString('prefers-reduced-motion: reduce', $js);
         $this->assertStringContainsString('motion-failsafe', $js);
         $this->assertStringNotContainsString("addEventListener('scroll'", $js);
+    }
+
+    public function test_the_home_hero_has_one_heading_one_search_and_three_scenes_with_a_pause_button(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($html, 'id="hero-title"'), 'the words appear once, not once per scene');
+        $this->assertSame(1, substr_count($html, 'class="lp-search"'), 'one search box');
+        foreach (['a', 'b', 'c'] as $scene) {
+            $this->assertStringContainsString('data-scene-id="'.$scene.'"', $html);
+        }
+        $this->assertStringContainsString('data-hd-pause', $html, 'the changing pictures can always be paused');
+        $this->assertStringContainsString('aria-label="Pause the changing pictures"', $html);
+        $this->assertStringNotContainsString('Photograph by', $html, 'credits live on the About page');
+
+        $js = (string) file_get_contents(resource_path('js/landing.js'));
+        $this->assertStringContainsString('userPaused = reduce', $js, 'nothing changes by itself when motion is reduced');
     }
 }

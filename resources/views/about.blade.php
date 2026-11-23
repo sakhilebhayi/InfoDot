@@ -6,7 +6,6 @@
 
         <figure class="pg-strip" data-pg-photo>
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/seamstress.jpg') }}" alt="A seamstress at her sewing machine in a shop full of printed fabric" width="1200" height="800" loading="eager" decoding="async">
-            <figcaption>A business at work: the people InfoDot is for</figcaption>
         </figure>
 
         <h2>Why it exists</h2>

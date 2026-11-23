@@ -42,54 +42,8 @@
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 
     {{-- 1. The hero says what InfoDot is, what it does for you and what to do next. The search box stays: it is the quickest way in. --}}
-    <section class="lp-hero hx-hero" aria-labelledby="hero-title">
-        <div class="hx-hero__grid">
-        <div class="lp-hero__inner" data-hero-inner>
-            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Your business, all in one place.' }}</h1>
-            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'Knowledge, people and tools to start, manage and grow your business.' }}</p>
-
-            <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>
-                <label for="lp-q" class="ix-sr">Search practical business solutions</label>
-                <span class="material-symbols-rounded lp-search__icon" aria-hidden="true">search</span>
-                <input id="lp-q" class="lp-search__input" type="search" name="search" placeholder="How do I register a business?" autocomplete="off" data-examples="{{ json_encode($examples) }}">
-                <button type="submit" class="lp-search__go" aria-label="Search"><x-ix.arrow /></button>
-            </form>
-
-            <div class="hp-hero__actions" data-hero>
-                @auth
-                    <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary lp-btn">Ask a question</a>
-                    <a href="{{ route('dashboard') }}" class="ix-btn lp-btn">Go to your Home</a>
-                @else
-                    <a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for Free</a>
-                    <a href="#how-it-works" class="ix-btn lp-btn">See how it works</a>
-                @endauth
-            </div>
-        </div>
-
-        <figure class="hx-art" aria-label="A market trader in Johannesburg, and recent researched solutions">
-            <div class="hx-photo" data-hx-photo>
-                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 44vw" alt="Colourful African print bags on a market table, a trader behind them, at Rosebank Sunday Market in Johannesburg" width="1600" height="1067" decoding="async" fetchpriority="high">
-                <figcaption>Rosebank Sunday Market, Johannesburg. Photograph by <a href="https://unsplash.com/photos/a-group-of-colorful-bags-sitting-on-top-of-a-table-9o5zeS6QbgM" rel="noopener">Vije Vijendranath</a> on Unsplash</figcaption>
-            </div>
-            @if ($library->isNotEmpty())
-                <div class="hx-ledger" data-hx-ledger>
-                    <p class="hx-ledger__head"><span class="pg-plate pg-plate--mustard" style="--pg-tone: var(--ix-platforms)">Library</span> <span>Researched, with named sources</span></p>
-                    <ol class="hx-ledger__list">
-                        @foreach ($library->take(3) as $entry)
-                            <li>
-                                <a href="{{ route('solutions.view', $entry->id) }}">
-                                    <span class="ix-ref">{{ \App\Support\Reference::for($entry) }}</span>
-                                    <strong>{{ $entry->solution_title }}</strong>
-                                    <span class="hx-ledger__meta">{{ $entry->steps }} steps</span>
-                                </a>
-                            </li>
-                        @endforeach
-                    </ol>
-                </div>
-            @endif
-        </figure>
-        </div>
-    </section>
+    {{-- 1. The hero says what InfoDot is and what to do next. The search stays. The picture side moves through three compositions; the words never move. --}}
+    @include('partials.home-hero')
 
     {{-- 2. Three ways InfoDot helps. Discover, Manage and Grow are the frame the rest of the page hangs on. --}}
     <section class="hp-pillars" id="pillars" aria-labelledby="pillars-title">

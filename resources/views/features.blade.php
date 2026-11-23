@@ -6,7 +6,6 @@
 
         <figure class="pg-strip" data-pg-photo>
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/features-1600.jpg') }}" alt="A desk seen from above: a laptop with a spreadsheet, a calculator, invoices and a notebook" width="1600" height="1067" loading="eager" decoding="async">
-            <figcaption>Photograph by <a href="https://unsplash.com/photos/a-person-sitting-at-a-table-with-a-laptop-oUbzU87d1Gc" rel="noopener">Microsoft 365</a> on Unsplash</figcaption>
         </figure>
 
         <ul class="pg-vignettes" role="list" aria-label="Three things you will see on InfoDot">

@@ -97,7 +97,6 @@
     </header>
     <figure class="pg-photo" data-pg-photo>
         <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="Colourful African print bags on a market table, a trader behind them, at Rosebank Sunday Market in Johannesburg" width="1600" height="1067" decoding="async">
-        <figcaption>Photograph by <a href="https://unsplash.com/photos/a-group-of-colorful-bags-sitting-on-top-of-a-table-9o5zeS6QbgM" rel="noopener">Vije Vijendranath</a> on Unsplash</figcaption>
     </figure>
     </div>
 

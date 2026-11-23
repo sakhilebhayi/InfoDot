@@ -10976,3 +10976,98 @@ body[data-area="home"] .ix-btn--primary:hover,
     .hp-pillar__plate { min-height: 200px; aspect-ratio: 16 / 10; }
     .hp-pillar__word { font-size: var(--dot-text-h3-size); }
 }
+
+/* ===== R-57: the home hero. The words and the search stay still on the left; the picture side moves through three compositions. ===== */
+.hd {
+    --hd-ink: var(--ix-text);
+    --hd-ink-2: var(--ix-text-2);
+    position: relative;
+    display: block;
+    min-height: min(88vh, 800px);
+    overflow: clip;
+    background: var(--ix-bg);
+    isolation: isolate;
+}
+
+.hd[data-scene="a"] { --hd-ink: #fff; --hd-ink-2: rgb(255 255 255 / 0.86); }
+
+.hd__stage { position: absolute; inset: 0; z-index: 0; }
+.hd__scene { position: absolute; inset: 0; visibility: hidden; opacity: 0; }
+/* Without the script the library-and-photograph composition shows, and nothing moves. */
+.hd__scene--b { visibility: visible; opacity: 1; }
+.hd--live .hd__scene { visibility: hidden; opacity: 0; }
+.hd--live .hd__scene.is-on { visibility: visible; opacity: 1; }
+
+/* Scene A: the photograph is the hero. */
+.hd__scene--a img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 40% 42%; }
+.hd__scene--a::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(10 14 16 / 0.94) 0%, rgb(10 14 16 / 0.8) 36%, rgb(10 14 16 / 0.3) 68%, rgb(10 14 16 / 0.1) 100%), linear-gradient(0deg, rgb(10 14 16 / 0.6) 0%, transparent 35%); }
+
+/* Scenes B and C share the ground of a ledger page: ruled lines on the left half. */
+.hd__ground { position: absolute; inset: 0 50% 0 0; background: repeating-linear-gradient(0deg, transparent 0 63px, var(--ix-rule) 63px 64px); opacity: 0.55; pointer-events: none; }
+.hd__ref { position: absolute; left: max(24px, calc((100vw - 1232px) / 2)); bottom: 28px; color: var(--ix-rule-strong); font-family: var(--ix-stencil-font); font-weight: 700; font-size: clamp(3rem, 7.5vw, 8rem); letter-spacing: 0.04em; line-height: 1; white-space: nowrap; opacity: 0.55; }
+.hd__stamp { position: absolute; right: 4%; top: 7%; font-size: clamp(1.6rem, 3.4vw, 3.4rem); opacity: 0.28; transform: rotate(-9deg); }
+
+/* Scene B: the photograph bleeds off the right edge, top to bottom. */
+.hd__photo { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; margin: 0; overflow: hidden; }
+.hd__photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 38% 50%; }
+
+/* Scene C: three photographs, one for each way InfoDot helps, rise on the right half, staggered. */
+.hd__tiles { position: absolute; top: 0; right: 0; bottom: 0; width: 52%; display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 12px; align-items: center; margin: 0; padding: 72px 24px 72px 12px; list-style: none; }
+.hd__tile { position: relative; overflow: hidden; border-radius: var(--ix-radius); background: var(--ix-analytics); }
+.hd__tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hd__tile .pg-plate { position: absolute; left: 10px; top: 10px; }
+.hd__tile--1 { aspect-ratio: 3 / 4.4; translate: 0 22px; }
+.hd__tile--2 { aspect-ratio: 3 / 4.8; translate: 0 -26px; }
+.hd__tile--3 { aspect-ratio: 3 / 4.4; translate: 0 34px; }
+
+.hd__grid { position: relative; z-index: 2; display: grid; align-content: center; width: 50%; min-height: inherit; box-sizing: border-box; padding: 88px 48px 150px max(24px, calc((100vw - 1232px) / 2)); }
+.hd .lp-hero__inner { max-width: none; padding: 0; text-align: left; }
+.hd .lp-hero__title { margin: 0 0 18px; max-width: 12ch; color: var(--hd-ink); font-size: clamp(2.6rem, 5.4vw, 4.75rem); line-height: 1; transition: color 0.6s ease; }
+.hd .lp-hero__sub { margin: 0 0 28px; max-width: 40ch; color: var(--hd-ink-2); text-wrap: pretty; transition: color 0.6s ease; }
+.hd .lp-search { margin: 0 0 20px; max-width: 620px; }
+.hd .hp-hero__actions { justify-content: flex-start; }
+.hd[data-scene="a"] .hp-hero__actions .ix-btn:not(.ix-btn--primary) { color: #fff; border-color: rgb(255 255 255 / 0.5); background: rgb(10 14 16 / 0.35); }
+
+.hd__ledger { position: absolute; z-index: 3; bottom: 40px; left: calc(50% - 150px); width: min(560px, 44vw); }
+.hd .hx-ledger { position: static; width: 100%; box-shadow: 0 18px 40px rgb(0 0 0 / 0.35); }
+.hd[data-scene="a"] .hx-ledger { background: rgb(18 24 27 / 0.86); backdrop-filter: blur(8px); border-color: rgb(255 255 255 / 0.18); }
+.hd[data-scene="a"] .hx-ledger__list a, .hd[data-scene="a"] .hx-ledger__head { color: #f3f5f6; }
+.hd[data-scene="a"] .hx-ledger__meta, .hd[data-scene="a"] .hx-ledger .ix-ref { color: rgb(255 255 255 / 0.7); }
+
+/* The controls: a pause button the visitor can always reach, and one button for each picture. */
+.hd__ctl { position: absolute; z-index: 4; left: max(24px, calc((100vw - 1232px) / 2)); bottom: 28px; display: flex; align-items: center; gap: 10px; }
+.hd__ctl[hidden] { display: none; }
+.hd__pause { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--ix-rule-strong); border-radius: 50%; background: var(--ix-panel); color: var(--ix-text); cursor: pointer; }
+.hd__pause .material-symbols-rounded { font-size: 20px; }
+.hd__dot { position: relative; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.hd__dot::before { content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border: 2px solid var(--hd-ink); border-radius: 50%; opacity: 0.6; transition: background-color 0.3s, opacity 0.3s, transform 0.3s; }
+.hd__dot[aria-current="true"]::before { background: var(--hd-ink); opacity: 1; transform: scale(1.15); }
+.hd__dot:focus-visible, .hd__pause:focus-visible { outline: 3px solid #eab31f; outline-offset: 2px; }
+.hd[data-scene="a"] .hd__pause { background: rgb(10 14 16 / 0.6); color: #fff; border-color: rgb(255 255 255 / 0.5); }
+
+@media (max-width: 900px) {
+    .hd { min-height: 0; display: flex; flex-direction: column; }
+    .hd__stage { position: relative; inset: auto; order: 2; width: 100%; aspect-ratio: 4 / 3; }
+    .hd__grid { order: 1; width: 100%; min-height: 0; padding: 36px 16px 28px; }
+    .hd__ledger { order: 3; position: relative; z-index: 3; left: 0; bottom: auto; width: auto; margin: -44px 12px 56px; }
+    .hd__ctl { left: 16px; bottom: 12px; }
+    .hd .lp-hero__title { max-width: 14ch; font-size: clamp(2.4rem, 10vw, 3.4rem); }
+    .hd[data-scene="a"] { --hd-ink: var(--ix-text); --hd-ink-2: var(--ix-text-2); }
+    .hd[data-scene="a"] .hp-hero__actions .ix-btn:not(.ix-btn--primary) { color: var(--ix-text); border-color: var(--ix-rule-strong); background: transparent; }
+    .hd__scene--a::after { background: linear-gradient(0deg, rgb(10 14 16 / 0.5), transparent 50%); }
+    .hd__ground { display: none; }
+    .hd__photo { inset: 0; width: 100%; }
+    .hd__tiles { width: 100%; padding: 16px; gap: 8px; }
+    .hd__tile .pg-plate { left: 6px; top: 6px; padding: 3px 7px; font-size: var(--dot-text-caption-size); }
+    .hd__tile--1, .hd__tile--2, .hd__tile--3 { translate: none; }
+    .hd .hx-ledger__list a { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+    .hd .hx-ledger__list a .ix-ref { grid-column: 1 / -1; }
+    .hd[data-scene="a"] .hd__pause { background: var(--ix-panel); color: var(--ix-text); border-color: var(--ix-rule-strong); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hd__dot::before, .hd .lp-hero__title, .hd .lp-hero__sub { transition: none; }
+}
+.hd { place-items: normal; }
+.hd__ico--play, .hd__pause[aria-pressed="true"] .hd__ico--pause { display: none; }
+.hd__pause[aria-pressed="true"] .hd__ico--play { display: block; }
