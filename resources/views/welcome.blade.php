@@ -240,7 +240,7 @@
     <section class="lp-split hp-who" aria-labelledby="who-title">
         <figure class="lp-photo" data-reveal>
             <div class="lp-photo__frame" data-parallax>
-                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/soweto-street-1200.jpg') }}" width="1200" height="800" alt="A woman sits outside a small shop in a Soweto street, a van parked beside her" loading="lazy" decoding="async">
+                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-vegetables-1200.jpg') }}" width="1200" height="800" alt="A vegetable stall at a Cape Town market: tomatoes, avocados, fennel, radishes and herbs in boxes" loading="lazy" decoding="async">
             </div>
         </figure>
         <div class="lp-split__body">

@@ -290,7 +290,7 @@ class PublicPagesTest extends TestCase
             $this->assertStringContainsString($glob, $app, $glob.' is not globbed into the build');
         }
 
-        foreach (['arrow-mask.png', 'landing/market.jpg', 'landing/platforms/files.png', 'pages/jhb-skyline-1920.jpg', 'pages/rosebank-1600.jpg', 'pages/soweto-street-1200.jpg', 'pages/market-door-1600.jpg', 'pages/bokaap-mural-1600.jpg', 'pages/jhb-city-1600.jpg', 'pages/camps-bay-cafe-1600.jpg'] as $file) {
+        foreach (['arrow-mask.png', 'landing/market.jpg', 'landing/platforms/files.png', 'pages/jhb-skyline-1920.jpg', 'pages/rosebank-1600.jpg', 'pages/market-vegetables-1200.jpg', 'pages/market-door-1600.jpg', 'pages/bokaap-mural-1600.jpg', 'pages/jhb-city-1600.jpg', 'pages/camps-bay-cafe-1600.jpg'] as $file) {
             $this->assertFileExists(resource_path('img/'.$file));
         }
         $this->assertDirectoryDoesNotExist(public_path('img/landing'), 'landing images belong in resources/img so they ship with the build');

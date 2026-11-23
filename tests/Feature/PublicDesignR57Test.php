@@ -40,7 +40,7 @@ class PublicDesignR57Test extends TestCase
     {
         $about = $this->get('/about')->assertOk()->getContent();
 
-        foreach (['Vije Vijendranath', 'Simon Hurry', 'Mario Scheibl', 'Amy Harrison', 'Clodagh Da Paixao', 'Nigel SB Photography', 'FitNish Media', 'Marc St'] as $author) {
+        foreach (['Vije Vijendranath', 'Simon Hurry', 'Mario Scheibl', 'Amy Harrison', 'Clodagh Da Paixao', 'Nigel SB Photography', 'FitNish Media'] as $author) {
             $this->assertStringContainsString($author, $about, "{$author} is credited");
         }
         $this->assertStringContainsString('unsplash.com/license', $about);
