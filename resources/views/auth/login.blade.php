@@ -36,6 +36,9 @@
             @if (Route::has('register'))
                 <a href="{{ route('register') }}">New here? Create an account</a>
             @endif
+            @if ($platformBranding)
+                <a href="{{ route('login.infodot') }}">Not signing in to {{ $platformBranding->name }}? Use InfoDot on its own</a>
+            @endif
         </p>
     </x-jet-authentication-card>
 </x-guest-layout>

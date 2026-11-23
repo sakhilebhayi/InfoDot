@@ -24,6 +24,11 @@ class PlatformContext
 {
     public const SESSION_KEY = 'sso.pending_authorize';
 
+    /** When the pending request was last seen. A sign-in that was started and abandoned must not dress InfoDot's own page as that platform for the rest of the session. */
+    public const SESSION_AT_KEY = 'sso.pending_at';
+
+    public const FRESH_FOR_SECONDS = 1800;
+
     private const CACHE = 'sso.platform_context';
 
     private function request(): Request
@@ -55,13 +60,21 @@ class PlatformContext
     {
         if ($this->judge($url) !== null) {
             $this->request()->session()->put(self::SESSION_KEY, $url);
+            $this->request()->session()->put(self::SESSION_AT_KEY, time());
             $this->request()->attributes->remove(self::CACHE);
         }
     }
 
     public function forget(): void
     {
-        $this->request()->session()->forget(self::SESSION_KEY);
+        $session = $this->request()->session();
+        $session->forget([self::SESSION_KEY, self::SESSION_AT_KEY]);
+
+        // The guest redirect parked the same request as the place to go after signing in: it goes too, or signing in to InfoDot would carry on to the platform.
+        if (is_string($intended = $session->get('url.intended')) && $this->isAuthorizeAddress($intended)) {
+            $session->forget('url.intended');
+        }
+
         $this->request()->attributes->remove(self::CACHE);
     }
 
@@ -76,7 +89,12 @@ class PlatformContext
 
         $result = ['platform' => null, 'url' => null];
 
-        if ($request->hasSession()) {
+        if ($request->hasSession() && $this->isStale($request)) {
+            // Started a while ago and never finished: this is a fresh visit to InfoDot, not a step of that sign-in.
+            if ($this->hasPendingAddress($request)) {
+                $this->forget();
+            }
+        } elseif ($request->hasSession()) {
             foreach ([self::SESSION_KEY, 'url.intended'] as $key) {
                 $candidate = $request->session()->get($key);
 
@@ -96,6 +114,26 @@ class PlatformContext
         $request->attributes->set(self::CACHE, $result);
 
         return $result;
+    }
+
+    private function isStale(Request $request): bool
+    {
+        $at = $request->session()->get(self::SESSION_AT_KEY);
+
+        return ! is_int($at) || (time() - $at) > self::FRESH_FOR_SECONDS;
+    }
+
+    private function hasPendingAddress(Request $request): bool
+    {
+        foreach ([self::SESSION_KEY, 'url.intended'] as $key) {
+            $candidate = $request->session()->get($key);
+
+            if (is_string($candidate) && $this->isAuthorizeAddress($candidate)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isAuthorizeAddress(string $url): bool
