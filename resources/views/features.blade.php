@@ -1,4 +1,4 @@
-<x-public-layout title="What InfoDot does" reveal band="FEATURES" crumb="What InfoDot does" description="What InfoDot does today: discover practical business knowledge, manage your business with connected tools, and grow with what you learn.">
+<x-public-layout title="What InfoDot does" reveal band="WHAT IT DOES" crumb="What InfoDot does" description="What InfoDot does today: discover practical business knowledge, manage your business with connected tools, and grow with what you learn.">
     <article class="ix-prose ix-prose--ledger pg-prose">
         <span class="pg-plate" data-pg-plate>What it does</span>
         <h1 class="ix-h1 pg-title" data-pg-in>What InfoDot does</h1>

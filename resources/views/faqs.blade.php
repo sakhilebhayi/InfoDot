@@ -32,7 +32,7 @@
         return $html;
     };
 @endphp
-<x-public-layout title="Questions people ask" reveal band="ANSWERS" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, what you can do with it, who can see your questions, how answers are trusted, and how to contact us.">
+<x-public-layout title="Questions people ask" reveal band="QUESTIONS" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, what you can do with it, who can see your questions, how answers are trusted, and how to contact us.">
     <article class="ix-prose ix-prose--ledger pg-prose">
         <span class="pg-plate" data-pg-plate>Plain answers</span>
         <h1 class="ix-h1 pg-title" data-pg-in>Questions people ask</h1>
@@ -45,6 +45,10 @@
             <h2>{{ $question }}</h2>
             <p>{!! $linked($answer) !!}</p>
         @endforeach
+
+        <h2>Still stuck?</h2>
+        <p>Search what other businesses have already solved, or ask your own question.</p>
+        <p><a class="ix-btn ix-btn--primary" href="{{ route('solution_search_results') }}">Search the answers</a> @guest <a class="ix-btn" href="{{ route('register') }}">Join InfoDot for free</a> @endguest</p>
     </article>
 
     <script type="application/ld+json">{!! json_encode([

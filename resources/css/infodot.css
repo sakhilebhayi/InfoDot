@@ -10784,3 +10784,20 @@ body[data-area="home"] .ix-btn--primary:hover,
     .hp-chain__steps li::before { top: 7px; left: -34px; }
 }
 
+
+/* ===== R-57 round 3 ===== */
+.ix-prose .pg-vignettes { margin-bottom: 44px; align-items: stretch; }
+.ix-prose .pg-vignettes li + li { margin-top: 0; }
+
+.ix-prose .pg-strip figcaption a:not(.ix-btn),
+.pg-photo figcaption a:not(.ix-btn) { color: #fff; }
+
+/* The reading pages use more of the width and a larger measure, so the right of the page is not a void. */
+@media (min-width: 1024px) {
+    .pg-prose > :not(.pg-strip):not(.pg-plate):not(.ix-h1):not(.ix-lede):not(.pg-vignettes) { max-width: 76ch; }
+    .pg-prose > h2 { font-size: var(--dot-text-h3-size); }
+    .pg-prose p, .pg-prose li { font-size: var(--dot-text-body-lg-size); }
+    .ix-legal { grid-template-columns: 260px minmax(0, 76ch); }
+    .ix-legal__toc { position: sticky; top: 88px; align-self: start; }
+}
+.pg-prose .ix-btn + .ix-btn { margin-left: 8px; }

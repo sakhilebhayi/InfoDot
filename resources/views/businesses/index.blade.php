@@ -91,16 +91,15 @@
                  results up after the first paint on a phone (CLS 0.11 to 0.14). The same rule as app.js, which stays as the fallback. --}}
             <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">(function (s) { var d = s.previousElementSibling; if (d && d.hasAttribute('data-fold-on-phone') && ! d.hasAttribute('data-active') && window.matchMedia('(max-width: 640px)').matches) { d.open = false; } })(document.currentScript);</script>
         </form>
+        @if ($guest)
+            <p class="ix-hint ix-guestnote" role="note">You are seeing businesses listed for everyone. <a href="{{ route('login') }}">Sign in</a> to also see the ones listed for InfoDot users.</p>
+        @endif
     </header>
     <figure class="pg-photo" data-pg-photo>
         <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="Colourful African print bags on a market table, a trader behind them, at Rosebank Sunday Market in Johannesburg" width="1600" height="1067" decoding="async">
         <figcaption>Photograph by <a href="https://unsplash.com/photos/a-group-of-colorful-bags-sitting-on-top-of-a-table-9o5zeS6QbgM" rel="noopener">Vije Vijendranath</a> on Unsplash</figcaption>
     </figure>
     </div>
-
-    @if ($guest)
-        <p class="ix-hint ix-guestnote" role="note">You are seeing businesses listed for everyone. <a href="{{ route('login') }}">Sign in</a> to also see the ones listed for InfoDot users.</p>
-    @endif
 
     @if ($searching)
         <section class="ix-dir__found" aria-labelledby="found-h">

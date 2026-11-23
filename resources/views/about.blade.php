@@ -54,5 +54,11 @@
         <h2>Get in touch</h2>
         <p>Questions, ideas or concerns: use the <a href="{{ route('contact') }}">contact form</a>. For anything about your personal information, write to <a href="mailto:privacy@infodot.co.za">privacy@infodot.co.za</a>. If something on InfoDot is wrong, see <a href="{{ route('complains') }}">how to complain</a>.</p>
 
+
+        @guest
+            <h2>Start here</h2>
+            <p>Joining is free, and you can look around before you decide.</p>
+            <p><a class="ix-btn ix-btn--primary" href="{{ route('register') }}">Join InfoDot for free</a> <a class="ix-btn" href="{{ route('business-tools') }}">See the business tools</a></p>
+        @endguest
     </article>
 </x-public-layout>
