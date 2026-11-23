@@ -32,14 +32,23 @@
         return $html;
     };
 @endphp
-<x-public-layout title="Questions people ask" band="INFO" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, what you can do with it, who can see your questions, how answers are trusted, and how to contact us.">
-    <article class="ix-prose ix-prose--ledger">
-        <h1 class="ix-h1">Questions people ask</h1>
+<x-public-layout title="Questions people ask" reveal band="QUESTIONS" crumb="Questions people ask" description="Answers to common questions about InfoDot: what it is, what you can do with it, who can see your questions, how answers are trusted, and how to contact us.">
+    <article class="ix-prose ix-prose--ledger pg-prose">
+        <span class="pg-plate" data-pg-plate>Plain answers</span>
+        <h1 class="ix-h1 pg-title" data-pg-in>Questions people ask</h1>
+        <p class="ix-lede" data-pg-in>Straight answers about what InfoDot is, who can see what you write and how answers are checked.</p>
+        <figure class="pg-strip" data-pg-photo>
+            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/faqs-1600.jpg') }}" alt="Two women at a shop counter with a card reader, a salon behind them" width="1600" height="1067" loading="eager" decoding="async">
+        </figure>
 
         @foreach ($faqs as [$question, $answer])
             <h2>{{ $question }}</h2>
             <p>{!! $linked($answer) !!}</p>
         @endforeach
+
+        <h2>Still stuck?</h2>
+        <p>Search what other businesses have already solved, or ask your own question.</p>
+        <p><a class="ix-btn ix-btn--primary" href="{{ route('solution_search_results') }}">Search the answers</a> @guest <a class="ix-btn" href="{{ route('register') }}">Join InfoDot for free</a> @endguest</p>
     </article>
 
     <script type="application/ld+json">{!! json_encode([

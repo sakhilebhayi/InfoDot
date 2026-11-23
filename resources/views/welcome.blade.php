@@ -42,31 +42,8 @@
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 
     {{-- 1. The hero says what InfoDot is, what it does for you and what to do next. The search box stays: it is the quickest way in. --}}
-    <section class="lp-hero" aria-labelledby="hero-title">
-        <img class="lp-hero__bg" src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-960.jpg') }} 960w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }} 1920w" sizes="100vw" width="1920" height="1280" alt="" fetchpriority="high" decoding="async">
-        <div class="lp-hero__veil" aria-hidden="true"></div>
-        <div class="lp-hero__inner" data-hero-inner>
-            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Your business, all in one place.' }}</h1>
-            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'Knowledge, people and tools to start, manage and grow your business.' }}</p>
-
-            <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>
-                <label for="lp-q" class="ix-sr">Search practical business solutions</label>
-                <span class="material-symbols-rounded lp-search__icon" aria-hidden="true">search</span>
-                <input id="lp-q" class="lp-search__input" type="search" name="search" placeholder="How do I register a business?" autocomplete="off" data-examples="{{ json_encode($examples) }}">
-                <button type="submit" class="lp-search__go" aria-label="Search"><x-ix.arrow /></button>
-            </form>
-
-            <div class="hp-hero__actions" data-hero>
-                @auth
-                    <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary lp-btn">Ask a question</a>
-                    <a href="{{ route('dashboard') }}" class="ix-btn lp-btn">Go to your Home</a>
-                @else
-                    <a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for Free</a>
-                    <a href="#how-it-works" class="ix-btn lp-btn">See how it works</a>
-                @endauth
-            </div>
-        </div>
-    </section>
+    {{-- 1. The hero says what InfoDot is and what to do next. The search stays. The picture side moves through three compositions; the words never move. --}}
+    @include('partials.home-hero')
 
     {{-- 2. Three ways InfoDot helps. Discover, Manage and Grow are the frame the rest of the page hangs on. --}}
     <section class="hp-pillars" id="pillars" aria-labelledby="pillars-title">
@@ -77,7 +54,7 @@
 
         <div class="hp-pillars__list">
             <article class="hp-pillar hp-pillar--discover" id="discover" data-pillar aria-labelledby="discover-title">
-                <h3 id="discover-title" class="hp-pillar__plate"><span class="hp-pillar__word">Discover</span><span class="hp-pillar__tag">Learn what works</span></h3>
+                <h3 id="discover-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/features-800.jpg') }}')"><span class="hp-pillar__word">Discover</span><span class="hp-pillar__tag">Learn what works</span></h3>
                 <div class="hp-pillar__body">
                     <p class="hp-pillar__lede" data-reveal>Find practical answers, business guides, proven solutions and experiences shared by other entrepreneurs and businesses.</p>
                     <ul class="lp-checks hp-pillar__list">
@@ -104,7 +81,7 @@
             </article>
 
             <article class="hp-pillar hp-pillar--manage" id="manage" data-pillar aria-labelledby="manage-title">
-                <h3 id="manage-title" class="hp-pillar__plate"><span class="hp-pillar__word">Manage</span><span class="hp-pillar__tag">Run your business</span></h3>
+                <h3 id="manage-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/pillar-manage-800.jpg') }}')"><span class="hp-pillar__word">Manage</span><span class="hp-pillar__tag">Run your business</span></h3>
                 <div class="hp-pillar__body">
                     <p class="hp-pillar__lede" data-reveal>Access the digital tools you need to organise, manage and operate your business from one connected ecosystem.</p>
                     <ul class="lp-checks hp-pillar__list">
@@ -121,7 +98,7 @@
             </article>
 
             <article class="hp-pillar hp-pillar--grow" id="grow" data-pillar aria-labelledby="grow-title">
-                <h3 id="grow-title" class="hp-pillar__plate"><span class="hp-pillar__word">Grow</span><span class="hp-pillar__tag">Build your future</span></h3>
+                <h3 id="grow-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}')"><span class="hp-pillar__word">Grow</span><span class="hp-pillar__tag">Build your future</span></h3>
                 <div class="hp-pillar__body">
                     <p class="hp-pillar__lede" data-reveal>Use knowledge, connected tools and shared experiences to improve how you work, make better decisions and discover opportunities to grow.</p>
                     <ul class="lp-checks hp-pillar__list">
@@ -200,11 +177,6 @@
             </dl>
             <p data-reveal class="hp-know__lead">InfoDot is not just a place to post questions. It turns what businesses learn into knowledge the next business can use.</p>
         </div>
-        <figure class="lp-photo lp-photo--tall" data-reveal>
-            <div class="lp-photo__frame" data-parallax>
-                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/couturiere.jpg') }}" width="1000" height="1500" alt="A smiling tailor holding up the garment she is working on" loading="lazy" decoding="async">
-            </div>
-        </figure>
     </section>
 
     <section class="hp-chain" id="how-knowledge-grows" aria-labelledby="chain-title">
@@ -283,12 +255,6 @@
             </ol>
         </div>
     </section>
-
-    <figure class="lp-band" data-reveal>
-        <div class="lp-band__frame" data-parallax>
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}" width="1400" height="1050" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" loading="lazy" decoding="async">
-        </div>
-    </figure>
 
     {{-- 7. Trust: what is true today, in plain words. Detail lives on the pages linked below. --}}
     <section class="ix-pubsec ix-pubsec--tint hp-trust" aria-labelledby="trust-title">

@@ -10286,3 +10286,788 @@ button.ix-avatar,
 .bt-cta :focus-visible {
     outline-color: var(--ix-top-ink);
 }
+
+/* ===== R-57: the public inner pages (Contact, Businesses, About, What InfoDot does, Questions people ask) ===== */
+
+/* A page opens on a plate, a large heading and a photograph: copy on one side, the picture uncovered on the other. */
+.pg-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: center;
+    margin: 0 0 clamp(36px, 5vw, 64px);
+}
+
+.pg-hero__copy {
+    display: grid;
+    gap: 18px;
+    justify-items: start;
+}
+
+.pg-plate {
+    display: inline-block;
+    justify-self: start;
+    padding: 6px 14px;
+    border-radius: var(--ix-radius);
+    background: var(--pg-tone, var(--ix-knowledge));
+    color: #fff;
+    font-family: var(--ix-stencil-font);
+    font-weight: 700;
+    font-size: var(--dot-text-caption-size);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.pg-plate--mustard { color: #1a1300; }
+
+.pg-hero__title {
+    margin: 0;
+    max-width: 12ch;
+    color: var(--ix-text);
+    font-weight: 700;
+    font-size: var(--dot-text-display-size);
+    line-height: 1.04;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+}
+
+.pg-hero__lede {
+    margin: 0;
+    max-width: 52ch;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.55;
+    text-wrap: pretty;
+}
+
+.pg-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    align-items: center;
+}
+
+.pg-photo {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--ix-radius);
+    background: var(--ix-analytics);
+    aspect-ratio: 5 / 4;
+}
+
+.pg-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pg-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 55%, rgb(10 14 16 / 0.55));
+    pointer-events: none;
+}
+
+.pg-photo figcaption {
+    position: absolute;
+    z-index: 1;
+    left: 14px;
+    right: 14px;
+    bottom: 12px;
+    color: #fff;
+    font-size: var(--dot-text-caption-size);
+    line-height: 1.35;
+}
+
+.pg-photo figcaption a { color: inherit; }
+
+/* Contact: every reason to write has its own lane, with the address and the next step in plain sight. */
+.pg-routes {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 clamp(36px, 5vw, 64px);
+    padding: 0;
+    list-style: none;
+}
+
+.pg-route {
+    grid-column: span 2;
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 10px;
+    padding: 20px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+    transition: border-color 0.2s ease, translate 0.2s ease;
+}
+
+.pg-route:hover,
+.pg-route:focus-within {
+    border-color: var(--pg-tone, var(--ix-knowledge));
+    translate: 0 -3px;
+}
+
+.pg-route h3 {
+    margin: 0;
+    font-size: var(--dot-text-h2-size);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.pg-route p {
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.5;
+}
+
+.pg-route:nth-child(n+4) { grid-column: span 3; }
+
+.pg-route__go {
+    margin-top: 4px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.pg-route__go::after { content: ' \2192'; }
+
+.pg-split {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: start;
+    margin: 0 0 clamp(36px, 5vw, 64px);
+}
+
+.pg-split > div > h2 {
+    margin: 0 0 10px;
+    font-size: var(--dot-text-h2-size);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+}
+
+.pg-split > div > p {
+    margin: 0 0 12px;
+    max-width: 48ch;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.55;
+}
+
+.pg-form {
+    display: grid;
+    gap: 16px;
+    padding: clamp(18px, 3vw, 28px);
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.pg-form .ix-input,
+.pg-form .ix-textarea { width: 100%; }
+
+.pg-note {
+    margin: 0 0 clamp(36px, 5vw, 64px);
+    padding: 18px 22px;
+    border-left: 4px solid var(--ix-platforms);
+    background: var(--ix-panel);
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.55;
+}
+
+/* Businesses: the hero carries the search, and categories with nobody in them step back behind one disclosure. */
+.pg-dir {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: center;
+}
+
+.pg-dir .ix-dir__head { margin: 0; }
+
+.pg-dir .pg-photo { aspect-ratio: 4 / 3; }
+
+.ix-dir__cats--live a { border-left: 4px solid var(--ix-people); }
+
+.ix-dir__more-cats {
+    margin-top: 12px;
+}
+
+.ix-dir__more-cats > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ix-dir__more-cats[open] > summary { margin-bottom: 12px; }
+
+/* The photograph strip that opens the long reading pages: wide, short and cropped for the page, not for the picture. */
+.pg-strip {
+    position: relative;
+    margin: 0 0 clamp(28px, 4vw, 48px);
+    overflow: hidden;
+    border-radius: var(--ix-radius);
+    aspect-ratio: 21 / 8;
+    background: var(--ix-analytics);
+}
+
+.pg-strip img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.pg-strip figcaption {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    padding: 4px 10px;
+    border-radius: var(--ix-radius);
+    background: rgb(10 14 16 / 0.7);
+    color: #fff;
+    font-size: var(--dot-text-caption-size);
+}
+
+@media (max-width: 900px) {
+    .pg-route,
+    .pg-route:nth-child(n+4) { grid-column: span 6; }
+    .pg-hero,
+    .pg-dir,
+    .pg-split { grid-template-columns: 1fr; }
+    .pg-hero__title { max-width: 20ch; }
+    .pg-photo { aspect-ratio: 16 / 10; }
+    .pg-strip { aspect-ratio: 16 / 9; }
+}
+
+/* Motion: parts start hidden only while the motion script is running, and the layout's timer shows them if it is late. */
+.has-motion [data-pg-in],
+.has-motion [data-pg-reveal] { opacity: 0; }
+
+.has-motion.motion-failsafe [data-pg-in],
+.has-motion.motion-failsafe [data-pg-reveal] { opacity: 1; }
+
+.has-motion.motion-failsafe [data-pg-plate],
+.has-motion.motion-failsafe [data-pg-photo],
+.has-motion.motion-failsafe [data-pg-stamp] { clip-path: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pg-route { transition: none; }
+    .pg-route:hover, .pg-route:focus-within { translate: none; }
+}
+
+/* R-57: the Discover, Manage and Grow plates carry a photograph under their colour: the colour holds the word at the top, the picture
+   shows through below, and a scrim keeps the tag readable. The plate keeps its area colour if the picture does not load. */
+.hp-pillar__plate {
+    --pillar-tone: var(--ix-knowledge);
+    isolation: isolate;
+    overflow: hidden;
+    background-image: var(--pillar-img, none);
+    background-size: cover;
+    background-position: center;
+}
+
+.hp-pillar--discover .hp-pillar__plate { --pillar-tone: var(--ix-knowledge); background-color: var(--ix-knowledge); }
+.hp-pillar--manage .hp-pillar__plate { --pillar-tone: var(--ix-platforms); background-color: var(--ix-platforms); }
+.hp-pillar--grow .hp-pillar__plate { --pillar-tone: var(--ix-documents); background-color: var(--ix-documents); }
+
+.hp-pillar__plate::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        linear-gradient(180deg, var(--pillar-tone) 0%, var(--pillar-tone) 18%, color-mix(in srgb, var(--pillar-tone) 40%, transparent) 55%, transparent 80%),
+        linear-gradient(0deg, rgb(8 12 14 / 0.78) 0%, transparent 45%);
+}
+
+.hp-pillar__tag { color: #fff; }
+
+@media (min-width: 901px) {
+    .hp-pillar__plate { min-height: 320px; }
+}
+
+/* The long reading pages: the plate and heading arrive first, the photograph spans both columns, and each question or heading rises as it is reached. */
+.pg-prose > .pg-plate { margin-bottom: 14px; }
+
+.pg-prose .pg-title {
+    font-size: var(--dot-text-h1-size);
+    font-weight: 700;
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+}
+
+@media (min-width: 1024px) {
+    .pg-prose > .pg-plate,
+    .pg-prose > .pg-strip { grid-column: 1 / -1; }
+    .pg-prose > .pg-plate { justify-self: start; }
+}
+
+.has-motion .pg-prose > h2,
+.has-motion .pg-prose > h2 + * { opacity: 0; }
+
+.has-motion.motion-failsafe .pg-prose > h2,
+.has-motion.motion-failsafe .pg-prose > h2 + * { opacity: 1; }
+
+@media (min-width: 1024px) {
+    .pg-prose { grid-template-columns: 280px minmax(0, 1fr); }
+    .pg-prose > :not(.pg-strip):not(.pg-plate):not(.ix-h1):not(.ix-lede):not(.pg-vignettes) { max-width: 68ch; }
+}
+
+.hp-pillar--discover .hp-pillar__plate,
+.hp-pillar--manage .hp-pillar__plate,
+.hp-pillar--grow .hp-pillar__plate { background-image: var(--pillar-img, none); background-size: cover; background-position: center; }
+
+/* The platform logos have thin, pale wordmarks: bigger tiles and a lift in brightness let every name read at full strength on the graphite ground. */
+.hp-group .lp-logos { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.hp-group .lp-logos li { height: 104px; }
+.hp-group .lp-logos img { filter: brightness(1.35) contrast(1.08); }
+
+/* Links in running text read as links: underlined at rest, in the page's own link colour. */
+.ix-prose p a,
+.ix-prose li a,
+.pg-route p a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.ix-prose p a:hover,
+.ix-prose li a:hover { text-decoration-thickness: 2px; }
+
+/* Lists in the long pages keep their markers and a steady rhythm. */
+.ix-legal__body ul,
+.ix-prose ul { padding-left: 1.25em; }
+.ix-legal__body li + li,
+.ix-prose li + li { margin-top: 0.5em; }
+
+/* A photograph or plate is never glued to the heading under it. */
+.pg-prose > .ix-h1 { margin-bottom: 14px; }
+.pg-prose > .ix-lede { margin-bottom: 24px; }
+.pg-prose > .pg-strip { margin-top: 4px; }
+.ix-legal__body ul { list-style: disc; }
+.ix-legal__body ol { list-style: decimal; padding-left: 1.4em; }
+.ix-legal__body li > p { margin: 0; }
+.ix-legal__body { white-space: normal; }
+
+/* The brand gold carries every primary action on the public pages, the way Create account does in the top bar. */
+body[data-area="home"] .ix-btn--primary,
+.pg-hero__actions .ix-btn--primary,
+.pg-form .ix-btn--primary,
+.ix-dir__bar .ix-btn--primary,
+.pg-route__go-btn {
+    background: #eab31f;
+    border-color: #eab31f;
+    color: #1a1300;
+}
+
+body[data-area="home"] .ix-btn--primary:hover,
+.pg-hero__actions .ix-btn--primary:hover,
+.pg-form .ix-btn--primary:hover,
+.ix-dir__bar .ix-btn--primary:hover { filter: brightness(1.08); }
+
+/* Contact: the whole card is the link, and the card answers the pointer. */
+.pg-route { position: relative; }
+.pg-route__go::before { content: ''; position: absolute; inset: 0; }
+.pg-route__go:focus-visible { outline: none; }
+.pg-route:has(.pg-route__go:focus-visible) { outline: 3px solid #eab31f; outline-offset: 2px; }
+
+/* Features: three small pieces of the real interface, drawn from the system's own components, not screenshots. */
+.pg-vignettes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 clamp(28px, 4vw, 48px);
+    padding: 0;
+    list-style: none;
+}
+
+.pg-vignettes li {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    gap: 16px;
+    padding: 22px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+}
+
+.pg-vignettes p { margin: 0; color: var(--ix-text-2); font-size: var(--dot-text-body-size); line-height: 1.5; }
+.pg-vignettes strong { color: var(--ix-text); }
+.pg-vignettes__stamp { font-size: var(--dot-text-h2-size); }
+.pg-vignettes__ref { padding: 8px 12px; border: 2px solid var(--ix-text); border-radius: var(--ix-radius); }
+
+@media (min-width: 1024px) {
+    .pg-prose > .pg-vignettes { grid-column: 1 / -1; }
+}
+
+@media (max-width: 900px) {
+    .pg-vignettes { grid-template-columns: 1fr; }
+    .hp-pillar--manage .hp-pillar__tag { color: #1a1300; }
+}
+
+/* Directory: the filters sit on one aligned grid, and Apply lines up with the fields. */
+.pg-dir .ix-dir__filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    align-items: end;
+    gap: 12px;
+}
+
+.pg-dir .ix-dir__filter .ix-input { width: 100%; min-width: 0; }
+.pg-dir .ix-dir__check { align-self: center; }
+
+/* Photographs that hold a person keep the face in the crop. */
+.pg-strip img { object-position: 50% 28%; }
+
+/* ===== R-57 round 2 ===== */
+
+/* The cards under the Features photograph take the full width of the reading page. */
+.pg-prose > .pg-vignettes { max-width: none; }
+
+/* One page-title scale on every inner page. */
+.pg-prose .pg-title,
+.ix-legal__body > .ix-h1 {
+    font-size: var(--dot-text-display-size);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.022em;
+}
+
+/* Buttons inside reading text are buttons, not underlined links, and the primary one is gold. */
+.ix-prose .ix-btn { text-decoration: none; }
+.ix-prose .ix-btn--primary { background: #eab31f; border-color: #eab31f; color: #1a1300; }
+
+/* Photo credits stay white on their chip in both themes. */
+.pg-strip figcaption a,
+.pg-photo figcaption a { color: #fff; text-decoration: underline; }
+
+/* The footer rule and the footer links sit on the same edge as the page content. */
+.ix-foot { max-width: 1232px; width: calc(100% - 48px); padding-left: 0; padding-right: 0; }
+
+/* Contact: the lane headings hold two lines so the rows start level, and the page ends without a void. */
+@media (min-width: 901px) {
+    .pg-route h3 { min-height: 2.45em; }
+}
+.pg-note:last-child { margin-bottom: 8px; }
+
+/* Directory: the checkbox stays on one line and Apply sits level with the fields. */
+.pg-dir .ix-dir__check { white-space: nowrap; }
+.pg-dir .ix-dir__filters .ix-btn { justify-self: start; }
+.pg-dir .ix-hint { margin-top: 4px; }
+
+/* Home on a phone: the labels on the Discover, Manage and Grow plates sit on a solid scrim, whatever the photograph is. */
+@media (max-width: 900px) {
+    .hp-pillar__plate::before {
+        background:
+            linear-gradient(180deg, var(--pillar-tone) 0%, var(--pillar-tone) 30%, transparent 75%),
+            linear-gradient(0deg, rgb(8 12 14 / 0.88) 0%, rgb(8 12 14 / 0.4) 40%, transparent 70%);
+    }
+    .hp-pillar--manage .hp-pillar__tag { color: #fff; }
+}
+.ix-prose .pg-vignettes { padding: 0; }
+.pg-vignettes li { margin: 0; }
+
+/* Home timeline on a phone: the markers sit on the vertical line beside each step, not over the text above. */
+@media (max-width: 640px) {
+    .hp-chain__steps li::before { top: 7px; left: -34px; }
+}
+
+
+/* ===== R-57 round 3 ===== */
+.ix-prose .pg-vignettes { margin-bottom: 44px; align-items: stretch; }
+.ix-prose .pg-vignettes li + li { margin-top: 0; }
+
+.ix-prose .pg-strip figcaption a:not(.ix-btn),
+.pg-photo figcaption a:not(.ix-btn) { color: #fff; }
+
+/* The reading pages use more of the width and a larger measure, so the right of the page is not a void. */
+@media (min-width: 1024px) {
+    .pg-prose > :not(.pg-strip):not(.pg-plate):not(.ix-h1):not(.ix-lede):not(.pg-vignettes) { max-width: 76ch; }
+    .pg-prose > h2 { font-size: var(--dot-text-h3-size); }
+    .pg-prose p, .pg-prose li { font-size: var(--dot-text-body-lg-size); }
+    .ix-legal { grid-template-columns: 260px minmax(0, 76ch); }
+    .ix-legal__toc { position: sticky; top: 88px; align-self: start; }
+}
+.pg-prose .ix-btn + .ix-btn { margin-left: 8px; }
+
+/* ===== R-57: the home hero, rebuilt around the record-keeping idea ===== */
+/* Copy and search on the left, on the plain ground; on the right a photograph of a real trader with a ledger of real, researched solutions laid over it. */
+.hx-hero {
+    display: block;
+    min-height: 0;
+    background: var(--ix-bg);
+}
+
+.hx-hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: clamp(40px, 6vw, 80px) 24px clamp(48px, 6vw, 88px);
+}
+
+.hx-hero .lp-hero__inner {
+    max-width: none;
+    padding: 0;
+    text-align: left;
+}
+
+.hx-hero .lp-hero__title {
+    margin: 0 0 18px;
+    max-width: 12ch;
+    font-size: clamp(2.6rem, 5.4vw, 4.75rem);
+    line-height: 1;
+}
+
+.hx-hero .lp-hero__sub {
+    margin: 0 0 28px;
+    max-width: 40ch;
+    color: var(--ix-text-2);
+    text-wrap: pretty;
+}
+
+.hx-hero .lp-search { margin: 0 0 20px; max-width: 620px; }
+.hx-hero .hp-hero__actions { justify-content: flex-start; }
+
+.hx-art { position: relative; margin: 0; padding-bottom: 56px; }
+
+.hx-photo {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--ix-radius);
+    aspect-ratio: 4 / 5;
+    background: var(--ix-analytics);
+}
+
+.hx-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 40% 50%; }
+
+.hx-photo figcaption {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    padding: 4px 10px;
+    width: fit-content;
+    max-width: calc(100% - 24px);
+    border-radius: var(--ix-radius);
+    background: rgb(10 14 16 / 0.7);
+    color: #fff;
+    font-size: var(--dot-text-caption-size);
+    line-height: 1.35;
+}
+
+.hx-photo figcaption a { color: #fff; text-decoration: underline; }
+
+.hx-ledger {
+    position: absolute;
+    left: -36px;
+    right: 28px;
+    bottom: 0;
+    padding: 16px 18px 6px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+    box-shadow: 0 18px 40px rgb(0 0 0 / 0.35);
+}
+
+.hx-ledger__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 8px;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.hx-ledger__list { margin: 0; padding: 0; list-style: none; }
+.hx-ledger__list li { border-top: 1px solid var(--ix-rule); }
+
+.hx-ledger__list a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    color: var(--ix-text);
+    text-decoration: none;
+}
+
+.hx-ledger__list strong { font-weight: 600; font-size: var(--dot-text-body-size); line-height: 1.3; }
+.hx-ledger__meta { color: var(--ix-text-3); font-size: var(--dot-text-caption-size); white-space: nowrap; }
+.hx-ledger__list a:hover strong { text-decoration: underline; }
+
+.has-motion [data-hx-photo],
+.has-motion [data-hx-ledger] { opacity: 0; }
+.has-motion.motion-failsafe [data-hx-photo],
+.has-motion.motion-failsafe [data-hx-ledger] { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
+
+@media (max-width: 900px) {
+    .hx-hero__grid { grid-template-columns: 1fr; gap: 28px; padding: 32px 16px 40px; }
+    .hx-hero .lp-hero__title { max-width: 14ch; font-size: clamp(2.4rem, 10vw, 3.4rem); }
+    .hx-photo { aspect-ratio: 4 / 3; }
+    .hx-ledger { position: relative; left: 0; right: 0; margin-top: -48px; margin-inline: 12px; }
+    .hx-art { padding-bottom: 0; }
+}
+
+/* The tools: two columns of goal cards instead of one long list, so the whole ecosystem reads at a glance. */
+@media (min-width: 901px) {
+    .hp-tools__groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .hp-tools__groups .hp-group { margin: 0; align-content: start; }
+    .hp-group { display: grid; grid-template-columns: 1fr; gap: 12px; }
+}
+
+/* "You don't have to figure it out": the six points sit in three columns now the photograph is gone. */
+@media (min-width: 901px) {
+    .hp-know .hp-know__list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 28px; }
+    .hp-know.lp-split { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Discover, Manage, Grow: three columns side by side, each a photograph with its word, then what it holds. One row, not three tall ones. */
+@media (min-width: 1000px) {
+    .hp-pillars { grid-template-columns: minmax(0, 1fr); gap: 36px; padding-top: 72px; padding-bottom: 56px; }
+    .hp-pillars__intro { position: static; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px 56px; align-items: end; }
+    .hp-pillars__intro h2 { margin: 0; }
+    .hp-pillars__intro .lp-lede { margin: 0; }
+    .hp-pillars__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+    .hp-pillar { grid-template-columns: minmax(0, 1fr); gap: 20px; align-content: start; }
+    .hp-pillar__plate { min-height: 0; aspect-ratio: 16 / 11; }
+    .hp-pillar__list { margin-bottom: 16px; }
+}
+
+/* The tools flow into two balanced columns of goal cards, so a group with one tool never leaves a hole. */
+@media (min-width: 901px) {
+    .hp-tools__groups { display: block; columns: 2; column-gap: 16px; }
+    .hp-tools__groups .hp-group { break-inside: avoid; margin: 0 0 16px; }
+}
+
+/* ===== R-57 round 4 ===== */
+/* Home: the library sits on the same left edge as every other section. */
+.lp-library__head,
+.lp-ledger { max-width: none; margin-left: 0; margin-right: 0; }
+
+/* Contact: titles start at the top of each card and the body follows, whatever the title's length. */
+@media (min-width: 901px) {
+    .pg-route h3 { min-height: 0; }
+    .pg-route { grid-template-rows: auto auto 1fr auto; }
+}
+
+/* Reading pages: a sub-heading is larger than the text under it. */
+.pg-prose h3 { margin: 28px 0 8px; font-size: var(--dot-text-h3-size); font-weight: 600; line-height: 1.3; color: var(--ix-text); }
+.pg-prose h3 + p { margin-top: 0; }
+
+/* Home on a phone: the hero ledger stacks each entry (reference, then title) so titles use the full width, and the three photo cards keep their pictures. */
+@media (max-width: 900px) {
+    .hx-ledger__list a { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+    .hx-ledger__list a .ix-ref { grid-column: 1 / -1; }
+    .hp-pillar__plate { min-height: 200px; aspect-ratio: 16 / 10; }
+    .hp-pillar__word { font-size: var(--dot-text-h3-size); }
+}
+
+/* ===== R-57: the home hero. The words and the search stay still on the left; the picture side moves through three compositions. ===== */
+.hd {
+    --hd-ink: var(--ix-text);
+    --hd-ink-2: var(--ix-text-2);
+    position: relative;
+    display: block;
+    min-height: min(88vh, 800px);
+    overflow: clip;
+    background: var(--ix-bg);
+    isolation: isolate;
+}
+
+.hd[data-scene="a"] { --hd-ink: #fff; --hd-ink-2: rgb(255 255 255 / 0.86); }
+
+.hd__stage { position: absolute; inset: 0; z-index: 0; }
+.hd__scene { position: absolute; inset: 0; visibility: hidden; opacity: 0; }
+/* Without the script the library-and-photograph composition shows, and nothing moves. */
+.hd__scene--b { visibility: visible; opacity: 1; }
+.hd--live .hd__scene { visibility: hidden; opacity: 0; }
+.hd--live .hd__scene.is-on { visibility: visible; opacity: 1; }
+
+/* Scene A: the photograph is the hero. */
+.hd__scene--a img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 40% 42%; }
+.hd__scene--a::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(10 14 16 / 0.94) 0%, rgb(10 14 16 / 0.8) 36%, rgb(10 14 16 / 0.3) 68%, rgb(10 14 16 / 0.1) 100%), linear-gradient(0deg, rgb(10 14 16 / 0.6) 0%, transparent 35%); }
+
+/* Scenes B and C share the ground of a ledger page: ruled lines on the left half. */
+.hd__ground { position: absolute; inset: 0 50% 0 0; background: repeating-linear-gradient(0deg, transparent 0 63px, var(--ix-rule) 63px 64px); opacity: 0.55; pointer-events: none; }
+.hd__ref { position: absolute; left: max(24px, calc((100vw - 1232px) / 2)); bottom: 28px; color: var(--ix-rule-strong); font-family: var(--ix-stencil-font); font-weight: 700; font-size: clamp(3rem, 7.5vw, 8rem); letter-spacing: 0.04em; line-height: 1; white-space: nowrap; opacity: 0.55; }
+.hd__stamp { position: absolute; right: 4%; top: 7%; font-size: clamp(1.6rem, 3.4vw, 3.4rem); opacity: 0.28; transform: rotate(-9deg); }
+
+/* Scene B: the photograph bleeds off the right edge, top to bottom. */
+.hd__photo { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; margin: 0; overflow: hidden; }
+.hd__photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 38% 50%; }
+
+/* Scene C: three photographs, one for each way InfoDot helps, rise on the right half, staggered. */
+.hd__tiles { position: absolute; top: 0; right: 0; bottom: 0; width: 52%; display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 12px; align-items: center; margin: 0; padding: 72px 24px 72px 12px; list-style: none; }
+.hd__tile { position: relative; overflow: hidden; border-radius: var(--ix-radius); background: var(--ix-analytics); }
+.hd__tile img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.hd__tile .pg-plate { position: absolute; left: 10px; top: 10px; }
+.hd__tile--1 { aspect-ratio: 3 / 4.4; translate: 0 22px; }
+.hd__tile--2 { aspect-ratio: 3 / 4.8; translate: 0 -26px; }
+.hd__tile--3 { aspect-ratio: 3 / 4.4; translate: 0 34px; }
+
+.hd__grid { position: relative; z-index: 2; display: grid; align-content: center; width: 50%; min-height: inherit; box-sizing: border-box; padding: 88px 48px 150px max(24px, calc((100vw - 1232px) / 2)); }
+.hd .lp-hero__inner { max-width: none; padding: 0; text-align: left; }
+.hd .lp-hero__title { margin: 0 0 18px; max-width: 12ch; color: var(--hd-ink); font-size: clamp(2.6rem, 5.4vw, 4.75rem); line-height: 1; transition: color 0.6s ease; }
+.hd .lp-hero__sub { margin: 0 0 28px; max-width: 40ch; color: var(--hd-ink-2); text-wrap: pretty; transition: color 0.6s ease; }
+.hd .lp-search { margin: 0 0 20px; max-width: 620px; }
+.hd .hp-hero__actions { justify-content: flex-start; }
+.hd[data-scene="a"] .hp-hero__actions .ix-btn:not(.ix-btn--primary) { color: #fff; border-color: rgb(255 255 255 / 0.5); background: rgb(10 14 16 / 0.35); }
+
+.hd__ledger { position: absolute; z-index: 3; bottom: 40px; left: calc(50% - 150px); width: min(560px, 44vw); }
+.hd .hx-ledger { position: static; width: 100%; box-shadow: 0 18px 40px rgb(0 0 0 / 0.35); }
+.hd[data-scene="a"] .hx-ledger { background: rgb(18 24 27 / 0.86); backdrop-filter: blur(8px); border-color: rgb(255 255 255 / 0.18); }
+.hd[data-scene="a"] .hx-ledger__list a, .hd[data-scene="a"] .hx-ledger__head { color: #f3f5f6; }
+.hd[data-scene="a"] .hx-ledger__meta, .hd[data-scene="a"] .hx-ledger .ix-ref { color: rgb(255 255 255 / 0.7); }
+
+/* The controls: a pause button the visitor can always reach, and one button for each picture. */
+.hd__ctl { position: absolute; z-index: 4; left: max(24px, calc((100vw - 1232px) / 2)); bottom: 28px; display: flex; align-items: center; gap: 10px; }
+.hd__ctl[hidden] { display: none; }
+.hd__pause { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--ix-rule-strong); border-radius: 50%; background: var(--ix-panel); color: var(--ix-text); cursor: pointer; }
+.hd__pause .material-symbols-rounded { font-size: 20px; }
+.hd__dot { position: relative; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.hd__dot::before { content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border: 2px solid var(--hd-ink); border-radius: 50%; opacity: 0.6; transition: background-color 0.3s, opacity 0.3s, transform 0.3s; }
+.hd__dot[aria-current="true"]::before { background: var(--hd-ink); opacity: 1; transform: scale(1.15); }
+.hd__dot:focus-visible, .hd__pause:focus-visible { outline: 3px solid #eab31f; outline-offset: 2px; }
+.hd[data-scene="a"] .hd__pause { background: rgb(10 14 16 / 0.6); color: #fff; border-color: rgb(255 255 255 / 0.5); }
+
+@media (max-width: 900px) {
+    .hd { min-height: 0; display: flex; flex-direction: column; }
+    .hd__stage { position: relative; inset: auto; order: 2; width: 100%; aspect-ratio: 4 / 3; }
+    .hd__grid { order: 1; width: 100%; min-height: 0; padding: 36px 16px 28px; }
+    .hd__ledger { order: 3; position: relative; z-index: 3; left: 0; bottom: auto; width: auto; margin: -44px 12px 56px; }
+    .hd__ctl { left: 16px; bottom: 12px; }
+    .hd .lp-hero__title { max-width: 14ch; font-size: clamp(2.4rem, 10vw, 3.4rem); }
+    .hd[data-scene="a"] { --hd-ink: var(--ix-text); --hd-ink-2: var(--ix-text-2); }
+    .hd[data-scene="a"] .hp-hero__actions .ix-btn:not(.ix-btn--primary) { color: var(--ix-text); border-color: var(--ix-rule-strong); background: transparent; }
+    .hd__scene--a::after { background: linear-gradient(0deg, rgb(10 14 16 / 0.5), transparent 50%); }
+    .hd__ground { display: none; }
+    .hd__photo { inset: 0; width: 100%; }
+    .hd__tiles { width: 100%; padding: 16px; gap: 8px; }
+    .hd__tile .pg-plate { left: 6px; top: 6px; padding: 3px 7px; font-size: var(--dot-text-caption-size); }
+    .hd__tile--1, .hd__tile--2, .hd__tile--3 { translate: none; }
+    .hd .hx-ledger__list a { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+    .hd .hx-ledger__list a .ix-ref { grid-column: 1 / -1; }
+    .hd[data-scene="a"] .hd__pause { background: var(--ix-panel); color: var(--ix-text); border-color: var(--ix-rule-strong); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hd__dot::before, .hd .lp-hero__title, .hd .lp-hero__sub { transition: none; }
+}
+.hd { place-items: normal; }
+.hd__ico--play, .hd__pause[aria-pressed="true"] .hd__ico--pause { display: none; }
+.hd__pause[aria-pressed="true"] .hd__ico--play { display: block; }

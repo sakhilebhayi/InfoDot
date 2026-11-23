@@ -55,7 +55,7 @@ class NavSection
             request()->routeIs('ecosystem.widget', 'platforms.*') => ['platforms', 'PLAT'],
             request()->routeIs('analytics.*') => ['analytics', 'DATA'],
             request()->routeIs('people') => ['people', 'CREW'],
-            request()->routeIs('business.*', 'businesses.*') => ['people', 'IDNT'],
+            request()->routeIs('business.*', 'businesses.*') => ['people', 'BUSINESSES'],
             request()->routeIs('admin.platforms*') => ['platforms', 'CTRL'],
             request()->routeIs('moderation*') => ['people', 'MODR'],
             request()->routeIs('points*') => ['people', 'PNTS'],

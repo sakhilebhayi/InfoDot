@@ -10,10 +10,14 @@
     @push('meta')
         <meta name="description" content="Find businesses on InfoDot by what they do, where they work and what they offer.">
         <link rel="canonical" href="{{ route('businesses.index') }}">
+        <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.classList.add('has-motion'); window.__motionFailsafe = window.setTimeout(function () { document.documentElement.classList.add('motion-failsafe'); }, 1200); }</script>
+        {!! \App\Support\OptionalVite::tags('resources/js/pages.js') !!}
     @endpush
 
+    <div class="pg-dir">
     <header class="ix-dir__head">
-        <h1 class="ix-h1">Businesses</h1>
+        <span class="pg-plate" data-pg-plate style="--pg-tone: var(--ix-people)">Find a business</span>
+        <h1 class="ix-h1 pg-hero__title" data-pg-in>Businesses</h1>
         <p class="ix-lede">Find a business by what it does, where it works or what it offers. Ask the way you would ask a person: “accounting firms in Johannesburg”.</p>
         @auth
             @php
@@ -37,7 +41,9 @@
                 <button type="submit" class="ix-btn ix-btn--primary">Search</button>
             </div>
 
-            @php($filtering = collect($f)->only(['category', 'location', 'size', 'type', 'sort'])->filter()->isNotEmpty() || $f['verified'])
+            @php
+            $filtering = collect($f)->only(['category', 'location', 'size', 'type', 'sort'])->filter()->isNotEmpty() || $f['verified']
+            @endphp
             <details class="ix-dir__more" open data-fold-on-phone @if($filtering) data-active @endif>
             <summary class="ix-btn ix-btn--ghost"><span class="material-symbols-rounded" aria-hidden="true">tune</span>Filters @if($filtering)<span class="ix-hint">in use</span>@endif</summary>
             <div class="ix-dir__filters">
@@ -85,11 +91,14 @@
                  results up after the first paint on a phone (CLS 0.11 to 0.14). The same rule as app.js, which stays as the fallback. --}}
             <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">(function (s) { var d = s.previousElementSibling; if (d && d.hasAttribute('data-fold-on-phone') && ! d.hasAttribute('data-active') && window.matchMedia('(max-width: 640px)').matches) { d.open = false; } })(document.currentScript);</script>
         </form>
+        @if ($guest)
+            <p class="ix-hint ix-guestnote" role="note">You are seeing businesses listed for everyone. <a href="{{ route('login') }}">Sign in</a> to also see the ones listed for InfoDot users.</p>
+        @endif
     </header>
-
-    @if ($guest)
-        <p class="ix-hint ix-guestnote" role="note">You are seeing businesses listed for everyone. <a href="{{ route('login') }}">Sign in</a> to also see the ones listed for InfoDot users.</p>
-    @endif
+    <figure class="pg-photo" data-pg-photo>
+        <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/directory-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="Colourful African print bags on a market table, a trader behind them, at Rosebank Sunday Market in Johannesburg" width="1600" height="1067" decoding="async">
+    </figure>
+    </div>
 
     @if ($searching)
         <section class="ix-dir__found" aria-labelledby="found-h">
@@ -143,16 +152,36 @@
 
         <section class="ix-dir__browse" aria-labelledby="cat-h">
             <h2 id="cat-h" class="ix-dir__h2">Browse by category</h2>
-            <ul class="ix-dir__cats">
-                @foreach ($browse['categories'] as $c)
+            @php
+                $showCounts = $browse['categories']->sum('teams_count') >= 12;
+                $liveCats = $browse['categories']->filter(fn ($c) => $c->teams_count > 0);
+                $quietCats = $browse['categories']->filter(fn ($c) => $c->teams_count === 0);
+            @endphp
+            <ul class="ix-dir__cats ix-dir__cats--live">
+                @foreach ($liveCats as $c)
                     <li>
-                        <a href="{{ route('businesses.index', ['category' => $c->slug]) }}" @class(['is-empty' => $c->teams_count === 0])>
+                        <a href="{{ route('businesses.index', ['category' => $c->slug]) }}">
                             <span class="ix-dir__catname">{{ $c->name }}</span>
-                            <span class="ix-dir__catn">{{ $c->teams_count }}</span>
+                            @if ($showCounts)<span class="ix-dir__catn">{{ $c->teams_count }}</span>@endif
                         </a>
                     </li>
                 @endforeach
             </ul>
+            @if ($quietCats->isNotEmpty())
+                <details class="ix-dir__more-cats">
+                    <summary><span class="material-symbols-rounded" aria-hidden="true">add</span>{{ $quietCats->count() }} more {{ \Illuminate\Support\Str::plural('category', $quietCats->count()) }}</summary>
+                    <ul class="ix-dir__cats">
+                        @foreach ($quietCats as $c)
+                            <li>
+                                <a href="{{ route('businesses.index', ['category' => $c->slug]) }}" class="is-empty">
+                                    <span class="ix-dir__catname">{{ $c->name }}</span>
+                                    
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </details>
+            @endif
         </section>
 
         @if ($places && ($places['towns'] || $places['provinces']))

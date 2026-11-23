@@ -42,7 +42,7 @@ class PublicPagesTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
 
         // The search box is part of the hero and stays there, above the two buttons.
-        $this->assertMatchesRegularExpression('/class="lp-hero".*role="search".*class="hp-hero__actions"/s', $html);
+        $this->assertMatchesRegularExpression('/class="lp-hero hd".*role="search".*class="hp-hero__actions"/s', $html);
         foreach (['#how-it-works', '#tools', '#pillars'] as $anchor) {
             $id = ltrim($anchor, '#');
             $this->assertStringContainsString('id="'.$id.'"', $html, "the page links to {$anchor} but has no such section");
@@ -121,7 +121,7 @@ class PublicPagesTest extends TestCase
             '/features' => ['What InfoDot does', 'Company first, public by choice'],
             '/faqs' => ['Questions people ask', 'Who can see my question?'],
             '/complains' => ['How to complain', 'Information Regulator'],
-            '/contact' => ['Contact us', 'privacy@infodot.co.za'],
+            '/contact' => ['Tell us what you need.', 'privacy@infodot.co.za'],
         ];
 
         foreach ($pages as $path => [$heading, $text]) {

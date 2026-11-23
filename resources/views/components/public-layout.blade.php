@@ -1,4 +1,4 @@
-@props(['title' => 'InfoDot', 'band' => null, 'crumb' => null, 'description' => null, 'landing' => false, 'motion' => null])
+@props(['title' => 'InfoDot', 'band' => null, 'crumb' => null, 'description' => null, 'landing' => false, 'motion' => null, 'reveal' => false])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dot-roboto">
 <head>
@@ -23,12 +23,12 @@
     @include('partials.head-fonts', ['fonts' => ['icons']])
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('partials.head-dot-ui', ['part' => 'script'])
-    @if ($landing || $motion)
+    @if ($landing || $motion || $reveal)
         {{-- Motion is added on top of a page that is complete without it: the flag is set before first paint only when the visitor has not asked for reduced motion. --}}
         {{-- Items that animate in start hidden. The timer here, not the motion script, brings them back: if that script is slow, blocked
              or broken, the page shows complete after 1.2 seconds instead of staying blank until it arrives. --}}
         <script nonce="{{ \Illuminate\Support\Facades\Vite::cspNonce() }}">if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) { document.documentElement.classList.add('has-motion'); window.__motionFailsafe = window.setTimeout(function () { document.documentElement.classList.add('motion-failsafe'); }, 1200); }</script>
-        {!! \App\Support\OptionalVite::tags($motion ? 'resources/js/'.$motion.'.js' : 'resources/js/landing.js') !!}
+        {!! \App\Support\OptionalVite::tags($motion ? 'resources/js/'.$motion.'.js' : ($reveal ? 'resources/js/pages.js' : 'resources/js/landing.js')) !!}
     @endif
     @livewireStyles
 </head>
