@@ -16,7 +16,7 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Find practical business solutions.', $html);
+        $this->assertStringContainsString('Everything your business needs. All in one place.', $html);
         $this->assertStringContainsString('role="search"', $html);
         $this->assertStringContainsString('name="search"', $html);
         $this->assertStringContainsString('has-motion', $html);
@@ -24,12 +24,53 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('__motionFailsafe', $html);
         $this->assertStringContainsString("classList.add('motion-failsafe')", $html);
         $this->assertStringContainsString('prefers-reduced-motion', $html);
-        $this->assertStringContainsString('knowledge base for a business', $html);
+        // R-55: the value proposition and the three pillars, in the visitor's words.
+        foreach (['Discover', 'Manage', 'Grow', 'Learn what works', 'Run your business', 'Build your future', 'Join InfoDot for Free', 'Explore How It Works',
+            'Getting started with InfoDot is simple.', 'Your business. Your tools. One connected ecosystem.', "You don't have to figure it all out yourself.",
+            'Built for every stage of your business journey.', 'Your business journey starts here.'] as $words) {
+            $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
+        }
         $this->assertStringContainsString(route('register'), $html);
         $this->assertStringContainsString(route('solution_search_results'), $html);
         $this->assertSame(1, substr_count($html, '<h1'));
-        $this->assertStringContainsString('<title>InfoDot: build your business with collective intelligence</title>', $html);
+        $this->assertStringContainsString('<title>InfoDot: everything your business needs, in one place</title>', $html);
         $this->assertStringContainsString('<meta name="description"', $html);
+    }
+
+    public function test_the_landing_page_keeps_its_search_bar_and_every_anchor_it_links_to(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // The search box is part of the hero and stays there, above the two buttons.
+        $this->assertMatchesRegularExpression('/class="lp-hero".*role="search".*class="hp-hero__actions"/s', $html);
+        foreach (['#how-it-works', '#tools', '#pillars'] as $anchor) {
+            $id = ltrim($anchor, '#');
+            $this->assertStringContainsString('id="'.$id.'"', $html, "the page links to {$anchor} but has no such section");
+        }
+        $this->assertStringContainsString('href="#how-it-works"', $html);
+        $this->assertSame(1, substr_count($html, '<h1'));
+    }
+
+    public function test_the_tools_are_grouped_by_goal_and_only_show_platforms_that_exist(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        foreach (['Understand your business', 'Manage your money', 'Manage your people', 'Organise your work', 'Create and collaborate', 'Communicate and connect', 'Access specialised solutions'] as $goal) {
+            $this->assertStringContainsString($goal, $html, $goal);
+        }
+        // Retired platforms are never shown, and nothing implies every tool is in every account.
+        foreach (['Dot.Billing', 'Dot.Farms', 'Dot.Plug'] as $retired) {
+            $this->assertStringNotContainsString($retired, $html, $retired);
+        }
+        $this->assertStringContainsString('not every tool comes with every account', $html);
+    }
+
+    public function test_the_page_keeps_community_answers_accepted_solutions_and_verified_information_apart(): void
+    {
+        $text = strip_tags($this->get('/')->assertOk()->getContent());
+
+        $this->assertStringContainsString('A community answer is not the same as an accepted solution', $text);
+        $this->assertStringContainsString('Nothing is shown as verified unless it has been checked', $text);
     }
 
     public function test_the_landing_page_makes_no_claim_that_is_not_true(): void
