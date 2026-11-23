@@ -21,7 +21,7 @@
       ->filter(fn ($g) => $g['tools']->isNotEmpty())->values();
     $examples = ['How do I register a business?', 'How do I price my work?', 'How do I find customers?', 'How do I track my cash?', 'How do I hire my first person?'];
     $search = fn (string $words) => route('solution_search_results', ['search' => $words]);
-    $tools = route('ecosystem.widget');
+    $tools = route('business-tools');
     $first = auth()->check() ? \Illuminate\Support\Str::of(auth()->user()->name)->before(' ')->toString() : null;
     // The researched library: public solutions published by the official InfoDot account (R-14/R-23).
     // Real rows from the database — the section disappears entirely when none exist yet.
@@ -170,9 +170,6 @@
             <h2 id="tools-title" data-reveal>Your business. Your tools. One connected ecosystem.</h2>
             <p class="lp-lede" data-reveal>Tools are grouped by what you want to get done. You find and open the ones that fit your business. What you can open depends on your business, who you are and how access is arranged, and not every tool comes with every account.</p>
             <p data-reveal><a href="{{ $tools }}" class="ix-btn ix-btn--primary lp-btn">Explore Business Tools</a></p>
-            @guest
-                <p class="hp-tools__note" data-reveal>Sign in to see the tools your business can open.</p>
-            @endguest
         </div>
         <div class="hp-tools__groups">
             @foreach ($groups as $group)

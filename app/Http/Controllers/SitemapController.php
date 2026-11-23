@@ -19,6 +19,7 @@ class SitemapController extends Controller
         'welcome' => 'weekly',
         'about' => 'monthly',
         'features' => 'monthly',
+        'business-tools' => 'monthly',
         'faqs' => 'monthly',
         'contact' => 'yearly',
         'complains' => 'yearly',

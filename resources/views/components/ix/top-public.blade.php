@@ -8,6 +8,7 @@
     $places = $way ? [] : [
         ['label' => 'Questions people ask', 'href' => route('faqs'), 'current' => request()->routeIs('faqs')],
         ['label' => 'Browse public answers', 'href' => route('solution_search_results'), 'current' => request()->routeIs('solution_search_results')],
+        ['label' => 'Business tools', 'href' => route('business-tools'), 'current' => request()->routeIs('business-tools')],
         ['label' => 'Businesses', 'href' => route('businesses.index'), 'current' => request()->routeIs('businesses.*', 'business.show')],
     ];
 
