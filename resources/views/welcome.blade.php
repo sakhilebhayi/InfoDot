@@ -46,7 +46,7 @@
         <img class="lp-hero__bg" src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-960.jpg') }} 960w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/hero-1920.jpg') }} 1920w" sizes="100vw" width="1920" height="1280" alt="" fetchpriority="high" decoding="async">
         <div class="lp-hero__veil" aria-hidden="true"></div>
         <div class="lp-hero__inner" data-hero-inner>
-            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Everything your business needs. All in one place.' }}</h1>
+            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Your business, all in one place.' }}</h1>
             <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'Knowledge, people and tools to start, manage and grow your business.' }}</p>
 
             <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>
