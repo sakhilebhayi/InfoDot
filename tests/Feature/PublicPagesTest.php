@@ -235,7 +235,7 @@ class PublicPagesTest extends TestCase
         $this->assertStringNotContainsString('alt="Dot.Agents"', $html, 'the one mark without wording is not in the wall');
     }
 
-    public function test_the_visitor_tab_row_has_the_two_search_links_and_the_directory_and_nothing_else(): void
+    public function test_the_visitor_tab_row_has_the_search_links_the_directory_and_the_business_tools_page_and_nothing_else(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
         preg_match('/<nav class="dh-nav" aria-label="About InfoDot" data-dh-nav>(.*?)<\/nav>/s', $html, $m);
@@ -244,7 +244,9 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('Browse public answers', $m[1]);
         // The directory is public too (R-33); without a tab the landing family of pages had no way to reach it.
         $this->assertStringContainsString('>Businesses</a>', $m[1]);
-        $this->assertSame(3, substr_count($m[1], '<a '), 'three places, no more');
+        // R-56: the Business Tools page is a public place of its own.
+        $this->assertStringContainsString('>Business tools</a>', $m[1]);
+        $this->assertSame(4, substr_count($m[1], '<a '), 'four places, no more');
         $this->assertStringNotContainsString('What it does', $m[1]);
         $this->assertStringNotContainsString('>About<', $m[1]);
         $this->assertStringContainsString('>About</a>', $html, 'About is still in the footer');

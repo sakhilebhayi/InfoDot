@@ -76,6 +76,12 @@ class PagesController extends Controller
         return view('features');
     }
 
+    /** R-56: the public Business Tools page, built from the platform catalogue and the marketing layer in config/business_tools.php. */
+    public function businessTools(Request $request)
+    {
+        return view('business-tools', ['page' => \App\Support\BusinessTools::page()]);
+    }
+
     /**
      * Legal pages read their content from a Markdown source file (resources/markdown/*.md), the
      * same convention Jetstream's own termsAndPrivacyPolicy feature uses (see

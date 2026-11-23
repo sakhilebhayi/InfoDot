@@ -427,6 +427,7 @@ Route::post('/contact-send', 'App\Http\Controllers\PagesController@contactSend')
 Route::get('/faqs', 'App\Http\Controllers\PagesController@faqs')->name('faqs');
 Route::get('/complains', 'App\Http\Controllers\PagesController@complains')->name('complains');
 Route::get('/features', 'App\Http\Controllers\PagesController@features')->name('features');
+Route::get('/business-tools', 'App\Http\Controllers\PagesController@businessTools')->name('business-tools');
 // Nicer, canonical URLs for the legal pages. Jetstream's termsAndPrivacyPolicy feature also
 // auto-registers /terms-of-service and /privacy-policy under route names terms.show/policy.show
 // (see vendor/laravel/jetstream/routes/livewire.php) — registering those same names again here
