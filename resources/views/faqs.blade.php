@@ -36,6 +36,7 @@
     <article class="ix-prose ix-prose--ledger pg-prose">
         <span class="pg-plate" data-pg-plate>Plain answers</span>
         <h1 class="ix-h1 pg-title" data-pg-in>Questions people ask</h1>
+        <p class="ix-lede" data-pg-in>Straight answers about what InfoDot is, who can see what you write and how answers are checked.</p>
         <figure class="pg-strip" data-pg-photo>
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/faqs-1600.jpg') }}" alt="Two women at a shop counter with a card reader, a salon behind them" width="1600" height="1067" loading="eager" decoding="async">
             <figcaption>Photograph by <a href="https://unsplash.com/photos/two-women-near-tables-GFrBMipOd_E" rel="noopener">Blake Wisz</a> on Unsplash</figcaption>

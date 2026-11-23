@@ -15,7 +15,6 @@
             <span class="pg-plate" data-pg-plate>Write to us</span>
             <h1 id="contact-h" class="pg-hero__title" data-pg-in>Tell us what you need.</h1>
             <p class="pg-hero__lede" data-pg-in>Questions, ideas and concerns about InfoDot are welcome. Choose the lane that fits and your message reaches the right place first.</p>
-            <p class="pg-hero__actions" data-pg-in><a class="ix-btn ix-btn--primary" href="#lanes">See the lanes</a></p>
         </div>
         <figure class="pg-photo" data-pg-photo>
             <img src="{{ $img('contact-1600') }}" srcset="{{ $img('contact-800') }} 800w, {{ $img('contact-1600') }} 1600w" sizes="(max-width: 900px) 100vw, 40vw" alt="A woman in a mustard cardigan working on a laptop at a dark desk by a window" width="1600" height="1067" decoding="async">

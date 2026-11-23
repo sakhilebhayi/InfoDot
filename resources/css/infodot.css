@@ -10953,3 +10953,26 @@ body[data-area="home"] .ix-btn--primary:hover,
     .hp-tools__groups { display: block; columns: 2; column-gap: 16px; }
     .hp-tools__groups .hp-group { break-inside: avoid; margin: 0 0 16px; }
 }
+
+/* ===== R-57 round 4 ===== */
+/* Home: the library sits on the same left edge as every other section. */
+.lp-library__head,
+.lp-ledger { max-width: none; margin-left: 0; margin-right: 0; }
+
+/* Contact: titles start at the top of each card and the body follows, whatever the title's length. */
+@media (min-width: 901px) {
+    .pg-route h3 { min-height: 0; }
+    .pg-route { grid-template-rows: auto auto 1fr auto; }
+}
+
+/* Reading pages: a sub-heading is larger than the text under it. */
+.pg-prose h3 { margin: 28px 0 8px; font-size: var(--dot-text-h3-size); font-weight: 600; line-height: 1.3; color: var(--ix-text); }
+.pg-prose h3 + p { margin-top: 0; }
+
+/* Home on a phone: the hero ledger stacks each entry (reference, then title) so titles use the full width, and the three photo cards keep their pictures. */
+@media (max-width: 900px) {
+    .hx-ledger__list a { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+    .hx-ledger__list a .ix-ref { grid-column: 1 / -1; }
+    .hp-pillar__plate { min-height: 200px; aspect-ratio: 16 / 10; }
+    .hp-pillar__word { font-size: var(--dot-text-h3-size); }
+}
