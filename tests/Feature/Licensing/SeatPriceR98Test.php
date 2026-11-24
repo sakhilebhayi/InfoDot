@@ -9,7 +9,7 @@ use App\Services\Licensing\LicenceRefused;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/** R-59 Phase 1E: the owner's price, R98 per user per month, flat, with VAT shown beside it. Nothing here charges anything. */
+/** R-59 Phase 1E: the owner's price, R98 per user per month, flat, no VAT (the business is not VAT registered). Nothing here charges anything. */
 class SeatPriceR98Test extends TestCase
 {
     use RefreshDatabase;
@@ -34,16 +34,16 @@ class SeatPriceR98Test extends TestCase
         $this->assertSame([['up_to' => null, 'percent' => 100]], config('licensing.price.bands'));
     }
 
-    public function test_five_paid_seats_cost_r490_a_month_with_vat_shown_separately(): void
+    public function test_five_paid_seats_cost_r490_a_month_and_no_vat_is_added(): void
     {
-        config(['licensing.price.amount_minor_units' => 9800, 'licensing.price.currency' => 'ZAR', 'licensing.vat.rate_percent' => 15]);
+        config(['licensing.price.amount_minor_units' => 9800, 'licensing.price.currency' => 'ZAR']);
 
         $quote = app(LicencePricing::class)->quote($this->team(), 5, 'month');
 
         $this->assertSame(9800, $quote['unit_price_minor']);
         $this->assertSame(49000, $quote['total_minor']);
-        $this->assertSame(7350, $quote['vat_minor']);
-        $this->assertSame(56350, $quote['total_with_vat_minor']);
+        $this->assertArrayNotHasKey('vat_minor', $quote);
+        $this->assertNull(config('licensing.vat'));
     }
 
     public function test_price_does_not_fall_with_size(): void
@@ -52,15 +52,6 @@ class SeatPriceR98Test extends TestCase
         $pricing = app(LicencePricing::class);
 
         $this->assertSame(9800 * 40, $pricing->quote($this->team(), 40, 'month')['total_minor']);
-    }
-
-    public function test_without_a_vat_rate_the_quote_says_nothing_about_vat_amounts(): void
-    {
-        config(['licensing.price.amount_minor_units' => 9800, 'licensing.price.currency' => 'ZAR', 'licensing.vat.rate_percent' => null]);
-        $quote = app(LicencePricing::class)->quote($this->team(), 1, 'month');
-
-        $this->assertNull($quote['vat_minor']);
-        $this->assertNull($quote['total_with_vat_minor']);
     }
 
     public function test_billing_country_and_vat_number_are_saved_and_kept_private(): void
