@@ -44,7 +44,7 @@ class CompanyPlatformsEndpointTest extends PlatformTestCase
         sort($expected);
         $this->assertSame($expected, $platforms->keys()->sort()->values()->all());
 
-        $this->assertSame(['key' => 'forms', 'name' => 'Dot.Forms', 'status' => 'active', 'entitled' => true, 'is_core' => false, 'available' => true, 'state' => 'operational', 'message' => null, 'access_mode' => 'everyone'], $platforms['forms']);
+        $this->assertSame(['key' => 'forms', 'name' => 'Dot.Forms', 'status' => 'active', 'entitled' => true, 'is_core' => false, 'available' => true, 'state' => 'operational', 'message' => null, 'access_mode' => 'everyone', 'features' => []], $platforms['forms']);
         $this->assertSame(['key' => 'finance', 'name' => 'Dot.Finance', 'status' => 'included', 'entitled' => true, 'is_core' => true, 'available' => true, 'state' => 'operational', 'message' => null], $platforms['finance']);
         $this->assertSame(['key' => 'hr', 'name' => 'Dot.HR', 'status' => 'free_while_pricing_finalised', 'entitled' => false, 'is_core' => false, 'available' => true, 'state' => 'operational', 'message' => null], $platforms['hr']);
         $this->assertSame('managed_in_platform', $platforms['mines']['status']);

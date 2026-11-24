@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PlatformCatalogue;
 use App\Models\PlatformCatalogueEvent;
 use App\Models\PlatformEntitlement;
+use App\Models\PlatformFeature;
 use App\Models\PlatformPlan;
 use App\Services\Platforms\CatalogueAdmin;
 use App\Services\Platforms\EntitlementRefused;
@@ -49,9 +50,10 @@ class CatalogueController extends Controller
             'entry' => $entry,
             'plans' => $plans,
             'ownSignIn' => EcosystemHandoff::managesOwnAccess($entry->key),
+            'features' => PlatformFeature::where('platform_key', $entry->key)->orderBy('name')->get(),
             'events' => PlatformCatalogueEvent::with('actor')
                 ->where(fn ($w) => $w->where(fn ($q) => $q->where('subject_type', 'platform')->where('subject_key', $entry->key))
-                    ->orWhere(fn ($q) => $q->where('subject_type', 'plan')->where('subject_key', 'like', $entry->key.'/%')))
+                    ->orWhere(fn ($q) => $q->whereIn('subject_type', ['plan', 'feature'])->where('subject_key', 'like', $entry->key.'/%')))
                 ->orderByDesc('id')->limit(30)->get(),
         ]);
     }
@@ -75,6 +77,37 @@ class CatalogueController extends Controller
             $entry = $this->catalogue->updatePlatform($entry, $values, $request->user(), $data['reason']);
 
             return $entry->updated_at == $before ? 'Nothing was different, so nothing was changed.' : $entry->name.' was updated, and the change is in the audit trail.';
+        });
+    }
+
+    public function registerFeature(Request $request, PlatformCatalogue $entry): RedirectResponse
+    {
+        $data = $request->validate([
+            'key' => ['required', 'string', 'max:60'],
+            'name' => ['required', 'string', 'max:120'],
+            'description' => ['nullable', 'string', 'max:300'],
+            'kind' => ['required', Rule::in(PlatformFeature::KINDS)],
+            'reason' => self::REASON,
+        ], self::REASON_MESSAGES);
+
+        return $this->attempt(redirect()->route('admin.platforms.platform', $entry)->withFragment('features'), function () use ($entry, $data, $request) {
+            $feature = $this->catalogue->registerFeature($entry, collect($data)->except('reason')->all(), $request->user(), $data['reason']);
+
+            return $feature->name.' is now listed. It is available until you switch it off. The platform only honours it once its own code checks this key.';
+        });
+    }
+
+    public function updateFeature(Request $request, PlatformCatalogue $entry, PlatformFeature $feature): RedirectResponse
+    {
+        abort_unless($feature->platform_key === $entry->key, 404);
+
+        $data = $request->validate(['state' => ['required', Rule::in(PlatformFeature::STATES)], 'reason' => self::REASON], self::REASON_MESSAGES);
+
+        return $this->attempt(redirect()->route('admin.platforms.platform', $entry)->withFragment('features'), function () use ($feature, $data, $request) {
+            $before = $feature->state;
+            $feature = $this->catalogue->setFeatureState($feature, $data['state'], $request->user(), $data['reason']);
+
+            return $feature->state === $before ? 'Nothing was different, so nothing was changed.' : $feature->name.' is now '.str_replace('_', ' ', $feature->state).'. Data, purchases and entitlements are untouched.';
         });
     }
 

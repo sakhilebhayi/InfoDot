@@ -14,6 +14,10 @@ Written 2026-11-24. This is the rule every Dot platform follows so that InfoDot 
 
 `entitled` (what the company holds) and `status` (the business state) are unchanged. `available: false` never changes a purchase, an entitlement or any data. An administrative switch and a commercial entitlement are separate answers.
 
+## Feature switches (added 2026-11-24)
+
+On the caller's OWN row only, the answer also carries `features`: an object of feature key to `{state, message}` for the features an administrator has listed for that platform. States: `available`, `disabled` (temporarily), `development`, `retired`. A feature that is not listed is available. A platform checks the key before it runs the feature's backend action, and when the state is not `available` it refuses that action only (HTTP 503 with the `message`) and leaves the rest of the platform working. Switching a feature off never changes data, a purchase or an entitlement, and "free or paid" is a label that does not affect it. The same last-known-good and cache rules apply as for the platform.
+
 ## What a platform does with it
 
 1. Ask for its own entry (`key` equal to its own key). If `available` is false, refuse every signed-in request that would use or change data with HTTP 503 and the `message`. Reading and exporting the company's own records may stay open where the law requires it (Finance already exempts report and attachment downloads). Do not delete, sign out or cancel anything.

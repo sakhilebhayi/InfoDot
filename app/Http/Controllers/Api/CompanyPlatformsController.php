@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\PlatformCatalogue;
+use App\Models\PlatformFeature;
 use App\Models\Team;
 use App\Services\Platforms\PlatformAccess;
 use App\Support\Input;
@@ -37,6 +38,8 @@ class CompanyPlatformsController extends Controller
             return response()->json(['error' => 'not_found'], 404);
         }
 
+        $features = PlatformFeature::where('platform_key', $caller)->orderBy('key')->get()->mapWithKeys(fn (PlatformFeature $f) => [$f->key => ['state' => $f->state, 'message' => $f->unavailableMessage()]])->all();
+
         $platforms = $access->catalogue()
             ->filter(fn ($entry) => $entry->discoverable && config('ecosystem.platforms.'.$entry->key) !== null && $access->governs($entry->key) || $entry->key === 'infodot')
             ->map(fn ($entry) => [
@@ -52,6 +55,8 @@ class CompanyPlatformsController extends Controller
                 'message' => $entry->key === 'infodot' ? null : $entry->unavailableMessage(),
                 // How the company shares the caller's own platform among its people; nobody else's business.
                 ...($entry->key === $caller ? ['access_mode' => $access->entitlement($team, $entry->key)->access_mode ?? 'everyone'] : []),
+                // R-61: the caller's own switchable features and their state, for the caller only. A feature that is not listed is available.
+                ...($entry->key === $caller ? ['features' => $features] : []),
             ])->values();
 
         return response()->json([
