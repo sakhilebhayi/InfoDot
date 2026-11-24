@@ -30,6 +30,7 @@ use App\Models\Folder;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
+use App\Models\User;
 use App\Services\Demo\DemoRegistry;
 use App\Services\Growth\OnboardingEvents;
 use App\Services\Platforms\PlatformNotices;
@@ -106,7 +107,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(MessageSending::class, SkipMailToReservedDomains::class);
 
         // R-59 Phase 1B: the moment an address is confirmed is a step of its own in the funnel.
-        Event::listen(Verified::class, fn (Verified $e) => app(OnboardingEvents::class)->record($e->user, 'email_verified'));
+        Event::listen(Verified::class, function (Verified $e): void {
+            if ($e->user instanceof User) {
+                app(OnboardingEvents::class)->record($e->user, 'email_verified');
+            }
+        });
 
         // Community knowledge events -> durable outbox -> the Dot Points ledger (signed, retried).
         foreach ([

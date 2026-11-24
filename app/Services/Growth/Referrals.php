@@ -11,6 +11,7 @@ use App\Models\ReferralReward;
 use App\Models\ReferralTier;
 use App\Models\Team;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -92,12 +93,13 @@ class Referrals
 
     private function refusal(User $user, ReferralCode $code, AcquisitionTouch $touch): ?string
     {
-        $owner = $code->team?->owner;
+        $ownerId = $code->team?->user_id;
+        $owner = $ownerId === null ? null : User::find($ownerId);
 
         if (! $code->active || $owner === null) {
             return 'code not active';
         }
-        if ($touch->touched_at === null || $touch->touched_at->lt(now()->subDays((int) config('referrals.window_days')))) {
+        if ($touch->touched_at === null || Carbon::parse($touch->touched_at)->lt(now()->subDays((int) config('referrals.window_days')))) {
             return 'outside the attribution window';
         }
         if ($owner->id === $user->id || Str::lower($owner->email) === Str::lower($user->email)) {
@@ -158,7 +160,7 @@ class Referrals
     public function isActivated(User $user, Referral $referral): bool
     {
         // The window only stops late activations from being credited; it never reverses anything.
-        if ($user->platform_opened_at === null || now()->gt($referral->registered_at->copy()->addDays((int) config('referrals.activation_days')))) {
+        if ($user->platform_opened_at === null || now()->gt(Carbon::parse($referral->registered_at)->copy()->addDays((int) config('referrals.activation_days')))) {
             return false;
         }
 

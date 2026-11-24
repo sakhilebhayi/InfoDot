@@ -25,11 +25,13 @@ class Referral extends Model
         return ['registered_at' => 'datetime', 'verified_at' => 'datetime', 'activated_at' => 'datetime', 'reversed_at' => 'datetime'];
     }
 
+    /** @return BelongsTo<ReferralCode, $this> */
     public function code(): BelongsTo
     {
         return $this->belongsTo(ReferralCode::class, 'referral_code_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function referred(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referred_user_id');
