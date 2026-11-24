@@ -9,7 +9,7 @@
     <section class="ix-panel" aria-label="Your link">
         <div class="ix-panel__body">
             <label for="ref-link" class="ix-label">Your link</label>
-            <input id="ref-link" class="ix-input" type="text" readonly value="{{ $link }}" onfocus="this.select()">
+            <input id="ref-link" class="ix-input" type="text" readonly value="{{ $link }}" x-on:focus="$event.target.select()">
             <p class="ix-hint">Your code is <strong>{{ $code }}</strong>. It belongs to {{ $team->name }}. A link used by the same person, or by someone at your own company address, is not counted.</p>
         </div>
     </section>
