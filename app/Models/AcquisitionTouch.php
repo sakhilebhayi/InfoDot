@@ -17,6 +17,7 @@ class AcquisitionTouch extends Model
         return ['touched_at' => 'datetime'];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

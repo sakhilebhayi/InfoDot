@@ -16,11 +16,13 @@ class ReferralCode extends Model
         return ['active' => 'boolean'];
     }
 
+    /** @return BelongsTo<Team, $this> */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
     }
 
+    /** @return HasMany<Referral, $this> */
     public function referrals(): HasMany
     {
         return $this->hasMany(Referral::class);
