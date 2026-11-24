@@ -3,7 +3,7 @@
     $said = [
         'platform_updated' => 'Platform changed', 'plan_created' => 'Plan created', 'plan_updated' => 'Plan changed', 'price_approved' => 'Price approved',
         'price_approval_withdrawn' => 'Price approval withdrawn', 'bundle_created' => 'Bundle created', 'bundle_updated' => 'Bundle changed',
-        'administrator_granted' => 'Administrator role granted', 'administrator_revoked' => 'Administrator role revoked', 'moderator_granted' => 'Moderator role granted', 'moderator_revoked' => 'Moderator role revoked', 'delivery_retried' => 'Delivery retried', 'branding_created' => 'Sign-in branding created', 'branding_published' => 'Sign-in branding published',
+        'administrator_granted' => 'Administrator role granted', 'administrator_revoked' => 'Administrator role revoked', 'feature_registered' => 'Feature listed', 'feature_updated' => 'Feature changed', 'moderator_granted' => 'Moderator role granted', 'moderator_revoked' => 'Moderator role revoked', 'delivery_retried' => 'Delivery retried', 'branding_created' => 'Sign-in branding created', 'branding_published' => 'Sign-in branding published',
     ];
     $yesNo = ['discoverable', 'active', 'is_platform_admin', 'is_moderator', 'parked'];
     $show = fn ($value, $field = '') => match (true) {

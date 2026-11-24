@@ -25,6 +25,8 @@ class AdminCentreAccessTest extends AdminCentreTestCase
 
     private int $outboxId;
 
+    private int $featureId;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -35,6 +37,7 @@ class AdminCentreAccessTest extends AdminCentreTestCase
         $this->bundleId = (int) $this->bundle(['forms', 'projects'], false, $admin)->id;
         $this->entitlements()->grantComplimentary($this->team, 'forms', $admin, null, self::WHY);
         $this->outboxId = (int) DB::table('entitlement_outbox')->value('id');
+        $this->featureId = (int) DB::table('platform_features')->where('key', 'ai_breakdown')->value('id');
         DB::table('entitlement_outbox')->update(['failed_at' => now()]);
     }
 
@@ -48,6 +51,8 @@ class AdminCentreAccessTest extends AdminCentreTestCase
             ['GET', '/admin/platforms', []],
             ['GET', '/admin/platforms/catalogue/hr', []],
             ['POST', '/admin/platforms/catalogue/hr', $why + ['operational_status' => 'maintenance', 'discoverable' => 1]],
+            ['POST', '/admin/platforms/catalogue/hr/features', $why + ['key' => 'recruitment', 'name' => 'Recruitment workflows', 'kind' => 'free']],
+            ['POST', '/admin/platforms/catalogue/tasks/features/'.$this->featureId, $why + ['state' => 'disabled']],
             ['POST', '/admin/platforms/catalogue/projects/plans', $why + ['name' => 'Starter', 'model' => 'subscription', 'amount_minor' => 9900, 'currency' => 'ZAR', 'interval' => 'month']],
             ['GET', '/admin/platforms/plans/'.$this->plan->id, []],
             ['POST', '/admin/platforms/plans/'.$this->plan->id, $why + ['name' => 'Team', 'model' => 'subscription', 'amount_minor' => 29900, 'currency' => 'ZAR', 'interval' => 'month', 'active' => 1]],
@@ -97,7 +102,7 @@ class AdminCentreAccessTest extends AdminCentreTestCase
         // Each registered route appears in doors() (decision and action routes several times), and each carries the gate.
         // R-54's four sign-in branding routes need a registered platform to act on and are walked, gate included, in
         // tests/Feature/CentralLogin/BrandingAdminTest; the loop below still checks that they carry the gate.
-        $this->assertCount(20, $registered->reject(fn ($route) => str_contains((string) $route->getName(), '.branding')));
+        $this->assertCount(22, $registered->reject(fn ($route) => str_contains((string) $route->getName(), '.branding')));
         $this->assertCount(4, $registered->filter(fn ($route) => str_contains((string) $route->getName(), '.branding')));
 
         foreach ($registered as $route) {

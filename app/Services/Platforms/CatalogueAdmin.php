@@ -5,6 +5,7 @@ namespace App\Services\Platforms;
 use App\Models\PlatformBundle;
 use App\Models\PlatformCatalogue;
 use App\Models\PlatformCatalogueEvent;
+use App\Models\PlatformFeature;
 use App\Models\PlatformPlan;
 use App\Models\User;
 use App\Support\EcosystemHandoff;
@@ -56,6 +57,46 @@ class CatalogueAdmin
         }
 
         return $this->record($entry, $values, $actor, $reason, 'platform', $entry->key, 'platform_updated');
+    }
+
+    /**
+     * Lists a feature of a platform so it can be switched on and off from InfoDot. The key is what the platform asks about; it must match the
+     * key the platform's own code checks, so it is fixed once made.
+     *
+     * @param  array<string, mixed>  $values  key, name, description and kind, as typed (each is checked here)
+     */
+    public function registerFeature(PlatformCatalogue $entry, array $values, User $actor, string $reason): PlatformFeature
+    {
+        if (! preg_match('/^[a-z][a-z0-9_]{1,59}$/', (string) ($values['key'] ?? ''))) {
+            throw new EntitlementRefused('A feature key is lower case letters, digits and underscores, starting with a letter.');
+        }
+
+        if (PlatformFeature::where('platform_key', $entry->key)->where('key', $values['key'])->exists()) {
+            throw new EntitlementRefused('That platform already lists a feature with that key.');
+        }
+
+        $kind = $values['kind'] ?? 'free';
+        if (! in_array($kind, PlatformFeature::KINDS, true)) {
+            throw new EntitlementRefused('A feature is free or paid.');
+        }
+
+        $feature = new PlatformFeature(['platform_key' => $entry->key, 'key' => $values['key'], 'name' => trim((string) ($values['name'] ?? '')), 'description' => $values['description'] ?? null, 'kind' => $kind, 'state' => PlatformFeature::AVAILABLE]);
+
+        if ($feature->name === '') {
+            throw new EntitlementRefused('Give the feature a name.');
+        }
+
+        return $this->record($feature, [], $actor, $reason, 'feature', $entry->key.'/'.$feature->key, 'feature_registered', ['state' => PlatformFeature::AVAILABLE, 'kind' => $kind, 'name' => $feature->name]);
+    }
+
+    /** Switches one feature on or off, or marks it under development or retired. Nothing else is touched: no data, no purchase, no entitlement. */
+    public function setFeatureState(PlatformFeature $feature, string $state, User $actor, string $reason): PlatformFeature
+    {
+        if (! in_array($state, PlatformFeature::STATES, true)) {
+            throw new EntitlementRefused('That is not a feature state.');
+        }
+
+        return $this->record($feature, ['state' => $state], $actor, $reason, 'feature', $feature->platform_key.'/'.$feature->key, 'feature_updated');
     }
 
     /** @param  array<string, mixed>  $values */

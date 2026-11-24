@@ -21,6 +21,8 @@ Route::middleware(['web', 'auth:sanctum', 'verified', 'platform.admin'])->prefix
         Route::get('/', 'index')->middleware('throttle:60,1,admin.platforms');
         Route::get('/catalogue/{entry:key}', 'show')->middleware('throttle:60,1,admin.platforms.view')->name('.platform');
         Route::post('/catalogue/{entry:key}', 'update')->middleware('throttle:30,1,admin.platforms.act')->name('.platform.update');
+        Route::post('/catalogue/{entry:key}/features', 'registerFeature')->middleware('throttle:30,1,admin.platforms.act')->name('.features.store');
+        Route::post('/catalogue/{entry:key}/features/{feature}', 'updateFeature')->whereNumber('feature')->middleware('throttle:30,1,admin.platforms.act')->name('.feature.update');
         Route::post('/catalogue/{entry:key}/plans', 'storePlan')->middleware('throttle:30,1,admin.platforms.act')->name('.plans.store');
         Route::get('/plans/{plan}', 'plan')->whereNumber('plan')->middleware('throttle:60,1,admin.platforms.view')->name('.plan');
         Route::post('/plans/{plan}', 'updatePlan')->whereNumber('plan')->middleware('throttle:30,1,admin.platforms.act')->name('.plan.update');
