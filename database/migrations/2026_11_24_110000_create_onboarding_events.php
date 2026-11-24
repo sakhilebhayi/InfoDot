@@ -14,7 +14,9 @@ return new class extends Migration
     {
         Schema::create('onboarding_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            // users.id is a legacy unsigned INT, so the referencing column must be too (MySQL refuses a bigint foreign key to it).
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->unsignedBigInteger('team_id')->nullable()->index();
             $table->unsignedBigInteger('scope')->default(0);
             $table->string('step', 32);
