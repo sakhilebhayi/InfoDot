@@ -15,10 +15,10 @@ class PlatformRecommender
     /** @return list<array{key: string, name: string, tagline: string, why: list<string>, score: int}> */
     public function for(Team $team): array
     {
-        $profile = $team->profile;
+        $profile = $team->profile()->first();
 
         return $this->recommend(
-            array_values(array_intersect((array) ($profile?->objectives ?? []), array_keys(config('onboarding.objectives')))),
+            array_values(array_intersect((array) ($profile->objectives ?? []), array_keys(config('onboarding.objectives')))),
             $profile?->stage,
             $profile?->size_band,
         );
