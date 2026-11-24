@@ -20,7 +20,7 @@ class OnboardingEvents
 
         try {
             OnboardingEvent::firstOrCreate(
-                ['user_id' => $user->id, 'scope' => $team?->id ?? 0, 'step' => $step],
+                ['user_id' => $user->id, 'scope' => $team === null ? 0 : $team->id, 'step' => $step],
                 ['team_id' => $team?->id, 'meta' => $meta === [] ? null : $meta, 'occurred_at' => now()],
             );
         } catch (\Throwable $e) {

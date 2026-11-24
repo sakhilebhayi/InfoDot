@@ -33,7 +33,7 @@ class RecommendationsController extends Controller
             'team' => $team,
             'recommendations' => $recommendations,
             'objectives' => config('onboarding.objectives'),
-            'selected' => (array) ($team->profile?->objectives ?? []),
+            'selected' => (array) ($team->profile()->first()->objectives ?? []),
             'maxObjectives' => (int) config('onboarding.max_objectives'),
         ]);
     }
