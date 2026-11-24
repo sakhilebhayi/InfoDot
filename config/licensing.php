@@ -47,14 +47,20 @@ return [
         'currency' => env('LICENCE_CURRENCY'),
         'periods' => ['month', 'year'],
 
-        // Volume bands (owner decision D3): marginal, applied to the company's total number of PAID licences. Each band prices the licences
+        // Volume bands (R-53 decision D3): marginal, applied to the company's total number of PAID licences. Each band prices the licences
         // from the previous band's end up to `up_to` at `percent` of the unit price; `up_to` null = no limit. These are percentages of a
         // configured price, not prices.
+        // R-59 1E: FLAT. Every paid licence costs the same unit price, whatever the company's size (owner pricing: R98 per user per month,
+        // 9800 in LICENCE_SEAT_PRICE_MINOR once the owner flips it on). A volume discount, if ever wanted, is added here as a band.
         'bands' => [
-            ['up_to' => 5, 'percent' => 100],
-            ['up_to' => 20, 'percent' => 90],
-            ['up_to' => null, 'percent' => 80],
+            ['up_to' => null, 'percent' => 100],
         ],
+    ],
+
+    // Value-added tax, shown beside every quote and never inside the unit price. The rate is a host setting (LICENCE_VAT_RATE, in percent,
+    // for example 15): with none set, a quote says VAT is not yet included in what is shown. Amounts are always excluding VAT.
+    'vat' => [
+        'rate_percent' => env('LICENCE_VAT_RATE'),
     ],
 
     // Above this many people in one company (owner included) licences are by custom agreement and cannot be bought online (D12).

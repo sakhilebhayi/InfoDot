@@ -31,6 +31,8 @@ abstract class LicenceTestCase extends AdminCentreTestCase
             'platform_subscriptions.confirmation_secret' => $this->secret,
             'licensing.included_seats' => 1, 'licensing.grace_days' => 14, 'licensing.pending_invitations_reserve_a_seat' => true,
             'licensing.price.amount_minor_units' => 9900, 'licensing.price.annual_amount_minor_units' => 99000, 'licensing.price.currency' => 'ZAR',
+            // The default bands are flat (R-59 1E); these tests exercise the band mechanism itself, so they set tiers explicitly.
+            'licensing.price.bands' => [['up_to' => 5, 'percent' => 100], ['up_to' => 20, 'percent' => 90], ['up_to' => null, 'percent' => 80]],
         ]);
     }
 
