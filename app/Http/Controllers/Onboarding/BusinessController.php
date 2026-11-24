@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Onboarding;
 
 use App\Http\Controllers\Controller;
+use App\Models\Team;
 use App\Models\TeamProfile;
 use App\Services\Growth\OnboardingEvents;
 use App\Services\Sso\BusinessOnboarding;
@@ -59,10 +60,12 @@ class BusinessController extends Controller
         ]);
 
         try {
-            $team = $creator->create($user, $request->only(['name', 'industry', 'description', 'visibility']));
+            $created = $creator->create($user, $request->only(['name', 'industry', 'description', 'visibility']));
         } catch (ValidationException $e) {
             return back()->withInput()->withErrors($e->errors());
         }
+
+        $team = Team::query()->findOrFail($created->getKey());
 
         // What the business says about itself is optional; it is kept with the profile the action just wrote.
         $objectives = array_values(array_unique($about['objectives'] ?? []));
