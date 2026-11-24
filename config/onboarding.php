@@ -17,6 +17,19 @@ return [
         'platform_opened' => 'First platform opened',
     ],
 
+    // The step each one is measured against. Steps like a colleague invited or a platform opened do not depend on the step just before them
+    // in the list, so each is compared with the step it really follows; that way no share can come out above 100 percent.
+    'parents' => [
+        'email_verified' => 'account_created',
+        'business_created' => 'email_verified',
+        'profile_established' => 'business_created',
+        'category_selected' => 'business_created',
+        'objectives_set' => 'business_created',
+        'team_invited' => 'business_created',
+        'platforms_recommended' => 'business_created',
+        'platform_opened' => 'business_created',
+    ],
+
     'stages' => [
         'idea' => 'I have an idea',
         'starting' => 'I am just starting',

@@ -49,13 +49,14 @@
         <section class="ix-panel ix-panel--clip" aria-label="Onboarding funnel">
             <div class="ix-tablewrap">
                 <table class="ix-table ix-adm__table">
-                    <thead><tr><th>Step</th><th class="num">People</th><th class="num">Of the step before</th><th class="num">Of the first step</th></tr></thead>
+                    <thead><tr><th>Step</th><th class="num">People</th><th>Follows</th><th class="num">Share of that step</th><th class="num">Share of all who signed up</th></tr></thead>
                     <tbody>
                         @foreach ($funnel as $row)
                             <tr>
                                 <td class="title">{{ $row['label'] }}</td>
                                 <td class="num">{{ number_format($row['people']) }}</td>
-                                <td class="num">{{ $row['of_previous'] === null ? 'None' : $row['of_previous'].'%' }}</td>
+                                <td class="muted">{{ $row['parent'] ?? 'None' }}</td>
+                                <td class="num">{{ $row['of_parent'] === null ? 'None' : $row['of_parent'].'%' }}</td>
                                 <td class="num">{{ $row['of_first'] === null ? 'None' : $row['of_first'].'%' }}</td>
                             </tr>
                         @endforeach
