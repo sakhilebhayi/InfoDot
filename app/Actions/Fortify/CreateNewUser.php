@@ -5,6 +5,7 @@ namespace App\Actions\Fortify;
 use App\Models\Team;
 use App\Models\User;
 use App\Rules\DeliverableEmailDomain;
+use App\Services\Growth\Acquisition;
 use App\Services\Growth\OnboardingEvents;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +41,7 @@ class CreateNewUser implements CreatesNewUsers
                     'password' => Hash::make($input['password']),
                 ]), function (User $user) {
                     $this->createTeam($user);
+                    app(Acquisition::class)->record($user, request());
                 });
             });
 

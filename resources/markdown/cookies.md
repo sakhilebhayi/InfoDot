@@ -1,6 +1,6 @@
-_Last updated: 6 August 2026_
+_Last updated: 24 November 2026_
 
-This page explains the cookies InfoDot actually sets. There aren't many — InfoDot doesn't run advertising or analytics trackers, so every cookie below exists to make the platform work, not to profile you or serve you ads.
+This page explains the cookies InfoDot actually sets. There aren't many. InfoDot doesn't run advertising or third-party analytics trackers. Every cookie below is set by InfoDot itself: all but one are strictly necessary to make the platform work, and the one that is not (`dot_src`) is explained in its own row and only appears when you arrive through a tagged link.
 
 ## Cookies we set
 
@@ -8,11 +8,12 @@ This page explains the cookies InfoDot actually sets. There aren't many — Info
 |---|---|---|
 | `infodot_session` | Keeps you signed in and remembers your session state as you move around InfoDot. Strictly necessary — InfoDot can't function without it. | Ends when your session expires or you sign out. |
 | `XSRF-TOKEN` | A security token that protects forms and requests on InfoDot from being forged by another site. Strictly necessary. | Ends when your session expires or you sign out. |
+| `dot_src` | Not strictly necessary. Set only when you arrive on InfoDot through a link that carries a referral code or a campaign tag, or from a search or social site. It holds that code or tag, the name of the site you came from (not the address) and the page you landed on, so that if you create an account we can learn which links and channels bring people to InfoDot. It is not shared with anyone, is not used to follow you to other sites and is never set on a plain visit. | 30 days, or until you create an account or clear it. |
 | `remember_web_...` | Only set if you tick "Remember me" when signing in. Keeps you signed in on that browser after you close it, so you don't have to log in again next time. | Up to 5 years, or until you sign out or clear it. |
 
 ## What we don't use
 
-InfoDot does not use advertising cookies, third-party analytics or tracking pixels, or cross-site marketing cookies. If that ever changes, we'll update this page and, where required by law, ask for your consent first.
+InfoDot does not use advertising cookies, third-party analytics or tracking pixels, or cross-site marketing cookies. The `dot_src` cookie above is first-party and is used only to understand how people arrive. If that ever changes, we'll update this page and, where required by law, ask for your consent first.
 
 ## Cookies set by connected platforms
 
