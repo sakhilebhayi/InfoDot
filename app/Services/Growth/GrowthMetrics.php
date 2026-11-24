@@ -4,8 +4,8 @@ namespace App\Services\Growth;
 
 use App\Models\AcquisitionTouch;
 use App\Models\GrowthTarget;
-use App\Models\TeamProfile;
 use App\Models\User;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -70,7 +70,7 @@ class GrowthMetrics
     /** Where businesses say they are registered. Only what a business has stated; blank is counted as blank. @return array{rows: list<array{country: string, businesses: int}>, stated: int, unstated: int} */
     public function geography(): array
     {
-        $counts = TeamProfile::query()->whereNotNull('registration_country')->where('registration_country', '!=', '')
+        $counts = DB::table('team_profiles')->whereNotNull('registration_country')->where('registration_country', '!=', '')
             ->selectRaw('registration_country as country, count(*) as businesses')->groupBy('registration_country')->orderByDesc('businesses')->get();
         $stated = (int) $counts->sum('businesses');
         $all = (int) DB::table('teams')->where('personal_team', false)->count();
@@ -104,7 +104,7 @@ class GrowthMetrics
             $out[$metric] = [
                 'label' => $label,
                 'target' => $target,
-                'target_date' => $row?->target_date?->format('j M Y'),
+                'target_date' => $row?->target_date === null ? null : Carbon::parse($row->target_date)->format('j M Y'),
                 'actual' => $actual,
                 'progress' => $target ? round(min(100, $actual / $target * 100), 1) : null,
             ];
