@@ -21,20 +21,29 @@
                 <div><dt>Signed up</dt><dd><strong>{{ (int) ($states['registered'] ?? 0) + (int) ($states['verified'] ?? 0) + (int) ($states['activated'] ?? 0) }}</strong></dd></div>
                 <div><dt>Active businesses</dt><dd><strong>{{ $activated }}</strong></dd></div>
             </dl>
-            <h3>Rewards</h3>
-            <ul>
-                @foreach ($tiers as $tier)
-                    @php($reward = $rewards->firstWhere('tier_id', $tier->id))
-                    <li>
-                        {{ $tier->referrals_required }} active businesses: {{ number_format($tier->points) }} points.
-                        @if ($reward === null) {{ max(0, $tier->referrals_required - $activated) }} to go.
-                        @elseif ($reward->status === 'held') Earned. Held for {{ $holdingDays }} days before it is released.
-                        @elseif ($reward->status === 'due') Earned and released.
-                        @elseif ($reward->status === 'reversed') Taken back because a referral behind it no longer counts.
-                        @else Sent. @endif
-                    </li>
-                @endforeach
-            </ul>
+        </div>
+        <div class="ix-tablewrap">
+            <table class="ix-table ix-adm__table">
+                <thead><tr><th>Active businesses</th><th class="num">Points</th><th>Where it stands</th></tr></thead>
+                <tbody>
+                    @foreach ($tiers as $tier)
+                        @php($reward = $rewards->firstWhere('tier_id', $tier->id))
+                        <tr>
+                            <td class="title">{{ $tier->referrals_required }}</td>
+                            <td class="num">{{ number_format($tier->points) }}</td>
+                            <td class="muted">
+                                @if ($reward === null) {{ max(0, $tier->referrals_required - $activated) }} to go
+                                @elseif ($reward->status === 'held') Earned. Held for {{ $holdingDays }} days before it is released.
+                                @elseif ($reward->status === 'due') Earned and released.
+                                @elseif ($reward->status === 'reversed') Taken back because a referral behind it no longer counts.
+                                @else Sent. @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="ix-panel__body">
             <p class="ix-hint">Rewards are for businesses that become active, never for inviting people to refer.</p>
         </div>
     </section>

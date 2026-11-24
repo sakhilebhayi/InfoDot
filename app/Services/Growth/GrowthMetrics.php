@@ -41,7 +41,7 @@ class GrowthMetrics
         ];
     }
 
-    /** @return list<array{step: string, label: string, people: int, of_previous: ?float, of_first: ?float}> */
+    /** @return list<array{step: string, label: string, people: int, parent: ?string, of_parent: ?float, of_first: ?float}> */
     public function funnel(?CarbonInterface $from, ?CarbonInterface $to): array
     {
         return $this->funnel->steps($from, $to);

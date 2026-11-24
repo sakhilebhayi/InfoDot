@@ -103,6 +103,18 @@ class OnboardingEventsTest extends TestCase
         $steps = collect(app(OnboardingFunnel::class)->steps())->keyBy('step');
         $this->assertSame(2, $steps['account_created']['people']);
         $this->assertSame(1, $steps['email_verified']['people']);
-        $this->assertSame(50.0, $steps['email_verified']['of_previous']);
+        $this->assertSame(50.0, $steps['email_verified']['of_parent']);
+    }
+
+    public function test_no_funnel_share_exceeds_one_hundred_percent(): void
+    {
+        $events = app(OnboardingEvents::class);
+        $user = User::factory()->create();
+        $events->record($user, 'account_created');
+        $events->record($user, 'platform_opened'); // opened a platform without a business step on record
+
+        foreach (app(OnboardingFunnel::class)->steps() as $row) {
+            $this->assertTrue($row['of_parent'] === null || $row['of_parent'] <= 100.0);
+        }
     }
 }
