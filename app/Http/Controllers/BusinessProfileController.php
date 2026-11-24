@@ -15,6 +15,7 @@ use App\Rules\DeliverableEmailDomain;
 use App\Services\Attachments\TeamMediaService;
 use App\Services\Directory\BusinessDirectory;
 use App\Services\Directory\FeaturedPlacement;
+use App\Services\Growth\OnboardingEvents;
 use App\Services\Insights\BusinessInsights;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -136,6 +137,14 @@ class BusinessProfileController extends Controller
         $profile->save();
         $team->categories()->sync($data['categories'] ?? []);
         BusinessProfileEvent::record($team, $request->user(), 'listing_changed', $before !== $data['visibility'] ? $before.' → '.$data['visibility'] : 'type and categories');
+
+        $events = app(OnboardingEvents::class);
+        if (filled($profile->description)) {
+            $events->record($request->user(), 'profile_established', $team);
+        }
+        if (! empty($data['categories'])) {
+            $events->record($request->user(), 'category_selected', $team);
+        }
 
         return redirect()->route('business.edit', $team)->withFragment('directory')->with('status', $team->fresh()->listingMessage());
     }

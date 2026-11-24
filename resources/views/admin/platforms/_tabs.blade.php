@@ -7,5 +7,6 @@
     <a href="{{ route('admin.platforms.infrastructure') }}" @if ($current === 'infrastructure') aria-current="page" @endif>Infrastructure</a>
     <a href="{{ route('admin.platforms.outbox') }}" @if ($current === 'outbox') aria-current="page" @endif>Deliveries</a>
     <a href="{{ route('admin.platforms.payments') }}" @if ($current === 'payments') aria-current="page" @endif>Confirmed payments</a>
+    <a href="{{ route('admin.growth') }}">Growth Centre</a>
     <a href="{{ route('admin.platforms.audit') }}" @if ($current === 'audit') aria-current="page" @endif>Audit trail</a>
 </nav>

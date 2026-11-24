@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\GrowthCentreController;
 use App\Http\Controllers\Admin\Platforms\BrandingController;
 use App\Http\Controllers\Admin\Platforms\BundlesController;
 use App\Http\Controllers\Admin\Platforms\CatalogueController;
@@ -57,4 +58,10 @@ Route::middleware(['web', 'auth:sanctum', 'verified', 'platform.admin'])->prefix
         Route::get('/payments', 'payments')->middleware('throttle:60,1,admin.platforms.view')->name('.payments');
         Route::get('/audit', 'audit')->middleware('throttle:60,1,admin.platforms.view')->name('.audit');
     });
+});
+
+// R-59 Phase 1D: the Growth Centre (platform administrators only).
+Route::middleware(['web', 'auth:sanctum', 'verified', 'platform.admin'])->prefix('/admin/growth')->group(function () {
+    Route::get('/{tab?}', [GrowthCentreController::class, 'show'])->where('tab', 'overview|funnel|channels|geography|platforms|targets')->middleware('throttle:60,1,admin.growth')->name('admin.growth');
+    Route::post('/targets', [GrowthCentreController::class, 'updateTargets'])->middleware('throttle:30,1,admin.growth.act')->name('admin.growth.targets');
 });

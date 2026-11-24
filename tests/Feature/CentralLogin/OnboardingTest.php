@@ -110,7 +110,7 @@ class OnboardingTest extends CentralLoginTestCase
         $user = $this->newcomer();
 
         $this->actingAs($user)->get('/onboarding/business')->assertOk()->assertDontSee('is for businesses');
-        $this->post('/onboarding/business', ['name' => 'Standalone Ltd', 'visibility' => 'members'])->assertRedirect('/home');
+        $this->post('/onboarding/business', ['name' => 'Standalone Ltd', 'visibility' => 'members'])->assertRedirect(route('onboarding.recommendations'));
     }
 
     public function test_one_person_cannot_create_a_business_for_another(): void
@@ -134,7 +134,7 @@ class OnboardingTest extends CentralLoginTestCase
         $response = $this->actingAs($user)->withSession(['sso.pending_authorize' => 'https://evil.example/oauth/authorize?client_id=x', 'url.intended' => 'https://evil.example/steal'])
             ->post('/onboarding/business', ['name' => 'Safe Ltd', 'visibility' => 'public']);
 
-        $response->assertRedirect('/home');
+        $response->assertRedirect(route('onboarding.recommendations'));
     }
 
     public function test_other_refusals_are_untouched(): void

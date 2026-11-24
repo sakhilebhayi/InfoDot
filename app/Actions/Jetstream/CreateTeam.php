@@ -6,6 +6,7 @@ use App\Models\BusinessProfileEvent;
 use App\Models\Team;
 use App\Models\TeamProfile;
 use App\Models\User;
+use App\Services\Growth\OnboardingEvents;
 use App\Support\Industry;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,12 @@ class CreateTeam implements CreatesTeams
         });
 
         $user->switchTeam($team);
+
+        $events = app(OnboardingEvents::class);
+        $events->record($user, 'business_created', $team);
+        if (filled($input['description'] ?? null)) {
+            $events->record($user, 'profile_established', $team);
+        }
 
         return $this->created = $team;
     }
