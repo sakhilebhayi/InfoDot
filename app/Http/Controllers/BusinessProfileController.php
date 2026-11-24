@@ -166,6 +166,8 @@ class BusinessProfileController extends Controller
             'contact_phone' => ['nullable', 'string', 'max:40'],
             'registration_number' => ['nullable', 'string', 'max:60'],
             'registration_country' => ['nullable', 'string', 'max:60'],
+            'billing_country' => ['nullable', 'string', 'max:60'],
+            'vat_number' => ['nullable', 'string', 'max:30', 'regex:/^[A-Za-z0-9 .\\-]+$/'],
             'established_on' => ['nullable', 'date', 'before_or_equal:today'],
             'size' => ['nullable', 'string', 'max:40'],
             'links' => ['nullable', 'array'],
