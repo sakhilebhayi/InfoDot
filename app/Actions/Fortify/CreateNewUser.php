@@ -27,7 +27,13 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input)
     {
+        // R-62: the form asks for a first and a last name and they are stored joined in the one `name` column every Dot platform already reads, so
+        // nothing else in the ecosystem changes. A caller that still sends a single `name` (an older client, an API call) works as before.
+        $input['name'] = $this->fullName($input);
+
         Validator::make($input, [
+            'first_name' => ['nullable', 'required_with:last_name', 'string', 'max:120'],
+            'last_name' => ['nullable', 'required_with:first_name', 'string', 'max:120'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['bail', 'required', 'string', new DeliverableEmailDomain, 'email', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
@@ -53,6 +59,14 @@ class CreateNewUser implements CreatesNewUsers
         } catch (UniqueConstraintViolationException) {
             return $this->accountFromTheSameSignUp($input);
         }
+    }
+
+    /** First and last name joined with one space, else the single name that was sent. @param  array<string, mixed>  $input */
+    private function fullName(array $input): string
+    {
+        $joined = trim(preg_replace('/\s+/', ' ', trim((string) ($input['first_name'] ?? '')).' '.trim((string) ($input['last_name'] ?? ''))));
+
+        return $joined !== '' ? $joined : trim((string) ($input['name'] ?? ''));
     }
 
     /**

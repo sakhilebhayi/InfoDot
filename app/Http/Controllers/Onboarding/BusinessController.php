@@ -53,11 +53,13 @@ class BusinessController extends Controller
         }
 
         $about = $request->validate([
+            // R-62: a name and one sentence about what the business does are all that is asked up front; everything else comes later.
+            'description' => ['required', 'string', 'max:600'],
             'stage' => ['nullable', Rule::in(array_keys(config('onboarding.stages')))],
             'size_band' => ['nullable', Rule::in(array_keys(config('onboarding.size_bands')))],
             'objectives' => ['nullable', 'array', 'max:'.(int) config('onboarding.max_objectives')],
             'objectives.*' => ['string', Rule::in(array_keys(config('onboarding.objectives')))],
-        ]);
+        ], ['description.required' => 'Say what the business does in a sentence or two.']);
 
         try {
             $created = $creator->create($user, $request->only(['name', 'industry', 'description', 'visibility']));

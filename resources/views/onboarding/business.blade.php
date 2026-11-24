@@ -1,11 +1,15 @@
-<x-guest-layout title="Set up your business">
+<x-guest-layout title="Set up your company">
     <x-jet-authentication-card>
-        <h1 class="ix-auth-title">Set up your business</h1>
+        @if (request()->boolean('verified'))
+            <p class="ix-alert" role="status">Your email address is confirmed.</p>
+        @endif
+
+        <h1 class="ix-auth-title">Set up your company</h1>
         <p class="ix-entry__lede">
             @if ($branding)
                 {{ $branding->name }} is for businesses. Your account is ready; name your business to continue to {{ $branding->name }}.
             @else
-                Name your business to get started. You can change everything here later.
+                Your account is ready. Your company is what you manage on InfoDot: its page, its people and its platforms. A name and a sentence about what it does is enough to start. You can add the rest later.
             @endif
         </p>
 
@@ -17,7 +21,7 @@
             @csrf
 
             <div class="ix-field">
-                <x-jet-label for="name" value="Business name" />
+                <x-jet-label for="name" value="Company name" />
                 <x-jet-input id="name" type="text" name="name" :value="old('name')" required autofocus maxlength="255" autocomplete="organization" />
             </div>
 
@@ -33,26 +37,9 @@
             </div>
 
             <div class="ix-field">
-                <x-jet-label for="stage" value="Where is the business today? (optional)" />
-                <select id="stage" name="stage" class="ix-input ix-select">
-                    <option value="">Prefer not to say</option>
-                    @foreach ($stages as $key => $label)
-                        <option value="{{ $key }}" @selected(old('stage') === $key)>{{ $label }}</option>
-                    @endforeach
-                </select>
+                <x-jet-label for="description" value="What does the business do?" />
+                <textarea id="description" name="description" class="ix-textarea" rows="3" maxlength="600" required placeholder="A sentence or two is plenty.">{{ old('description') }}</textarea>
             </div>
-
-            <div class="ix-field">
-                <x-jet-label for="size_band" value="How many people work in it? (optional)" />
-                <select id="size_band" name="size_band" class="ix-input ix-select">
-                    <option value="">Prefer not to say</option>
-                    @foreach ($sizeBands as $key => $label)
-                        <option value="{{ $key }}" @selected(old('size_band') === $key)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            @include('onboarding._objectives', ['selected' => (array) old('objectives', [])])
 
             <fieldset class="ix-choice">
                 <legend class="ix-label">Who can see the business page</legend>
@@ -65,7 +52,38 @@
                 <p class="ix-hint">Nothing is chosen for you.</p>
             </fieldset>
 
-            <x-jet-button class="ix-entry__go">Create business and continue</x-jet-button>
+            <details @if (old('stage') || old('size_band') || old('objectives')) open @endif>
+                <summary class="ix-btn ix-btn--ghost">Tell us more (optional)</summary>
+                <p class="ix-hint">This only helps us suggest the platforms that fit. Skip it if you like.</p>
+
+                <div class="ix-field">
+                    <x-jet-label for="stage" value="Where is the business today?" />
+                    <select id="stage" name="stage" class="ix-input ix-select">
+                        <option value="">Prefer not to say</option>
+                        @foreach ($stages as $key => $label)
+                            <option value="{{ $key }}" @selected(old('stage') === $key)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="ix-field">
+                    <x-jet-label for="size_band" value="How many people work in it?" />
+                    <select id="size_band" name="size_band" class="ix-input ix-select">
+                        <option value="">Prefer not to say</option>
+                        @foreach ($sizeBands as $key => $label)
+                            <option value="{{ $key }}" @selected(old('size_band') === $key)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                @include('onboarding._objectives', ['selected' => (array) old('objectives', [])])
+            </details>
+
+            <x-jet-button class="ix-entry__go">Create company and continue</x-jet-button>
         </form>
+
+        @unless ($branding)
+            <p class="ix-entry__links"><a href="{{ route('dashboard') }}">Skip for now</a></p>
+        @endunless
     </x-jet-authentication-card>
 </x-guest-layout>

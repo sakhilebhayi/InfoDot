@@ -42,10 +42,10 @@ class OnboardingTest extends CentralLoginTestCase
 
         // 4. The platform is for businesses and they have none: the step, not a refusal.
         $this->get($this->authorizeUrl())->assertRedirect(route('onboarding.business'));
-        $this->get('/onboarding/business')->assertOk()->assertSee('Set up your business')->assertSee('Dot.Central is for businesses');
+        $this->get('/onboarding/business')->assertOk()->assertSee('Set up your company')->assertSee('Dot.Central is for businesses');
 
         // 5. They name the business, choosing who can see it, and continue.
-        $this->post('/onboarding/business', ['name' => 'Dlamini Freight', 'visibility' => 'private'])
+        $this->post('/onboarding/business', ['name' => 'Dlamini Freight', 'description' => 'We move freight.', 'visibility' => 'private'])
             ->assertRedirectContains('/oauth/authorize?');
 
         $business = Team::where('name', 'Dlamini Freight')->firstOrFail();
@@ -63,8 +63,8 @@ class OnboardingTest extends CentralLoginTestCase
         $user = $this->newcomer();
         $this->actingAs($user)->get($this->authorizeUrl());
 
-        $this->post('/onboarding/business', ['name' => 'Once Ltd', 'visibility' => 'public'])->assertRedirect();
-        $this->post('/onboarding/business', ['name' => 'Twice Ltd', 'visibility' => 'public'])->assertRedirect();
+        $this->post('/onboarding/business', ['name' => 'Once Ltd', 'description' => 'We move freight.', 'visibility' => 'public'])->assertRedirect();
+        $this->post('/onboarding/business', ['name' => 'Twice Ltd', 'description' => 'We move freight.', 'visibility' => 'public'])->assertRedirect();
 
         $this->assertSame(1, Team::where('user_id', $user->id)->where('personal_team', false)->count());
         $this->assertDatabaseMissing('teams', ['name' => 'Twice Ltd']);
@@ -74,10 +74,11 @@ class OnboardingTest extends CentralLoginTestCase
     {
         $user = $this->newcomer();
 
-        $this->actingAs($user)->from('/onboarding/business')->post('/onboarding/business', ['name' => 'No Choice Ltd'])
+        $this->actingAs($user)->from('/onboarding/business')->post('/onboarding/business', ['name' => 'No Choice Ltd', 'description' => 'We move freight.'])
             ->assertRedirect('/onboarding/business')->assertSessionHasErrors('visibility');
-        $this->post('/onboarding/business', ['name' => '', 'visibility' => 'public'])->assertSessionHasErrors('name');
-        $this->post('/onboarding/business', ['name' => 'Odd Ltd', 'visibility' => 'public', 'industry' => 'not-an-industry'])->assertSessionHasErrors('industry');
+        $this->post('/onboarding/business', ['name' => '', 'description' => 'We move freight.', 'visibility' => 'public'])->assertSessionHasErrors('name');
+        $this->post('/onboarding/business', ['name' => 'No Words Ltd', 'visibility' => 'public'])->assertSessionHasErrors('description');
+        $this->post('/onboarding/business', ['name' => 'Odd Ltd', 'description' => 'We move freight.', 'visibility' => 'public', 'industry' => 'not-an-industry'])->assertSessionHasErrors('industry');
 
         $this->assertSame(0, Team::where('user_id', $user->id)->where('personal_team', false)->count());
     }
@@ -92,7 +93,7 @@ class OnboardingTest extends CentralLoginTestCase
         $this->actingAs($user)->get($this->authorizeUrl())->assertForbidden()->assertSee('is for companies');
         $this->flushSession();
         $this->actingAs($user)->get('/onboarding/business')->assertRedirect('/home');
-        $this->post('/onboarding/business', ['name' => 'Another', 'visibility' => 'public'])->assertRedirect('/home');
+        $this->post('/onboarding/business', ['name' => 'Another', 'description' => 'We move freight.', 'visibility' => 'public'])->assertRedirect('/home');
         $this->assertSame(1, Team::where('user_id', $user->id)->where('personal_team', false)->count());
         $this->assertNotNull($company);
     }
@@ -100,7 +101,7 @@ class OnboardingTest extends CentralLoginTestCase
     public function test_the_step_is_for_signed_in_verified_people_only(): void
     {
         $this->get('/onboarding/business')->assertRedirect('/login');
-        $this->post('/onboarding/business', ['name' => 'X', 'visibility' => 'public'])->assertRedirect('/login');
+        $this->post('/onboarding/business', ['name' => 'X', 'description' => 'We move freight.', 'visibility' => 'public'])->assertRedirect('/login');
 
         $this->actingAs($this->newcomer(verified: false))->get('/onboarding/business')->assertRedirect(route('verification.notice'));
     }
@@ -110,7 +111,7 @@ class OnboardingTest extends CentralLoginTestCase
         $user = $this->newcomer();
 
         $this->actingAs($user)->get('/onboarding/business')->assertOk()->assertDontSee('is for businesses');
-        $this->post('/onboarding/business', ['name' => 'Standalone Ltd', 'visibility' => 'members'])->assertRedirect(route('onboarding.recommendations'));
+        $this->post('/onboarding/business', ['name' => 'Standalone Ltd', 'description' => 'We move freight.', 'visibility' => 'members'])->assertRedirect(route('onboarding.recommendations'));
     }
 
     public function test_one_person_cannot_create_a_business_for_another(): void
@@ -118,7 +119,7 @@ class OnboardingTest extends CentralLoginTestCase
         $alice = $this->newcomer();
         $bob = $this->newcomer();
 
-        $this->actingAs($alice)->post('/onboarding/business', ['name' => 'Alice Co', 'visibility' => 'public', 'user_id' => $bob->id, 'personal_team' => 1]);
+        $this->actingAs($alice)->post('/onboarding/business', ['name' => 'Alice Co', 'description' => 'We move freight.', 'visibility' => 'public', 'user_id' => $bob->id, 'personal_team' => 1]);
 
         $team = Team::where('name', 'Alice Co')->firstOrFail();
         $this->assertSame($alice->id, $team->user_id);
@@ -132,7 +133,7 @@ class OnboardingTest extends CentralLoginTestCase
         $user = $this->newcomer();
 
         $response = $this->actingAs($user)->withSession(['sso.pending_authorize' => 'https://evil.example/oauth/authorize?client_id=x', 'url.intended' => 'https://evil.example/steal'])
-            ->post('/onboarding/business', ['name' => 'Safe Ltd', 'visibility' => 'public']);
+            ->post('/onboarding/business', ['name' => 'Safe Ltd', 'description' => 'We move freight.', 'visibility' => 'public']);
 
         $response->assertRedirect(route('onboarding.recommendations'));
     }
