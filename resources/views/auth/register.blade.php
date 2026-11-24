@@ -39,6 +39,8 @@
             <x-auth.submit :label="$platformBranding?->ctaRegister ?? 'Create account'" busy="Creating your account…" />
         </form>
 
+        <p class="ix-hint">If a link brought you here, InfoDot keeps its referral code or campaign tag with your account to learn which links work. Nothing follows you to other sites. See <a href="{{ route('cookies') }}">Cookies</a>.</p>
+
         <p class="ix-entry__links">
             <a href="{{ route('login', $platformFlow ? ['f' => $platformFlow] : []) }}">Already have an account? Sign in</a>
         </p>

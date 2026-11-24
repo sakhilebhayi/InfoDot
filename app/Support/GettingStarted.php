@@ -7,6 +7,7 @@ use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\TeamProfile;
 use App\Models\User;
+use App\Services\Growth\OnboardingEvents;
 
 /**
  * The "Getting started" block on Home: the few things a new person does first, each read from what is in the database
@@ -99,6 +100,7 @@ final class GettingStarted
     {
         if ($user->platform_opened_at === null) {
             $user->forceFill(['platform_opened_at' => now()])->saveQuietly();
+            app(OnboardingEvents::class)->record($user, 'platform_opened');
         }
     }
 

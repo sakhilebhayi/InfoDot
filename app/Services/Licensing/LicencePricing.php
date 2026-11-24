@@ -16,7 +16,7 @@ use App\Models\TeamLicence;
 class LicencePricing
 {
     /**
-     * @return array{unit_price_minor: int, total_minor: int, currency: string, snapshot: array<string, mixed>}
+     * @return array{unit_price_minor: int, total_minor: int, vat_minor: ?int, total_with_vat_minor: ?int, currency: string, snapshot: array<string, mixed>}
      *
      * @throws LicenceRefused
      */
@@ -50,6 +50,8 @@ class LicencePricing
         return [
             'unit_price_minor' => intdiv($total + intdiv($quantity, 2), $quantity),
             'total_minor' => $total,
+            'vat_minor' => $this->vatOn($total),
+            'total_with_vat_minor' => $this->vatOn($total) === null ? null : $total + $this->vatOn($total),
             'currency' => (string) $currency,
             'snapshot' => ['base_unit_minor' => (int) $unit, 'bands' => $bands, 'already_held' => $held, 'quantity' => $quantity, 'interval' => $interval, 'currency' => (string) $currency, 'vat' => 'excluded'],
         ];
@@ -71,6 +73,14 @@ class LicencePricing
         }
 
         return ['total_minor' => $this->cost($count, (int) $unit, $this->bands()), 'currency' => (string) $currency];
+    }
+
+    /** VAT on an amount excluding VAT, in minor units, or null when no VAT rate is configured (the price is then shown as excluding VAT only). */
+    public function vatOn(int $amountMinor): ?int
+    {
+        $rate = config('licensing.vat.rate_percent');
+
+        return filled($rate) && (float) $rate > 0 ? (int) round($amountMinor * (float) $rate / 100) : null;
     }
 
     /** The paid licences the company holds now (batches that count today, plus any legacy purchased seats). */

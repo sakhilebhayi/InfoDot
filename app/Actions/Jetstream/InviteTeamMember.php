@@ -3,6 +3,7 @@
 namespace App\Actions\Jetstream;
 
 use App\Rules\DeliverableEmailDomain;
+use App\Services\Growth\OnboardingEvents;
 use App\Services\Licensing\SeatLedger;
 use App\Support\TeamRoles;
 use Illuminate\Support\Facades\Gate;
@@ -51,6 +52,8 @@ class InviteTeamMember implements InvitesTeamMembers
             'email' => $email,
             'role' => $role,
         ]), null, $user, 'invited', $email);
+
+        app(OnboardingEvents::class)->record($user, 'team_invited', $team);
 
         // Mail goes out inside the request. A refused send must not leave an invitation nobody received holding a seat.
         try {

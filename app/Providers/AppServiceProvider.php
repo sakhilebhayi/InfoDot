@@ -30,12 +30,15 @@ use App\Models\Folder;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
+use App\Models\User;
 use App\Services\Demo\DemoRegistry;
+use App\Services\Growth\OnboardingEvents;
 use App\Services\Platforms\PlatformNotices;
 use App\Services\Sso\PlatformContext;
 use App\Support\CanonicalUrl;
 use App\Support\Input;
 use App\Support\PlatformSecret;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -107,6 +110,13 @@ class AppServiceProvider extends ServiceProvider
         });
         // R-49: nothing is ever mailed to an address on a reserved domain (the demonstration accounts' addresses are).
         Event::listen(MessageSending::class, SkipMailToReservedDomains::class);
+
+        // R-59 Phase 1B: the moment an address is confirmed is a step of its own in the funnel.
+        Event::listen(Verified::class, function (Verified $e): void {
+            if ($e->user instanceof User) {
+                app(OnboardingEvents::class)->record($e->user, 'email_verified');
+            }
+        });
 
         // Community knowledge events -> durable outbox -> the Dot Points ledger (signed, retried).
         foreach ([

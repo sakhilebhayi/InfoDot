@@ -15,6 +15,7 @@ use App\Rules\DeliverableEmailDomain;
 use App\Services\Attachments\TeamMediaService;
 use App\Services\Directory\BusinessDirectory;
 use App\Services\Directory\FeaturedPlacement;
+use App\Services\Growth\OnboardingEvents;
 use App\Services\Insights\BusinessInsights;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -137,6 +138,14 @@ class BusinessProfileController extends Controller
         $team->categories()->sync($data['categories'] ?? []);
         BusinessProfileEvent::record($team, $request->user(), 'listing_changed', $before !== $data['visibility'] ? $before.' → '.$data['visibility'] : 'type and categories');
 
+        $events = app(OnboardingEvents::class);
+        if (filled($profile->description)) {
+            $events->record($request->user(), 'profile_established', $team);
+        }
+        if (! empty($data['categories'])) {
+            $events->record($request->user(), 'category_selected', $team);
+        }
+
         return redirect()->route('business.edit', $team)->withFragment('directory')->with('status', $team->fresh()->listingMessage());
     }
 
@@ -157,6 +166,8 @@ class BusinessProfileController extends Controller
             'contact_phone' => ['nullable', 'string', 'max:40'],
             'registration_number' => ['nullable', 'string', 'max:60'],
             'registration_country' => ['nullable', 'string', 'max:60'],
+            'billing_country' => ['nullable', 'string', 'max:60'],
+            'vat_number' => ['nullable', 'string', 'max:30', 'regex:/^[A-Za-z0-9 .\\-]+$/'],
             'established_on' => ['nullable', 'date', 'before_or_equal:today'],
             'size' => ['nullable', 'string', 'max:40'],
             'links' => ['nullable', 'array'],

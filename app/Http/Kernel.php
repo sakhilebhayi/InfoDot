@@ -5,6 +5,7 @@ namespace App\Http;
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\CanonicalRedirects;
+use App\Http\Middleware\CaptureAcquisition;
 use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EndSuspendedSession;
 use App\Http\Middleware\EnsureModerator;
@@ -108,6 +109,7 @@ class Kernel extends HttpKernel
             VerifyCsrfToken::class,
             SubstituteBindings::class,
             EnterSignInFlow::class, // R-54: sign-in, registration and password pages take their platform from the flow id in their address
+            CaptureAcquisition::class, // R-59 1A: where a sign-up came from (one first-party cookie, only on a tagged arrival)
         ],
 
         'api' => [

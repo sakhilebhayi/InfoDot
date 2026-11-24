@@ -15,6 +15,7 @@ We collect the information you give us directly, and a small amount generated au
 - **Content you post** — Questions, Solutions, Steps, comments, and likes are public by design and are visible to every InfoDot user and, where a Solution or Question is shared, to visitors browsing that content.
 - **Associates** — your connections to other members, tracked in both directions (who you're connected to, and who is connected to you).
 - **Files you upload** — if your team uses InfoDot's file storage, the files and folders you or your teammates upload.
+- **How you arrived** — if you reach InfoDot through a link with a referral code or a campaign tag, or from a search or social site, and then create an account, we keep that code or tag, the name of the referring site (not its address) and the page you landed on with your account, to learn which links bring people to InfoDot. We do not store your IP address for this and we do not share it.
 - **Technical information** — IP address, browser and device information, and session activity, collected automatically for security and to keep you signed in.
 
 ## 3. Why we process your information
@@ -34,7 +35,7 @@ When you use InfoDot to sign in to another Dot Ecosystem platform, InfoDot issue
 
 ## 5. Cookies
 
-InfoDot uses a small number of strictly necessary cookies to keep you signed in and to protect your account and forms from cross-site attacks. See our [Cookie Policy](/cookies) for the full list and what each one does.
+InfoDot uses a small number of strictly necessary cookies to keep you signed in and to protect your account and forms from cross-site attacks, and one optional first-party cookie that remembers a referral code or campaign tag for up to 30 days when you arrive through a tagged link. See our [Cookie Policy](/cookies) for the full list and what each one does.
 
 ## 6. How long we keep your information
 
