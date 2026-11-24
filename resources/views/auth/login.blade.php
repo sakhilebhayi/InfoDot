@@ -10,6 +10,7 @@
 
         <form class="ix-entry__form" method="POST" action="{{ route('login') }}" x-data="{ sending: false }" x-on:submit="sending = true" x-on:pageshow.window="sending = false">
             @csrf
+            @if ($platformFlow)<input type="hidden" name="f" value="{{ $platformFlow }}">@endif
 
             <div class="ix-field">
                 <x-jet-label for="email" value="{{ __('Email') }}" />
@@ -31,13 +32,13 @@
 
         <p class="ix-entry__links">
             @if (Route::has('password.request'))
-                <a href="{{ route('password.request') }}">{{ __('Forgot your password?') }}</a>
+                <a href="{{ route('password.request', $platformFlow ? ['f' => $platformFlow] : []) }}">{{ __('Forgot your password?') }}</a>
             @endif
             @if (Route::has('register'))
-                <a href="{{ route('register') }}">New here? Create an account</a>
+                <a href="{{ route('register', $platformFlow ? ['f' => $platformFlow] : []) }}">New here? Create an account</a>
             @endif
             @if ($platformBranding)
-                <a href="{{ route('login.infodot') }}">Not signing in to {{ $platformBranding->name }}? Use InfoDot on its own</a>
+                <a href="{{ route('login') }}">Not signing in to {{ $platformBranding->name }}? Use InfoDot on its own</a>
             @endif
         </p>
     </x-jet-authentication-card>

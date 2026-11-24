@@ -56,7 +56,7 @@ class AuthorizeGuardTest extends OidcTestCase
         [, $challenge] = $this->pkcePair();
         $url = '/oauth/authorize?'.http_build_query($this->authorizeQuery($challenge));
 
-        $this->get($url)->assertRedirect(route('login'));
+        $this->get($url)->assertRedirectContains(route('login').'?f=');
 
         // After signing in, the intended URL continues the platform's sign-in.
         $this->assertStringContainsString('oauth/authorize', (string) session('url.intended'));

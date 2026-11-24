@@ -25,9 +25,9 @@ class BrandedPagesTest extends CentralLoginTestCase
 
     public function test_a_platform_sign_in_shows_the_platform_headline_the_brand_panel_and_powered_by(): void
     {
-        $this->get($this->authorizeUrl());
+        $f = $this->flowId();
 
-        $this->get('/login')->assertOk()
+        $this->get('/login?f='.$f)->assertOk()
             ->assertSee('Welcome back to Dot.Central', false)
             ->assertSee('ix-auth__brand', false)
             ->assertSee('The control room for a mining shift')
@@ -36,17 +36,17 @@ class BrandedPagesTest extends CentralLoginTestCase
             ->assertSee('noindex, nofollow', false)
             ->assertSee('--brand-primary:', false);
 
-        $this->get('/register')->assertOk()
+        $this->get('/register?f='.$f)->assertOk()
             ->assertSee('Get started with Dot.Central', false)
             ->assertSee(self::POWERED);
     }
 
     public function test_the_recovery_and_verification_pages_carry_the_brand_and_powered_by_too(): void
     {
-        $this->get($this->authorizeUrl());
+        $f = $this->flowId();
 
         foreach (['/forgot-password'] as $path) {
-            $this->get($path)->assertOk()->assertSee('ix-auth__brand', false)->assertSee(self::POWERED);
+            $this->get($path.'?f='.$f)->assertOk()->assertSee('ix-auth__brand', false)->assertSee(self::POWERED);
         }
 
         $this->actingAs($this->newcomer(verified: false))->get('/email/verify')->assertOk()->assertSee('you will carry on to Dot.Central')->assertSee(self::POWERED);
@@ -54,8 +54,8 @@ class BrandedPagesTest extends CentralLoginTestCase
 
     public function test_the_page_has_exactly_one_h1_and_the_form_is_in_the_main_landmark(): void
     {
-        $this->get($this->authorizeUrl());
-        $html = $this->get('/login')->getContent();
+        $f = $this->flowId();
+        $html = $this->get('/login?f='.$f)->getContent();
 
         $this->assertSame(1, substr_count($html, '<h1'));
         $this->assertMatchesRegularExpression('#<main id="main" class="ix-auth__main">.*<form.*</form>#s', $html);
@@ -75,10 +75,10 @@ class BrandedPagesTest extends CentralLoginTestCase
             'dot_platform_id' => $this->platform->id, 'display_name' => 'Central', 'headline_login' => 'Back on shift', 'headline_register' => 'Join the shift',
             'primary_color' => '#f2a70b', 'mode' => 'dark', 'cta_login' => 'Start shift', 'cta_register' => 'Join now', 'promo_text' => 'Shift handover, in one place.', 'active' => true, 'version' => 2,
         ]);
-        $this->get($this->authorizeUrl());
+        $f = $this->flowId();
 
-        $this->get('/login')->assertSee('Back on shift')->assertSee('Start shift')->assertSee('--brand-primary:#f2a70b', false)->assertSee('data-mode="dark"', false)->assertSee('Shift handover, in one place.');
-        $this->get('/register')->assertSee('Join the shift')->assertSee('Join now');
+        $this->get('/login?f='.$f)->assertSee('Back on shift')->assertSee('Start shift')->assertSee('--brand-primary:#f2a70b', false)->assertSee('data-mode="dark"', false)->assertSee('Shift handover, in one place.');
+        $this->get('/register?f='.$f)->assertSee('Join the shift')->assertSee('Join now');
     }
 
     public function test_the_bundled_imagery_is_served_from_our_own_origin_and_nothing_else_can_be_named(): void
@@ -98,9 +98,9 @@ class BrandedPagesTest extends CentralLoginTestCase
     {
         $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('Dot.Mines', ['https://mines.test/sso/callback'], confidential: true);
         DotPlatform::create(['name' => 'Dot.Mines', 'slug' => 'mines', 'domain' => 'https://mines.test', 'oauth_client_id' => $client->getKey(), 'redirect_uris' => ['https://mines.test/sso/callback'], 'scopes' => ['openid'], 'status' => 'active']);
-        $this->get('/oauth/authorize?'.http_build_query($this->authorizeQuery($this->pkcePair()[1], ['client_id' => $client->getKey(), 'redirect_uri' => 'https://mines.test/sso/callback'])));
+        $f = $this->flowId('/oauth/authorize?'.http_build_query($this->authorizeQuery($this->pkcePair()[1], ['client_id' => $client->getKey(), 'redirect_uri' => 'https://mines.test/sso/callback'])));
 
-        $html = $this->get('/login')->assertOk()->getContent();
+        $html = $this->get('/login?f='.$f)->assertOk()->getContent();
 
         $this->assertStringContainsString('hero-480.webp 480w', $html);
         $this->assertStringContainsString('hero-1600.webp 1600w', $html);

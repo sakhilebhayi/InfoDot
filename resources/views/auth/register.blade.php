@@ -6,6 +6,7 @@
 
         <form class="ix-entry__form" method="POST" action="{{ route('register') }}" x-data="{ sending: false }" x-on:submit="sending = true" x-on:pageshow.window="sending = false">
             @csrf
+            @if ($platformFlow)<input type="hidden" name="f" value="{{ $platformFlow }}">@endif
 
             <div class="ix-field">
                 <x-jet-label for="name" value="{{ __('Name') }}" />
@@ -41,7 +42,7 @@
         <p class="ix-hint">If a link brought you here, InfoDot keeps its referral code or campaign tag with your account to learn which links work. Nothing follows you to other sites. See <a href="{{ route('cookies') }}">Cookies</a>.</p>
 
         <p class="ix-entry__links">
-            <a href="{{ route('login') }}">Already have an account? Sign in</a>
+            <a href="{{ route('login', $platformFlow ? ['f' => $platformFlow] : []) }}">Already have an account? Sign in</a>
         </p>
     </x-jet-authentication-card>
 </x-guest-layout>

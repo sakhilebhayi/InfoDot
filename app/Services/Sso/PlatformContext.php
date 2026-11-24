@@ -8,6 +8,7 @@ use App\Support\Branding\PlatformBrandingView;
 use App\Support\Input;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 /**
  * R-54: which platform started this sign-in, and ONLY from evidence the server holds.
@@ -28,6 +29,17 @@ class PlatformContext
     public const SESSION_AT_KEY = 'sso.pending_at';
 
     public const FRESH_FOR_SECONDS = 1800;
+
+    /** Each sign-in started from a platform gets its own flow id. It is an opaque key into the session, never a platform name. */
+    public const SESSION_FLOWS = 'sso.flows';
+
+    public const FLOW_PARAM = 'f';
+
+    private const MAX_FLOWS = 5;
+
+    private const ENTERED = 'sso.entered';
+
+    private const TOKEN = 'sso.flow_token';
 
     private const CACHE = 'sso.platform_context';
 
@@ -61,8 +73,79 @@ class PlatformContext
         if ($this->judge($url) !== null) {
             $this->request()->session()->put(self::SESSION_KEY, $url);
             $this->request()->session()->put(self::SESSION_AT_KEY, time());
+            $this->request()->attributes->set(self::TOKEN, $this->startFlow($url));
             $this->request()->attributes->remove(self::CACHE);
         }
+    }
+
+    /** The flow id for the authorize request being handled right now, for the redirect to the way-in page. */
+    public function currentFlowToken(): ?string
+    {
+        $token = $this->request()->attributes->get(self::TOKEN);
+
+        return is_string($token) ? $token : null;
+    }
+
+    /** The flow id the sign-in, registration or password page in front of this person was opened with, if it is a live one. */
+    public function enteredFlowToken(): ?string
+    {
+        $entered = $this->request()->attributes->get(self::ENTERED);
+
+        return is_array($entered) ? $entered['token'] : null;
+    }
+
+    /**
+     * The way-in pages (sign-in, registration, password reset) take their platform from the flow id in their own address, and from
+     * nothing else. A page opened without one is InfoDot's own, whatever else this browser has started: the pending request is
+     * dropped (other tabs keep their own flow ids and can still finish theirs). A page opened with a live one restores that request.
+     */
+    public function enter(): void
+    {
+        $request = $this->request();
+        $raw = $request->input(self::FLOW_PARAM);
+        $token = is_string($raw) && preg_match('/^[A-Za-z0-9]{20}$/', $raw) === 1 ? $raw : null;
+        $flow = $token !== null ? ($this->liveFlows()[$token] ?? null) : null;
+
+        if ($flow !== null && $this->judge($flow['url']) !== null) {
+            $request->session()->put(self::SESSION_KEY, $flow['url']);
+            $request->session()->put(self::SESSION_AT_KEY, time());
+            $request->session()->put('url.intended', $flow['url']);
+            $request->attributes->set(self::ENTERED, ['token' => $token, 'url' => $flow['url']]);
+        } else {
+            $this->forget();
+            $request->attributes->set(self::ENTERED, ['token' => null, 'url' => null]);
+        }
+
+        $request->attributes->remove(self::CACHE);
+    }
+
+    /** @return array<string, array{url: string, at: int}> */
+    private function liveFlows(): array
+    {
+        $flows = (array) $this->request()->session()->get(self::SESSION_FLOWS, []);
+
+        return array_filter($flows, fn ($f) => is_array($f) && is_string($f['url'] ?? null) && is_int($f['at'] ?? null) && (time() - $f['at']) <= self::FRESH_FOR_SECONDS);
+    }
+
+    private function startFlow(string $url): string
+    {
+        $flows = $this->liveFlows();
+
+        foreach ($flows as $token => $flow) {
+            if ($flow['url'] === $url) {
+                $flows[$token]['at'] = time();
+                $this->request()->session()->put(self::SESSION_FLOWS, $flows);
+
+                return (string) $token;
+            }
+        }
+
+        $token = Str::random(20);
+        $flows[$token] = ['url' => $url, 'at' => time()];
+        uasort($flows, fn ($a, $b) => $b['at'] <=> $a['at']);
+        $this->request()->session()->put(self::SESSION_FLOWS, array_slice($flows, 0, self::MAX_FLOWS, true));
+
+        return $token;
     }
 
     public function forget(): void
@@ -88,6 +171,17 @@ class PlatformContext
         }
 
         $result = ['platform' => null, 'url' => null];
+
+        // On the way-in pages the address decides (enter() ran first): only a live flow id names a platform.
+        if (is_array($entered = $request->attributes->get(self::ENTERED))) {
+            if ($entered['url'] !== null && ($platform = $this->judge($entered['url'])) !== null) {
+                $result = ['platform' => $platform, 'url' => $entered['url']];
+            }
+
+            $request->attributes->set(self::CACHE, $result);
+
+            return $result;
+        }
 
         if ($request->hasSession() && $this->isStale($request)) {
             // Started a while ago and never finished: this is a fresh visit to InfoDot, not a step of that sign-in.

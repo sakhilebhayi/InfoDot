@@ -18,6 +18,15 @@ abstract class CentralLoginTestCase extends OidcTestCase
         return '/oauth/authorize?'.http_build_query($this->authorizeQuery($challenge, $overrides));
     }
 
+    /** Starts a sign-in from the platform and returns the flow id carried in the address of the way-in page it was sent to. */
+    protected function flowId(?string $url = null, string $page = 'login'): string
+    {
+        $location = (string) $this->get($url ?? $this->authorizeUrl())->assertRedirectContains('/'.$page.'?f=')->headers->get('Location');
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+
+        return (string) $query['f'];
+    }
+
     /** A person who has only the personal workspace every account gets at sign-up (no business yet). */
     protected function newcomer(bool $verified = true): User
     {
