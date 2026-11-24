@@ -14,7 +14,9 @@ return new class extends Migration
     {
         Schema::create('acquisition_touches', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+            // users.id is a legacy unsigned INT, so the referencing column must be too (MySQL refuses a bigint foreign key to it).
+            $table->unsignedInteger('user_id')->unique();
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->string('channel', 24)->index();
             $table->string('referral_code', 32)->nullable()->index();
             $table->string('utm_source', 80)->nullable();
