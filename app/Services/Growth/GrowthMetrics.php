@@ -4,6 +4,9 @@ namespace App\Services\Growth;
 
 use App\Models\AcquisitionTouch;
 use App\Models\GrowthTarget;
+use App\Models\Referral;
+use App\Models\ReferralReward;
+use App\Models\ReferralTier;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -111,6 +114,16 @@ class GrowthMetrics
         }
 
         return $out;
+    }
+
+    /** @return array{states: array<string,int>, rewards: array<string,int>, tiers: list<ReferralTier>} */
+    public function referrals(): array
+    {
+        return [
+            'states' => Referral::selectRaw('state, count(*) as n')->groupBy('state')->pluck('n', 'state')->map(fn ($n) => (int) $n)->all(),
+            'rewards' => ReferralReward::selectRaw('status, count(*) as n')->groupBy('status')->pluck('n', 'status')->map(fn ($n) => (int) $n)->all(),
+            'tiers' => ReferralTier::orderBy('referrals_required')->get()->all(),
+        ];
     }
 
     /** What InfoDot cannot measure yet, and why. @return array<string, string> */

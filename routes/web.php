@@ -35,6 +35,7 @@ use App\Http\Controllers\PlatformLaunchController;
 use App\Http\Controllers\PointsController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\ReadinessController;
+use App\Http\Controllers\ReferralsController;
 use App\Http\Controllers\ReputationController;
 use App\Http\Controllers\ReputationRingsController;
 use App\Http\Controllers\ResourceOpenController;
@@ -152,6 +153,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // R-59 Phase 1B: the platforms that fit what the business told us, each with the reason it was chosen.
     Route::get('/onboarding/recommendations', [RecommendationsController::class, 'show'])->name('onboarding.recommendations');
     Route::post('/onboarding/recommendations', [RecommendationsController::class, 'update'])->middleware('throttle:20,1,onboarding.recommendations')->name('onboarding.recommendations.update');
+
+    Route::get('/referrals', [ReferralsController::class, 'show'])->middleware('throttle:60,1,referrals')->name('referrals.show');
 
     Route::get('/platforms', EcosystemWidget::class)->name('ecosystem.widget');
     Route::get('/open/{resource}', ResourceOpenController::class)->name('resources.open');

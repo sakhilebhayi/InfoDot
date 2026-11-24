@@ -117,6 +117,34 @@
                 </div>
             @endif
         </section>
+    @elseif ($tab === 'referrals')
+        <section class="ix-panel" aria-label="Referrals">
+            <div class="ix-panel__body">
+                <dl class="ix-biz__facts">
+                    @foreach (['registered' => 'Registered', 'verified' => 'Verified', 'activated' => 'Activated', 'reversed' => 'Reversed', 'refused' => 'Refused'] as $key => $label)
+                        <div><dt>{{ $label }}</dt><dd><strong>{{ number_format($referrals['states'][$key] ?? 0) }}</strong></dd></div>
+                    @endforeach
+                    @foreach (['held' => 'Rewards held', 'due' => 'Rewards due', 'sent' => 'Rewards sent', 'reversed' => 'Rewards reversed'] as $key => $label)
+                        <div><dt>{{ $label }}</dt><dd><strong>{{ number_format($referrals['rewards'][$key] ?? 0) }}</strong></dd></div>
+                    @endforeach
+                </dl>
+                <p class="ix-hint">Rewards are not sent to the points ledger until the Dot.Dopemine contract is confirmed; due rewards wait.</p>
+            </div>
+        </section>
+        <form method="POST" action="{{ route('admin.growth.tiers') }}" class="ix-panel ix-vgap">
+            @csrf
+            <div class="ix-panel__head"><h2>Reward tiers</h2></div>
+            <div class="ix-panel__body">
+                @foreach ($referrals['tiers'] as $tier)
+                    <div class="ix-field">
+                        <label for="tier-{{ $tier->id }}">{{ $tier->referrals_required }} activated referrals earn (points)</label>
+                        <input id="tier-{{ $tier->id }}" class="ix-input" type="number" min="1" name="tiers[{{ $tier->id }}][points]" value="{{ $tier->points }}" required>
+                        <label><input type="checkbox" name="tiers[{{ $tier->id }}][active]" value="1" @checked($tier->active)> On</label>
+                    </div>
+                @endforeach
+                <button class="ix-btn ix-btn--primary">Save tiers</button>
+            </div>
+        </form>
     @else
         <form method="POST" action="{{ route('admin.growth.targets') }}" class="ix-panel">
             @csrf

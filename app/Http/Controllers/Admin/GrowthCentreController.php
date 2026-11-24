@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GrowthTarget;
+use App\Models\ReferralEvent;
+use App\Models\ReferralTier;
 use App\Services\Growth\GrowthMetrics;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,7 +15,7 @@ use Illuminate\View\View;
 /** R-59 Phase 1D: the Growth Centre. Platform administrators only; every figure is counted from real records. */
 class GrowthCentreController extends Controller
 {
-    private const TABS = ['overview' => 'Overview', 'funnel' => 'Funnel', 'channels' => 'Channels', 'geography' => 'Geography', 'platforms' => 'Platforms', 'targets' => 'Targets'];
+    private const TABS = ['overview' => 'Overview', 'funnel' => 'Funnel', 'channels' => 'Channels', 'geography' => 'Geography', 'platforms' => 'Platforms', 'referrals' => 'Referrals', 'targets' => 'Targets'];
 
     public function show(Request $request, GrowthMetrics $metrics, string $tab = 'overview'): View
     {
@@ -34,6 +36,7 @@ class GrowthCentreController extends Controller
             'channels' => $tab === 'channels' ? $metrics->channels($from, $to) : null,
             'geography' => $tab === 'geography' ? $metrics->geography() : null,
             'platforms' => $tab === 'platforms' ? $metrics->platforms() : null,
+            'referrals' => $tab === 'referrals' ? $metrics->referrals() : null,
             'targets' => $tab === 'targets' ? $metrics->targets() : null,
         ]);
     }
@@ -57,5 +60,26 @@ class GrowthCentreController extends Controller
         }
 
         return redirect()->route('admin.growth', ['tab' => 'targets'])->with('status', 'Targets saved. They are plans, not results.');
+    }
+
+    public function updateTiers(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'tiers' => ['required', 'array'],
+            'tiers.*.points' => ['required', 'integer', 'min:1', 'max:1000000'],
+            'tiers.*.active' => ['nullable', 'boolean'],
+        ]);
+
+        foreach (ReferralTier::all() as $tier) {
+            $row = $data['tiers'][$tier->id] ?? null;
+            if ($row === null) {
+                continue;
+            }
+            $tier->forceFill(['points' => (int) $row['points'], 'active' => (bool) ($row['active'] ?? false)])->save();
+            ReferralEvent::create(['type' => 'tier_changed', 'reason' => $tier->referrals_required.' referrals: '.$tier->points.' points, '.($tier->active ? 'on' : 'off'), 'actor_id' => $request->user()->id]);
+        }
+
+        // Rewards already earned keep the amount they were created with; a changed table affects rewards created from now on.
+        return redirect()->route('admin.growth', ['tab' => 'referrals'])->with('status', 'Reward tiers saved. Rewards already earned keep their amount.');
     }
 }
