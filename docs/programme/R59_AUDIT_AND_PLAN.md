@@ -4,7 +4,7 @@ Date: 2026-11-24. Status: audit and plan only. Nothing in this document has been
 
 Method: three read-only code audits of this repository (billing and entitlements; referrals, points and fraud controls; businesses, directory, onboarding, admin and analytics). They read configuration, migrations, models, services, routes and the existing programme documents. They did not read the production `.env`, the production database or any other Dot repository, so anything that depends on production state or on another repository is marked **unverified**.
 
-> **Price set by the owner, 2026-11-24: R98 per user per month** (replaces R100 from the brief). Nothing has been built at either price; the price will be set in configuration only, in 1E.
+> **Price set by the owner, 2026-11-24: R98 per user per month, flat, no VAT (business not VAT registered; no bands)** (replaces R100 from the brief). Nothing has been built at either price; the price will be set in configuration only, in 1E.
 
 ## 1. The short version
 

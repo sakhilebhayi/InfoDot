@@ -57,11 +57,8 @@ return [
         ],
     ],
 
-    // Value-added tax, shown beside every quote and never inside the unit price. The rate is a host setting (LICENCE_VAT_RATE, in percent,
-    // for example 15): with none set, a quote says VAT is not yet included in what is shown. Amounts are always excluding VAT.
-    'vat' => [
-        'rate_percent' => env('LICENCE_VAT_RATE'),
-    ],
+    // R-59 1E (owner, 2026-11-24): R98 per user per month, flat, NO VAT. The selling business is not VAT registered, so the price is final: no VAT is
+    // added at checkout and invoices carry no VAT line (R-53 decision D11). If the business ever registers, that is a new owner decision.
 
     // Above this many people in one company (owner included) licences are by custom agreement and cannot be bought online (D12).
     'max_online_users' => (int) env('LICENCE_MAX_ONLINE_USERS', 100),
