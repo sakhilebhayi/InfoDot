@@ -2,17 +2,16 @@
 
 namespace App\Support;
 
-use App\Models\Questions;
-use App\Models\Solutions;
 use App\Models\Team;
-use App\Models\TeamProfile;
 use App\Models\User;
 use App\Services\Growth\OnboardingEvents;
+use Illuminate\Support\Facades\DB;
 
 /**
- * The "Getting started" block on Home: the few things a new person does first, each read from what is in the database
- * now (a photo on the account, a question or solution of their own, a listed business, a colleague, a platform
- * opened). Nothing here is a ticked box that could disagree with the facts; the only stored choice is putting the
+ * The "Getting started" block on Home (R-62): the few things a new business does first, each read from what is in the
+ * database now (the company, its essential details, a colleague, a platform switched on or opened). It is about the
+ * company, not the person: a profile picture and a first question are no longer steps (the account page still has
+ * them). Nothing here is a ticked box that could disagree with the facts; the only stored choice is putting the
  * block away for good.
  */
 final class GettingStarted
@@ -25,49 +24,15 @@ final class GettingStarted
     public static function steps(User $user): array
     {
         $business = self::managedBusiness($user);
-        $steps = [
-            [
-                'key' => 'photo',
-                'title' => 'Add a profile picture',
-                'note' => 'People recognise your answers and your name on the roster.',
-                'done' => filled($user->profile_photo_path),
-                'url' => route('profile.edit').'#profile',
-                'action' => 'Add a picture',
-            ],
-            [
-                'key' => 'contribute',
-                'title' => 'Ask a first question or write a first solution',
-                'note' => 'A question gets you an answer; a solution writes down something you already worked out.',
-                'done' => Questions::withoutGlobalScopes()->where('user_id', $user->id)->exists()
-                    || Solutions::withoutGlobalScopes()->where('user_id', $user->id)->exists(),
-                'url' => route('seek'),
-                'action' => 'Ask a question',
-            ],
-            self::businessStep($business),
+        $held = $business === null ? 0 : self::platformsHeld($business);
+
+        return [
+            self::companyStep($business),
+            self::essentialsStep($business),
+            self::inviteStep($business),
+            self::platformStep($user, $business, $held),
+            self::exploreStep($business, $held),
         ];
-
-        // Inviting is offered only to someone who has a business to invite people into.
-        if ($business !== null) {
-            $steps[] = [
-                'key' => 'invite',
-                'title' => 'Invite a colleague',
-                'note' => 'They join '.$business->name.' and see its questions, solutions and people.',
-                'done' => $business->users()->exists() || $business->teamInvitations()->exists(),
-                'url' => route('teams.show', $business).'#members',
-                'action' => 'Invite someone',
-            ];
-        }
-
-        $steps[] = [
-            'key' => 'platform',
-            'title' => 'Open a platform',
-            'note' => 'One sign-in opens every live Dot platform. Pick one from the register.',
-            'done' => $user->platform_opened_at !== null,
-            'url' => route('ecosystem.widget'),
-            'action' => 'See the platforms',
-        ];
-
-        return $steps;
     }
 
     /**
@@ -113,41 +78,113 @@ final class GettingStarted
             ->first();
     }
 
-    /**
-     * Creating a business and listing it are one step with three states: none yet, one that is not listed (with what
-     * is missing, from Team::listing()), and listed.
-     *
-     * @return array{key: string, title: string, note: string, done: bool, url: string, action: string}
-     */
-    private static function businessStep(?Team $business): array
+    /** How many platforms beyond the free core the company holds right now. */
+    private static function platformsHeld(Team $business): int
+    {
+        return DB::table('platform_entitlements')->where('team_id', $business->id)
+            ->whereIn('status', ['active', 'trial'])->where('source', '!=', 'core')->count();
+    }
+
+    /** What every later step says while there is no company to act on. */
+    private const NEEDS_COMPANY = 'Needs your company first.';
+
+    /** @return array{key: string, title: string, note: string, done: bool, url: string, action: string} */
+    private static function companyStep(?Team $business): array
     {
         if ($business === null) {
             return [
-                'key' => 'business',
-                'title' => 'Create your company and list its business page',
-                'note' => 'A company gets its own four-letter owner code, and its business page a place in the directory.',
+                'key' => 'company',
+                'title' => 'Create your company profile',
+                'note' => 'Your company is what you manage on InfoDot: its page, its people and its platforms. A name and a sentence about what it does is enough.',
                 'done' => false,
-                'url' => route('teams.create'),
-                'action' => 'Create a company',
+                'url' => route('onboarding.business'),
+                'action' => 'Create your company',
             ];
         }
 
-        $listing = $business->listing();
-        $missing = match (true) {
-            $listing['listed'] => null,
-            in_array('restricted', $listing['missing'], true) => 'It stays out of the directory while InfoDot reviews it.',
-            in_array('visibility', $listing['missing'], true) && in_array('description', $listing['missing'], true) => 'Not listed yet: say what the business does and choose who may see it.',
-            in_array('visibility', $listing['missing'], true) => 'Not listed yet: its page is for people in your company until you choose who may see it.',
-            default => 'Not listed yet: say what the business does.',
-        };
-
         return [
-            'key' => 'business',
-            'title' => $listing['listed'] ? $business->name.' is listed' : 'List '.$business->name.' in the directory',
-            'note' => $missing ?? ($listing['audience'] === TeamProfile::PUBLIC ? 'Anyone can find it in the directory.' : 'People signed in to InfoDot can find it in the directory.'),
-            'done' => $listing['listed'],
+            'key' => 'company',
+            'title' => $business->name.' is created',
+            'note' => 'This is the workspace you are in. You can create another company at any time.',
+            'done' => true,
             'url' => route('business.edit', $business),
             'action' => 'Edit the business page',
+        ];
+    }
+
+    /** @return array{key: string, title: string, note: string, done: bool, url: string, action: string} */
+    private static function essentialsStep(?Team $business): array
+    {
+        $step = ['key' => 'essentials', 'title' => 'Complete the essential business information'];
+
+        if ($business === null) {
+            return $step + ['note' => self::NEEDS_COMPANY, 'done' => false, 'url' => route('onboarding.business'), 'action' => 'Create your company'];
+        }
+
+        $profile = $business->profile()->first();
+        $missing = array_keys(array_filter([
+            'a description' => blank($profile?->description),
+            'an industry' => blank($business->industry) || $business->industry === 'general',
+            'a way to contact it' => blank($profile?->website) && blank($profile?->contact_email) && blank($profile?->contact_phone),
+            'a logo' => ! $business->logo()->exists(),
+        ]));
+
+        return $step + [
+            'note' => $missing === [] ? 'The essentials are in. Add more whenever you like.' : 'Still to add: '.implode(', ', $missing).'. Nothing else is required.',
+            'done' => $missing === [],
+            'url' => route('business.edit', $business),
+            'action' => 'Edit the business page',
+        ];
+    }
+
+    /** @return array{key: string, title: string, note: string, done: bool, url: string, action: string} */
+    private static function inviteStep(?Team $business): array
+    {
+        $step = ['key' => 'invite', 'title' => 'Invite your team'];
+
+        if ($business === null) {
+            return $step + ['note' => self::NEEDS_COMPANY, 'done' => false, 'url' => route('onboarding.business'), 'action' => 'Create your company'];
+        }
+
+        return $step + [
+            'note' => 'Colleagues and partners join '.$business->name.' and see its questions, solutions and people.',
+            'done' => $business->users()->exists() || $business->teamInvitations()->exists(),
+            'url' => route('teams.show', $business).'#members',
+            'action' => 'Invite someone',
+        ];
+    }
+
+    /** @return array{key: string, title: string, note: string, done: bool, url: string, action: string} */
+    private static function platformStep(User $user, ?Team $business, int $held): array
+    {
+        $step = ['key' => 'platforms', 'title' => 'Activate your first Dot platforms'];
+
+        if ($business === null) {
+            return $step + ['note' => self::NEEDS_COMPANY, 'done' => false, 'url' => route('onboarding.business'), 'action' => 'Create your company'];
+        }
+
+        return $step + [
+            'note' => 'Pick from the platforms that fit your business. Activating one is free and does not buy anything.',
+            'done' => $held > 0 || $user->platform_opened_at !== null,
+            'url' => route('onboarding.recommendations'),
+            'action' => 'See recommendations',
+        ];
+    }
+
+    /** @return array{key: string, title: string, note: string, done: bool, url: string, action: string} */
+    private static function exploreStep(?Team $business, int $held): array
+    {
+        $step = ['key' => 'explore', 'title' => 'Explore the business ecosystem'];
+
+        if ($business === null) {
+            return $step + ['note' => self::NEEDS_COMPANY, 'done' => false, 'url' => route('onboarding.business'), 'action' => 'Create your company'];
+        }
+
+        return $step + [
+            'note' => 'See what else the Dot platforms can do as the business grows.',
+            'done' => $held >= 2,
+            'url' => route('ecosystem.widget'),
+            'action' => 'See every platform',
         ];
     }
 }

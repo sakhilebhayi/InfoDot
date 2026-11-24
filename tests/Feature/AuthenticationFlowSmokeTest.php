@@ -47,12 +47,14 @@ class AuthenticationFlowSmokeTest extends TestCase
     {
         $this->get('/login')
             ->assertOk()
-            ->assertSee('One account. Connected business tools. A community that shares what works.')
+            ->assertSee('Your business starts here. Sign in to your InfoDot workspace.')
             ->assertSee('New here? Create an account')
             ->assertSee(route('register'), false);
 
         $this->get('/register')
             ->assertOk()
+            ->assertSee('Create your InfoDot account to start and manage your business.')
+            ->assertSee('First name')->assertSee('Last name')->assertDontSee('name="username"', false)
             ->assertSee('Already have an account? Sign in')
             ->assertSee(route('login'), false);
     }

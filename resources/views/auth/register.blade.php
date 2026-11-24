@@ -1,6 +1,6 @@
 <x-guest-layout title="Create your account">
     <x-jet-authentication-card>
-        <x-auth.heading title="Create your account" kind="register" :brand="$platformBranding" lede="Free. We email you a link to confirm the address first, because other Dot platforms trust it." />
+        <x-auth.heading title="Create your account" kind="register" :brand="$platformBranding" lede="Create your InfoDot account to start and manage your business. It is free. We email you a link to confirm the address first, because other Dot platforms trust it." />
 
         <x-jet-validation-errors />
 
@@ -9,9 +9,15 @@
             @if ($platformFlow)<input type="hidden" name="f" value="{{ $platformFlow }}">@endif
 
             <div class="ix-field">
-                <x-jet-label for="name" value="{{ __('Name') }}" />
-                <x-jet-input id="name" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+                <x-jet-label for="first_name" value="{{ __('First name') }}" />
+                <x-jet-input id="first_name" type="text" name="first_name" :value="old('first_name')" required autofocus maxlength="120" autocomplete="given-name" />
             </div>
+
+            <div class="ix-field">
+                <x-jet-label for="last_name" value="{{ __('Last name') }}" />
+                <x-jet-input id="last_name" type="text" name="last_name" :value="old('last_name')" required maxlength="120" autocomplete="family-name" />
+            </div>
+            <p class="ix-hint">You are creating your own login. You will set up your company next.</p>
 
             <div class="ix-field">
                 <x-jet-label for="email" value="{{ __('Email') }}" />
