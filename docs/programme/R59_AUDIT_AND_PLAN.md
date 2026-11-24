@@ -60,6 +60,8 @@ Method: three read-only code audits of this repository (billing and entitlements
 
 ## 5. Dependencies and unknowns that gate the plan
 
+**Update 2026-11-24:** items 1 and 2 below were audited in Phase 0; see `R59_PHASE0_VERDICT.md`. Finance can take R100 per seat once configured and tested (the R-50 note that it cannot is stale); the Dopemine ledger cannot accept referral rewards without code changes in its own repository.
+
 1. **Dot.Finance (unverified, blocking):** does it deliver hosted checkout, the signed webhook, seat invoices with VAT, renewal charging, and a cancel endpoint? The R-50 notes recorded in November that it had none of these. Until confirmed, R100 cannot be charged and no revenue number can be shown. First action: a read-only audit of the Dot.Finance repository.
 2. **Dot.Dopemine (unverified):** does the ledger accept `infodot.referral.*` events, and where are reward values configured? The local checkout looks like a different, older app. First action: read-only audit of the deployed ledger code, or an agreed contract with the owner.
 3. **Production state (unverified):** which licensing flags and secrets are set in production, whether `LICENCE_INCLUDED_SEATS=1` was applied, and the production database engine.
