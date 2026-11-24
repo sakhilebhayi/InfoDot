@@ -19,12 +19,12 @@ class OnboardingTest extends CentralLoginTestCase
         Notification::fake();
 
         // 1. The platform sends the browser; the visitor has no account and goes to register.
-        $this->get($this->authorizeUrl())->assertRedirect('/login');
-        $this->get('/register')->assertOk()->assertViewHas('platformBranding', fn ($b) => $b->slug === 'central');
+        $f = $this->flowId();
+        $this->get('/register?f='.$f)->assertOk()->assertViewHas('platformBranding', fn ($b) => $b->slug === 'central');
 
         // 2. Registration (existing rules) signs them in and returns to the pending request, which asks them to verify.
         $password = 'Pw-'.bin2hex(random_bytes(10)).'-Aa1';
-        $this->post('/register', ['name' => 'Thandi Dlamini', 'email' => 'thandi@example.test', 'password' => $password, 'password_confirmation' => $password, 'terms' => 'on'])
+        $this->post('/register', ['f' => $f, 'name' => 'Thandi Dlamini', 'email' => 'thandi@example.test', 'password' => $password, 'password_confirmation' => $password, 'terms' => 'on'])
             ->assertRedirect();
         $user = User::where('email', 'thandi@example.test')->firstOrFail();
         $this->assertNull($user->email_verified_at);

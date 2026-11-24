@@ -84,6 +84,11 @@ class AppServiceProvider extends ServiceProvider
             if (! array_key_exists('platformBranding', $view->getData())) {
                 $view->with('platformBranding', request()->hasSession() ? app(PlatformContext::class)->branding() : null);
             }
+
+            // The flow id the way-in page was opened with: its form and its links to the other way-in pages carry it on.
+            if (! array_key_exists('platformFlow', $view->getData())) {
+                $view->with('platformFlow', request()->hasSession() ? app(PlatformContext::class)->enteredFlowToken() : null);
+            }
         });
 
         // R-50: the owner and administrators of a company are told when its entitlement to a platform changes.

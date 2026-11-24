@@ -9,6 +9,7 @@ use App\Http\Middleware\EncryptCookies;
 use App\Http\Middleware\EndSuspendedSession;
 use App\Http\Middleware\EnsureModerator;
 use App\Http\Middleware\EnsurePlatformAdmin;
+use App\Http\Middleware\EnterSignInFlow;
 use App\Http\Middleware\Oidc\EnforceOidcRules;
 use App\Http\Middleware\Oidc\EnforcePlatformEntitlement;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -106,6 +107,7 @@ class Kernel extends HttpKernel
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
+            EnterSignInFlow::class, // R-54: sign-in, registration and password pages take their platform from the flow id in their address
         ],
 
         'api' => [

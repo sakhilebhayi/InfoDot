@@ -6,6 +6,7 @@
 
         <form class="ix-entry__form" method="POST" action="{{ route('register') }}" x-data="{ sending: false }" x-on:submit="sending = true" x-on:pageshow.window="sending = false">
             @csrf
+            @if ($platformFlow)<input type="hidden" name="f" value="{{ $platformFlow }}">@endif
 
             <div class="ix-field">
                 <x-jet-label for="name" value="{{ __('Name') }}" />
@@ -39,7 +40,7 @@
         </form>
 
         <p class="ix-entry__links">
-            <a href="{{ route('login') }}">Already have an account? Sign in</a>
+            <a href="{{ route('login', $platformFlow ? ['f' => $platformFlow] : []) }}">Already have an account? Sign in</a>
         </p>
     </x-jet-authentication-card>
 </x-guest-layout>
