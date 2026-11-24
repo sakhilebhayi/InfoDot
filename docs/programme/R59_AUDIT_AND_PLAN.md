@@ -131,3 +131,34 @@ Attribution reports, cohort retention and churn (needs the active definition and
 
 ## 10. Order of work after approval
 Phase 0, then 1A, 1B and 1D in parallel (independent), then 1C (needs 1A and the ledger contract), then 1E (needs D1 and Finance). Phase 2 begins only when Phase 1's acceptance criteria are met.
+
+## 11. R-60 Unified platform monetisation: where it fits (added 2026-11-24)
+
+The owner added a second brief the same day, stored verbatim in `R60_MONETISATION_BRIEF.md`: a monetisation model for each live Dot platform (Dot.Mines excluded; it is the reference model and must not be touched), based on resources, credits and capacity rather than charging for access, with shared wallet and entitlement infrastructure, a monetisation admin centre, and a written strategy document **before** any code.
+
+**How it relates to R-59.** Both rest on the same substrate: Dot.Finance for payment, InfoDot's licensing and `PlatformAccess` for entitlements. The R100 seat is the first shared resource a wallet would hold. So R-59 Phase 1E (seat setup) stays small and configuration-only, and must not hard-code per-seat pricing in a way that blocks a wallet later. Sponsored access (R-59 Phase 2) and the redemption of referral points for subscription credits (decision D8) become wallet credits once the wallet exists.
+
+**Constraints carried into every step:** Dot.Mines pricing and billing are untouched; every platform keeps a useful free tier; no mock billing, simulated transactions or fake balances; paid access is enforced on the backend only; ZAR first; every price carries a cost-based justification; every entitlement is explicit, enforced and auditable; shared resources (storage, AI credits, seats, communication credits) are distinguished from platform-specific ones and a purchase never silently unlocks unrelated premium features.
+
+**What Phase 0 already tells us about the billing home:** Finance can take card payment for seats but has no price book, no reduce or add seats, no multi-currency and no sponsor-pays, so a wallet needs new work in Finance as well as InfoDot.
+
+**Deliverable before any code (the strategy document):** for every live platform: core value, free features, paid features, monetisation model, purchase unit, proposed ZAR price with its commercial justification, consumption rules, cross-platform value, cost considerations and revenue opportunity; plus a cross-platform comparison, recommended packages, a wallet and entitlement architecture proposal, an assessment of the existing billing infrastructure, a resource-sharing map, cost risks, a phased roadmap and an acceptance-criteria document, each item marked existing, proposed or needs development.
+
+**Method:**
+- M0: read-only audit of the Dot.Mines reference model (plans, machine allocation, billing), then of every other live platform repository in batches of four or five parallel read-only audits (features, tables, existing limits, third-party calls, existing billing hooks).
+- M1: gather the cost inputs only the owner has (hosting, AI, SMS and email, storage, payment fees, support) and a target margin; without them no price can be justified.
+- M2: write the strategy document and review it with the owner.
+- M3: the wallet and entitlement architecture proposal (design only), reviewed with the owner.
+- M4 onwards: implementation in controlled phases with tests, starting with the shared resources, only after the owner approves the strategy and architecture. No price is configured before approval.
+
+**Decisions needed for R-60** (not yet answered):
+
+| # | Decision | Recommendation |
+|---|---|---|
+| M1 | The list: the brief says 22 live platforms excluding Dot.Mines. Confirm which platforms count, since the registry has to be checked against that number | I will list the live registry entries and ask you to confirm |
+| M2 | Cost inputs and a target gross margin | You supply actual figures; I will not estimate costs |
+| M3 | Wallet owner: the company (team) or the person | Company wallet, with personal wallets only for people without a company |
+| M4 | The R100 seat: a wallet product or a licence batch | Keep the licence batch for seats (already built), and let the wallet recognise it; revisit after the architecture proposal |
+| M5 | Billing home for credits and top-ups | Dot.Finance, with the gaps closed there first |
+
+**Order of work.** R-59 Phase 1 parts A, B and D proceed now (they do not depend on R-60). R-60 steps M0 and M1 can run alongside R-59 Phase 1C and 1E; M2 and M3 follow; nothing in R-60 is implemented before approval.
