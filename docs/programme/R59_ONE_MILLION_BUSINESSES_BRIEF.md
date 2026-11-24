@@ -1,3 +1,5 @@
+> **Owner amendment, 2026-11-24:** the price in this brief is changed from R100 to **R98 per user per month**. Every later document (audit, plan, verdict) uses R98. The brief below is kept word for word as first written, so its R100 figures are superseded.
+
 # R-59 brief (owner, 2026-11-24): INFOdot: One Million Businesses, Global Growth and Distribution Strategy
 
 Stored verbatim as given by the owner (the only change: the spaced dashes in the six phase headings in section 16 are colons, to keep the house rule of no dashes in written text). The audit and the phased plan are in `R59_AUDIT_AND_PLAN.md`.

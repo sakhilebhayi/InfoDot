@@ -1,4 +1,4 @@
-# R-59 Phase 0 verdict: can Finance take R100 per seat, and can the ledger carry referral rewards?
+# R-59 Phase 0 verdict: can Finance take R98 per seat, and can the ledger carry referral rewards?
 
 Date: 2026-11-24. Read-only audits of `Dot.Finance` (origin/main e63e9fb, 2026-11-18) and `Dot.Dopemine` (origin/main 99c72b3, 2026-10-30). The local checkouts were behind, so both were read from origin/main with read-only git commands. Neither audit ran code, tests or migrations, and neither could see production configuration, so "has it run against real Paystack" and "is the production secret set" remain **unverified**.
 
@@ -10,7 +10,7 @@ Owner decisions D1 to D9 in `R59_AUDIT_AND_PLAN.md` were approved on 2026-11-24 
 
 | Need | State | Notes |
 |---|---|---|
-| Hosted checkout for N seats | EXISTS | `POST /api/licences/checkout`, signed (HMAC-SHA256 over `{ts}.{body}`, 300 s), idempotent per batch, max 1,000 seats, ZAR only. Finance does **not** set the price: it trusts `total_minor` from InfoDot's signed body, so N x 10000 gives R100 a seat |
+| Hosted checkout for N seats | EXISTS | `POST /api/licences/checkout`, signed (HMAC-SHA256 over `{ts}.{body}`, 300 s), idempotent per batch, max 1,000 seats, ZAR only. Finance does **not** set the price: it trusts `total_minor` from InfoDot's signed body, so N x 10000 gives R98 a seat |
 | Paystack initialise, verify, refund, subscription disable | EXISTS | Webhook is signature-checked, de-duplicated, and re-verifies status, currency and exact amount before granting. Code header says some payload shapes were written "as recalled" and are unverified against real Paystack |
 | Renewal | PARTIAL | Paystack-native (saved card); no dunning or grace logic of its own; past-due seats stay valid until period end |
 | Signed events to InfoDot | EXISTS | Outbox with retry; `paid`, `renewed`, `payment_failed`, `refunded`, `cancelled`; target is whatever `LICENCE_PUSH_URL` is set to |
@@ -25,7 +25,7 @@ Owner decisions D1 to D9 in `R59_AUDIT_AND_PLAN.md` were approved on 2026-11-24 
 
 **Switches (all default off):** `PAYSTACK_SECRET_KEY`, `LICENCE_INFODOT_SECRET`, `LICENCE_PUSH_URL` and `LICENCE_PUSH_SECRET` (must point at InfoDot's `/api/finance/platform-subscription-events` and match `PLATFORM_SUBSCRIPTION_CALLBACK_SECRET`), `LICENCE_CHECKOUT_RETURN_URL`, and `LICENCE_SELLER_TEAM_UUID` plus a cash account for invoices.
 
-**What must be true before R100 is charged to a real customer:**
+**What must be true before R98 is charged to a real customer:**
 1. Align the free allowance on both sides to **1** (D1 keeps one free seat): set `LICENCE_INCLUDED_SEATS=1` in InfoDot and Finance and fix InfoDot's reader to read the allowance from one place.
 2. Configure the Finance and InfoDot secrets and URLs above, and the seller ledger, in production.
 3. Run one real test purchase with a Paystack test key, then a live one, checking the webhook, the pushed event, the entitlement and the invoice end to end (this also removes the "payload shapes unverified" risk).
@@ -53,6 +53,6 @@ Owner decisions D1 to D9 in `R59_AUDIT_AND_PLAN.md` were approved on 2026-11-24 
 
 - **Phase 1A (acquisition capture), 1B (onboarding events and recommender) and 1D (Growth Centre) have no dependency on either system and can start now.**
 - **1C (referrals)** splits: the InfoDot side (codes, links, attribution, state machine, fraud rules, holding period, admin tier table, reversal trigger) can start now; **issuing points is blocked on the Dopemine change** (a separate PR in that repository) and the production secret.
-- **1E (R100 seats)** is configuration and alignment work in InfoDot plus the Finance switches above. It stays dormant, with the price unset in production, until the end-to-end test purchase passes.
+- **1E (R98 seats)** is configuration and alignment work in InfoDot plus the Finance switches above. It stays dormant, with the price unset in production, until the end-to-end test purchase passes.
 - **Corrections to record:** the R50 note about Finance is stale; the Analytics page's hard-coded "23 of 23" figure must not be used; InfoDot's free-seat default (3) must become 1 in both repositories.
 - **Unverified, to confirm with the owner or on the host:** production values of the licensing flags and secrets, whether `LICENCE_INCLUDED_SEATS=1` was applied, and the production database engine.
