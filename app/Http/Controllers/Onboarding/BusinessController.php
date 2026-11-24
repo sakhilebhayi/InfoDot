@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Onboarding;
 
 use App\Http\Controllers\Controller;
 use App\Models\TeamProfile;
+use App\Services\Growth\OnboardingEvents;
 use App\Services\Sso\BusinessOnboarding;
 use App\Services\Sso\PlatformContext;
 use App\Support\Industry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Laravel\Jetstream\Contracts\CreatesTeams;
@@ -33,6 +35,10 @@ class BusinessController extends Controller
             'branding' => $this->context->branding(),
             'industries' => Industry::options(),
             'visibility' => TeamProfile::VISIBILITY,
+            'stages' => config('onboarding.stages'),
+            'sizeBands' => config('onboarding.size_bands'),
+            'objectives' => config('onboarding.objectives'),
+            'maxObjectives' => (int) config('onboarding.max_objectives'),
         ]);
     }
 
@@ -45,16 +51,34 @@ class BusinessController extends Controller
             return redirect($this->context->pendingUrl() ?? route('dashboard'));
         }
 
+        $about = $request->validate([
+            'stage' => ['nullable', Rule::in(array_keys(config('onboarding.stages')))],
+            'size_band' => ['nullable', Rule::in(array_keys(config('onboarding.size_bands')))],
+            'objectives' => ['nullable', 'array', 'max:'.(int) config('onboarding.max_objectives')],
+            'objectives.*' => ['string', Rule::in(array_keys(config('onboarding.objectives')))],
+        ]);
+
         try {
-            $creator->create($user, $request->only(['name', 'industry', 'description', 'visibility']));
+            $team = $creator->create($user, $request->only(['name', 'industry', 'description', 'visibility']));
         } catch (ValidationException $e) {
             return back()->withInput()->withErrors($e->errors());
+        }
+
+        // What the business says about itself is optional; it is kept with the profile the action just wrote.
+        $objectives = array_values(array_unique($about['objectives'] ?? []));
+        $team->profile()->update([
+            'stage' => $about['stage'] ?? null,
+            'size_band' => $about['size_band'] ?? null,
+            'objectives' => $objectives === [] ? null : $objectives,
+        ]);
+        if ($objectives !== []) {
+            app(OnboardingEvents::class)->record($user, 'objectives_set', $team);
         }
 
         $pending = $this->context->pendingUrl();
 
         return $pending !== null
             ? redirect($pending)
-            : redirect()->route('dashboard')->with('status', 'Your business is set up.');
+            : redirect()->route('onboarding.recommendations')->with('status', 'Your business is set up.');
     }
 }

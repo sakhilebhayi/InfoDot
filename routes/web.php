@@ -27,6 +27,7 @@ use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
 use App\Http\Controllers\NoticesController;
 use App\Http\Controllers\Onboarding\BusinessController;
+use App\Http\Controllers\Onboarding\RecommendationsController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\PlatformAccessController;
 use App\Http\Controllers\PlatformCatalogueController;
@@ -147,6 +148,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // R-54: the short "Set up your business" step a new person meets between registration and a platform that is for businesses.
     Route::get('/onboarding/business', [BusinessController::class, 'show'])->name('onboarding.business');
     Route::post('/onboarding/business', [BusinessController::class, 'store'])->middleware('throttle:10,1,onboarding.business')->name('onboarding.business.store');
+
+    // R-59 Phase 1B: the platforms that fit what the business told us, each with the reason it was chosen.
+    Route::get('/onboarding/recommendations', [RecommendationsController::class, 'show'])->name('onboarding.recommendations');
+    Route::post('/onboarding/recommendations', [RecommendationsController::class, 'update'])->middleware('throttle:20,1,onboarding.recommendations')->name('onboarding.recommendations.update');
 
     Route::get('/platforms', EcosystemWidget::class)->name('ecosystem.widget');
     Route::get('/open/{resource}', ResourceOpenController::class)->name('resources.open');

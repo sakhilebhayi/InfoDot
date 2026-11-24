@@ -32,6 +32,28 @@
                 </select>
             </div>
 
+            <div class="ix-field">
+                <x-jet-label for="stage" value="Where is the business today? (optional)" />
+                <select id="stage" name="stage" class="ix-input ix-select">
+                    <option value="">Prefer not to say</option>
+                    @foreach ($stages as $key => $label)
+                        <option value="{{ $key }}" @selected(old('stage') === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="ix-field">
+                <x-jet-label for="size_band" value="How many people work in it? (optional)" />
+                <select id="size_band" name="size_band" class="ix-input ix-select">
+                    <option value="">Prefer not to say</option>
+                    @foreach ($sizeBands as $key => $label)
+                        <option value="{{ $key }}" @selected(old('size_band') === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            @include('onboarding._objectives', ['selected' => (array) old('objectives', [])])
+
             <fieldset class="ix-choice">
                 <legend class="ix-label">Who can see the business page</legend>
                 @foreach ($visibility as $value => $label)

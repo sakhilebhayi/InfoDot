@@ -5,6 +5,7 @@ namespace App\Actions\Fortify;
 use App\Models\Team;
 use App\Models\User;
 use App\Rules\DeliverableEmailDomain;
+use App\Services\Growth\OnboardingEvents;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -32,7 +33,7 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         try {
-            return DB::transaction(function () use ($input) {
+            $user = DB::transaction(function () use ($input) {
                 return tap(User::create([
                     'name' => $input['name'],
                     'email' => $input['email'],
@@ -41,6 +42,10 @@ class CreateNewUser implements CreatesNewUsers
                     $this->createTeam($user);
                 });
             });
+
+            app(OnboardingEvents::class)->record($user, 'account_created');
+
+            return $user;
         } catch (UniqueConstraintViolationException) {
             return $this->accountFromTheSameSignUp($input);
         }
