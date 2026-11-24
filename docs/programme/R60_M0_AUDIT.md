@@ -54,7 +54,9 @@ These are not new bugs; they are records that do not agree with each other, foun
 3. **Volume bands.** R-53 approved marginal bands; R-59 decision D1 (approved) chose flat. PR 255 made the default flat (bands are kept as a mechanism, off by default).
 4. **VAT.** R-53 decision D11 (owner, 2026-11-16) says the selling business is NOT VAT registered, prices are final, no VAT is added, invoices carry no VAT line. PR 255 added an optional VAT-on-top quote (`LICENCE_VAT_RATE`), unset by default, so nothing changes unless it is set. Please confirm which rule you want; if the business stays unregistered, the VAT option should be removed.
 
-None of this is live. These need your decision at M1.
+None of this is live.
+
+**Resolved by the owner, 2026-11-24: R98 per user per month, flat, no VAT.** The business is not VAT registered, so the price is final and invoices carry no VAT line (this keeps R-53 decision D11). Volume bands stay off. The optional VAT-on-top quote added in PR 255 is removed in PR 258. Still open: an annual price at R98 (R990 was ten months of R99, which would be R980). Nothing is configured in production.
 
 ## 6. What every platform has in common (auditor reports)
 
@@ -124,7 +126,7 @@ AI tokens are the largest and least controlled cost: Analytics' six-hourly run f
 | M3 | Wallet owner: company, with personal wallets for people without a company | Recommendation unchanged |
 | M4 | Seats stay a licence batch the wallet recognises | Recommendation unchanged |
 | M5 | Billing home Finance, with the gaps in section 4 closed first, and the Paystack webhook conflict resolved | Confirm |
-| M6 | Price, annual price, bands and VAT (section 5) | New, found in this audit |
+| M6 | Price rule: DECIDED, R98 flat, no VAT, no bands. Annual price still to be stated | Found in this audit, answered 2026-11-24 |
 | M7 | Tutor, Agents and Ehail already have their own billing: fold into the shared model, or leave | New |
 
 ## 12. Next steps
