@@ -49,6 +49,20 @@ class PlatformCatalogue extends Model
         return in_array($this->operational_status, [self::OPERATIONAL, self::DEGRADED], true);
     }
 
+    /**
+     * Why people cannot use the platform right now, in plain words, or null when they can (R-61 availability contract).
+     * Nothing here says anything about the person or the company: an administrative switch is not a commercial entitlement.
+     */
+    public function unavailableMessage(): ?string
+    {
+        return match ($this->operational_status) {
+            self::MAINTENANCE => "{$this->name} is under maintenance. Your data is safe and nothing about your account has changed. Please try again later.",
+            self::UNAVAILABLE => "{$this->name} is temporarily unavailable. Your data is safe and nothing about your account has changed. Please try again later.",
+            self::DEVELOPMENT, self::NOT_LAUNCHED => "{$this->name} is not open to businesses yet.",
+            default => null,
+        };
+    }
+
     /** Not open to businesses yet (still being built, or built and not launched). */
     public function isNotLaunched(): bool
     {
