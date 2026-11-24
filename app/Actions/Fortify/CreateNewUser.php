@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Rules\DeliverableEmailDomain;
 use App\Services\Growth\Acquisition;
 use App\Services\Growth\OnboardingEvents;
+use App\Services\Growth\Referrals;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -46,6 +47,7 @@ class CreateNewUser implements CreatesNewUsers
             });
 
             app(OnboardingEvents::class)->record($user, 'account_created');
+            app(Referrals::class)->attribute($user);
 
             return $user;
         } catch (UniqueConstraintViolationException) {

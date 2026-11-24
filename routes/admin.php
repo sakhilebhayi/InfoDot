@@ -62,6 +62,7 @@ Route::middleware(['web', 'auth:sanctum', 'verified', 'platform.admin'])->prefix
 
 // R-59 Phase 1D: the Growth Centre (platform administrators only).
 Route::middleware(['web', 'auth:sanctum', 'verified', 'platform.admin'])->prefix('/admin/growth')->group(function () {
-    Route::get('/{tab?}', [GrowthCentreController::class, 'show'])->where('tab', 'overview|funnel|channels|geography|platforms|targets')->middleware('throttle:60,1,admin.growth')->name('admin.growth');
+    Route::get('/{tab?}', [GrowthCentreController::class, 'show'])->where('tab', 'overview|funnel|channels|geography|platforms|referrals|targets')->middleware('throttle:60,1,admin.growth')->name('admin.growth');
     Route::post('/targets', [GrowthCentreController::class, 'updateTargets'])->middleware('throttle:30,1,admin.growth.act')->name('admin.growth.targets');
 });
+Route::post('/admin/growth/tiers', [GrowthCentreController::class, 'updateTiers'])->middleware(['web', 'auth:sanctum', 'verified', 'platform.admin', 'throttle:30,1,admin.growth.act'])->name('admin.growth.tiers');
