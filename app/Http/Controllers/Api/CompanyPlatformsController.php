@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\PlatformCatalogue;
 use App\Models\Team;
 use App\Services\Platforms\PlatformAccess;
 use App\Support\Input;
@@ -44,11 +45,17 @@ class CompanyPlatformsController extends Controller
                 'status' => $entry->key === 'infodot' ? 'included' : $access->businessState($team, $entry->key),
                 'entitled' => $access->companyHolds($team, $entry->key),
                 'is_core' => (bool) $entry->is_core,
+                // R-61 availability contract: whether the platform may be used AT ALL right now, apart from what the company holds.
+                // A platform in maintenance is `available: false` for everyone, whatever they have bought. InfoDot itself is always up here.
+                'available' => $entry->key === 'infodot' ? true : $entry->isUsable(),
+                'state' => $entry->key === 'infodot' ? PlatformCatalogue::OPERATIONAL : $entry->operational_status,
+                'message' => $entry->key === 'infodot' ? null : $entry->unavailableMessage(),
                 // How the company shares the caller's own platform among its people; nobody else's business.
                 ...($entry->key === $caller ? ['access_mode' => $access->entitlement($team, $entry->key)->access_mode ?? 'everyone'] : []),
             ])->values();
 
         return response()->json([
+            'contract' => 2,
             'platform' => $caller,
             'company' => ['uuid' => $team->uuid, 'personal' => (bool) $team->personal_team],
             'platforms' => $platforms,

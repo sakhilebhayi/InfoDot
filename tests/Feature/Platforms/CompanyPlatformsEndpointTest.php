@@ -44,9 +44,9 @@ class CompanyPlatformsEndpointTest extends PlatformTestCase
         sort($expected);
         $this->assertSame($expected, $platforms->keys()->sort()->values()->all());
 
-        $this->assertSame(['key' => 'forms', 'name' => 'Dot.Forms', 'status' => 'active', 'entitled' => true, 'is_core' => false, 'access_mode' => 'everyone'], $platforms['forms']);
-        $this->assertSame(['key' => 'finance', 'name' => 'Dot.Finance', 'status' => 'included', 'entitled' => true, 'is_core' => true], $platforms['finance']);
-        $this->assertSame(['key' => 'hr', 'name' => 'Dot.HR', 'status' => 'free_while_pricing_finalised', 'entitled' => false, 'is_core' => false], $platforms['hr']);
+        $this->assertSame(['key' => 'forms', 'name' => 'Dot.Forms', 'status' => 'active', 'entitled' => true, 'is_core' => false, 'available' => true, 'state' => 'operational', 'message' => null, 'access_mode' => 'everyone'], $platforms['forms']);
+        $this->assertSame(['key' => 'finance', 'name' => 'Dot.Finance', 'status' => 'included', 'entitled' => true, 'is_core' => true, 'available' => true, 'state' => 'operational', 'message' => null], $platforms['finance']);
+        $this->assertSame(['key' => 'hr', 'name' => 'Dot.HR', 'status' => 'free_while_pricing_finalised', 'entitled' => false, 'is_core' => false, 'available' => true, 'state' => 'operational', 'message' => null], $platforms['hr']);
         $this->assertSame('managed_in_platform', $platforms['mines']['status']);
         $this->assertSame('included', $platforms['infodot']['status']);
         $this->assertArrayNotHasKey('memory', $platforms->all());
@@ -209,5 +209,44 @@ class CompanyPlatformsEndpointTest extends PlatformTestCase
 
         // The real platform, from the same address, is not throttled by the guesses.
         $this->read($team->uuid)->assertOk();
+    }
+
+    public function test_a_platform_in_maintenance_is_unavailable_to_everyone_whatever_they_hold(): void
+    {
+        $team = $this->company();
+        $this->activatePlatforms($team, 'forms');
+        $platform = fn (string $key) => collect($this->read($team->uuid)->assertOk()->json('platforms'))->firstWhere('key', $key);
+
+        $this->assertTrue($platform('forms')['available']);
+
+        PlatformCatalogue::where('key', 'forms')->update(['operational_status' => PlatformCatalogue::MAINTENANCE]);
+        $forms = $platform('forms');
+        $this->assertFalse($forms['available']);
+        $this->assertSame('maintenance', $forms['state']);
+        $this->assertStringContainsString('under maintenance', $forms['message']);
+        $this->assertTrue($forms['entitled'], 'the purchase is untouched: maintenance is not a commercial state');
+        $this->assertSame('temporarily_unavailable', $forms['status']);
+
+        PlatformCatalogue::where('key', 'forms')->update(['operational_status' => PlatformCatalogue::OPERATIONAL]);
+        $this->assertTrue($platform('forms')['available']);
+        $this->assertNull($platform('forms')['message']);
+    }
+
+    public function test_each_state_says_whether_the_platform_can_be_used(): void
+    {
+        $team = $this->company();
+        $expect = ['operational' => [true, false], 'degraded' => [true, false], 'maintenance' => [false, true], 'unavailable' => [false, true], 'development' => [false, true], 'not_launched' => [false, true]];
+
+        foreach ($expect as $state => [$available, $hasMessage]) {
+            PlatformCatalogue::where('key', 'forms')->update(['operational_status' => $state]);
+            $row = collect($this->read($team->uuid)->json('platforms'))->firstWhere('key', 'forms');
+            $this->assertSame($available, $row['available'], $state);
+            $this->assertSame($hasMessage, $row['message'] !== null, $state);
+        }
+    }
+
+    public function test_the_answer_carries_the_contract_version(): void
+    {
+        $this->read($this->company()->uuid)->assertOk()->assertJsonPath('contract', 2);
     }
 }
