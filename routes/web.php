@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountsDeskController;
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\BookingSettingsController;
 use App\Http\Controllers\BrandingAssetController;
 use App\Http\Controllers\BrandingImageController;
 use App\Http\Controllers\BusinessCollectionController;
@@ -204,6 +205,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Business identity (R-29): a company's public page, and the owner/administrator editing behind it
     // -------------------------------------------------------
     Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
+    Route::get('/business/{team:uuid}/booking', [BookingSettingsController::class, 'show'])->name('business.booking.settings');
+    Route::post('/business/{team:uuid}/booking', [BookingSettingsController::class, 'update'])->middleware('throttle:20,1,business.booking.settings')->name('business.booking.settings.update');
+
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
     Route::post('/business/{team:uuid}/directory', [BusinessProfileController::class, 'updateDirectory'])->middleware('throttle:20,1,business.directory')->name('business.directory');
     // Collections, featured requests and insights (R-33 Phase 4b).

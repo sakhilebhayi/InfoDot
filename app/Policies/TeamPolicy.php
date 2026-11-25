@@ -62,6 +62,16 @@ class TeamPolicy
     }
 
     /**
+     * Appointment booking settings and bookings (R-63): the owner, administrators and managers run a business's bookings. A personal
+     * workspace takes none. (A member who is a service provider reaches their own availability and appointments through the bookings area, not here.)
+     */
+    public function manageBookings(User $user, Team $team): bool
+    {
+        return ! $team->personal_team
+            && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin') || $user->hasTeamRole($team, 'manager'));
+    }
+
+    /**
      * Determine whether the user can add team members.
      *
      * @return mixed
