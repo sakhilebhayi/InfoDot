@@ -164,10 +164,10 @@ final class GettingStarted
         }
 
         return $step + [
-            'note' => 'Pick from the platforms that fit your business. Activating one is free and does not buy anything.',
+            'note' => 'We offer the first free platforms that fit your business. Switching one on is free and does not buy anything.',
             'done' => $held > 0 || $user->platform_opened_at !== null,
             'url' => route('onboarding.recommendations'),
-            'action' => 'See recommendations',
+            'action' => 'Choose your first platforms',
         ];
     }
 
