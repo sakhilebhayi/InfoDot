@@ -14,6 +14,7 @@
         'upcoming' => ['Upcoming', route('business.appointments.upcoming', [$team] + $keep)],
         'calendar' => ['Calendar', route('business.appointments.calendar', [$team] + $keep)],
         'past' => ['Past and closed', route('business.appointments.past', [$team] + $keep)],
+        'reports' => ['Reports', route('business.booking.reports', [$team] + $keep)],
     ];
 @endphp
 <nav class="ix-mod__tabs" aria-label="Appointment views">

@@ -67,6 +67,25 @@ class BookingBoard
         return $this->filter;
     }
 
+    /**
+     * The providers whose offered time this person's view covers: null for a manager looking at everything (the business and every provider), the one chosen
+     * provider, none for "not assigned", or the person's own provider records. Used for the capacity side of utilisation.
+     *
+     * @return list<int>|null
+     */
+    public function capacityProviderIds(): ?array
+    {
+        if (! $this->manages) {
+            return $this->ownProviderIds;
+        }
+
+        return match (true) {
+            $this->filter === null => null,
+            $this->filter === self::UNASSIGNED => [],
+            default => [(int) $this->filter],
+        };
+    }
+
     /** @return Builder<Booking> */
     public function query(): Builder
     {

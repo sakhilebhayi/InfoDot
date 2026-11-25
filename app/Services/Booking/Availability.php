@@ -5,6 +5,7 @@ namespace App\Services\Booking;
 use App\Models\AppointmentType;
 use App\Models\Booking;
 use App\Models\BookingClosure;
+use App\Models\BookingProvider;
 use App\Models\BookingSetting;
 use App\Models\Team;
 use App\Models\WorkingHour;
@@ -105,6 +106,93 @@ class Availability
         }
 
         return null;
+    }
+
+    /**
+     * The minutes the business offered between two local dates, both included: the working hours of every active provider (their own hours inside the
+     * business's, or the business's when they have none) plus the business's own hours when it has an active appointment type no provider offers, less the
+     * business's closures and each provider's own. This is the "available" side of utilisation, worked out with the same hours and closure rules the
+     * calendar uses. `$onlyProviderIds` narrows it to those providers (and leaves out the business's own hours); an empty list is no capacity at all.
+     *
+     * @param  list<int>|null  $onlyProviderIds
+     */
+    public function capacityMinutes(Team $team, string $fromDate, string $toDate, ?array $onlyProviderIds = null): int
+    {
+        if ($onlyProviderIds === []) {
+            return 0;
+        }
+
+        $tz = BookingSetting::forTeam($team)->zone();
+        $first = CarbonImmutable::parse($fromDate, $tz)->startOfDay();
+        $last = CarbonImmutable::parse($toDate, $tz)->startOfDay();
+        $rows = WorkingHour::query()->where('team_id', $team->getKey())->get(['booking_provider_id', 'weekday', 'starts_at', 'ends_at']);
+        $business = $this->weekly($rows->whereNull('booking_provider_id'));
+
+        $resources = [];
+
+        foreach (BookingProvider::query()->where('team_id', $team->getKey())->where('active', true)->when($onlyProviderIds !== null, fn ($q) => $q->whereIn('id', $onlyProviderIds))->get(['id']) as $provider) {
+            $own = $this->weekly($rows->where('booking_provider_id', $provider->id));
+            $resources[] = ['id' => (int) $provider->id, 'hours' => $own === [] ? $business : $this->intersect($own, $business)];
+        }
+
+        if ($onlyProviderIds === null && AppointmentType::query()->where('team_id', $team->getKey())->where('active', true)->whereDoesntHave('providers')->exists()) {
+            $resources[] = ['id' => null, 'hours' => $business];
+        }
+
+        $closures = BookingClosure::query()->where('team_id', $team->getKey())->where('starts_at', '<', $last->addDay()->utc())->where('ends_at', '>', $first->utc())->get()
+            ->map(fn (BookingClosure $c) => ['provider' => $c->booking_provider_id, 'from' => $c->starts_at->getTimestamp(), 'to' => $c->ends_at->getTimestamp()])->all();
+
+        $seconds = 0;
+
+        for ($day = $first; $day->lte($last); $day = $day->addDay()) {
+            $date = $day->format('Y-m-d');
+            $weekday = $day->dayOfWeekIso;
+
+            foreach ($resources as $resource) {
+                foreach ($resource['hours'][$weekday] ?? [] as [$a, $b]) {
+                    $free = [[$this->at($tz, $date, $a)->getTimestamp(), $this->at($tz, $date, $b)->getTimestamp()]];
+
+                    foreach ($closures as $closure) {
+                        if ($closure['provider'] === null || $closure['provider'] === $resource['id']) {
+                            $free = $this->minus($free, $closure['from'], $closure['to']);
+                        }
+                    }
+
+                    foreach ($free as [$from, $to]) {
+                        $seconds += $to - $from;
+                    }
+                }
+            }
+        }
+
+        return intdiv($seconds, 60);
+    }
+
+    /**
+     * Free stretches with one blocked stretch taken out.
+     *
+     * @param  list<array{0: int, 1: int}>  $free
+     * @return list<array{0: int, 1: int}>
+     */
+    private function minus(array $free, int $from, int $to): array
+    {
+        $out = [];
+
+        foreach ($free as [$a, $b]) {
+            if ($to <= $a || $from >= $b) {
+                $out[] = [$a, $b];
+
+                continue;
+            }
+            if ($from > $a) {
+                $out[] = [$a, $from];
+            }
+            if ($to < $b) {
+                $out[] = [$to, $b];
+            }
+        }
+
+        return $out;
     }
 
     // ------------------------------------------------------------------------------------------------------------------------------ the day
