@@ -1,4 +1,6 @@
 <x-app-layout title="Booking settings">
+    @include('business.booking._nav', ['team' => $team, 'active' => 'settings'])
+
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">Appointment booking</h1>

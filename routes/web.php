@@ -4,7 +4,11 @@ use App\Http\Controllers\AccountsDeskController;
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\BookingClosuresController;
+use App\Http\Controllers\BookingHoursController;
+use App\Http\Controllers\BookingProvidersController;
 use App\Http\Controllers\BookingSettingsController;
+use App\Http\Controllers\BookingTypesController;
 use App\Http\Controllers\BrandingAssetController;
 use App\Http\Controllers\BrandingImageController;
 use App\Http\Controllers\BusinessCollectionController;
@@ -207,6 +211,30 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
     Route::get('/business/{team:uuid}/booking', [BookingSettingsController::class, 'show'])->name('business.booking.settings');
     Route::post('/business/{team:uuid}/booking', [BookingSettingsController::class, 'update'])->middleware('throttle:20,1,business.booking.settings')->name('business.booking.settings.update');
+
+    // Booking setup (R-63 phase 2b): appointment types, providers, weekly hours and closures. Each screen is a 404 until the feature is open.
+    Route::get('/business/{team:uuid}/booking/types', [BookingTypesController::class, 'index'])->name('business.booking.types');
+    Route::get('/business/{team:uuid}/booking/types/new', [BookingTypesController::class, 'create'])->name('business.booking.types.create');
+    Route::post('/business/{team:uuid}/booking/types', [BookingTypesController::class, 'store'])->middleware('throttle:30,1,business.booking.types.store')->name('business.booking.types.store');
+    Route::get('/business/{team:uuid}/booking/types/{type}/edit', [BookingTypesController::class, 'edit'])->whereNumber('type')->name('business.booking.types.edit');
+    Route::post('/business/{team:uuid}/booking/types/{type}', [BookingTypesController::class, 'update'])->whereNumber('type')->middleware('throttle:30,1,business.booking.types.update')->name('business.booking.types.update');
+    Route::post('/business/{team:uuid}/booking/types/{type}/toggle', [BookingTypesController::class, 'toggle'])->whereNumber('type')->middleware('throttle:30,1,business.booking.types.toggle')->name('business.booking.types.toggle');
+    Route::post('/business/{team:uuid}/booking/types/{type}/delete', [BookingTypesController::class, 'destroy'])->whereNumber('type')->middleware('throttle:20,1,business.booking.types.delete')->name('business.booking.types.delete');
+
+    Route::get('/business/{team:uuid}/booking/providers', [BookingProvidersController::class, 'index'])->name('business.booking.providers');
+    Route::post('/business/{team:uuid}/booking/providers', [BookingProvidersController::class, 'store'])->middleware('throttle:30,1,business.booking.providers.store')->name('business.booking.providers.store');
+    Route::post('/business/{team:uuid}/booking/providers/{provider}', [BookingProvidersController::class, 'update'])->whereNumber('provider')->middleware('throttle:30,1,business.booking.providers.update')->name('business.booking.providers.update');
+    Route::post('/business/{team:uuid}/booking/providers/{provider}/toggle', [BookingProvidersController::class, 'toggle'])->whereNumber('provider')->middleware('throttle:30,1,business.booking.providers.toggle')->name('business.booking.providers.toggle');
+    Route::post('/business/{team:uuid}/booking/providers/{provider}/delete', [BookingProvidersController::class, 'destroy'])->whereNumber('provider')->middleware('throttle:20,1,business.booking.providers.delete')->name('business.booking.providers.delete');
+
+    Route::get('/business/{team:uuid}/booking/hours', [BookingHoursController::class, 'business'])->name('business.booking.hours');
+    Route::post('/business/{team:uuid}/booking/hours', [BookingHoursController::class, 'updateBusiness'])->middleware('throttle:20,1,business.booking.hours.update')->name('business.booking.hours.update');
+    Route::get('/business/{team:uuid}/booking/providers/{provider}/hours', [BookingHoursController::class, 'provider'])->whereNumber('provider')->name('business.booking.providers.hours');
+    Route::post('/business/{team:uuid}/booking/providers/{provider}/hours', [BookingHoursController::class, 'updateProvider'])->whereNumber('provider')->middleware('throttle:20,1,business.booking.providers.hours.update')->name('business.booking.providers.hours.update');
+
+    Route::get('/business/{team:uuid}/booking/closures', [BookingClosuresController::class, 'index'])->name('business.booking.closures');
+    Route::post('/business/{team:uuid}/booking/closures', [BookingClosuresController::class, 'store'])->middleware('throttle:30,1,business.booking.closures.store')->name('business.booking.closures.store');
+    Route::post('/business/{team:uuid}/booking/closures/{closure}/delete', [BookingClosuresController::class, 'destroy'])->whereNumber('closure')->middleware('throttle:30,1,business.booking.closures.delete')->name('business.booking.closures.delete');
 
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
     Route::post('/business/{team:uuid}/directory', [BusinessProfileController::class, 'updateDirectory'])->middleware('throttle:20,1,business.directory')->name('business.directory');
