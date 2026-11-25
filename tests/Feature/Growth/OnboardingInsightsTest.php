@@ -134,6 +134,6 @@ class OnboardingInsightsTest extends TestCase
         $team = Team::factory()->create(['user_id' => $owner->id, 'personal_team' => false, 'name' => 'Dlamini Freight']);
         $owner->forceFill(['current_team_id' => $team->id])->save();
 
-        $this->actingAs($owner->fresh())->get('/home')->assertOk()->assertSee('Dlamini Freight')->assertSee('No platforms switched on yet')->assertDontSee('Set up your company');
+        $this->actingAs($owner->fresh())->get('/home')->assertOk()->assertSee('Dlamini Freight')->assertSee('Choose your first platforms')->assertDontSee('Set up your company');
     }
 }

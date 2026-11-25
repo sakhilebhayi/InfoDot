@@ -53,7 +53,7 @@ class HomeController extends Controller
      * What the company in view has, in one place: the platforms it holds (and the person may open), its people, and what is still missing from its
      * page. Null for a personal workspace, where the page asks the person to set a company up instead.
      *
-     * @return array{platforms: list<array{key: string, name: string}>, people: int, missing: list<string>, can_manage: bool}|null
+     * @return array{platforms: list<array{key: string, name: string}>, switched_on: int, people: int, missing: list<string>, can_manage: bool}|null
      */
     private function companySummary(User $user, ?Team $team): ?array
     {
@@ -69,8 +69,12 @@ class HomeController extends Controller
             'a logo' => ! $team->logo()->exists(),
         ]));
 
+        $rows = CompanyCatalogue::shared()->rows($user, $team);
+
         return [
-            'platforms' => CompanyCatalogue::shared()->openable($user, $team)->map(fn (array $row, string $key) => ['key' => $key, 'name' => (string) $row['name']])->values()->all(),
+            'platforms' => $rows->filter(fn (array $row) => $row['held'] === true && $row['open'] === true)->map(fn (array $row, string $key) => ['key' => $key, 'name' => (string) $row['name']])->values()->all(),
+            // Platforms the company chose, beyond the free core every company has.
+            'switched_on' => $rows->filter(fn (array $row) => $row['held'] === true && $row['state'] !== 'included')->count(),
             'people' => $team->allUsers()->count(),
             'missing' => $missing,
             'can_manage' => $user->can('managePlatforms', $team),

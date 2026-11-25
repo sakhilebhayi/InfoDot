@@ -37,11 +37,11 @@
                 @else
                     <p>
                         {{ $company['people'] }} {{ \Illuminate\Support\Str::plural('person', $company['people']) }} in the company.
-                        @if ($company['platforms'] === [])
-                            No platforms switched on yet.
-                            @if ($company['can_manage'])<a href="{{ route('onboarding.recommendations') }}">Choose your first platforms</a>.@endif
-                        @else
+                        @if ($company['platforms'] !== [])
                             Platforms: @foreach ($company['platforms'] as $p)<a href="{{ route('platforms.show', $p['key']) }}">{{ $p['name'] }}</a>{{ $loop->last ? '.' : ',' }} @endforeach
+                        @endif
+                        @if ($company['switched_on'] === 0 && $company['can_manage'])
+                            <a href="{{ route('onboarding.recommendations') }}">Choose your first platforms</a>.
                         @endif
                     </p>
                     @if ($company['missing'] !== [])
