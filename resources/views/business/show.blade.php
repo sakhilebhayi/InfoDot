@@ -97,6 +97,15 @@
                         </ul>
                     @endif
                 </div>
+                @if (($bookable ?? false) && ($preview || ! $isMember))
+                    <div class="ix-biz__editbtn">
+                        @if ($preview)
+                            <span class="ix-btn ix-btn--primary" aria-disabled="true"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span>Book an appointment</span>
+                        @elseif (! $isMember)
+                            <a href="{{ route('business.book', $team) }}" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span>Book an appointment</a>
+                        @endif
+                    </div>
+                @endif
                 @if (! $isMember && ! $preview && $team->acceptsEnquiries())
                     <div class="ix-biz__editbtn">
                         <a href="{{ route('business.message', $team) }}" class="ix-btn ix-btn--primary">

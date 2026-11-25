@@ -7,6 +7,7 @@ use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\BookingClosuresController;
 use App\Http\Controllers\BookingHoursController;
 use App\Http\Controllers\BookingProvidersController;
+use App\Http\Controllers\BookingPublicController;
 use App\Http\Controllers\BookingSettingsController;
 use App\Http\Controllers\BookingTypesController;
 use App\Http\Controllers\BrandingAssetController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\JoinLinkController;
 use App\Http\Controllers\Knowledge\PickerController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
+use App\Http\Controllers\MyBookingsController;
 use App\Http\Controllers\NoticesController;
 use App\Http\Controllers\Onboarding\BusinessController;
 use App\Http\Controllers\Onboarding\RecommendationsController;
@@ -101,6 +103,8 @@ Route::get('/businesses/featured', [BusinessFeatureController::class, 'rules'])-
 // Contact actions on a business page are counted for the business's insights (R-33 §9): a count, nothing about the visitor.
 Route::post('/business/{team:uuid}/track/{action}', [BusinessInsightsController::class, 'track'])->whereIn('action', ['call', 'email', 'website', 'map'])->middleware('throttle:60,1,business.track')->name('business.track');
 Route::get('/business/{team:uuid}', [BusinessProfileController::class, 'show'])->middleware('throttle:120,1,business.show')->name('business.show');
+// R-63 phase 3: anyone may look at a business's appointment calendar; signing in is asked for only when they choose a time. 404 until the feature is open.
+Route::get('/business/{team:uuid}/book', [BookingPublicController::class, 'show'])->middleware('throttle:60,1,business.book.view')->name('business.book');
 // Files stream from one door. Signed-out visitors may open only the current branding of a business
 // that chose "anyone"; for everything else they are sent to sign in, as before (R-15, R-33).
 Route::get('/attachments/{attachment:uuid}/thumb', [AttachmentController::class, 'thumb'])->middleware('throttle:240,1,attachments-view')->name('attachments.thumb');
@@ -209,6 +213,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Business identity (R-29): a company's public page, and the owner/administrator editing behind it
     // -------------------------------------------------------
     Route::get('/business/{team:uuid}/edit', [BusinessProfileController::class, 'edit'])->name('business.edit');
+    // R-63 phase 3, the customer side: the confirm step and the booking itself, and the person's own bookings (a reference that is not theirs is a 404).
+    Route::get('/business/{team:uuid}/book/confirm', [BookingPublicController::class, 'confirm'])->name('business.book.confirm');
+    Route::post('/business/{team:uuid}/book', [BookingPublicController::class, 'store'])->middleware('throttle:10,1,business.book.store')->name('business.book.store');
+    Route::get('/my-bookings', [MyBookingsController::class, 'index'])->middleware('throttle:60,1,my-bookings.index')->name('my-bookings');
+    Route::get('/my-bookings/{reference}', [MyBookingsController::class, 'show'])->where('reference', '[A-Za-z0-9-]{1,40}')->middleware('throttle:60,1,my-bookings.show')->name('my-bookings.show');
+    Route::post('/my-bookings/{reference}/cancel', [MyBookingsController::class, 'cancel'])->where('reference', '[A-Za-z0-9-]{1,40}')->middleware('throttle:10,1,my-bookings.cancel')->name('my-bookings.cancel');
+
     Route::get('/business/{team:uuid}/booking', [BookingSettingsController::class, 'show'])->name('business.booking.settings');
     Route::post('/business/{team:uuid}/booking', [BookingSettingsController::class, 'update'])->middleware('throttle:20,1,business.booking.settings')->name('business.booking.settings.update');
 
