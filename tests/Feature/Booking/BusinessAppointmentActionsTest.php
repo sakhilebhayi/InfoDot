@@ -50,7 +50,7 @@ class BusinessAppointmentActionsTest extends AppointmentsTestCase
         $history = substr($history, 0, strpos($history, '</section>'));
 
         $this->assertStringContainsString('Booked by the customer, by the customer', $history);
-        $this->assertStringContainsString('Accepted, by '.$this->owner->name, $history);
+        $this->assertStringContainsString('Accepted, by '.e($this->owner->name), $history, 'the name is escaped in the page, so a name with an apostrophe must be compared escaped');
         $this->assertStringContainsString('Internal note changed', $history);
         $this->assertStringNotContainsString('Zodwa', $history);
         $this->assertStringNotContainsString('zodwa@example.test', $history);
