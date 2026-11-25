@@ -36,6 +36,8 @@ export function appEnv(): NodeJS.ProcessEnv {
         QUEUE_CONNECTION: 'sync',
         SCOUT_DRIVER: 'collection',
         BROADCAST_CONNECTION: 'log',
+        // The harness creates its people on reserved domains (infodot.test, example.com) that can receive no mail; the run's mailer only writes to the log.
+        BLOCK_RESERVED_EMAIL_DOMAINS: 'false',
         FILESYSTEM_DISK: 'local',
         // No other platform is called from a browser run: with these empty the clients stay switched off.
         DOPEMINE_INGEST_SECRET: '',

@@ -27,7 +27,8 @@ test.describe('G. When something goes wrong', () => {
         op({ op: 'clear-rate-limits' });
         const record = watch(page);
         await page.goto('/register');
-        await page.getByLabel('Name').fill('Second Attempt');
+        await page.getByLabel('First name').fill('Second');
+        await page.getByLabel('Last name').fill('Attempt');
         await page.getByLabel('Email').fill(existing.email);
         await page.locator('#password').fill(password());
         await page.locator('#password_confirmation').fill(password());

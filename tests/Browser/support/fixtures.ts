@@ -139,7 +139,9 @@ export async function register(page: Page, name: string): Promise<string> {
     const email = `${unique('e2e-')}@browser-tests.example.com`;
     for (const attempt of [1, 2]) {
         await page.goto('/register');
-        await page.getByLabel('Name').fill(name);
+        const [first, ...rest] = name.split(' ');
+        await page.getByLabel('First name').fill(first);
+        await page.getByLabel('Last name').fill(rest.join(' ') || 'Tester');
         await page.getByLabel('Email').fill(email);
         await page.locator('#password').fill(password());
         await page.locator('#password_confirmation').fill(password());

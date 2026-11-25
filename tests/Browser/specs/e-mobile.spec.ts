@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Page } from '@playwright/test';
-import { fixture, rows, unique } from '../support/app';
+import { fixture, makeBusiness, rows, unique } from '../support/app';
 import { dataDir } from '../support/env';
 import { expect, register, signIn, signOut, test, verifyByEmailLink } from '../support/fixtures';
 import { accountLink, goTo } from '../support/nav';
@@ -57,7 +57,10 @@ test.describe('E. On a phone or tablet', () => {
         const email = await register(page, 'Zanele Mobile');
         await check(page, findings);
         await verifyByEmailLink(page, email);
-        await expect(page).toHaveURL(/\/home/);
+        // R-62: a newly confirmed person is taken to set up their company first (checked at this width too); Home is one step away.
+        await expect(page).toHaveURL(/\/(home|onboarding\/business)/);
+        await check(page, findings);
+        await page.goto('/home');
         await check(page, findings);
 
         // Out and in again.
@@ -119,12 +122,11 @@ test.describe('E. On a phone or tablet', () => {
 
         // A business: created, then managed.
         const name = `Zanele Spaza ${unique()}`;
-        await accountLink(page, 'Create a company');   // R-52: the company links are in the account section of the drawer; Getting started on Home offers the same
+        // R-62 moved company creation into the onboarding wizard: its page is checked at this width, then the business is made directly.
+        await page.goto('/onboarding/business?another=1');
         await check(page, findings);
-        await page.getByLabel('Company name').fill(name);
-        await page.getByLabel('What the business does').fill('A spaza shop selling groceries, airtime and prepaid electricity in Soshanguve.');
-        await page.getByRole('radio', { name: /^Anyone/ }).check();
-        await page.getByRole('button', { name: 'Create company' }).click();
+        const made = makeBusiness({ email } as never, name, 'public', 'A spaza shop selling groceries, airtime and prepaid electricity in Soshanguve.');
+        await page.goto(`/business/${made.uuid}/edit`);
         await expect(page).toHaveURL(/\/business\/[0-9a-f-]{36}\/edit/);
         await check(page, findings);
         const team = rows('teams', { name })[0];

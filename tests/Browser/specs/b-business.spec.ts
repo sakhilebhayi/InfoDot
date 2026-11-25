@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { fixture, makeUser, rows, unique } from '../support/app';
+import { fixture, makeBusiness, makeUser, rows, unique } from '../support/app';
 import { expect, openContext, signIn, signOut, test } from '../support/fixtures';
 import { accountLink, goTo } from '../support/nav';
 
@@ -26,18 +26,11 @@ test.describe('B. A business', () => {
         const customer = makeUser('Customer Cebo');
         const name = `Kestrel Borehole Drilling ${unique()}`;
 
-        // Create the business from the company menu.
+        // R-62 moved company creation into the onboarding wizard (covered by its own tests); this journey starts from a listed business.
         await signIn(page, owner.email);
-        await accountLink(page, 'Create a company');   // R-52: the company menu moved into the account menu; Getting started on Home offers the same
-        await expect(page).toHaveURL(/\/teams\/create$/);
-        await page.getByLabel('Company name').fill(name);
-        await page.getByLabel('What the business does').fill('Borehole drilling, pump installation and water testing for farms and homes in Mpumalanga.');
-        await page.getByRole('radio', { name: /^Anyone/ }).check();
-        await page.getByRole('button', { name: 'Create company' }).click();
-
-        // It lands on the listing, which says where the business stands.
-        await expect(page).toHaveURL(/\/business\/[0-9a-f-]{36}\/edit#directory$/);
-        await expect(page.getByRole('status').filter({ hasText: `${name} is listed for anyone` })).toBeVisible();
+        const made = makeBusiness(owner, name, 'public', 'Borehole drilling, pump installation and water testing for farms and homes in Mpumalanga.');
+        await page.goto(`/business/${made.uuid}/edit#directory`);
+        await expect(page).toHaveURL(/\/business\/[0-9a-f-]{36}\/edit/);
         const team = rows('teams', { name })[0];
         expect(team.personal_team).toBeFalsy();
         expect(rows('team_profiles', { team_id: team.id })[0].visibility).toBe('public');
