@@ -125,6 +125,18 @@ class Team extends JetstreamTeam
         return $this->hasOne(TeamProfile::class);
     }
 
+    /** @return HasMany<AppointmentType, $this> */
+    public function appointmentTypes(): HasMany
+    {
+        return $this->hasMany(AppointmentType::class);
+    }
+
+    /** @return HasMany<BookingProvider, $this> */
+    public function bookingProviders(): HasMany
+    {
+        return $this->hasMany(BookingProvider::class);
+    }
+
     /** @return HasOne<BookingSetting, $this> */
     public function bookingSetting(): HasOne
     {
