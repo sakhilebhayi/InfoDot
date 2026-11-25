@@ -3,11 +3,12 @@
 // clip-path. Nothing here runs for a visitor who asked for reduced motion, and the layout's own timer shows the page if this file is late.
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { reducedMotion, reveal } from './motion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const root = document.documentElement;
-const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduce = reducedMotion();
 const shownAlready = root.classList.contains('motion-failsafe');
 
 if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
@@ -39,7 +40,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     ScrollTrigger.batch('[data-pg-reveal], .pg-prose > h2, .pg-prose > h2 + *', {
         start: 'top 90%',
         once: true,
-        onEnter: (els) => gsap.fromTo(els, { y: 26, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.08, ease: 'power3.out', overwrite: true, clearProps: 'transform' }),
+        onEnter: (els) => reveal(els),
     });
 
     // A stencilled code plate is stamped as its section arrives.

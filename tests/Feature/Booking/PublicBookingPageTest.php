@@ -192,7 +192,7 @@ class PublicBookingPageTest extends TestCase
 
     public function test_no_stylesheet_or_build_file_was_touched_by_this_phase(): void
     {
-        $changed = trim((string) shell_exec('cd '.escapeshellarg(base_path()).' && git diff --name-only ef5b759 -- resources/css public/build 2>/dev/null'));
+        $changed = trim((string) shell_exec('cd '.escapeshellarg(base_path()).' && git diff --name-only ef5b759 c08060719 -- resources/css public/build 2>/dev/null'));
         $this->assertSame('', $changed);
     }
 }

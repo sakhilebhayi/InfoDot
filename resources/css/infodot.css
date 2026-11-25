@@ -72,6 +72,32 @@
     --ix-radius: 3px;
     --ix-radius-sm: 2px;
     --ix-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+    /*
+     * The motion system (R-64 phase 2): one set of durations and curves for the whole product. CSS reads these as they are; the GSAP side
+     * (resources/js/motion.js) mirrors the same numbers, and tests/Feature/MotionTokensTest.php fails if the two drift apart or a stylesheet
+     * declares a raw duration again. fast = hover, focus and colour; base = small movement and fades; slow = panels, menus and reveals' travel;
+     * scene = marketing pages only. Reduced motion is handled once, globally, in app.css.
+     */
+    --ix-dur-fast: 120ms;
+    --ix-dur-base: 200ms;
+    --ix-dur-slow: 300ms;
+    --ix-dur-scene: 400ms;
+    --ix-dur-scene-slow: 600ms;
+    --ix-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ix-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ix-rise: 24px;
+
+    /* Control sizes: compact with a mouse, thumb-sized on a touch screen (WCAG 2.5.8 target size, 44 px). */
+    --ix-field-h: 36px;
+    --ix-field-h-sm: 30px;
+}
+
+@media (pointer: coarse) {
+    :root {
+        --ix-field-h: 44px;
+        --ix-field-h-sm: 40px;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -457,7 +483,7 @@ button.ix-avatar {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    height: 36px;
+    height: var(--ix-field-h);
     padding: 0 14px;
     border: 1px solid var(--ix-rule-strong);
     border-radius: var(--ix-radius-sm);
@@ -466,7 +492,7 @@ button.ix-avatar {
     font: 600 var(--dot-text-body-sm-size)/1 var(--ix-font);
     cursor: pointer;
     white-space: nowrap;
-    transition: background-color 0.12s var(--ix-ease), border-color 0.12s var(--ix-ease), color 0.12s var(--ix-ease);
+    transition: background-color var(--ix-dur-fast) var(--ix-ease), border-color var(--ix-dur-fast) var(--ix-ease), color var(--ix-dur-fast) var(--ix-ease);
 }
 
 .ix-btn:hover {
@@ -527,7 +553,7 @@ button.ix-avatar {
 }
 
 .ix-btn--sm {
-    height: 30px;
+    height: var(--ix-field-h-sm);
     padding: 0 10px;
     font-size: var(--dot-text-body-sm-size);
 }
@@ -568,11 +594,11 @@ button.ix-avatar {
     background: var(--ix-panel);
     color: var(--ix-text);
     font: 400 var(--dot-text-body-sm-size)/1.5 var(--ix-font);
-    transition: border-color 0.12s var(--ix-ease), box-shadow 0.12s var(--ix-ease);
+    transition: border-color var(--ix-dur-fast) var(--ix-ease), box-shadow var(--ix-dur-fast) var(--ix-ease);
 }
 
 .ix-input {
-    height: 36px;
+    height: var(--ix-field-h);
     padding-top: 0;
     padding-bottom: 0;
 }
@@ -822,7 +848,7 @@ button.ix-avatar {
     color: var(--ix-text-2);
     font: 600 var(--dot-text-body-sm-size)/1 var(--ix-font);
     cursor: pointer;
-    transition: background-color 0.12s var(--ix-ease), color 0.12s var(--ix-ease);
+    transition: background-color var(--ix-dur-fast) var(--ix-ease), color var(--ix-dur-fast) var(--ix-ease);
 }
 
 .ix-pill:hover {
@@ -1025,7 +1051,7 @@ button.ix-avatar {
     gap: 4px 16px;
     padding: 14px 16px;
     border-bottom: 1px solid var(--ix-rule);
-    transition: background-color 0.12s var(--ix-ease);
+    transition: background-color var(--ix-dur-fast) var(--ix-ease);
 }
 
 .ix-row:last-child {
@@ -1171,7 +1197,7 @@ a.ix-row:hover {
     font: 500 var(--dot-text-body-sm-size)/1.3 var(--ix-font);
     text-align: left;
     cursor: pointer;
-    transition: background-color 0.12s var(--ix-ease);
+    transition: background-color var(--ix-dur-fast) var(--ix-ease);
 }
 
 button.ix-dir__item:hover:not([disabled]) {
@@ -1613,7 +1639,7 @@ button.ix-dir__item:hover:not([disabled]) {
     text-align: left;
     cursor: pointer;
     font-family: var(--ix-font);
-    transition: transform 0.14s var(--ix-ease), filter 0.14s var(--ix-ease);
+    transition: transform var(--ix-dur-fast) var(--ix-ease), filter var(--ix-dur-fast) var(--ix-ease);
 }
 
 .ix-door[data-area='documents'] {
@@ -1723,7 +1749,7 @@ button.ix-dir__item:hover:not([disabled]) {
 
 @media (prefers-reduced-motion: no-preference) {
     .ix-stamp {
-        animation: ix-stamp 0.28s var(--ix-ease) both;
+        animation: ix-stamp var(--ix-dur-slow) var(--ix-ease) both;
     }
 }
 
@@ -2018,7 +2044,7 @@ button.ix-dir__item:hover:not([disabled]) {
     font: 600 var(--dot-text-body-sm-size)/1.25 var(--ix-font);
     text-align: center;
     cursor: pointer;
-    transition: outline-color 0.1s var(--ix-ease), transform 0.1s var(--ix-ease);
+    transition: outline-color var(--ix-dur-fast) var(--ix-ease), transform var(--ix-dur-fast) var(--ix-ease);
     outline: 3px solid transparent;
     outline-offset: -1px;
 }
@@ -3658,7 +3684,7 @@ button.ix-dir__item:hover:not([disabled]) {
     height: 100%;
     background: var(--ix-documents);
     transform-origin: left center;
-    transition: transform 0.2s var(--ix-ease);
+    transition: transform var(--ix-dur-base) var(--ix-ease);
 }
 
 .ix-proc__list {
@@ -6055,7 +6081,7 @@ a.ix-notices__text:hover {
 :root {
     --lp-veil: rgba(248, 249, 249, 0.74);
     --lp-search-shadow: 0 10px 34px rgba(20, 24, 26, 0.16), 0 2px 6px rgba(20, 24, 26, 0.1);
-    --lp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --lp-ease: var(--ix-ease-out);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -6139,7 +6165,7 @@ body {
     border-radius: 999px;
     background: var(--ix-panel);
     box-shadow: var(--lp-search-shadow);
-    transition: transform 220ms var(--lp-ease), box-shadow 220ms var(--lp-ease), border-color 160ms ease-out;
+    transition: transform var(--ix-dur-base) var(--ix-ease-out), box-shadow var(--ix-dur-base) var(--ix-ease-out), border-color var(--ix-dur-base) var(--ix-ease);
 }
 
 .lp-search:focus-within {
@@ -6187,7 +6213,7 @@ body {
     color: var(--ix-logo-gold);
     font-size: 24px;
     cursor: pointer;
-    transition: transform 160ms var(--lp-ease), background-color 160ms ease-out;
+    transition: transform var(--ix-dur-base) var(--ix-ease-out), background-color var(--ix-dur-base) var(--ix-ease);
 }
 
 .lp-search__go:hover {
@@ -6225,7 +6251,7 @@ body {
     font-weight: 600;
     font-size: var(--dot-text-body-size);
     text-decoration: none;
-    transition: transform 160ms var(--lp-ease), background-color 160ms ease-out;
+    transition: transform var(--ix-dur-base) var(--ix-ease-out), background-color var(--ix-dur-base) var(--ix-ease);
 }
 
 .lp-chips a:hover {
@@ -6577,7 +6603,7 @@ body {
     background: currentColor;
     -webkit-mask: var(--ix-arrow-url) center / contain no-repeat;
     mask: var(--ix-arrow-url) center / contain no-repeat;
-    transition: transform 160ms var(--ix-ease);
+    transition: transform var(--ix-dur-base) var(--ix-ease);
 }
 
 .ix-btn--arrow {
@@ -6839,7 +6865,7 @@ body {
 .ix-attach__name { overflow-wrap: anywhere; font-size: var(--dot-text-body-sm-size); }
 .ix-attach__name small { color: var(--ix-text-3); }
 .ix-attach__bar { display: block; height: 4px; border-radius: 2px; background: var(--ix-sunken); overflow: hidden; }
-.ix-attach__bar span { display: block; height: 100%; background: var(--ix-signal); transition: width 0.2s linear; }
+.ix-attach__bar span { display: block; height: 100%; background: var(--ix-signal); transition: width var(--ix-dur-base) linear; }
 .ix-attach__caption { padding: 6px 10px; font-size: var(--dot-text-body-sm-size); }
 .ix-attach__tools { display: flex; gap: 2px; }
 .ix-attach__tool { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: var(--ix-radius-sm); background: none; color: var(--ix-text-3); cursor: pointer; }
@@ -7005,7 +7031,7 @@ body {
     padding: 18px 10px;
     text-decoration: none;
     color: inherit;
-    transition: background-color 0.15s ease-out;
+    transition: background-color var(--ix-dur-fast) var(--ix-ease);
 }
 
 .lp-ledger a:hover { background: var(--ix-raised); }
@@ -7035,7 +7061,7 @@ body {
 
 .lp-ledger .material-symbols-rounded {
     color: var(--ix-knowledge);
-    transition: transform 0.15s ease-out;
+    transition: transform var(--ix-dur-fast) var(--ix-ease);
 }
 
 .lp-ledger a:hover .material-symbols-rounded { transform: translateX(4px); }
@@ -7162,7 +7188,7 @@ body {
    checked who the business is. Roboto, in capitals, for the plate's one word.
    ------------------------------------------------------------------------------------------------ */
 .ix-vplate { position: relative; display: inline-block; vertical-align: middle; }
-.ix-vplate > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; padding: 4px 9px 3px; border: 2px solid var(--ix-ok); border-radius: var(--ix-radius-sm); background: var(--ix-ok-wash); color: var(--ix-ok); font-family: var(--ix-stencil-font); font-weight: 700; font-size: var(--dot-text-body-size); line-height: 1; letter-spacing: 0.14em; text-transform: uppercase; user-select: none; transition: background-color 0.15s var(--ix-ease); }
+.ix-vplate > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; padding: 4px 9px 3px; border: 2px solid var(--ix-ok); border-radius: var(--ix-radius-sm); background: var(--ix-ok-wash); color: var(--ix-ok); font-family: var(--ix-stencil-font); font-weight: 700; font-size: var(--dot-text-body-size); line-height: 1; letter-spacing: 0.14em; text-transform: uppercase; user-select: none; transition: background-color var(--ix-dur-fast) var(--ix-ease); }
 .ix-vplate > summary::-webkit-details-marker { display: none; }
 .ix-vplate > summary::before,
 .ix-vplate > summary::after { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.7; }
@@ -7318,7 +7344,7 @@ body {
 
 /* Categories as a yard of tiles: the name, and how many listed businesses stand under it. */
 .ix-dir__cats { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 8px; }
-.ix-dir__cats a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 10px 14px; border: 1px solid var(--ix-rule); border-top: 3px solid var(--area); border-radius: var(--ix-radius); background: var(--ix-panel); color: var(--ix-text); font-weight: 600; text-decoration: none; transition: background-color 0.12s var(--ix-ease), border-color 0.12s var(--ix-ease); }
+.ix-dir__cats a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 10px 14px; border: 1px solid var(--ix-rule); border-top: 3px solid var(--area); border-radius: var(--ix-radius); background: var(--ix-panel); color: var(--ix-text); font-weight: 600; text-decoration: none; transition: background-color var(--ix-dur-fast) var(--ix-ease), border-color var(--ix-dur-fast) var(--ix-ease); }
 .ix-dir__cats a:hover { background: var(--ix-hover); border-color: var(--ix-rule-strong); border-top-color: var(--area); }
 .ix-dir__cats a.is-empty { border-top-color: var(--ix-rule-strong); color: var(--ix-text-2); }
 .ix-dir__catname { min-width: 0; overflow-wrap: break-word; }
@@ -7326,7 +7352,7 @@ body {
 .ix-dir__cats a:not(.is-empty) .ix-dir__catn { color: var(--ix-text); }
 
 .ix-dir__svcs { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
-.ix-dir__svcs a { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); color: var(--ix-text); font-size: var(--dot-text-body-sm-size); text-decoration: none; transition: background-color 0.12s var(--ix-ease); }
+.ix-dir__svcs a { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); color: var(--ix-text); font-size: var(--dot-text-body-sm-size); text-decoration: none; transition: background-color var(--ix-dur-fast) var(--ix-ease); }
 .ix-dir__svcs a:first-letter { text-transform: uppercase; }
 .ix-dir__svcs a:hover { background: var(--ix-hover); }
 .ix-dir__svcs span { color: var(--ix-text-3); font-variant-numeric: tabular-nums; }
@@ -7334,7 +7360,7 @@ body {
 /* A listing: the business's own logo and words; what it matched on sits under a rule. */
 .ix-dir__results { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
 .ix-dir__results.is-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
-.ix-bizcard { position: relative; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px; align-items: start; padding: 16px 18px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); transition: border-color 0.12s var(--ix-ease); }
+.ix-bizcard { position: relative; display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px; align-items: start; padding: 16px 18px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); background: var(--ix-panel); transition: border-color var(--ix-dur-fast) var(--ix-ease); }
 .ix-bizcard:hover { border-color: var(--ix-rule-strong); }
 .ix-bizcard__logo.ix-biz__logo { width: 56px; height: 56px; font-size: var(--dot-text-h2-size); }
 .ix-bizcard__body { display: grid; gap: 6px; min-width: 0; }
@@ -7568,7 +7594,7 @@ body {
 .ix-trend__day { position: relative; height: 100%; display: flex; align-items: flex-end; justify-content: center; outline-offset: 1px; }
 .ix-trend__bar { display: block; width: 100%; max-width: 18px; background: var(--area); border-radius: 4px 4px 0 0; }
 .ix-trend__tick { position: absolute; left: 15%; right: 15%; height: 2px; background: var(--ix-stencil); }
-.ix-trend__tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 5; white-space: nowrap; padding: 6px 8px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-panel); color: var(--ix-text); font-size: var(--dot-text-caption-size); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); opacity: 0; pointer-events: none; transition: opacity 0.12s var(--ix-ease); }
+.ix-trend__tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); z-index: 5; white-space: nowrap; padding: 6px 8px; border: 1px solid var(--ix-rule); border-radius: var(--ix-radius-sm); background: var(--ix-panel); color: var(--ix-text); font-size: var(--dot-text-caption-size); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); opacity: 0; pointer-events: none; transition: opacity var(--ix-dur-fast) var(--ix-ease); }
 .ix-trend__day:hover .ix-trend__tip, .ix-trend__day:focus-visible .ix-trend__tip { opacity: 1; }
 .ix-trend__day:hover .ix-trend__bar { filter: brightness(1.2); }
 .ix-trend__axis { display: flex; justify-content: space-between; margin: 6px 0 0; font-size: var(--dot-text-caption-size); color: var(--ix-text-3); font-variant-numeric: tabular-nums; }
@@ -8573,7 +8599,7 @@ button.ix-avatar,
         /* The picture already fades to the platform's ground at its foot; the mask finishes the join into the panel. */
         -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent);
         mask-image: linear-gradient(to bottom, #000 72%, transparent);
-        animation: ix-auth-in 400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        animation: ix-auth-in var(--ix-dur-scene) var(--ix-ease-out) both;
     }
 
     .ix-auth__pitch {
@@ -8777,7 +8803,7 @@ button.ix-avatar,
     font-weight: 600;
     font-size: var(--dot-text-body-sm-size);
     text-decoration: none;
-    transition: background-color 0.18s var(--lp-ease), transform 0.18s var(--lp-ease);
+    transition: background-color var(--ix-dur-base) var(--ix-ease-out), transform var(--ix-dur-base) var(--ix-ease-out);
 }
 
 .hp-stages a:hover {
@@ -8839,7 +8865,7 @@ button.ix-avatar,
     font-family: var(--ix-stencil-font);
     font-weight: 700;
     font-size: var(--dot-text-h2-size);
-    transition: background-color 0.4s var(--lp-ease), color 0.4s var(--lp-ease), transform 0.4s var(--lp-ease);
+    transition: background-color var(--ix-dur-scene) var(--ix-ease-out), color var(--ix-dur-scene) var(--ix-ease-out), transform var(--ix-dur-scene) var(--ix-ease-out);
 }
 
 .hp-steps .is-passed .hp-steps__n {
@@ -9131,7 +9157,7 @@ button.ix-avatar,
 }
 
 .has-motion .hp-chain__stamp.is-stamped {
-    animation: ix-stamp 0.28s var(--ix-ease) both;
+    animation: ix-stamp var(--ix-dur-slow) var(--ix-ease) both;
 }
 
 .has-motion.motion-failsafe .hp-chain__stamp {
@@ -9259,7 +9285,7 @@ button.ix-avatar,
     height: 16px;
     border-radius: 2px;
     background: var(--ix-knowledge);
-    transition: background-color 0.3s var(--lp-ease), transform 0.3s var(--lp-ease);
+    transition: background-color var(--ix-dur-slow) var(--ix-ease-out), transform var(--ix-dur-slow) var(--ix-ease-out);
 }
 
 .has-motion .hp-chain__steps li:not(.is-lit)::before {
@@ -9579,7 +9605,7 @@ button.ix-avatar,
     font-weight: 600;
     font-size: var(--dot-text-body-sm-size);
     text-decoration: none;
-    transition: background-color 0.18s var(--lp-ease), transform 0.18s var(--lp-ease);
+    transition: background-color var(--ix-dur-base) var(--ix-ease-out), transform var(--ix-dur-base) var(--ix-ease-out);
 }
 
 .bt-pillar__tools a:hover,
@@ -9672,7 +9698,7 @@ button.ix-avatar,
     font-size: var(--dot-text-body-sm-size);
     line-height: 1.3;
     text-decoration: none;
-    transition: background-color 0.2s var(--lp-ease);
+    transition: background-color var(--ix-dur-base) var(--ix-ease-out);
 }
 
 .bt-rail a:hover,
@@ -9725,7 +9751,7 @@ button.ix-avatar,
     gap: 40px;
     align-items: start;
     border-radius: var(--ix-radius);
-    transition: box-shadow 0.4s var(--lp-ease);
+    transition: box-shadow var(--ix-dur-scene) var(--ix-ease-out);
 }
 
 .bt-tool.is-matched {
@@ -9957,7 +9983,7 @@ button.ix-avatar,
     height: 16px;
     border-radius: 2px;
     background: var(--ix-platforms);
-    transition: background-color 0.3s var(--lp-ease), transform 0.3s var(--lp-ease);
+    transition: background-color var(--ix-dur-slow) var(--ix-ease-out), transform var(--ix-dur-slow) var(--ix-ease-out);
 }
 
 .has-motion .bt-access__steps li:not(.is-passed)::before {
@@ -10256,7 +10282,7 @@ button.ix-avatar,
 
     .bt-more__label .material-symbols-rounded {
         flex: none;
-        transition: transform 0.25s var(--lp-ease);
+        transition: transform var(--ix-dur-slow) var(--ix-ease-out);
     }
 
     .bt-more__check:checked + .bt-more__label .material-symbols-rounded {
@@ -10404,7 +10430,7 @@ button.ix-avatar,
     border: 1px solid var(--ix-rule);
     border-radius: var(--ix-radius);
     background: var(--ix-panel);
-    transition: border-color 0.2s ease, translate 0.2s ease;
+    transition: border-color var(--ix-dur-base) var(--ix-ease), translate var(--ix-dur-base) var(--ix-ease);
 }
 
 .pg-route:hover,
@@ -10631,7 +10657,7 @@ button.ix-avatar,
 /* The platform logos have thin, pale wordmarks: bigger tiles and a lift in brightness let every name read at full strength on the graphite ground. */
 .hp-group .lp-logos { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 /* Every logo file is drawn on the same canvas at the same scale (round icon, same-size wordmark), so each tile just shows the file at its natural proportions: nothing is stretched or squeezed. */
-.hp-group .lp-logos li { height: auto; aspect-ratio: 3 / 2; background: #080b0d; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); transition: box-shadow 0.2s ease, translate 0.2s ease; }
+.hp-group .lp-logos li { height: auto; aspect-ratio: 3 / 2; background: #080b0d; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); transition: box-shadow var(--ix-dur-base) var(--ix-ease), translate var(--ix-dur-base) var(--ix-ease); }
 .hp-group .lp-logos li:hover { box-shadow: inset 0 0 0 1px #eab31f; translate: 0 -2px; }
 .hp-group .lp-logos img { top: 6px; right: 6px; bottom: 6px; left: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: contain; filter: none; }
 
@@ -11024,8 +11050,8 @@ body[data-area="home"] .ix-btn--primary:hover,
 
 .hd__grid { position: relative; z-index: 2; display: grid; align-content: center; width: 50%; min-height: inherit; box-sizing: border-box; padding: 88px 48px 150px max(24px, calc((100vw - 1232px) / 2)); }
 .hd .lp-hero__inner { max-width: none; padding: 0; text-align: left; }
-.hd .lp-hero__title { margin: 0 0 18px; max-width: 12ch; color: var(--hd-ink); font-size: clamp(2.6rem, 5.4vw, 4.75rem); line-height: 1; transition: color 0.6s ease; }
-.hd .lp-hero__sub { margin: 0 0 28px; max-width: 40ch; color: var(--hd-ink-2); text-wrap: pretty; transition: color 0.6s ease; }
+.hd .lp-hero__title { margin: 0 0 18px; max-width: 12ch; color: var(--hd-ink); font-size: clamp(2.6rem, 5.4vw, 4.75rem); line-height: 1; transition: color var(--ix-dur-scene-slow) var(--ix-ease); }
+.hd .lp-hero__sub { margin: 0 0 28px; max-width: 40ch; color: var(--hd-ink-2); text-wrap: pretty; transition: color var(--ix-dur-scene-slow) var(--ix-ease); }
 .hd .lp-search { margin: 0 0 20px; max-width: 620px; }
 .hd .hp-hero__actions { justify-content: flex-start; }
 .hd[data-scene="a"] .hp-hero__actions .ix-btn:not(.ix-btn--primary) { color: #fff; border-color: rgb(255 255 255 / 0.5); background: rgb(10 14 16 / 0.35); }
@@ -11042,7 +11068,7 @@ body[data-area="home"] .ix-btn--primary:hover,
 .hd__pause { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--ix-rule-strong); border-radius: 50%; background: var(--ix-panel); color: var(--ix-text); cursor: pointer; }
 .hd__pause .material-symbols-rounded { font-size: 20px; }
 .hd__dot { position: relative; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
-.hd__dot::before { content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border: 2px solid var(--hd-ink); border-radius: 50%; opacity: 0.6; transition: background-color 0.3s, opacity 0.3s, transform 0.3s; }
+.hd__dot::before { content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border: 2px solid var(--hd-ink); border-radius: 50%; opacity: 0.6; transition: background-color var(--ix-dur-slow), opacity var(--ix-dur-slow), transform var(--ix-dur-slow); }
 .hd__dot[aria-current="true"]::before { background: var(--hd-ink); opacity: 1; transform: scale(1.15); }
 .hd__dot:focus-visible, .hd__pause:focus-visible { outline: 3px solid #eab31f; outline-offset: 2px; }
 .hd[data-scene="a"] .hd__pause { background: rgb(10 14 16 / 0.6); color: #fff; border-color: rgb(255 255 255 / 0.5); }

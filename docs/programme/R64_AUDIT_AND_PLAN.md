@@ -57,3 +57,12 @@ Each phase is one PR, merged on green, nothing deployed without instruction. Inf
 4. **Email identity and queue.** Confirm the sender name and address, and that production may run a queue worker (cron or supervised) so mail can leave the request.
 5. **Rollout order** for the other platforms, and who owns shared styling changes (dot-ui carries no form CSS today).
 6. **Touch size.** Move all fields and buttons to 44 px on touch screens (recommended) while keeping 36 px on desktop?
+
+## 6. Owner decisions (2026-11-25)
+
+1. Reference control: the top navbar search (the header pill from dot-ui).
+2. Motion: GSAP is allowed, including inside the app (CSS still handles hover, focus and small state changes).
+3. In-app notifications appear as pop-ups (toasts) in the top right corner. The bell, the notification page and the categories stay as the permanent record; the categories and defaults proposed in section 5 stand (recommended).
+4. Email sending identity and the queue: as recommended (confirm the sender, run a queue worker so mail leaves the request).
+5. Rollout order for the other platforms: as recommended (InfoDot first, then platforms in order of daily use).
+6. Touch size: as recommended (44 px fields and buttons on touch screens, 36 px with a mouse).

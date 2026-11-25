@@ -78,7 +78,9 @@ class PublicDesignR57Test extends TestCase
         }
 
         $js = (string) file_get_contents(resource_path('js/pages.js'));
-        $this->assertStringContainsString('prefers-reduced-motion: reduce', $js);
+        // The reduced-motion check moved into the shared motion module (R-64 phase 2); this page still asks it before doing anything.
+        $this->assertStringContainsString('reducedMotion()', $js);
+        $this->assertStringContainsString('prefers-reduced-motion: reduce', (string) file_get_contents(resource_path('js/motion.js')));
         $this->assertStringContainsString('motion-failsafe', $js);
         $this->assertStringNotContainsString("addEventListener('scroll'", $js);
     }
