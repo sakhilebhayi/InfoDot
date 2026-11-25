@@ -207,4 +207,15 @@ class BookingSettingsTest extends TestCase
 
         $this->assertSame([0, 0], [BookingSetting::count(), BookingEvent::count()]);
     }
+
+    public function test_your_own_business_page_offers_to_manage_bookings_and_never_to_book_yourself(): void
+    {
+        [$team, $owner] = $this->business();
+
+        $html = $this->actingAs($owner)->get(route('business.show', $team))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Manage bookings', $html);
+        $this->assertStringContainsString(route('business.booking.settings', $team), $html);
+        $this->assertStringNotContainsString('Book an appointment', $html);
+    }
 }
