@@ -8,6 +8,7 @@ use App\Models\AppointmentType;
 use App\Models\Booking;
 use App\Models\BookingEvent;
 use App\Models\BookingSetting;
+use App\Models\NotificationPreference;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\UserNotice;
@@ -144,6 +145,18 @@ class BookingNotificationsTest extends TestCase
         $this->book($customer);
 
         $this->assertSame([1, 0], [$this->notices($customer), $this->mails($customer)]);
+    }
+
+    public function test_the_persons_email_choice_for_bookings_decides_whether_mail_goes_as_it_happens_and_the_bell_always_has_it(): void
+    {
+        foreach ([['instant', 1], ['digest', 0], ['off', 0]] as $i => [$mode, $mails]) {
+            $customer = $this->customer($mode.'.customer@example.test');
+            NotificationPreference::create(['user_id' => $customer->id, 'category' => 'bookings', 'email' => $mode]);
+
+            $this->book($customer, '2026-11-30 0'.(7 + $i).':00:00');
+
+            $this->assertSame([1, $mails], [$this->notices($customer), $this->mails($customer)], $mode);
+        }
     }
 
     public function test_a_mail_outage_never_fails_or_undoes_the_booking(): void

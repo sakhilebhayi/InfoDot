@@ -12,6 +12,7 @@ use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Booking\BookingActions;
+use App\Services\Notifications\NotificationPreferences;
 use App\Services\Platforms\PlatformNotices;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -163,7 +164,10 @@ class InAppNotices
      */
     public function arrivedAfter(User $user, int $afterId, int $limit = 3)
     {
+        $muted = app(NotificationPreferences::class)->mutedPopupKinds($user);
+
         return UserNotice::where('user_id', $user->id)->where('id', '>', $afterId)->whereNull('read_at')->whereNull('archived_at')
+            ->when($muted !== [], fn ($q) => $q->whereNotIn('kind', $muted))
             ->where('created_at', '>=', now()->subMinutes(10))->orderBy('id')->limit($limit)->get();
     }
 
@@ -249,7 +253,7 @@ class InAppNotices
 
     public function describe(UserNotice $notice): array
     {
-        $gone = ['text' => $this->gone($notice->kind), 'url' => null];
+        $gone = ['text' => $this->gone($notice->kind), 'url' => null, 'gone' => true];
 
         if ($notice->subject_type === 'question') {
             $q = $this->subject('question', $notice->subject_id);

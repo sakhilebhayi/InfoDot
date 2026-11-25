@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\InAppNotices;
+use App\Services\Notifications\NotificationPreferences;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -388,6 +389,11 @@ final class EnquiryService
         }
 
         $this->notices->record($kind, $recipient, 'enquiry', $enquiry->id, 'enq:'.$enquiry->id.':'.$ref, $actor);
+
+        // The person's choice for their companies' notifications (R-64 phase 8): email as it happens, in the daily summary, or none.
+        if (! app(NotificationPreferences::class)->instantEmail($recipient, $kind)) {
+            return;
+        }
 
         if (! Cache::add('enquiry-mail:'.$enquiry->id.':'.$recipient->id, 1, now()->addMinutes((int) config('enquiries.email_quiet_minutes')))) {
             return;

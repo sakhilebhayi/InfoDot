@@ -9,6 +9,7 @@
             <p class="ix-lede">What has happened to your own work and your companies: answers, mentions and improvements, bookings and enquiries, seminars, platforms, verification, and invitations to join a company. Put away what you have dealt with; it stays in the archive. Only you see this page.</p>
         </div>
         <div class="ix-notices__tools">
+            <a href="{{ route('notices.preferences') }}" class="ix-btn ix-btn--ghost">Settings</a>
             @if ($unread > 0)
                 <form method="POST" action="{{ route('notices.read-all') }}">
                     @csrf

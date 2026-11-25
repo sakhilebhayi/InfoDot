@@ -21,7 +21,7 @@
     {{-- Footer --}}
     <x-slot:footer>
         <x-mail::footer>
-            {{ __('Manage your notifications') }}: {{ route('notices') }}
+            {{ __('Manage your notifications') }}: {{ route('notices.preferences') }}
             © {{ date('Y') }} {{ config('app.name') }}. @lang('All rights reserved.')
             @lang('The hub of the Dot Ecosystem.')
         </x-mail::footer>
