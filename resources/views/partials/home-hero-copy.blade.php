@@ -1,6 +1,6 @@
         <div class="lp-hero__inner" data-hero-inner>
-            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'Your business, written down and connected.' }}</h1>
-            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'Practical answers from other businesses, and one account for the tools that run yours: money, people, work and documents. Free to join.' }}</p>
+            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'A better, more connected way to build business.' }}</h1>
+            <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'We connect you to the knowledge, tools and business opportunities you need to start, manage and grow.' }}</p>
 
             <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>
                 <label for="lp-q" class="ix-sr">Search practical business solutions</label>
