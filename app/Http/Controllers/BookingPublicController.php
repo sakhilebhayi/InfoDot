@@ -52,7 +52,7 @@ class BookingPublicController extends Controller
 
         $view['memberNote'] = $user === null ? null : $this->bookings->whyNot($user, $team);
         $view['types'] = $team->appointmentTypes()->active()->orderBy('sort')->orderBy('name')->get();
-        $view['type'] = $view['types']->firstWhere('id', (int) $request->query('type'));
+        $view['type'] = $view['types']->firstWhere('id', $request->integer('type'));
 
         if ($view['type'] === null) {
             return view('business.book.show', $view);
@@ -76,7 +76,7 @@ class BookingPublicController extends Controller
             $view['dayStatus'] = $statuses[$date->format('Y-m-d')] ?? Availability::OUTSIDE_WINDOW;
             $view['slots'] = $this->availability->slots($view['type'], $date->format('Y-m-d'))->map(fn ($slot) => [
                 'start' => $slot->start, 'local' => $slot->start->setTimezone($zone),
-                'url' => route('business.book.confirm', array_filter(['team' => $team, 'type' => $view['type']->getKey(), 'start' => $this->stamp($slot->start), 'provider' => $slot->providerId])),
+                'url' => route('business.book.confirm', ['team' => $team, 'type' => $view['type']->getKey(), 'start' => $this->stamp($slot->start)]),
             ]);
         }
 
@@ -90,21 +90,21 @@ class BookingPublicController extends Controller
 
         $setting = BookingSetting::forTeam($team);
         $closed = $this->bookings->whyNot($user, $team);
-        $type = $this->type($team, (int) $request->query('type'));
-        $start = $this->instant((string) $request->query('start'));
-        $provider = $request->query('provider') === null ? null : (int) $request->query('provider');
+        $type = $this->type($team, $request->integer('type'));
+        // A query value can arrive as an array (?start[]=x): anything that is not a plain string is not a time.
+        $start = $this->instant(is_string($request->query('start')) ? $request->query('start') : '');
 
         abort_if($start === null, 404);
 
         $zone = $setting->zone();
         $local = $start->setTimezone($zone);
 
-        if ($closed === null && $this->availability->find($type, $start, $provider, now()) === null) {
+        if ($closed === null && $this->availability->find($type, $start, null, now()) === null) {
             return redirect($this->dateUrl($team, $type, $local))->withErrors(['booking' => 'That time has just been taken or is no longer available. Choose another time.']);
         }
 
         return view('business.book.confirm', [
-            'team' => $team, 'setting' => $setting, 'zone' => $setting->timezone, 'type' => $type, 'start' => $start, 'local' => $local, 'provider' => $provider,
+            'team' => $team, 'setting' => $setting, 'zone' => $setting->timezone, 'type' => $type, 'start' => $start, 'local' => $local,
             'closed' => $closed, 'dateUrl' => $this->dateUrl($team, $type, $local), 'user' => $user,
         ]);
     }
@@ -120,7 +120,6 @@ class BookingPublicController extends Controller
         $data = $request->validate([
             'type' => ['required', 'integer'],
             'start' => ['required', 'string', 'regex:'.self::START_FORMAT],
-            'provider' => ['nullable', 'integer'],
             'name' => ['required', 'string', 'min:2', 'max:120'],
             'email' => ['required', 'email', 'max:190'],
             'phone' => ['nullable', 'string', 'max:40'],
@@ -131,14 +130,14 @@ class BookingPublicController extends Controller
 
         $type = $this->type($team, (int) $data['type']);
         $start = $this->instant($data['start']);
-        $provider = filled($data['provider'] ?? null) ? (int) $data['provider'] : null;
         abort_if($start === null, 404);
 
         $local = $start->setTimezone($setting->zone());
 
         try {
-            $booking = $this->bookings->book($user, $team, $type, $start, $provider, [
-                'name' => trim($data['name']), 'email' => trim($data['email']), 'phone' => $data['phone'] ?? null, 'company' => $data['company'] ?? null, 'reason' => $data['reason'] ?? null,
+            // Which provider takes the appointment is the engine's choice (the lowest free); a customer cannot probe or pick one by id.
+            $booking = $this->bookings->book($user, $team, $type, $start, null, [
+                'name' => trim($data['name']), 'email' => trim($data['email']), 'phone' => $data['phone'] ?? null, 'company' => $data['company'] ?? null, 'reason' => $data['reason'] ?? null, 'terms_accepted' => $hasTerms,
             ]);
         } catch (BookingRefused $refused) {
             // A time that is gone sends the person to that date, where the refreshed list is; anything else keeps them on the form with what they typed.

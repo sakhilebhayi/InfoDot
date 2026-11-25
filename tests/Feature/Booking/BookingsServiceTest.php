@@ -86,7 +86,8 @@ class BookingsServiceTest extends TestCase
         $this->assertSame('2026-11-30 08:00:00', $booking->starts_at->utc()->format('Y-m-d H:i:s'));
         $this->assertSame('2026-11-30 09:00:00', $booking->ends_at->utc()->format('Y-m-d H:i:s'));
         $this->assertSame('2026-11-30 09:15:00', $booking->blocks_until->utc()->format('Y-m-d H:i:s'), 'the 15 minute buffer after is held');
-        $this->assertSame(sprintf('%s-B-%06d', $this->team->code, $booking->id), $booking->reference);
+        $this->assertMatchesRegularExpression('/^'.preg_quote((string) $this->team->code, '/').'-B-[A-HJ-NP-Z2-9]{10}$/', $booking->reference);
+        $this->assertNotSame($booking->reference, $this->book(null, '2026-11-30 10:00:00')->reference, 'every reference is its own, and none counts up from the booking number');
         $this->assertNull($booking->booking_provider_id);
         $this->assertSame('Secret Traders', $booking->customer_company);
     }

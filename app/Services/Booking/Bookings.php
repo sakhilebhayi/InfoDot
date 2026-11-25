@@ -56,7 +56,7 @@ class Bookings
     /**
      * Make a booking. The details are already validated; nothing is trusted from the page except which type and which start the person asked for.
      *
-     * @param  array{name: string, email: string, phone?: ?string, company?: ?string, reason?: ?string}  $details
+     * @param  array{name: string, email: string, phone?: ?string, company?: ?string, reason?: ?string, terms_accepted?: bool}  $details
      *
      * @throws BookingRefused
      */
@@ -88,7 +88,7 @@ class Bookings
                 throw new BookingRefused(BookingRefused::SLOT_TAKEN, 'That appointment is not offered any more. Choose another.');
             }
 
-            $slot = $this->availability->find($type, $start, $providerId, now());
+            $slot = $this->availability->find($type, $start, $providerId, now(), null, true);
 
             if ($slot === null) {
                 throw new BookingRefused(BookingRefused::SLOT_TAKEN, 'That time has just been taken or is no longer available. Choose another time.');
@@ -109,6 +109,7 @@ class Bookings
                 'blocks_from' => $slot->start->subMinutes($type->buffer_before_minutes),
                 'blocks_until' => $slot->end->addMinutes($type->buffer_after_minutes),
                 'status' => $type->needsApproval($setting) ? Booking::PENDING : Booking::CONFIRMED,
+                'terms_accepted_at' => ($details['terms_accepted'] ?? false) ? now() : null,
             ]);
 
             $booking->forceFill(['reference' => $this->reference($team, $booking)])->save();
@@ -119,7 +120,7 @@ class Bookings
             ]]);
 
             return $booking;
-        });
+        }, 3); // a deadlock or a lock wait is tried again, twice, instead of failing the person with an error
     }
 
     /** Whether this person may withdraw this booking themselves right now, and if not, why. */
@@ -165,10 +166,23 @@ class Bookings
         });
     }
 
-    /** The reference a customer quotes: the business's owner code, B for booking, the booking number. */
+    /**
+     * The reference a customer quotes: the business's owner code, B for booking, and ten random characters. Random on purpose: a number counted up from
+     * one would tell every customer and every business how many bookings the whole platform has taken.
+     */
     public function reference(Team $team, Booking $booking): string
     {
-        return sprintf('%s-B-%06d', $team->code ?? 'INFO', $booking->getKey());
+        $alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0 O 1 I L
+
+        do {
+            $suffix = '';
+            for ($i = 0; $i < 10; $i++) {
+                $suffix .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+            }
+            $reference = ($team->code ?? 'INFO').'-B-'.$suffix;
+        } while (Booking::query()->where('reference', $reference)->exists());
+
+        return $reference;
     }
 
     /** @throws BookingRefused */

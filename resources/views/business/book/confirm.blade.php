@@ -30,7 +30,6 @@
             @csrf
             <input type="hidden" name="type" value="{{ $type->id }}">
             <input type="hidden" name="start" value="{{ $start->format('Y-m-d\TH:i:s\Z') }}">
-            @if ($provider)<input type="hidden" name="provider" value="{{ $provider }}">@endif
 
             @if ($errors->any() && ! $errors->has('booking'))<div class="ix-error" role="alert"><p>{{ $errors->first() }}</p></div>@endif
 

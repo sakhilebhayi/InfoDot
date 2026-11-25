@@ -71,7 +71,7 @@ class PublicBookingPageTest extends TestCase
 
         $this->get($this->url())->assertOk()
             ->assertSee('Dlamini Freight')->assertSee('Initial consultation')->assertSee('A first talk.')->assertSee('60 minutes')
-            ->assertSee('ZAR 250.50')->assertSee('Room 4')->assertSee('Bring a statement.')->assertSee('Bring ID.')->assertSee('Arrive early.', false)
+            ->assertSee('ZAR 250.50')->assertSee('Room 4')->assertDontSee('Bring a statement.')->assertSee('Bring ID.')->assertSee('Arrive early.', false)
             ->assertSee('Africa/Johannesburg time')->assertSee('Choose')->assertDontSee('Switched off')->assertDontSee('Legend')->assertDontSee('Earlier month');
     }
 

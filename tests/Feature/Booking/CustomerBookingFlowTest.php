@@ -65,7 +65,7 @@ class CustomerBookingFlowTest extends TestCase
     public function test_the_confirm_step_summarises_the_booking_and_defaults_the_account_details(): void
     {
         $this->actingAs($this->customer)->get($this->confirmUrl())->assertOk()
-            ->assertSee('Initial consultation')->assertSee('Mon 30 Nov 2026, 09:00')->assertSee('Africa/Johannesburg time')->assertSee('60 minutes')->assertSee('Bring a statement.')
+            ->assertSee('Initial consultation')->assertSee('Mon 30 Nov 2026, 09:00')->assertSee('Africa/Johannesburg time')->assertSee('60 minutes')->assertDontSee('Bring a statement.')
             ->assertSee('value="Zodwa Secret"', false)->assertSee('value="zodwa@example.test"', false)->assertSee('name="start" value="'.self::START.'"', false)
             ->assertDontSee('I accept these terms');
     }
@@ -112,7 +112,7 @@ class CustomerBookingFlowTest extends TestCase
         $this->actingAs($this->customer);
         $back = $this->confirmUrl();
 
-        foreach ([['name' => ''], ['email' => 'nope'], ['reason' => str_repeat('x', 1501)], ['phone' => str_repeat('1', 41)], ['company' => str_repeat('c', 161)], ['start' => 'tomorrow'], ['type' => 'abc'], ['provider' => 'x']] as $bad) {
+        foreach ([['name' => ''], ['email' => 'nope'], ['reason' => str_repeat('x', 1501)], ['phone' => str_repeat('1', 41)], ['company' => str_repeat('c', 161)], ['start' => 'tomorrow'], ['type' => 'abc']] as $bad) {
             $this->from($back)->post(route('business.book.store', $this->team), $this->form($bad))->assertRedirect($back)->assertSessionHasErrors(array_key_first($bad));
         }
         $this->assertSame(0, Booking::count());

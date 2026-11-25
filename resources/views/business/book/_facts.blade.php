@@ -5,6 +5,8 @@
     <div><dt>Length</dt><dd>{{ $type->duration_minutes }} minutes</dd></div>
     <div><dt>Fee</dt><dd>{{ $fee }}</dd></div>
     <div><dt>Format</dt><dd>{{ \App\Models\AppointmentType::FORMATS[$type->meeting_format] ?? $type->meeting_format }}</dd></div>
-    @if ($type->location_note)<div><dt>{{ $type->meeting_format === 'in_person' ? 'Where' : 'How to join' }}</dt><dd>{!! nl2br(e($type->location_note)) !!}</dd></div>@endif
-    @if ($type->preparation)<div><dt>Preparation</dt><dd>{!! nl2br(e($type->preparation)) !!}</dd></div>@endif
+    {{-- Before someone has booked, only an in-person address is shown. How to join an online or phone appointment, and what to prepare, can carry a link, a
+         passcode or a door code, so they are shown only on the customer's own booking ($mine). --}}
+    @if ($type->location_note && (($mine ?? false) || $type->meeting_format === 'in_person'))<div><dt>{{ $type->meeting_format === 'in_person' ? 'Where' : 'How to join' }}</dt><dd>{!! nl2br(e($type->location_note)) !!}</dd></div>@endif
+    @if ($type->preparation && ($mine ?? false))<div><dt>Preparation</dt><dd>{!! nl2br(e($type->preparation)) !!}</dd></div>@endif
 </dl>

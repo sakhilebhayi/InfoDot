@@ -34,7 +34,7 @@
                 <dl class="ix-biz__facts">
                     <div><dt>When</dt><dd><time datetime="{{ $booking->starts_at->utc()->format('Y-m-d\TH:i:s\Z') }}" data-show="full">{{ $booking->starts_at->setTimezone($zone)->format('D j M Y, H:i') }}</time> <span class="ix-hint">{{ $zone->getName() }} time ({{ $booking->starts_at->setTimezone($zone)->format('T') }})</span></dd></div>
                 </dl>
-                @include('business.book._facts', ['type' => $type])
+                @include('business.book._facts', ['type' => $type, 'mine' => true])
                 <dl class="ix-biz__facts">
                     <div><dt>Name</dt><dd>{{ $booking->customer_name }}</dd></div>
                     <div><dt>Email</dt><dd>{{ $booking->customer_email }}</dd></div>

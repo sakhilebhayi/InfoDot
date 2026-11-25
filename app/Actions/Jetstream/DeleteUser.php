@@ -4,6 +4,7 @@ namespace App\Actions\Jetstream;
 
 use App\Models\Team;
 use App\Services\Participation\ParticipationClient;
+use App\Services\Privacy\BookingDataEraser;
 use App\Services\Privacy\SeminarDataEraser;
 use App\Services\Sso\BackchannelLogoutService;
 use Illuminate\Support\Collection;
@@ -61,6 +62,7 @@ class DeleteUser implements DeletesUsers
             $this->refuseWhileOthersDependOnTheirBusinesses($user);
 
             app(SeminarDataEraser::class)->erase($user);
+            app(BookingDataEraser::class)->erase($user);
             $this->deleteTeams($user);
             $user->deleteProfilePhoto();
             $user->tokens->each->delete();
