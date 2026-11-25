@@ -160,7 +160,7 @@ class BusinessAppointmentsController extends Controller
         $holding = in_array($booking->status, Booking::HOLDING, true);
         $started = $booking->starts_at->lte(now());
 
-        $events = BookingEvent::query()->where('team_id', $team->getKey())->where('details->booking_id', $booking->getKey())->with('actor:id,name')->orderBy('created_at')->orderBy('id')->get();
+        $events = BookingEvent::query()->where('team_id', $team->getKey())->where('booking_id', $booking->getKey())->with('actor:id,name')->orderBy('created_at')->orderBy('id')->get();
 
         $move = $this->date($request->query('move'), $zone);
         $slots = collect();

@@ -26,4 +26,14 @@ return [
      */
     'reminders' => ['customer_hours' => [24, 1], 'staff_hours' => [24]],
     'pending_hours' => 48,
+
+    /*
+     * Cost limits on the public calendar (R-63 phase 7). The calendar reads a business's whole schedule, so an anonymous crowd could make one small business
+     * expensive. A month's statuses and a day's slots are kept for a few seconds (a booking still re-checks the time under its lock, so a slightly old
+     * calendar can never double-book), and one business's calendar works out at most `team_views_per_minute` fresh answers a minute across all visitors (answers served from the kept copy are free).
+     */
+    'public' => ['cache_seconds' => (int) env('BOOKING_PUBLIC_CACHE_SECONDS', 20), 'team_views_per_minute' => 600],
+
+    /** How long the personal details on a booking are kept after the appointment ends; then they are removed and the appointment itself stays (POPIA). */
+    'retention_months' => 24,
 ];

@@ -7,9 +7,11 @@ use App\Models\Booking;
 use App\Services\Booking\BookingFeature;
 use App\Services\Booking\BookingRefused;
 use App\Services\Booking\Bookings;
+use App\Services\Privacy\BookingDataExporter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * A customer's own appointments (R-63 phase 3). A booking is found by its reference AND the signed-in person, so a reference that belongs to someone
@@ -33,6 +35,14 @@ class MyBookingsController extends Controller
         [$upcoming, $past] = $all->partition(fn (Booking $b) => $b->ends_at->gt(now()) && in_array($b->status, Booking::HOLDING, true));
 
         return view('my-bookings.index', ['upcoming' => $upcoming->values(), 'past' => $past->sortByDesc('starts_at')->values(), 'bookings' => $this->bookings]);
+    }
+
+    /** A copy of everything appointment booking holds about the signed-in person (POPIA section 23). Open whether or not the booking feature is on. */
+    public function export(): StreamedResponse
+    {
+        $payload = app(BookingDataExporter::class)->export($this->user());
+
+        return response()->streamDownload(fn () => print (json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)), 'my-booking-data.json', ['Content-Type' => 'application/json', 'Cache-Control' => 'no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     public function show(string $reference): View

@@ -4,6 +4,7 @@ namespace App\Services\Booking;
 
 use App\Models\AppointmentType;
 use App\Models\Booking;
+use App\Models\BookingProvider;
 use App\Models\BookingSetting;
 use App\Models\Team;
 use Carbon\CarbonImmutable;
@@ -125,17 +126,17 @@ class BookingReport
             $rows[$key($d)] ??= ['label' => $key($d), 'made' => 0, 'held' => 0];
         }
 
-        $held = $this->inRange($board, $first, $last, $typeId)->whereIn('status', self::TOOK_TIME)->select(['id', 'starts_at']);
-        foreach ($held->lazyById(1000) as $b) {
-            $rows[$key(CarbonImmutable::instance($b->starts_at)->setTimezone($zone)->startOfDay())]['held']++;
+        // Only the one timestamp of each row is read (no models), and the day it falls on in the business's zone is worked out here.
+        foreach ($this->inRange($board, $first, $last, $typeId)->whereIn('status', self::TOOK_TIME)->toBase()->pluck('starts_at') as $at) {
+            $rows[$key(CarbonImmutable::parse((string) $at, 'UTC')->setTimezone($zone)->startOfDay())]['held']++;
         }
 
-        $made = $board->query()->where('created_at', '>=', $first->utc())->where('created_at', '<', $last->addDay()->startOfDay()->utc())->select(['id', 'created_at']);
+        $made = $board->query()->where('created_at', '>=', $first->utc())->where('created_at', '<', $last->addDay()->startOfDay()->utc());
         if ($typeId !== null) {
             $made->where('appointment_type_id', $typeId);
         }
-        foreach ($made->lazyById(1000) as $b) {
-            $k = $key(CarbonImmutable::instance($b->created_at)->setTimezone($zone)->startOfDay());
+        foreach ($made->toBase()->pluck('created_at') as $at) {
+            $k = $key(CarbonImmutable::parse((string) $at, 'UTC')->setTimezone($zone)->startOfDay());
             if (isset($rows[$k])) {
                 $rows[$k]['made']++;
             }
@@ -162,9 +163,16 @@ class BookingReport
             return null;
         }
 
+        // Only time that was really on offer counts: not a provider who has since been switched off.
+        $query = $this->inRange($board, $first, $last, null)->whereIn('status', self::TOOK_TIME);
+        if ($providers === null) {
+            $active = BookingProvider::query()->where('team_id', $team->getKey())->where('active', true)->pluck('id')->all();
+            $query->where(fn ($q) => $q->whereNull('booking_provider_id')->orWhereIn('booking_provider_id', $active));
+        }
+
         $booked = 0;
-        foreach ($this->inRange($board, $first, $last, null)->whereIn('status', self::TOOK_TIME)->select(['id', 'starts_at', 'ends_at'])->lazyById(1000) as $b) {
-            $booked += (int) $b->starts_at->diffInMinutes($b->ends_at);
+        foreach ($query->toBase()->get(['starts_at', 'ends_at']) as $row) {
+            $booked += intdiv(strtotime((string) $row->ends_at.' UTC') - strtotime((string) $row->starts_at.' UTC'), 60);
         }
 
         return ['percent' => (int) min(100, round($booked / $offered * 100)), 'booked' => $booked, 'offered' => $offered];
