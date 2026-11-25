@@ -52,7 +52,7 @@
                 </span>
                 <span class="ix-attach__body">
                     <span class="ix-attach__name"><span x-text="it.name"></span> <small x-text="fmt(it.size)"></small></span>
-                    <span class="ix-attach__bar" x-show="it.xhr" aria-hidden="true"><span :style="'width:' + it.progress + '%'"></span></span>
+                    <span class="ix-attach__bar" x-show="it.xhr" role="progressbar" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="it.progress" :aria-valuetext="it.progress + '%'" :aria-label="'Uploading ' + it.name"><span :style="'width:' + it.progress + '%'"></span></span>
                     <span class="ix-error" x-show="it.error" x-text="it.error" role="alert"></span>
                     <input class="ix-input ix-attach__caption" type="text" maxlength="500" placeholder="Caption: what this shows"
                            aria-label="Attachment caption" x-show="it.uuid" x-model="it.caption" @input="sync()" :aria-label="'Caption for ' + it.name">

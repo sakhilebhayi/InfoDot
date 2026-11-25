@@ -53,7 +53,7 @@ class HomeController extends Controller
      * What the company in view has, in one place: the platforms it holds (and the person may open), its people, and what is still missing from its
      * page. Null for a personal workspace, where the page asks the person to set a company up instead.
      *
-     * @return array{platforms: list<array{key: string, name: string}>, switched_on: int, people: int, missing: list<string>, can_manage: bool}|null
+     * @return array{platforms: list<array{key: string, name: string}>, switched_on: int, switchable: int, people: int, missing: list<string>, essentials_total: int, can_manage: bool}|null
      */
     private function companySummary(User $user, ?Team $team): ?array
     {
@@ -62,21 +62,27 @@ class HomeController extends Controller
         }
 
         $profile = $team->profile()->first();
-        $missing = array_keys(array_filter([
+        $essentials = [
             'a description' => blank($profile?->description),
             'an industry' => blank($team->industry) || $team->industry === 'general',
             'a way to contact it' => blank($profile?->website) && blank($profile?->contact_email) && blank($profile?->contact_phone),
             'a logo' => ! $team->logo()->exists(),
-        ]));
+        ];
+        $missing = array_keys(array_filter($essentials));
 
         $rows = CompanyCatalogue::shared()->rows($user, $team);
+        $switchedOn = $rows->filter(fn (array $row) => $row['held'] === true && $row['state'] !== 'included')->count();
+        // The platforms a company can switch on for nothing today and does not hold yet, so "switched on of what it could have" is a real fraction.
+        $stillFree = $rows->filter(fn (array $row) => ! $row['held'] && in_array($row['state'], CompanyCatalogue::SWITCHABLE, true))->count();
 
         return [
             'platforms' => $rows->filter(fn (array $row) => $row['held'] === true && $row['open'] === true)->map(fn (array $row, string $key) => ['key' => $key, 'name' => (string) $row['name']])->values()->all(),
             // Platforms the company chose, beyond the free core every company has.
-            'switched_on' => $rows->filter(fn (array $row) => $row['held'] === true && $row['state'] !== 'included')->count(),
+            'switched_on' => $switchedOn,
+            'switchable' => $switchedOn + $stillFree,
             'people' => $team->allUsers()->count(),
             'missing' => $missing,
+            'essentials_total' => count($essentials),
             'can_manage' => $user->can('managePlatforms', $team),
         ];
     }

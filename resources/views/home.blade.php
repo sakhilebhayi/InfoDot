@@ -44,6 +44,12 @@
                             <a href="{{ route('onboarding.recommendations') }}">Choose your first platforms</a>.
                         @endif
                     </p>
+                    <div class="ix-prog-pair" data-company-progress>
+                        <x-progress.bar label="Company page essentials" :value="$company['essentials_total'] - count($company['missing'])" :max="$company['essentials_total']"
+                            :value-text="($company['essentials_total'] - count($company['missing'])).' of '.$company['essentials_total'].' in'" size="sm" :tone="$company['missing'] === [] ? 'ok' : null" />
+                        <x-progress.bar label="Platforms switched on" :value="$company['switched_on']" :max="$company['switchable']"
+                            :value-text="$company['switched_on'].' of '.$company['switchable'].' you can switch on'" size="sm" />
+                    </div>
                     @if ($company['missing'] !== [])
                         <p class="ix-hint">Still to add to the company page: {{ implode(', ', $company['missing']) }}. <a href="{{ route('business.edit', $team) }}">Edit the business page</a></p>
                     @endif
@@ -65,6 +71,7 @@
                         <button type="submit" class="ix-btn ix-btn--ghost ix-btn--sm">Put this away</button>
                     </form>
                 </div>
+                <x-progress.bar label="Getting started" :value="$doneCount" :max="count($gettingStarted)" :show-value="false" size="sm" :live="true" class="ix-start__bar" />
                 <ol class="ix-start__steps">
                     @foreach ($gettingStarted as $i => $step)
                         <li @class(['is-done' => $step['done']]) data-step="{{ $step['key'] }}">
