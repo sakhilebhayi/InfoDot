@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Team;
+use App\Services\Growth\OnboardingEvents;
 use App\Services\Platforms\EntitlementRefused;
 use App\Services\Platforms\Entitlements;
 use App\Services\Platforms\PlatformAccess;
@@ -53,6 +54,8 @@ class PlatformAccessController extends Controller
         } catch (EntitlementRefused $e) {
             return redirect()->route('platform.access', ['platform' => $platform])->with('status', $e->getMessage());
         }
+
+        app(OnboardingEvents::class)->record($user, 'platform_activated', $team);
 
         return $this->onward($request, $platform, $redirect);
     }

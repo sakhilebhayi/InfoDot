@@ -39,17 +39,20 @@ use App\Services\Web\SafeFetcher;
 use App\Support\CanonicalUrl;
 use App\Support\Input;
 use App\Support\PlatformSecret;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
+use Laravel\Jetstream\Events\TeamMemberAdded;
 use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
@@ -119,6 +122,26 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Verified::class, function (Verified $e): void {
             if ($e->user instanceof User) {
                 app(OnboardingEvents::class)->record($e->user, 'email_verified');
+            }
+        });
+
+        // R-62 phase 6: a completed sign-in is a step, and the day it happened is kept so that "came back" can be counted. Recording never stops a sign-in.
+        Event::listen(Login::class, function (Login $e): void {
+            if (! $e->user instanceof User) {
+                return;
+            }
+            try {
+                DB::table('user_login_days')->insertOrIgnore(['user_id' => $e->user->getAuthIdentifier(), 'day' => now()->toDateString()]);
+                app(OnboardingEvents::class)->record($e->user, 'login_completed');
+            } catch (\Throwable $x) {
+                report($x);
+            }
+        });
+
+        // R-62 phase 6: someone who joined a company by accepting an invitation or using a link.
+        Event::listen(TeamMemberAdded::class, function (TeamMemberAdded $e): void {
+            if ($e->user instanceof User && $e->team instanceof Team) {
+                app(OnboardingEvents::class)->record($e->user, 'company_joined', $e->team);
             }
         });
 
