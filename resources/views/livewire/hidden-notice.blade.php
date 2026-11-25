@@ -12,7 +12,7 @@
                 @if ($appeal === null)
                     <form wire:submit="fileAppeal" class="ix-hidden__form">
                         <label for="appeal-{{ $kind }}-{{ $itemId }}">Appeal this decision</label>
-                        <textarea id="appeal-{{ $kind }}-{{ $itemId }}" wire:model="appealText" rows="4" maxlength="1000" required
+                        <textarea class="ix-textarea" id="appeal-{{ $kind }}-{{ $itemId }}" wire:model="appealText" rows="4" maxlength="1000" required
                                   placeholder="Tell the moderators what they missed."></textarea>
                         <p class="ix-hint">You can appeal once. A different moderator will decide and you will see the outcome here and on your profile.</p>
                         @error('appealText') <p class="ix-error" role="alert">{{ $message }}</p> @enderror

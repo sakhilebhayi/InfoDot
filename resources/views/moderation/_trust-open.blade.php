@@ -6,7 +6,7 @@
     @isset($conflictId)<input type="hidden" name="conflict_id" value="{{ $conflictId }}">@endisset
     <div class="ix-field">
         <label class="ix-label" for="concern">Concern</label>
-        <select id="concern" name="concern" class="ix-input">@foreach (\App\Models\BusinessInvestigation::CONCERNS as $k => $l)<option value="{{ $k }}" @selected(($concern ?? null) === $k)>{{ $l }}</option>@endforeach</select>
+        <select id="concern" name="concern" class="ix-select">@foreach (\App\Models\BusinessInvestigation::CONCERNS as $k => $l)<option value="{{ $k }}" @selected(($concern ?? null) === $k)>{{ $l }}</option>@endforeach</select>
     </div>
     <div class="ix-field"><label class="ix-label" for="summary">What is being investigated (reviewers only)</label><textarea id="summary" name="summary" class="ix-textarea" rows="3" minlength="10" maxlength="3000" required></textarea></div>
     <label class="ix-choice__chk"><input type="checkbox" name="restrict" value="1"> Take the business out of the directory while this is investigated</label>

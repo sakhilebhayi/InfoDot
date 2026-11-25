@@ -31,7 +31,7 @@
                 @csrf
                 <div class="ix-field">
                     <label class="ix-label" for="licence-quantity">How many licences</label>
-                    <input id="licence-quantity" class="ix-input" type="number" name="quantity" min="1" max="{{ $max }}" step="1" inputmode="numeric" value="{{ $quantity }}" required style="max-width: 160px;">
+                    <input id="licence-quantity" class="ix-input ix-input--narrow" type="number" name="quantity" min="1" max="{{ $max }}" step="1" inputmode="numeric" value="{{ $quantity }}" required>
                     <p class="ix-hint">Buying several at once is one purchase with one renewal date. Up to {{ $max }} online.</p>
                 </div>
 

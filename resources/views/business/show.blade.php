@@ -404,7 +404,7 @@
                             <form method="post" action="{{ route('business.save', $team) }}" class="ix-form ix-saveform">
                                 @csrf
                                 <label class="ix-label" for="collection_id">To a collection</label>
-                                <select class="ix-input" id="collection_id" name="collection_id">
+                                <select class="ix-select" id="collection_id" name="collection_id">
                                     @foreach ($collections as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach
                                     <option value="">A new collection…</option>
                                 </select>

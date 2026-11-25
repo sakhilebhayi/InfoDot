@@ -78,7 +78,7 @@
                         @csrf
                         <div class="ix-field">
                             <label class="ix-label" for="kind">“{{ $c->subject?->name }}” is a…</label>
-                            <select id="kind" name="kind" class="ix-input">@foreach ($kinds as $key => $label)<option value="{{ $key }}">{{ $label }}</option>@endforeach</select>
+                            <select id="kind" name="kind" class="ix-select">@foreach ($kinds as $key => $label)<option value="{{ $key }}">{{ $label }}</option>@endforeach</select>
                         </div>
                         <div class="ix-field"><label class="ix-label" for="note-relate">How you know (reviewers only)</label><textarea id="note-relate" name="note" class="ix-textarea" rows="2" minlength="10" maxlength="2000" required></textarea></div>
                         <div><button type="submit" class="ix-btn ix-btn--primary">Record as related</button></div>

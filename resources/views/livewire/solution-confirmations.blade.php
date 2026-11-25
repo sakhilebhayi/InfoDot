@@ -45,7 +45,7 @@
             </div>
             <div class="ix-field">
                 <label class="ix-label" for="fb-recommend">Would you recommend it?</label>
-                <select class="ix-select ix-input" id="fb-recommend" wire:model="feedback.recommend">
+                <select class="ix-select" id="fb-recommend" wire:model="feedback.recommend">
                     <option value="">Rather not say</option>
                     <option value="yes">Yes</option>
                     <option value="no">No</option>

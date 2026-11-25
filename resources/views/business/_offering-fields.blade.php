@@ -2,7 +2,7 @@
 <div class="ix-form__row"><label class="ix-label" for="o_name_{{ $sfx }}">Name</label><input class="ix-input" id="o_name_{{ $sfx }}" name="name" minlength="2" maxlength="120" required value="{{ $s ? $s->name : old('name') }}" placeholder="For example: Monthly bookkeeping"></div>
 <div class="ix-form__row">
     <label class="ix-label" for="o_kind_{{ $sfx }}">It is a</label>
-    <select class="ix-input" id="o_kind_{{ $sfx }}" name="kind">
+    <select class="ix-select" id="o_kind_{{ $sfx }}" name="kind">
         @foreach (\App\Models\BusinessService::KINDS as $value => $label)
             <option value="{{ $value }}" @selected(($s ? $s->kind : old('kind', 'service')) === $value)>{{ mb_strtolower($label) }}</option>
         @endforeach

@@ -41,13 +41,7 @@
 
 
         <div class="ix-field">
-            <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
-                <input type="checkbox" name="publish" value="1" style="margin-top:3px" @checked(old('publish'))>
-                <span>
-                    <span class="ix-label" style="margin:0">Publish to the public community</span>
-                    <span class="ix-hint" style="display:block;margin-top:2px">Off by default: only your company can see this. Turn it on to let every signed-in person, and signed-out visitors through search, read it. Do not publish anything confidential.</span>
-                </span>
-            </label>
+            <x-form.checkbox name="publish" label="Publish to the public community" :checked="(bool) old('publish')" hint="Off by default: only your company can see this. Turn it on to let every signed-in person, and signed-out visitors through search, read it. Do not publish anything confidential." />
         </div>
 
         <div class="ix-actions">

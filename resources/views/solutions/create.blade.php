@@ -49,7 +49,7 @@
                 </div>
                 <div class="ix-field">
                     <label class="ix-label" for="duration_type">Unit</label>
-                    <select class="ix-select ix-input" name="duration_type" id="duration_type">
+                    <select class="ix-select" name="duration_type" id="duration_type">
                         @foreach (['hours' => 'Hours', 'days' => 'Days', 'weeks' => 'Weeks', 'months' => 'Months', 'years' => 'Years', 'infinite' => 'Unknown'] as $v => $label)
                             <option value="{{ $v }}" @selected(old('duration_type', 'hours') === $v)>{{ $label }}</option>
                         @endforeach
@@ -71,7 +71,7 @@
                             </div>
                             <div class="ix-field">
                                 <label class="ix-label" :for="'body-' + i">What to do</label>
-                                <textarea class="ix-textarea" style="min-height:88px" name="solution_body[]" :id="'body-' + i" x-model="step.b" required></textarea>
+                                <textarea class="ix-textarea ix-textarea--short" name="solution_body[]" :id="'body-' + i" x-model="step.b" required></textarea>
                             </div>
                             @include('attachments._uploader', [
                                 'idPrefix' => 'sol-step',
@@ -104,13 +104,7 @@
             @error('step_attachments.*.*.uuid')<p class="ix-error" role="alert">{{ $message }}</p>@enderror
 
             <div class="ix-field">
-                <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer">
-                    <input type="checkbox" name="publish" value="1" style="margin-top:3px" @checked(old('publish'))>
-                    <span>
-                        <span class="ix-label" style="margin:0">Publish to the public community</span>
-                        <span class="ix-hint" style="display:block;margin-top:2px">Off by default: only your company can see this. Turn it on to let every signed-in person, and signed-out visitors through search, read it. Do not publish anything confidential.</span>
-                    </span>
-                </label>
+                <x-form.checkbox name="publish" label="Publish to the public community" :checked="(bool) old('publish')" hint="Off by default: only your company can see this. Turn it on to let every signed-in person, and signed-out visitors through search, read it. Do not publish anything confidential." />
             </div>
 
             <div class="ix-actions">

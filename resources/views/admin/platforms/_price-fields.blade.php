@@ -10,7 +10,7 @@
     </div>
     <div class="ix-field">
         <label class="ix-label" for="{{ $p }}-interval">Repeats</label>
-        <select id="{{ $p }}-interval" name="interval" class="ix-input ix-select">
+        <select id="{{ $p }}-interval" name="interval" class="ix-select">
             <option value="" @selected(old('interval', $of?->interval) === null)>Does not repeat</option>
             <option value="month" @selected(old('interval', $of?->interval) === 'month')>Every month</option>
             <option value="year" @selected(old('interval', $of?->interval) === 'year')>Every year</option>

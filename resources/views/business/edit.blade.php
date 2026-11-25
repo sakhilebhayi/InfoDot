@@ -63,7 +63,7 @@
 
                     <div class="ix-form__row">
                         <label class="ix-label" for="business_type">Type of business</label>
-                        <select class="ix-input" id="business_type" name="business_type">
+                        <select class="ix-select" id="business_type" name="business_type">
                             <option value="">Not stated</option>
                             @foreach (\App\Models\TeamProfile::BUSINESS_TYPES as $value => $label)
                                 <option value="{{ $value }}" @selected(old('business_type', $profile->business_type) === $value)>{{ $label }}</option>

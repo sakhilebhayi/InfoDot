@@ -149,7 +149,7 @@
                                     <summary class="ix-btn ix-btn--danger">Withdraw</summary>
                                     <form wire:submit="withdraw({{ $entry->id }})" class="ix-mod__form">
                                         <label for="withdraw-{{ $entry->id }}">Why is it withdrawn?</label>
-                                        <textarea id="withdraw-{{ $entry->id }}" wire:model="withdrawReasons.{{ $entry->id }}" rows="3" maxlength="1000" required></textarea>
+                                        <textarea class="ix-textarea" id="withdraw-{{ $entry->id }}" wire:model="withdrawReasons.{{ $entry->id }}" rows="3" maxlength="1000" required></textarea>
                                         <p class="ix-hint">It leaves the library and the points the adoption earned its author are taken back.</p>
                                         @error('withdrawReasons.'.$entry->id) <p class="ix-error" role="alert">{{ $message }}</p> @enderror
                                         <button type="submit" class="ix-btn ix-btn--danger">Withdraw it</button>

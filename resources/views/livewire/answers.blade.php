@@ -60,7 +60,7 @@
             @if ($reporting === $answer->id)
                 <form wire:submit="report" class="ix-answer__report" x-init="$nextTick(() => $refs.reason.focus())">
                     <label for="reason-{{ $answer->id }}">What is wrong with it?</label>
-                    <select id="reason-{{ $answer->id }}" x-ref="reason" wire:model="reason">
+                    <select class="ix-select" id="reason-{{ $answer->id }}" x-ref="reason" wire:model="reason">
                         <option value="spam">Spam</option>
                         <option value="duplicate">Duplicate of another answer</option>
                         <option value="low_quality">Not a real answer</option>
@@ -87,7 +87,7 @@
         <form wire:submit="publish" class="ix-answerform">
             <label for="answer-body">Your answer</label>
             <x-mention-box payload-model="mentionsPayload" clear-event="answer-attachments-clear">
-                <textarea id="answer-body" wire:model="body" rows="6" maxlength="10000"
+                <textarea class="ix-textarea" id="answer-body" wire:model="body" rows="6" maxlength="10000"
                           placeholder="What did you do, what happened, and what would you do differently? Steps and numbers help."></textarea>
             </x-mention-box>
             @error('body') <p class="ix-error" role="alert">{{ $message }}</p> @enderror

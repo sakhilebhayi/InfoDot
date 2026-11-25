@@ -25,7 +25,7 @@
                         </div>
                         <div class="ix-field">
                             <label class="ix-label" for="model">Kind of plan</label>
-                            <select id="model" name="model" class="ix-input ix-select" required>
+                            <select id="model" name="model" class="ix-select" required>
                                 @foreach ($models as $value => $text)<option value="{{ $value }}" @selected(old('model', $plan->model) === $value)>{{ $text }}</option>@endforeach
                             </select>
                         </div>

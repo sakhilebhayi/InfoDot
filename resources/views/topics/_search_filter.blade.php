@@ -3,7 +3,7 @@
     <label for="results-search">Words</label>
     <input id="results-search" type="search" name="search" value="{{ $searchTerm }}" class="ix-input" autocomplete="off">
     <label for="results-topic">Topic</label>
-    <select id="results-topic" name="topic" class="ix-input ix-select">
+    <select id="results-topic" name="topic" class="ix-select">
         <option value="">Any topic</option>
         @foreach ($topicChoices as $choice)
             <option value="{{ $choice->slug }}" @selected($topicSlug === $choice->slug)>{{ $choice->name }}</option>

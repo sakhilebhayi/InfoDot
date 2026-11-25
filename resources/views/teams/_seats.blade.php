@@ -92,7 +92,7 @@
                                         <form method="get" action="{{ route('licences.confirm', ['team' => $team->uuid, 'action' => 'reduce']) }}" class="ix-actions">
                                             <input type="hidden" name="batch" value="{{ $b->uuid }}">
                                             <label class="ix-hint" for="q-{{ $b->id }}" style="margin:0">{{ __('Renew as') }}</label>
-                                            <input id="q-{{ $b->id }}" class="ix-input" type="number" name="quantity" min="1" max="{{ $b->quantity - 1 }}" value="{{ $b->quantity - 1 }}" style="width: 88px;">
+                                            <input id="q-{{ $b->id }}" class="ix-input ix-input--tiny" type="number" name="quantity" min="1" max="{{ $b->quantity - 1 }}" value="{{ $b->quantity - 1 }}">
                                             <button class="ix-btn ix-btn--sm" type="submit">{{ __('Reduce at renewal') }}</button>
                                         </form>
                                     @endif
@@ -121,7 +121,7 @@
                                         <form method="get" action="{{ route('licences.confirm', ['team' => $team->uuid, 'action' => 'reassign']) }}" class="ix-actions">
                                             <input type="hidden" name="user" value="{{ $p['user']->getKey() }}">
                                             <label class="ix-hint" for="to-{{ $p['user']->getKey() }}" style="margin:0">{{ __('Move it to') }}</label>
-                                            <select id="to-{{ $p['user']->getKey() }}" class="ix-select" name="to" style="width:auto;max-width:100%">
+                                            <select id="to-{{ $p['user']->getKey() }}" class="ix-select ix-select--auto" name="to">
                                                 @foreach ($without as $w)<option value="{{ $w['user']->getKey() }}">{{ $w['user']->name }}</option>@endforeach
                                             </select>
                                             <button class="ix-btn ix-btn--sm" type="submit">{{ __('Move') }}</button>

@@ -105,7 +105,7 @@
                     @csrf
                     <div class="ix-field">
                         <label class="ix-label" for="rating">How was it?</label>
-                        <select class="ix-input ix-select" id="rating" name="rating" required>
+                        <select class="ix-select" id="rating" name="rating" required>
                             @foreach ([5 => 'Excellent', 4 => 'Good', 3 => 'Fine', 2 => 'Poor', 1 => 'Not useful'] as $v => $l)
                                 <option value="{{ $v }}" @selected(($myFeedback->rating ?? null) === $v)>{{ $v }} — {{ $l }}</option>
                             @endforeach
@@ -130,7 +130,7 @@
                 <label class="ix-label" for="rp-name">Their name as it shows in the room or chat</label>
                 <input class="ix-input" id="rp-name" name="about_name" type="text" maxlength="60" required>
                 <label class="ix-label" for="rp-reason">What happened</label>
-                <select class="ix-input" id="rp-reason" name="reason" required>
+                <select class="ix-select" id="rp-reason" name="reason" required>
                     @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select>
                 <label class="ix-label" for="rp-detail">Tell the moderators more (optional)</label>
@@ -146,7 +146,7 @@
             <summary>Report this seminar</summary>
             <form method="POST" action="{{ route('seminars.report', $seminar) }}" class="ix-form" style="margin-top: 8px; max-width: 480px;">@csrf
                 <label class="ix-label" for="report-reason">What is wrong with it</label>
-                <select class="ix-input" id="report-reason" name="reason" required>
+                <select class="ix-select" id="report-reason" name="reason" required>
                     @foreach (\App\Models\SeminarReport::REASONS as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                 </select>
                 <label class="ix-label" for="report-detail">Tell the moderators more (optional)</label>
@@ -209,7 +209,7 @@
                                         @if (in_array($p->payment_status, ['paid', 'partially_refunded'], true) && $p->dispute_status !== 'open' && $p->refundableCents() > 0)
                                             <form method="POST" action="{{ route('seminars.refund', [$seminar, $p->user_id]) }}" style="display: flex; gap: 6px; margin-top: 6px;" data-confirm="Refund this amount to the attendee? This cannot be undone.">@csrf
                                                 <label class="ix-sr" for="rf-{{ $p->id }}">Refund amount in rand</label>
-                                                <input class="ix-input" id="rf-{{ $p->id }}" name="amount" type="text" inputmode="decimal" placeholder="{{ number_format($p->refundableCents() / 100, 2, '.', '') }}" style="width: 110px;">
+                                                <input class="ix-input ix-input--amount" id="rf-{{ $p->id }}" name="amount" type="text" inputmode="decimal" placeholder="{{ number_format($p->refundableCents() / 100, 2, '.', '') }}">
                                                 <button class="ix-btn ix-btn--sm" type="submit">Refund</button>
                                             </form>
                                         @endif

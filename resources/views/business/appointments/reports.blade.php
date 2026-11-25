@@ -17,7 +17,7 @@
         <label class="ix-label" for="to">To</label>
         <input class="ix-input" id="to" name="to" type="date" value="{{ $report['to'] }}">
         <label class="ix-label" for="type">Appointment type</label>
-        <select class="ix-input" id="type" name="type">
+        <select class="ix-select" id="type" name="type">
             <option value="">All types</option>
             @foreach ($types as $t)
                 <option value="{{ $t->id }}" @selected($typeId === $t->id)>{{ $t->name }}</option>
