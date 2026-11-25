@@ -91,6 +91,12 @@
     /* Control sizes: compact with a mouse, thumb-sized on a touch screen (WCAG 2.5.8 target size, 44 px). */
     --ix-field-h: 36px;
     --ix-field-h-sm: 30px;
+
+    /* Field finish (R-64 phase 3), taken from the header search: the same 2px gold ring at the edge, a surface that lifts to white on focus. On a light
+       panel a gold ring alone is too faint, so the border also darkens to the ink colour while a field is focused. */
+    --ix-ring: #f0bc2e;
+    --ix-field-bg-focus: #fff;
+    --ix-field-bg-off: var(--ix-sunken);
 }
 
 @media (pointer: coarse) {
@@ -144,6 +150,7 @@
         --ix-warn: #e0a24a;
         --ix-warn-wash: rgba(224, 162, 74, 0.14);
         --ix-danger: #ff8a80;
+        --ix-field-bg-focus: #1d2428;
     }
 }
 
@@ -558,10 +565,6 @@ button.ix-avatar {
     font-size: var(--dot-text-body-sm-size);
 }
 
-.ix-field {
-    display: block;
-}
-
 .ix-label {
     display: block;
     margin-bottom: 6px;
@@ -576,25 +579,19 @@ button.ix-avatar {
     color: var(--ix-text-3);
 }
 
-.ix-error {
-    margin-top: 6px;
-    font-size: var(--dot-text-body-sm-size);
-    font-weight: 600;
-    color: var(--ix-danger);
-}
-
 .ix-input,
 .ix-textarea,
 .ix-select {
     display: block;
     width: 100%;
+    min-width: 0;
     padding: 8px 12px;
     border: 1px solid var(--ix-rule-strong);
     border-radius: var(--ix-radius-sm);
-    background: var(--ix-panel);
+    background-color: var(--ix-panel);
     color: var(--ix-text);
     font: 400 var(--dot-text-body-sm-size)/1.5 var(--ix-font);
-    transition: border-color var(--ix-dur-fast) var(--ix-ease), box-shadow var(--ix-dur-fast) var(--ix-ease);
+    transition: border-color var(--ix-dur-fast) var(--ix-ease), background-color var(--ix-dur-fast) var(--ix-ease);
 }
 
 .ix-input {
@@ -605,12 +602,15 @@ button.ix-avatar {
 
 .ix-textarea {
     min-height: 120px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     resize: vertical;
 }
 
 .ix-input::placeholder,
 .ix-textarea::placeholder {
     color: var(--ix-text-3);
+    opacity: 1;
 }
 
 .ix-input:hover,
@@ -619,17 +619,258 @@ button.ix-avatar {
     border-color: var(--ix-text-3);
 }
 
+/* Focus: the border takes the ink colour and the surface lifts; the gold ring shows for keyboard focus and for every text field. */
 .ix-input:focus,
 .ix-textarea:focus,
 .ix-select:focus {
     outline: none;
-    border-color: var(--ix-signal);
-    box-shadow: 0 0 0 3px var(--ix-signal-wash);
+    border-color: var(--ix-text);
+    background-color: var(--ix-field-bg-focus);
 }
 
+.ix-input:focus-visible,
+.ix-textarea:focus-visible,
+.ix-select:focus-visible {
+    outline: 2px solid var(--ix-ring);
+    outline-offset: 0;
+}
+
+/* Invalid: a red border, and the message under the field says what to do (never colour alone). Works on selects as well. */
 .ix-input[aria-invalid='true'],
-.ix-textarea[aria-invalid='true'] {
+.ix-textarea[aria-invalid='true'],
+.ix-select[aria-invalid='true'] {
     border-color: var(--ix-danger);
+}
+
+.ix-input.is-valid,
+.ix-textarea.is-valid,
+.ix-select.is-valid {
+    border-color: var(--ix-ok);
+}
+
+/* Read-only: the value can be selected and copied but not changed, so it sits flat and plain. Disabled: dimmed and not clickable. Loading: wait cursor. */
+.ix-input[readonly],
+.ix-textarea[readonly] {
+    border-style: dashed;
+    background-color: var(--ix-field-bg-off);
+}
+
+.ix-input:disabled,
+.ix-textarea:disabled,
+.ix-select:disabled {
+    border-color: var(--ix-rule);
+    background-color: var(--ix-field-bg-off);
+    color: var(--ix-text-3);
+    cursor: not-allowed;
+}
+
+.ix-input[aria-busy='true'],
+.ix-textarea[aria-busy='true'],
+.ix-select[aria-busy='true'] {
+    cursor: progress;
+}
+
+/* Selects: one look, whether the class is ix-select or ix-input. The arrow is drawn with two gradients (no image file), and sits clear of the text. */
+.ix-select,
+select.ix-input {
+    height: var(--ix-field-h);
+    padding: 0 36px 0 12px;
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ix-text-2) 50%), linear-gradient(135deg, var(--ix-text-2) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    text-overflow: ellipsis;
+}
+
+.ix-select[multiple],
+.ix-select[size]:not([size='1']),
+select.ix-input[multiple] {
+    height: auto;
+    padding: 6px 12px;
+    background-image: none;
+}
+
+/* Date, time and file controls keep the browser's own picker but take the field's finish. */
+.ix-input[type='date'],
+.ix-input[type='time'],
+.ix-input[type='datetime-local'],
+.ix-input[type='month'] {
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.ix-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.ix-input[type='file'] {
+    padding: 0 12px 0 0;
+    line-height: calc(var(--ix-field-h) - 2px);
+    color: var(--ix-text-2);
+}
+
+.ix-input[type='file']::file-selector-button {
+    height: calc(var(--ix-field-h) - 2px);
+    margin: 0 12px 0 0;
+    padding: 0 14px;
+    border: 0;
+    border-right: 1px solid var(--ix-rule-strong);
+    background: var(--ix-sunken);
+    color: var(--ix-text);
+    font: 600 var(--dot-text-body-sm-size)/1 var(--ix-font);
+    cursor: pointer;
+}
+
+/* The field component: label, control, then one reserved line for the hint or the error, so a message appearing never moves anything below it. */
+.ix-field {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+    min-width: 0;
+}
+
+.ix-field > .ix-label,
+.ix-field > .ix-hint,
+.ix-field > .ix-error {
+    margin: 0;
+}
+
+/* The reserved line under each field already gives the rhythm, so the form's own row gap is smaller where it is used. */
+.ix-form:has(.ix-field__foot) {
+    gap: 10px;
+}
+
+.ix-label__flag {
+    margin-left: 8px;
+    font-weight: 400;
+    color: var(--ix-text-3);
+}
+
+.ix-field__foot {
+    min-height: calc(var(--dot-text-body-sm-size) * 1.5);
+}
+
+.ix-field__foot .ix-hint,
+.ix-field__foot .ix-error {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.ix-field__foot .ix-error {
+    font-weight: 600;
+}
+
+/* Tick boxes and radios: one size, one edge, one focus ring, with the label as the target. The tick itself is drawn by the forms reset. */
+.ix [type='checkbox'],
+.ix [type='radio'] {
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background-color: var(--ix-panel);
+    cursor: pointer;
+    flex: none;
+    transition: background-color var(--ix-dur-fast) var(--ix-ease), border-color var(--ix-dur-fast) var(--ix-ease);
+}
+
+.ix [type='radio'] {
+    border-radius: 50%;
+}
+
+.ix [type='checkbox']:hover:not(:disabled),
+.ix [type='radio']:hover:not(:disabled) {
+    border-color: var(--ix-text);
+}
+
+.ix [type='checkbox']:focus-visible,
+.ix [type='radio']:focus-visible,
+.ix-switch:focus-visible {
+    outline: 2px solid var(--ix-ring);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+.ix [type='checkbox']:checked,
+.ix [type='radio']:checked {
+    border-color: var(--ix-check);
+}
+
+.ix [type='checkbox']:checked,
+.ix [type='radio']:checked {
+    background-color: var(--ix-check);
+}
+
+.ix [type='checkbox']:disabled,
+.ix [type='radio']:disabled {
+    background-color: var(--ix-field-bg-off);
+    border-color: var(--ix-rule);
+    cursor: not-allowed;
+}
+
+.ix [type='checkbox']:disabled:checked,
+.ix [type='radio']:disabled:checked {
+    opacity: 0.55;
+}
+
+.ix [type='checkbox'][aria-invalid='true'],
+.ix [type='radio'][aria-invalid='true'] {
+    border-color: var(--ix-danger);
+}
+
+/* The switch: a checkbox that takes effect at once, marked role="switch". The knob is a gradient that slides, so it needs no extra markup. */
+.ix .ix-switch {
+    appearance: none;
+    width: 40px;
+    height: 22px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: 999px;
+    background-color: var(--ix-sunken);
+    background-image: radial-gradient(circle, #fff 7px, transparent 8px);
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+    background-position: 1px 50%;
+    cursor: pointer;
+    transition: background-color var(--ix-dur-fast) var(--ix-ease), background-position var(--ix-dur-base) var(--ix-ease), border-color var(--ix-dur-fast) var(--ix-ease);
+}
+
+.ix .ix-switch:checked {
+    border-color: var(--ix-check);
+    background-color: var(--ix-check);
+    background-image: radial-gradient(circle, #fff 7px, transparent 8px);
+    background-position: calc(100% - 1px) 50%;
+}
+
+.ix .ix-switch:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* A checkbox, radio or switch with its words: the whole row is the target, 44px on a touch screen. */
+.ix-check {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 4px 10px;
+    align-items: start;
+    min-height: var(--ix-field-h);
+    padding: 8px 0;
+    cursor: pointer;
+}
+
+.ix-check > input {
+    margin-top: 1px;
+}
+
+.ix-check__text {
+    display: grid;
+    gap: 2px;
+    font-size: var(--dot-text-body-sm-size);
+    color: var(--ix-text);
+}
+
+.ix-check__text .ix-hint {
+    margin: 0;
 }
 
 /* ---------------------------------------------------------------- menus */
@@ -6671,7 +6912,6 @@ body {
 /* Search bars never show the blue form-field ring: the box itself lifts and its border darkens (the hero), or its own gold outline shows (the top bar). */
 .ix-topicbar .ix-input[type='search']:focus,
 .ix-topicbar .ix-input[type='search']:focus-visible {
-    outline: none;
     border-color: var(--ix-text);
     box-shadow: none;
 }
@@ -6679,13 +6919,26 @@ body {
 /* The Tailwind forms plugin draws a blue border and a blue 1px ring on every focused input[type=search]. Search fields here never show it: the field
    keeps its own look, and the hero box carries the focus (it lifts and darkens its border). The header pill (.dsr-input, dot-ui) is left out: it draws
    its own gold ring, which this rule's weight would otherwise remove (R-52). */
-.ix input[type='search']:not(.dsr-input):focus,
-.ix input[type='search']:not(.dsr-input):focus-visible {
-    outline: none;
+.ix input[type='search']:not(.dsr-input):not(.lp-search__input):focus,
+.ix input[type='search']:not(.dsr-input):not(.lp-search__input):focus-visible {
     border-color: var(--ix-text);
     box-shadow: none;
     --tw-ring-shadow: 0 0 #0000;
     --tw-ring-color: transparent;
+}
+
+.ix input[type='search']:not(.dsr-input):not(.lp-search__input):focus:not(:focus-visible) {
+    outline: none;
+}
+
+.ix input[type='search']:not(.dsr-input):not(.lp-search__input):focus-visible {
+    outline: 2px solid var(--ix-ring);
+    outline-offset: 0;
+}
+
+.ix .lp-search .lp-search__input:focus,
+.ix .lp-search .lp-search__input:focus-visible {
+    outline: none;
 }
 
 .ix .lp-search .lp-search__input:focus,
