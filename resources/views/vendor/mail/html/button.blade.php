@@ -18,6 +18,11 @@
 </table>
 </td>
 </tr>
+<tr>
+<td align="{{ $align }}">
+<p class="button-fallback">If the button does not work, copy this link into your browser:<br><a href="{{ $url }}">{{ $url }}</a></p>
+</td>
+</tr>
 </table>
 </td>
 </tr>

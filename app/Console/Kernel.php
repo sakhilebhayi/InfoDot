@@ -5,6 +5,8 @@ namespace App\Console;
 use App\Services\Ops\OpsCheck;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class Kernel extends ConsoleKernel
 {
@@ -50,6 +52,11 @@ class Kernel extends ConsoleKernel
         $schedule->command('seminars:remind')->everyTenMinutes()->withoutOverlapping(30)->onOneServer();
         // R-63: appointment reminders and the release of requests nobody answered.
         $schedule->command('booking:remind')->everyTenMinutes()->withoutOverlapping(30)->onOneServer();
+        // R-64 phase 7: with a real queue (QUEUE_CONNECTION=database), a worker started every minute by the scheduler works through what is waiting and stops
+        // when the queue is empty, so no always-on process is needed. It also runs while rows are still waiting after the setting went back to "sync", so
+        // nothing queued earlier is stranded. With the default "sync" queue and an empty table there is nothing to do.
+        $schedule->command('queue:work database --stop-when-empty --max-time=50 --tries=3')->everyMinute()->withoutOverlapping(10)->onOneServer()->runInBackground()
+            ->when(fn () => config('queue.default') !== 'sync' || (Schema::hasTable('jobs') && DB::table('jobs')->exists()));
         $schedule->command('booking:retention')->dailyAt('03:40')->withoutOverlapping(30)->onOneServer();
         $schedule->command('booking:expire-pending')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:award-hosts')->everyThirtyMinutes()->withoutOverlapping(30)->onOneServer();

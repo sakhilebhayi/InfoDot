@@ -4,8 +4,8 @@
 <title>{{ config('app.name') }}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta name="color-scheme" content="light">
-<meta name="supported-color-schemes" content="light">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
 <style>
 @media only screen and (max-width: 600px) {
 .inner-body {
@@ -21,6 +21,19 @@ width: 100% !important;
 .button {
 width: 100% !important;
 }
+}
+
+/* Dark mode: clients that honour it get the yard's night colours; the gold button and links keep their contrast on either ground. */
+@media (prefers-color-scheme: dark) {
+body, .wrapper, .body { background-color: #111517 !important; }
+.inner-body { background-color: #191f22 !important; border-color: #2b3438 !important; }
+.content-cell, .content-cell p, .content-cell li, .table td { color: #d4dadd !important; }
+h1, h2, h3, .content-cell strong { color: #f1f3f3 !important; }
+.subcopy { border-top-color: #2b3438 !important; }
+.subcopy p, .footer p, .footer a, .button-fallback, .button-fallback a { color: #8d989d !important; }
+.panel-content { background-color: #20272a !important; color: #d4dadd !important; }
+.panel-content p { color: #d4dadd !important; }
+.header { background-color: #0b0e0f !important; }
 }
 </style>
 {!! $head ?? '' !!}
