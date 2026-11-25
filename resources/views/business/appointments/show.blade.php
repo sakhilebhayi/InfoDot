@@ -63,7 +63,7 @@
                 <div><dt>Name</dt><dd>{{ $booking->customer_name }}</dd></div>
                 <div><dt>Email</dt><dd><a href="mailto:{{ rawurlencode($booking->customer_email) }}">{{ $booking->customer_email }}</a></dd></div>
                 @if ($booking->customer_phone)<div><dt>Phone</dt><dd>{{ $booking->customer_phone }}</dd></div>@endif
-                @if ($booking->customer_company)<div><dt>Business</dt><dd>{{ $booking->customer_company }}</dd></div>@endif
+                @if ($booking->customerTeam)<div><dt>Company</dt><dd>@if ($booking->customerTeam->isVisibleTo(auth()->user()))<a href="{{ route('business.show', $booking->customerTeam) }}">{{ $booking->customerTeam->name }}</a>@else{{ $booking->customerTeam->name }}@endif</dd></div>@elseif ($booking->customer_company)<div><dt>Business</dt><dd>{{ $booking->customer_company }}</dd></div>@endif
                 @if ($booking->reason)<div><dt>Reason</dt><dd>{!! nl2br(e($booking->reason)) !!}</dd></div>@endif
             </dl>
         </div>

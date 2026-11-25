@@ -20,7 +20,7 @@ class BookingDataExporter
     {
         $iso = fn ($v) => $v?->toIso8601String();
 
-        $bookings = Booking::query()->where('customer_user_id', $user->getKey())->with(['team:id,name', 'appointmentType:id,name', 'provider:id,public_name'])->orderBy('id')->limit(self::LIMIT)->get();
+        $bookings = Booking::query()->where('customer_user_id', $user->getKey())->with(['team:id,name', 'appointmentType:id,name', 'provider:id,public_name', 'customerTeam:id,name'])->orderBy('id')->limit(self::LIMIT)->get();
 
         return [
             'person' => $user->email,
@@ -30,7 +30,7 @@ class BookingDataExporter
                 'reference' => $b->reference, 'business' => $b->team->name ?? null, 'appointment' => $b->appointmentType->name ?? null, 'with' => $b->provider->public_name ?? null,
                 'starts_at' => $iso($b->starts_at), 'ends_at' => $iso($b->ends_at), 'status' => $b->status, 'requested_at' => $iso($b->created_at), 'cancelled_at' => $iso($b->cancelled_at),
                 'terms_accepted_at' => $iso($b->terms_accepted_at), 'name_given' => $b->customer_name, 'email_given' => $b->customer_email, 'phone_given' => $b->customer_phone,
-                'company_given' => $b->customer_company, 'reason_given' => $b->reason, 'answers_given' => $b->answers, 'message_from_business' => $b->status_note, 'asked_to_move_at' => $iso($b->reschedule_requested_at), 'move_note_given' => $b->reschedule_note,
+                'company_given' => $b->customer_company, 'booked_for_company' => $b->customerTeam?->name, 'reason_given' => $b->reason, 'answers_given' => $b->answers, 'message_from_business' => $b->status_note, 'asked_to_move_at' => $iso($b->reschedule_requested_at), 'move_note_given' => $b->reschedule_note,
             ])->all(),
             'provider_records' => BookingProvider::query()->where('user_id', $user->getKey())->with('team:id,name')->orderBy('id')->get()
                 ->map(fn (BookingProvider $p) => ['business' => $p->team->name ?? null, 'public_name' => $p->public_name, 'active' => (bool) $p->active])->all(),

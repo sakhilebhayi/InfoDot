@@ -2,7 +2,7 @@
     <div class="ix-pagehead">
         <div>
             <h1 class="ix-h1">{{ $enquiry->subject }}</h1>
-            <p class="ix-lede">From {{ $enquiry->customer?->name ?? 'a former InfoDot user' }}. {{ $enquiry->categoryLabel() }}, received {{ $enquiry->created_at->format('j M Y, H:i') }}{{ $enquiry->first_response_at ? '; first answered '.$enquiry->created_at->diffForHumans($enquiry->first_response_at, ['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE]).' later' : '' }}. <x-demo-mark :of="$enquiry" /></p>
+            <p class="ix-lede">From {{ $enquiry->customer?->name ?? 'a former InfoDot user' }}@if ($enquiry->customerTeam), for @if ($enquiry->customerTeam->isVisibleTo(auth()->user()))<a href="{{ route('business.show', $enquiry->customerTeam) }}">{{ $enquiry->customerTeam->name }}</a>@else{{ $enquiry->customerTeam->name }}@endif @endif. {{ $enquiry->categoryLabel() }}, received {{ $enquiry->created_at->format('j M Y, H:i') }}{{ $enquiry->first_response_at ? '; first answered '.$enquiry->created_at->diffForHumans($enquiry->first_response_at, ['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE]).' later' : '' }}. <x-demo-mark :of="$enquiry" /></p>
         </div>
         <a href="{{ route('business.inbox', $team) }}" class="ix-btn ix-btn--ghost">Back to the inbox</a>
     </div>

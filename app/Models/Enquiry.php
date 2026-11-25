@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
  * @property string $uuid
  * @property int $team_id
  * @property int|null $user_id
+ * @property int|null $customer_team_id
  * @property string $subject
  * @property string $category
  * @property string $status
@@ -100,6 +101,12 @@ class Enquiry extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /** @return BelongsTo<Team, $this> the company the person booked or wrote for (R-66), or none when they acted for themselves */
+    public function customerTeam(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'customer_team_id');
     }
 
     /** @return BelongsTo<User, $this> */

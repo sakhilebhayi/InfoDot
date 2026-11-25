@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property int $appointment_type_id
  * @property int|null $booking_provider_id
  * @property int|null $customer_user_id
+ * @property int|null $customer_team_id
  * @property string $customer_name
  * @property string $customer_email
  * @property Carbon $starts_at
@@ -55,7 +56,7 @@ class Booking extends Model
 
     protected $fillable = [
         'reference', 'team_id', 'appointment_type_id', 'booking_provider_id', 'customer_user_id', 'customer_name', 'customer_email', 'customer_phone',
-        'customer_company', 'reason', 'answers', 'starts_at', 'ends_at', 'blocks_from', 'blocks_until', 'status', 'internal_notes', 'cancelled_at', 'terms_accepted_at', 'status_note', 'reschedule_requested_at', 'reschedule_note',
+        'customer_company', 'customer_team_id', 'reason', 'answers', 'starts_at', 'ends_at', 'blocks_from', 'blocks_until', 'status', 'internal_notes', 'cancelled_at', 'terms_accepted_at', 'status_note', 'reschedule_requested_at', 'reschedule_note',
     ];
 
     protected function casts(): array
@@ -93,5 +94,11 @@ class Booking extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'customer_user_id');
+    }
+
+    /** @return BelongsTo<Team, $this> the company the person booked or wrote for (R-66), or none when they acted for themselves */
+    public function customerTeam(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'customer_team_id');
     }
 }

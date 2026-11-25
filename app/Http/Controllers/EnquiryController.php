@@ -6,6 +6,7 @@ use App\Models\Enquiry;
 use App\Models\EnquiryMessage;
 use App\Models\Team;
 use App\Services\Enquiries\EnquiryService;
+use App\Support\ActingCompany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -29,6 +30,8 @@ class EnquiryController extends Controller
             'team' => $team,
             'reason' => $this->enquiries->whyNot($request->user(), $team),
             'categories' => config('enquiries.categories'),
+            'companies' => ActingCompany::options($request->user(), $team),
+            'company' => ActingCompany::preselected($request->user(), $team),
         ]);
     }
 
@@ -42,8 +45,10 @@ class EnquiryController extends Controller
             'body' => ['required', 'string', 'min:'.config('enquiries.min_length'), 'max:'.config('enquiries.max_length')],
             'files' => ['nullable', 'array', 'max:'.config('enquiries.max_files')],
             'files.*' => ['file'],
+            ActingCompany::FIELD => ['nullable', 'string', 'max:20'],
         ], ['body.min' => 'Say a little more — at least :min characters — so the business can help.']);
 
+        $data['company_team'] = ActingCompany::resolve($request->user(), $team, $data[ActingCompany::FIELD] ?? null);
         $enquiry = $this->enquiries->start($request->user(), $team, $data, $request->file('files', []));
 
         return redirect()->route('inbox.show', $enquiry)->with('status', 'Sent to '.$team->name.'. Replies arrive here, and the bell tells you when one does.');

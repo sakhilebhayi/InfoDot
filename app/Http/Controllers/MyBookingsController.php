@@ -86,6 +86,6 @@ class MyBookingsController extends Controller
         abort_unless(app(BookingFeature::class)->available(), 404);
 
         return Booking::query()->where('reference', $reference)->where('customer_user_id', $this->user()->getKey())
-            ->with(['team', 'appointmentType', 'team.bookingSetting'])->firstOrFail();
+            ->with(['team', 'appointmentType', 'team.bookingSetting', 'customerTeam'])->firstOrFail();
     }
 }
