@@ -133,6 +133,22 @@ Accessibility work should be treated as default product quality.
 - Do not rely on color alone for status.
 - Ensure form errors are tied to fields with clear text.
 
+## Motion And Control Size (R-64 phase 2)
+
+Defined once in `resources/css/infodot.css` (the first `:root`) and mirrored for GSAP in `resources/js/motion.js`; `tests/Feature/MotionTokensTest.php` fails if they drift or a stylesheet declares a raw duration again.
+
+| Token | Value | Use |
+|---|---|---|
+| `--ix-dur-fast` | 120 ms | hover, focus, colour |
+| `--ix-dur-base` | 200 ms | small movement, fades |
+| `--ix-dur-slow` | 300 ms | panels, menus, expand and collapse |
+| `--ix-dur-scene` / `--ix-dur-scene-slow` | 400 / 600 ms | marketing pages only |
+| `--ix-ease` / `--ix-ease-out` / `--ix-ease-in-out` | curves | default, entrances, symmetric moves |
+| `--ix-rise` | 24 px | how far a revealed part rises |
+| `--ix-field-h` / `--ix-field-h-sm` | 36 / 30 px; 44 / 40 px on touch | fields and buttons |
+
+Rules: animate `transform` and `opacity`; CSS for state changes, GSAP (`reveal`, `expand`, `collapse` in `motion.js`) for staggered reveals and measured height changes; reduced motion is handled once in `app.css` and inside `motion.js`, so content is always shown; hover never carries essential information.
+
 ## Design System Work Queue
 
 1. Inventory all current shared UI patterns.

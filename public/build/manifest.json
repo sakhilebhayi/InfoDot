@@ -1,6 +1,10 @@
 {
+  "_ScrollTrigger-Bit5KH_K.js": {
+    "file": "assets/ScrollTrigger-Bit5KH_K.js",
+    "name": "ScrollTrigger"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-CV38YLCS.css",
+    "file": "assets/app-BJgnidR_.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -116,18 +120,6 @@
     "file": "assets/logo_white-C3-KiFFF.png",
     "src": "resources/img/brand/logo_white.png"
   },
-  "resources/img/landing/couturiere.jpg": {
-    "file": "assets/couturiere-CDo3s3_6.jpg",
-    "src": "resources/img/landing/couturiere.jpg"
-  },
-  "resources/img/landing/hero-1920.jpg": {
-    "file": "assets/hero-1920-D58jPPo_.jpg",
-    "src": "resources/img/landing/hero-1920.jpg"
-  },
-  "resources/img/landing/hero-960.jpg": {
-    "file": "assets/hero-960-BWEQMnG8.jpg",
-    "src": "resources/img/landing/hero-960.jpg"
-  },
   "resources/img/landing/market.jpg": {
     "file": "assets/market-WTcKys8c.jpg",
     "src": "resources/img/landing/market.jpg"
@@ -137,59 +129,59 @@
     "src": "resources/img/landing/platforms/agents.png"
   },
   "resources/img/landing/platforms/analytics.png": {
-    "file": "assets/analytics-DY77snL3.png",
+    "file": "assets/analytics-BEOtlzxx.png",
     "src": "resources/img/landing/platforms/analytics.png"
   },
   "resources/img/landing/platforms/auction.png": {
-    "file": "assets/auction-BF_stMNO.png",
+    "file": "assets/auction-CwxhHLJ0.png",
     "src": "resources/img/landing/platforms/auction.png"
   },
   "resources/img/landing/platforms/central.png": {
-    "file": "assets/central-CbCyW9DJ.png",
+    "file": "assets/central-Bnh4axDf.png",
     "src": "resources/img/landing/platforms/central.png"
   },
   "resources/img/landing/platforms/charts.png": {
-    "file": "assets/charts-DwmhJxhw.png",
+    "file": "assets/charts-D8IVnOVP.png",
     "src": "resources/img/landing/platforms/charts.png"
   },
   "resources/img/landing/platforms/design.png": {
-    "file": "assets/design-DRWEBpPQ.png",
+    "file": "assets/design-CCuDKxm0.png",
     "src": "resources/img/landing/platforms/design.png"
   },
   "resources/img/landing/platforms/docs.png": {
-    "file": "assets/docs-BfBm8SNW.png",
+    "file": "assets/docs-OGpXhBQ8.png",
     "src": "resources/img/landing/platforms/docs.png"
   },
   "resources/img/landing/platforms/dopemine.png": {
-    "file": "assets/dopemine-CKrEixDB.png",
+    "file": "assets/dopemine-BnGWapIM.png",
     "src": "resources/img/landing/platforms/dopemine.png"
   },
   "resources/img/landing/platforms/ehail.png": {
-    "file": "assets/ehail-CPB-7s69.png",
+    "file": "assets/ehail-BA8MgAYc.png",
     "src": "resources/img/landing/platforms/ehail.png"
   },
   "resources/img/landing/platforms/emall.png": {
-    "file": "assets/emall-N6xTX7bs.png",
+    "file": "assets/emall-CVYtWBqg.png",
     "src": "resources/img/landing/platforms/emall.png"
   },
   "resources/img/landing/platforms/engage.png": {
-    "file": "assets/engage-DOG71cIe.png",
+    "file": "assets/engage-BM3OdenE.png",
     "src": "resources/img/landing/platforms/engage.png"
   },
   "resources/img/landing/platforms/files.png": {
-    "file": "assets/files-Bjxd4wjB.png",
+    "file": "assets/files-CQwlReCm.png",
     "src": "resources/img/landing/platforms/files.png"
   },
   "resources/img/landing/platforms/finance.png": {
-    "file": "assets/finance-BSTemPlg.png",
+    "file": "assets/finance-DcftgbtX.png",
     "src": "resources/img/landing/platforms/finance.png"
   },
   "resources/img/landing/platforms/forms.png": {
-    "file": "assets/forms-C97XVnln.png",
+    "file": "assets/forms-CEWPAZ4U.png",
     "src": "resources/img/landing/platforms/forms.png"
   },
   "resources/img/landing/platforms/hr.png": {
-    "file": "assets/hr-Dxxj3ONr.png",
+    "file": "assets/hr-CUdojrnF.png",
     "src": "resources/img/landing/platforms/hr.png"
   },
   "resources/img/landing/platforms/infodot.png": {
@@ -197,44 +189,116 @@
     "src": "resources/img/landing/platforms/infodot.png"
   },
   "resources/img/landing/platforms/memory.png": {
-    "file": "assets/memory-KKjPT9Ri.png",
+    "file": "assets/memory-Cp_QPlPx.png",
     "src": "resources/img/landing/platforms/memory.png"
   },
   "resources/img/landing/platforms/mines.png": {
-    "file": "assets/mines-Cxn-BWSo.png",
+    "file": "assets/mines-zRh9z-ty.png",
     "src": "resources/img/landing/platforms/mines.png"
   },
   "resources/img/landing/platforms/notify.png": {
-    "file": "assets/notify-DcKMoG35.png",
+    "file": "assets/notify-B3ppI2ZE.png",
     "src": "resources/img/landing/platforms/notify.png"
   },
   "resources/img/landing/platforms/press.png": {
-    "file": "assets/press-ChbIus8y.png",
+    "file": "assets/press-DX0Ssrkt.png",
     "src": "resources/img/landing/platforms/press.png"
   },
   "resources/img/landing/platforms/projects.png": {
-    "file": "assets/projects-Yb4AG84T.png",
+    "file": "assets/projects-1Ho3IheH.png",
     "src": "resources/img/landing/platforms/projects.png"
   },
   "resources/img/landing/platforms/pulse.png": {
-    "file": "assets/pulse-BhrmxaqQ.png",
+    "file": "assets/pulse-Bm3_IRrI.png",
     "src": "resources/img/landing/platforms/pulse.png"
   },
   "resources/img/landing/platforms/sheet.png": {
-    "file": "assets/sheet-CybF4iaE.png",
+    "file": "assets/sheet-oIKxDBvq.png",
     "src": "resources/img/landing/platforms/sheet.png"
   },
   "resources/img/landing/platforms/tasks.png": {
-    "file": "assets/tasks-Utvsz598.png",
+    "file": "assets/tasks-COMRIjM7.png",
     "src": "resources/img/landing/platforms/tasks.png"
   },
   "resources/img/landing/platforms/tutor.png": {
-    "file": "assets/tutor-BgZFKuZA.png",
+    "file": "assets/tutor-CxVclABa.png",
     "src": "resources/img/landing/platforms/tutor.png"
   },
-  "resources/img/landing/seamstress.jpg": {
-    "file": "assets/seamstress-zGZr6jQC.jpg",
-    "src": "resources/img/landing/seamstress.jpg"
+  "resources/img/pages/bokaap-mural-1600.jpg": {
+    "file": "assets/bokaap-mural-1600-ry0lEaGv.jpg",
+    "src": "resources/img/pages/bokaap-mural-1600.jpg"
+  },
+  "resources/img/pages/bokaap-mural-800.jpg": {
+    "file": "assets/bokaap-mural-800-DNUeEiEq.jpg",
+    "src": "resources/img/pages/bokaap-mural-800.jpg"
+  },
+  "resources/img/pages/bokaap-street-800.jpg": {
+    "file": "assets/bokaap-street-800-D4SOoZnS.jpg",
+    "src": "resources/img/pages/bokaap-street-800.jpg"
+  },
+  "resources/img/pages/camps-bay-cafe-1600.jpg": {
+    "file": "assets/camps-bay-cafe-1600-CgJIdYiV.jpg",
+    "src": "resources/img/pages/camps-bay-cafe-1600.jpg"
+  },
+  "resources/img/pages/camps-bay-cafe-800.jpg": {
+    "file": "assets/camps-bay-cafe-800-Ug74hK1M.jpg",
+    "src": "resources/img/pages/camps-bay-cafe-800.jpg"
+  },
+  "resources/img/pages/jhb-city-1600.jpg": {
+    "file": "assets/jhb-city-1600-BLguxLno.jpg",
+    "src": "resources/img/pages/jhb-city-1600.jpg"
+  },
+  "resources/img/pages/jhb-city-800.jpg": {
+    "file": "assets/jhb-city-800-EefOTQB1.jpg",
+    "src": "resources/img/pages/jhb-city-800.jpg"
+  },
+  "resources/img/pages/jhb-skyline-1920.jpg": {
+    "file": "assets/jhb-skyline-1920-CMrK0gfF.jpg",
+    "src": "resources/img/pages/jhb-skyline-1920.jpg"
+  },
+  "resources/img/pages/jhb-skyline-960.jpg": {
+    "file": "assets/jhb-skyline-960-BUiVDxop.jpg",
+    "src": "resources/img/pages/jhb-skyline-960.jpg"
+  },
+  "resources/img/pages/kalkbay-boats-800.jpg": {
+    "file": "assets/kalkbay-boats-800-CVvZ-ML8.jpg",
+    "src": "resources/img/pages/kalkbay-boats-800.jpg"
+  },
+  "resources/img/pages/kalkbay-sign-800.jpg": {
+    "file": "assets/kalkbay-sign-800-BTqrZs35.jpg",
+    "src": "resources/img/pages/kalkbay-sign-800.jpg"
+  },
+  "resources/img/pages/market-burger-800.jpg": {
+    "file": "assets/market-burger-800-7NB9Vb3w.jpg",
+    "src": "resources/img/pages/market-burger-800.jpg"
+  },
+  "resources/img/pages/market-door-1600.jpg": {
+    "file": "assets/market-door-1600-DniZDpCD.jpg",
+    "src": "resources/img/pages/market-door-1600.jpg"
+  },
+  "resources/img/pages/market-door-800.jpg": {
+    "file": "assets/market-door-800-DVwNx3DY.jpg",
+    "src": "resources/img/pages/market-door-800.jpg"
+  },
+  "resources/img/pages/market-jars-800.jpg": {
+    "file": "assets/market-jars-800-D39QIi3C.jpg",
+    "src": "resources/img/pages/market-jars-800.jpg"
+  },
+  "resources/img/pages/market-vegetables-1200.jpg": {
+    "file": "assets/market-vegetables-1200-BNLmmiQW.jpg",
+    "src": "resources/img/pages/market-vegetables-1200.jpg"
+  },
+  "resources/img/pages/rosebank-1600.jpg": {
+    "file": "assets/rosebank-1600-C7cY1jor.jpg",
+    "src": "resources/img/pages/rosebank-1600.jpg"
+  },
+  "resources/img/pages/rosebank-800.jpg": {
+    "file": "assets/rosebank-800-daKidogU.jpg",
+    "src": "resources/img/pages/rosebank-800.jpg"
+  },
+  "resources/img/pages/vineyard-800.jpg": {
+    "file": "assets/vineyard-800-DjSnawia.jpg",
+    "src": "resources/img/pages/vineyard-800.jpg"
   },
   "resources/img/platforms/docs.png": {
     "file": "assets/docs-Bgi7gZB8.png",
@@ -245,7 +309,7 @@
     "src": "resources/img/platforms/files.png"
   },
   "resources/js/analytics-chart.js": {
-    "file": "assets/analytics-chart-CwkFNGI7.js",
+    "file": "assets/analytics-chart-Uk4SebQF.js",
     "name": "analytics-chart",
     "src": "resources/js/analytics-chart.js",
     "isDynamicEntry": true,
@@ -254,7 +318,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-CFMroKwT.js",
+    "file": "assets/app-ChlygY2l.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -263,10 +327,22 @@
     ]
   },
   "resources/js/landing.js": {
-    "file": "assets/landing-COBkqijA.js",
+    "file": "assets/landing-Ch8ewTqO.js",
     "name": "landing",
     "src": "resources/js/landing.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_ScrollTrigger-Bit5KH_K.js"
+    ]
+  },
+  "resources/js/pages.js": {
+    "file": "assets/pages-CEXQv3cp.js",
+    "name": "pages",
+    "src": "resources/js/pages.js",
+    "isEntry": true,
+    "imports": [
+      "_ScrollTrigger-Bit5KH_K.js"
+    ]
   },
   "resources/js/seminar-p2p.js": {
     "file": "assets/seminar-p2p-BAQwTf-p.js",
@@ -279,5 +355,14 @@
     "name": "seminar-room",
     "src": "resources/js/seminar-room.js",
     "isEntry": true
+  },
+  "resources/js/tools.js": {
+    "file": "assets/tools-BoeoaSEn.js",
+    "name": "tools",
+    "src": "resources/js/tools.js",
+    "isEntry": true,
+    "imports": [
+      "_ScrollTrigger-Bit5KH_K.js"
+    ]
   }
 }
