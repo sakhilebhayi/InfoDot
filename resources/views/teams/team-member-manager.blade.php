@@ -1,4 +1,6 @@
 <div>
+    @php($newLink = $newLink ?? null)
+    @php($bulkResult = $bulkResult ?? [])
     @php($lic = app(\App\Services\Licensing\SeatLedger::class)->summary($team))
     @if (Gate::check('addTeamMember', $team) && $lic['applies'] && $lic['available'] < 1)
         {{-- R-53: no licence is free, so the way to add someone is to buy one. This is the upgrade moment: why, what it includes, the cost,
@@ -88,6 +90,77 @@
                 </x-jet-button>
             </x-slot>
         </x-jet-form-section>
+    @endif
+
+    @if (Gate::check('addTeamMember', $team) && ! $team->personal_team && ! ($lic['applies'] && $lic['available'] < 1))
+        <!-- Invite several people at once (R-62 phase 4) -->
+        <x-jet-action-section>
+            <x-slot name="title">{{ __('Invite several people') }}</x-slot>
+            <x-slot name="description">{{ __('Paste a list of email addresses, up to :max at a time. Each person gets their own invitation and holds a licence until they answer.', ['max' => \App\Actions\Jetstream\InviteManyTeamMembers::MAX]) }}</x-slot>
+            <x-slot name="content">
+                <form wire:submit.prevent="inviteMany" data-bulk-invite>
+                    <x-jet-label for="bulk-emails" value="{{ __('Email addresses') }}" />
+                    <textarea id="bulk-emails" class="block w-full" rows="4" wire:model.defer="bulkEmails" placeholder="{{ __('One per line, or separated by commas') }}"></textarea>
+                    @php($bulkRoles = \App\Support\TeamRoles::assignableBy(auth()->user(), $team))
+                    <x-jet-label for="bulk-role" value="{{ __('They join as') }}" />
+                    <select id="bulk-role" wire:model.defer="bulkRole">
+                        @foreach ($bulkRoles as $r)<option value="{{ $r }}">{{ ucfirst($r) }}</option>@endforeach
+                    </select>
+                    <div class="ix-actions"><x-jet-button wire:loading.attr="disabled">{{ __('Send invitations') }}</x-jet-button></div>
+                </form>
+
+                @if (! empty($bulkResult))
+                    <div data-bulk-result role="status">
+                        @if (count($bulkResult['invited']))<p>{{ trans_choice('{1} 1 invitation sent.|[2,*] :count invitations sent.', count($bulkResult['invited'])) }}</p>@endif
+                        @if ($bulkResult['too_many'])<p class="ix-hint">{{ __('Only the first :max addresses were used. Send the rest in a second batch.', ['max' => \App\Actions\Jetstream\InviteManyTeamMembers::MAX]) }}</p>@endif
+                        @if (count($bulkResult['skipped']))
+                            <p>{{ __('These were not invited, and are still in the box so you can fix them:') }}</p>
+                            <ul>@foreach ($bulkResult['skipped'] as $row)<li>{{ $row['email'] }}: {{ $row['reason'] }}</li>@endforeach</ul>
+                        @endif
+                    </div>
+                @endif
+            </x-slot>
+        </x-jet-action-section>
+    @endif
+
+    @if (Gate::check('addTeamMember', $team) && ! $team->personal_team && \App\Support\TeamRoles::manages(auth()->user(), $team))
+        <!-- Shareable link (R-62 phase 4) -->
+        @php($links = \App\Models\TeamInviteLink::where('team_id', $team->id)->latest('id')->limit(10)->get())
+        <x-jet-action-section>
+            <x-slot name="title">{{ __('Invitation link') }}</x-slot>
+            <x-slot name="description">{{ __('Anyone with the link can ask to join as a member once they have signed in with a confirmed account. It uses a licence for each person who joins, and stops working when it runs out, reaches its limit or you turn it off.') }}</x-slot>
+            <x-slot name="content">
+                @if ($newLink)
+                    <div data-new-link>
+                        <p>{{ __('Copy this link now. For safety it is shown only once.') }}</p>
+                        <input type="text" class="block w-full" readonly value="{{ $newLink }}" x-data x-on:focus="$el.select()" aria-label="{{ __('Invitation link') }}">
+                    </div>
+                @endif
+
+                <form wire:submit.prevent="createInviteLink" data-make-link>
+                    <x-jet-label for="link-days" value="{{ __('Works for (days)') }}" />
+                    <input id="link-days" type="number" min="1" max="{{ \App\Models\TeamInviteLink::MAX_DAYS }}" wire:model.defer="linkDays">
+                    <x-jet-label for="link-uses" value="{{ __('Most people who may use it (optional)') }}" />
+                    <input id="link-uses" type="number" min="1" max="{{ \App\Models\TeamInviteLink::MAX_USES_CEILING }}" wire:model.defer="linkMaxUses">
+                    <div class="ix-actions"><x-jet-button>{{ __('Make a link') }}</x-jet-button></div>
+                </form>
+
+                @if ($links->isNotEmpty())
+                    <ul data-link-list>
+                        @foreach ($links as $l)
+                            <li>
+                                {{ __('Link made :date', ['date' => $l->created_at->timezone(config('app.timezone'))->format('j M Y')]) }}:
+                                {{ __(['active' => 'working', 'expired' => 'ran out', 'revoked' => 'turned off', 'used_up' => 'limit reached'][$l->status()]) }},
+                                {{ trans_choice('{0} nobody has joined|{1} 1 person joined|[2,*] :count people joined', $l->uses) }}{{ $l->max_uses ? ' '.__('of :max', ['max' => $l->max_uses]) : '' }}.
+                                @if ($l->status() === 'active')
+                                    <button type="button" class="ix-btn ix-btn--sm" wire:click="revokeInviteLink({{ $l->id }})">{{ __('Turn off') }}</button>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </x-slot>
+        </x-jet-action-section>
     @endif
 
     @if ($team->teamInvitations->isNotEmpty() && Gate::check('addTeamMember', $team))
