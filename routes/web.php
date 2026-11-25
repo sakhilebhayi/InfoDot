@@ -36,6 +36,7 @@ use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
 use App\Http\Controllers\MyBookingsController;
 use App\Http\Controllers\NoticesController;
+use App\Http\Controllers\NotificationPreferencesController;
 use App\Http\Controllers\Onboarding\BusinessController;
 use App\Http\Controllers\Onboarding\RecommendationsController;
 use App\Http\Controllers\PeopleController;
@@ -104,6 +105,9 @@ Route::get('/businesses', [BusinessDirectoryController::class, 'index'])->middle
 Route::get('/businesses/featured', [BusinessFeatureController::class, 'rules'])->middleware('throttle:60,1,businesses.featured')->name('businesses.featured');
 // Contact actions on a business page are counted for the business's insights (R-33 §9): a count, nothing about the visitor.
 Route::post('/business/{team:uuid}/track/{action}', [BusinessInsightsController::class, 'track'])->whereIn('action', ['call', 'email', 'website', 'map'])->middleware('throttle:60,1,business.track')->name('business.track');
+// R-64 phase 8: stopping the daily summary from the email itself. Signed, so only a message we sent can use it; no sign-in needed.
+Route::get('/notifications/unsubscribe/{user}', [NotificationPreferencesController::class, 'unsubscribe'])->whereNumber('user')->middleware(['signed', 'throttle:30,1,notices.unsubscribe'])->name('notices.unsubscribe');
+Route::post('/notifications/unsubscribe/{user}', [NotificationPreferencesController::class, 'confirmUnsubscribe'])->whereNumber('user')->middleware(['signed', 'throttle:120,1,notices.unsubscribe.confirm']);
 Route::get('/business/{team:uuid}', [BusinessProfileController::class, 'show'])->middleware('throttle:120,1,business.show')->name('business.show');
 // R-63 phase 3: anyone may look at a business's appointment calendar; signing in is asked for only when they choose a time. 404 until the feature is open.
 Route::get('/business/{team:uuid}/book', [BookingPublicController::class, 'show'])->middleware('throttle:60,1,business.book.view')->name('business.book');
@@ -481,6 +485,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/notifications/{id}/archive', [NoticesController::class, 'archive'])->whereNumber('id')->middleware('throttle:60,1,notices.archive')->name('notices.archive');
     Route::post('/notifications/{id}/restore', [NoticesController::class, 'restore'])->whereNumber('id')->middleware('throttle:60,1,notices.restore')->name('notices.restore');
     Route::post('/notifications/{id}/{answer}', [NoticesController::class, 'answerInvitation'])->whereNumber('id')->whereIn('answer', ['accept', 'decline'])->middleware('throttle:20,1,notices.answer')->name('notices.answer');
+    Route::get('/notifications/settings', [NotificationPreferencesController::class, 'show'])->middleware('throttle:60,1,notices.settings')->name('notices.preferences');
+    Route::post('/notifications/settings', [NotificationPreferencesController::class, 'update'])->middleware('throttle:20,1,notices.settings.update')->name('notices.preferences.update');
     Route::post('/notifications/read-all', [NoticesController::class, 'readAll'])->middleware('throttle:20,1,notices.read-all')->name('notices.read-all');
     Route::post('/notifications/preference', [NoticesController::class, 'preference'])->middleware('throttle:20,1,notices.preference')->name('notices.preference');
 

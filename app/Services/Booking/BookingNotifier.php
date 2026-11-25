@@ -8,6 +8,7 @@ use App\Models\BookingProvider;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\InAppNotices;
+use App\Services\Notifications\NotificationPreferences;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -132,6 +133,11 @@ class BookingNotifier
         }
 
         if ($recipient->email_verified_at === null) {
+            return true;
+        }
+
+        // The person's choice for bookings (R-64 phase 8): email as it happens, in the daily summary, or none. The bell has it either way.
+        if (! app(NotificationPreferences::class)->instantEmail($recipient, $kind)) {
             return true;
         }
 

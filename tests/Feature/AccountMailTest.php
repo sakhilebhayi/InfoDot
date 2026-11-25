@@ -185,7 +185,7 @@ class AccountMailTest extends TestCase
         $this->assertStringContainsString('If the button does not work, copy this link', $html);
         $this->assertStringContainsString(route('password.request'), $html);
         $this->assertStringContainsString('Manage your notifications', $html);
-        $this->assertStringContainsString(route('notices'), $html);
+        $this->assertStringContainsString(route('notices.preferences'), $html);
         $this->assertStringContainsString('meta name="viewport"', $html, 'responsive');
         $this->assertStringContainsString('cannot be switched off', $html);
     }
@@ -196,7 +196,7 @@ class AccountMailTest extends TestCase
         $text = (string) app(Markdown::class)->renderText('emails.security-notice', $mail->content()->with);
 
         $this->assertStringContainsString(route('password.request'), $text);
-        $this->assertStringContainsString(route('notices'), $text);
+        $this->assertStringContainsString(route('notices.preferences'), $text);
     }
 
     public function test_the_scheduler_runs_a_queue_worker_with_a_real_queue_or_while_work_is_left_behind(): void

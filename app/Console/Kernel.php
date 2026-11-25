@@ -57,6 +57,7 @@ class Kernel extends ConsoleKernel
         // nothing queued earlier is stranded. With the default "sync" queue and an empty table there is nothing to do.
         $schedule->command('queue:work database --stop-when-empty --max-time=50 --tries=3')->everyMinute()->withoutOverlapping(10)->onOneServer()->runInBackground()
             ->when(fn () => config('queue.default') !== 'sync' || (Schema::hasTable('jobs') && DB::table('jobs')->exists()));
+        $schedule->command('notices:digest')->dailyAt('07:30')->withoutOverlapping(30)->onOneServer();
         $schedule->command('booking:retention')->dailyAt('03:40')->withoutOverlapping(30)->onOneServer();
         $schedule->command('booking:expire-pending')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:award-hosts')->everyThirtyMinutes()->withoutOverlapping(30)->onOneServer();

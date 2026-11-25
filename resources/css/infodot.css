@@ -1753,6 +1753,26 @@ td .ix-prog,
     }
 }
 
+.ix-prefs {
+    display: grid;
+    gap: 16px;
+    max-width: 760px;
+}
+
+.ix-prefs__row .ix-panel__body {
+    display: grid;
+    gap: 12px;
+}
+
+.ix-prefs__locked {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-sm-size);
+}
+
 /* ---------------------------------------------------------------- menus */
 
 .ix-pop {

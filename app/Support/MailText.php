@@ -8,12 +8,12 @@ namespace App\Support;
  */
 final class MailText
 {
-    public static function safe(string $text, string $fallback = ''): string
+    public static function safe(string $text, string $fallback = '', int $limit = 80): string
     {
         $text = (string) preg_replace('/[\\\\`*_{}\[\]()#|<>~&"\']+/', '', strip_tags($text));
         $text = (string) preg_replace(['~:(?=//)~', '~(?<=www)\.~i', '~@~'], [":\u{200B}", ".\u{200B}", "@\u{200B}"], $text);
         $text = trim((string) preg_replace('/\s+/', ' ', $text));
 
-        return $text === '' ? $fallback : mb_substr($text, 0, 80);
+        return $text === '' ? $fallback : mb_substr($text, 0, $limit);
     }
 }

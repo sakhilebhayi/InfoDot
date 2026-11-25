@@ -48,6 +48,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'achievements_public' => 'boolean',
         'badges_visible' => 'boolean',
         'notices_in_app' => 'boolean',
+        'notices_digest_sent_at' => 'datetime',
         'reputation_opt_out' => 'boolean',
         'topic_suggestions' => 'boolean',
         'share_expertise' => 'boolean',
