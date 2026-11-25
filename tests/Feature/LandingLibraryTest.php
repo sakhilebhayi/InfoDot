@@ -6,6 +6,7 @@ use App\Models\Solutions;
 use App\Support\Reference;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /** R-10/R-24: the landing page shows the REAL researched library — rows from the database, or nothing at all. */
@@ -70,13 +71,19 @@ evidence: Industry-recognised best practice from official sources.
 ---
 A short summary of the method.
 
-## Step one — List what only you know
+## The problem
+Jobs stall when the one person who knows is away.
+
+## Who this is for
+Owners of small teams.
+
+## Step 1 — List what only you know
 Note the contacts, the dates and the places.
 
-## Step two — Write the steps
+## Step 2 — Write the steps
 One line for each action.
 
-## Step three — Test it
+## Step 3 — Test it
 Ask someone to follow the page.
 
 ## Sources and further reading
@@ -97,6 +104,12 @@ MD);
         // The tasks are the entry's own steps, and the layout says it is an example.
         $this->assertStringContainsString('List what only you know', $html);
         $this->assertStringContainsString('The same steps as tasks', $html);
+        // Framing sections are not tasks: only the numbered steps are listed, without their numbers.
+        $panel = Str::between($html, 'data-hd-panel', '</aside>');
+        $this->assertStringNotContainsString('The problem', $panel);
+        $this->assertStringNotContainsString('Who this is for', $panel);
+        $this->assertStringNotContainsString('Step 1', $panel);
+        $this->assertStringContainsString('Write the steps', $panel);
         $this->assertStringContainsString('Example', $html);
     }
 }

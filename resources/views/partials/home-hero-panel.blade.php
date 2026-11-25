@@ -2,10 +2,15 @@
      become. The task layout is an example and says so. Without library entries nothing is drawn. --}}
 @php
     $panelEntry = $library->first();
-    $panelSteps = $panelEntry
-        ? \App\Models\Steps::where('solution_id', $panelEntry->id)->orderBy('id')->limit(3)->pluck('solution_heading')
-            ->map(fn ($h) => trim(preg_replace('/^step\s+\w+\s*[—:.\-]\s*/iu', '', is_array($h) ? (string) ($h[0] ?? '') : (string) $h)))->filter()->values()
+    // The library's entries open with framing sections ("The problem", "Who this is for"); the work is in the "Step N" sections, so
+    // those are the tasks. A solution without numbered headings falls back to its first steps.
+    $headings = $panelEntry
+        ? \App\Models\Steps::where('solution_id', $panelEntry->id)->orderBy('id')->limit(50)->pluck('solution_heading')
+            ->map(fn ($h) => trim(is_array($h) ? (string) ($h[0] ?? '') : (string) $h))->filter()->values()
         : collect();
+    $numbered = $headings->filter(fn ($h) => preg_match('/^step\s+\w+\s*[—:.\-]/iu', $h))->values();
+    $panelSteps = ($numbered->isNotEmpty() ? $numbered : $headings)->take(3)
+        ->map(fn ($h) => trim(preg_replace('/^step\s+\w+\s*[—:.\-]\s*/iu', '', $h)))->filter()->values();
 @endphp
 @if ($panelEntry && $panelSteps->isNotEmpty())
     <aside class="hd__panel" aria-label="A checked answer, and the work it becomes" data-hd-panel>
