@@ -100,10 +100,10 @@
             <x-slot name="content">
                 <form wire:submit.prevent="inviteMany" data-bulk-invite>
                     <x-jet-label for="bulk-emails" value="{{ __('Email addresses') }}" />
-                    <textarea id="bulk-emails" class="block w-full" rows="4" wire:model.defer="bulkEmails" placeholder="{{ __('One per line, or separated by commas') }}"></textarea>
+                    <textarea id="bulk-emails" class="ix-textarea" rows="4" wire:model.defer="bulkEmails" placeholder="{{ __('One per line, or separated by commas') }}"></textarea>
                     @php($bulkRoles = \App\Support\TeamRoles::assignableBy(auth()->user(), $team))
                     <x-jet-label for="bulk-role" value="{{ __('They join as') }}" />
-                    <select id="bulk-role" wire:model.defer="bulkRole">
+                    <select class="ix-select" id="bulk-role" wire:model.defer="bulkRole">
                         @foreach ($bulkRoles as $r)<option value="{{ $r }}">{{ ucfirst($r) }}</option>@endforeach
                     </select>
                     <div class="ix-actions"><x-jet-button wire:loading.attr="disabled">{{ __('Send invitations') }}</x-jet-button></div>
@@ -133,15 +133,15 @@
                 @if ($newLink)
                     <div data-new-link>
                         <p>{{ __('Copy this link now. For safety it is shown only once.') }}</p>
-                        <input type="text" class="block w-full" readonly value="{{ $newLink }}" x-data x-on:focus="$el.select()" aria-label="{{ __('Invitation link') }}">
+                        <input type="text" class="ix-input" readonly value="{{ $newLink }}" x-data x-on:focus="$el.select()" aria-label="{{ __('Invitation link') }}">
                     </div>
                 @endif
 
                 <form wire:submit.prevent="createInviteLink" data-make-link>
                     <x-jet-label for="link-days" value="{{ __('Works for (days)') }}" />
-                    <input id="link-days" type="number" min="1" max="{{ \App\Models\TeamInviteLink::MAX_DAYS }}" wire:model.defer="linkDays">
+                    <input class="ix-input" id="link-days" type="number" min="1" max="{{ \App\Models\TeamInviteLink::MAX_DAYS }}" wire:model.defer="linkDays">
                     <x-jet-label for="link-uses" value="{{ __('Most people who may use it (optional)') }}" />
-                    <input id="link-uses" type="number" min="1" max="{{ \App\Models\TeamInviteLink::MAX_USES_CEILING }}" wire:model.defer="linkMaxUses">
+                    <input class="ix-input" id="link-uses" type="number" min="1" max="{{ \App\Models\TeamInviteLink::MAX_USES_CEILING }}" wire:model.defer="linkMaxUses">
                     <div class="ix-actions"><x-jet-button>{{ __('Make a link') }}</x-jet-button></div>
                 </form>
 

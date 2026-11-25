@@ -8,7 +8,7 @@
 
     <form class="ix-topicbar" action="{{ route('library') }}" method="GET" role="search" aria-label="Filter the library by topic">
         <label for="library-topic">Topic</label>
-        <select id="library-topic" name="topic" class="ix-input ix-select">
+        <select id="library-topic" name="topic" class="ix-select">
             <option value="">All topics</option>
             @foreach ($topicChoices as $choice)
                 <option value="{{ $choice->slug }}" @selected($topic?->slug === $choice->slug)>{{ $choice->name }}</option>

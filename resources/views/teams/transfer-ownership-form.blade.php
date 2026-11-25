@@ -24,7 +24,7 @@
 
             <div class="col-span-6 sm:col-span-4">
                 <x-jet-label for="new_owner" value="{{ __('New owner') }}" />
-                <select id="new_owner" class="ix-input ix-select block w-full" wire:model="newOwner" required @error('new_owner') aria-invalid="true" aria-describedby="new_owner_error" @enderror>
+                <select id="new_owner" class="ix-select" wire:model="newOwner" required @error('new_owner') aria-invalid="true" aria-describedby="new_owner_error" @enderror>
                     <option value="">{{ __('Choose a person') }}</option>
                     @foreach ($candidates as $person)
                         <option value="{{ $person->id }}">{{ $person->name }} ({{ Laravel\Jetstream\Jetstream::findRole(\App\Support\TeamRoles::normalise($person->membership->role))?->name ?? ucfirst($person->membership->role) }})</option>

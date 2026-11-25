@@ -30,7 +30,7 @@
 
     <form method="get" action="{{ route('business.inbox', $team) }}" class="ix-dir__filters ix-vgap" aria-label="Filter the inbox">
         <label class="ix-dir__filter"><span>Status</span>
-            <select class="ix-input" name="status">
+            <select class="ix-select" name="status">
                 <option value="active" @selected($f['status'] === 'active')>Not resolved</option>
                 <option value="all" @selected($f['status'] === 'all')>All</option>
                 @foreach (\App\Models\Enquiry::STATUSES as $value => $label)<option value="{{ $value }}" @selected($f['status'] === $value)>{{ $label }}</option>@endforeach
@@ -38,7 +38,7 @@
         </label>
         @if ($manager)
             <label class="ix-dir__filter"><span>Who has it</span>
-                <select class="ix-input" name="who">
+                <select class="ix-select" name="who">
                     <option value="">Anyone</option>
                     <option value="mine" @selected(($f['who'] ?? null) === 'mine')>Me</option>
                     <option value="unassigned" @selected(($f['who'] ?? null) === 'unassigned')>Nobody yet</option>

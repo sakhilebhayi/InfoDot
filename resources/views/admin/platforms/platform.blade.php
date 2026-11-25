@@ -61,7 +61,7 @@
                             </div>
                             <div class="ix-field">
                                 <label class="ix-label" for="new-model">Kind of plan</label>
-                                <select id="new-model" name="model" class="ix-input ix-select" required>
+                                <select id="new-model" name="model" class="ix-select" required>
                                     <option value="" disabled @selected(! $adding)>Choose one</option>
                                     @foreach ($models as $value => $text)<option value="{{ $value }}" @selected(old('model') === $value)>{{ $text }}</option>@endforeach
                                 </select>
@@ -101,7 +101,7 @@
                                 <td data-label="Change">
                                     <form method="post" action="{{ route('admin.platforms.feature.update', ['entry' => $entry, 'feature' => $feature]) }}" class="ix-form">
                                         @csrf
-                                        <select name="state" class="ix-input ix-select" aria-label="State of {{ $feature->name }}">
+                                        <select name="state" class="ix-select" aria-label="State of {{ $feature->name }}">
                                             @foreach ($featureStates as $value => $text)<option value="{{ $value }}" @selected($feature->state === $value)>{{ $text }}</option>@endforeach
                                         </select>
                                         <input name="reason" type="text" minlength="10" maxlength="255" class="ix-input" placeholder="Why (kept in the audit trail)" aria-label="Reason for changing {{ $feature->name }}" required>
@@ -122,7 +122,7 @@
                     <div class="ix-field"><label class="ix-label" for="f-name">Name</label><input id="f-name" name="name" type="text" maxlength="120" class="ix-input" required></div>
                     <div class="ix-field"><label class="ix-label" for="f-key">Key</label><input id="f-key" name="key" type="text" maxlength="60" class="ix-input" required pattern="[a-z][a-z0-9_]{1,59}"><p class="ix-hint">Lower case letters, digits and underscores. It must match the key the platform's code checks, and cannot be changed later.</p></div>
                     <div class="ix-field"><label class="ix-label" for="f-desc">What it does (optional)</label><input id="f-desc" name="description" type="text" maxlength="300" class="ix-input"></div>
-                    <div class="ix-field"><label class="ix-label" for="f-kind">Label</label><select id="f-kind" name="kind" class="ix-input ix-select"><option value="free">Free</option><option value="paid">Paid</option></select></div>
+                    <div class="ix-field"><label class="ix-label" for="f-kind">Label</label><select id="f-kind" name="kind" class="ix-select"><option value="free">Free</option><option value="paid">Paid</option></select></div>
                     @include('admin.platforms._reason', ['id' => 'feature-reason', 'sticky' => false])
                     <div><button type="submit" class="ix-btn ix-btn--primary">List the feature</button></div>
                 </form>
@@ -138,7 +138,7 @@
                     @csrf
                     <div class="ix-field">
                         <label class="ix-label" for="op">Working</label>
-                        <select id="op" name="operational_status" class="ix-input ix-select">
+                        <select id="op" name="operational_status" class="ix-select">
                             @foreach ($statuses as $value => $text)<option value="{{ $value }}" @selected(old('operational_status', $entry->operational_status) === $value)>{{ $text }}</option>@endforeach
                         </select>
                         <p class="ix-hint">Businesses only ever see "temporarily unavailable" or "not launched". Nobody loses an entitlement when this changes.</p>

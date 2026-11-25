@@ -15,7 +15,7 @@
 
     <form class="ix-topicbar" action="{{ route('seminars') }}" method="GET" role="search" aria-label="Filter seminars by topic">
         <label for="seminar-topic">Topic</label>
-        <select id="seminar-topic" name="topic" class="ix-input ix-select">
+        <select id="seminar-topic" name="topic" class="ix-select">
             <option value="">All topics</option>
             @foreach ($topics as $t)
                 <option value="{{ $t->id }}" @selected($topicId === $t->id)>{{ $t->name }}</option>

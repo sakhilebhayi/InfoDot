@@ -146,7 +146,7 @@
                 <form method="post" action="{{ route('business.appointments.assign', [$team, $booking]) }}" class="ix-form">@csrf
                     <div>
                         <label class="ix-label" for="provider">Who takes it</label>
-                        <select class="ix-input" id="provider" name="provider">
+                        <select class="ix-select" id="provider" name="provider">
                             <option value="any">Whoever is free</option>
                             @foreach ($providers as $p)
                                 <option value="{{ $p->id }}" @selected($booking->booking_provider_id === $p->id)>{{ $p->public_name }}</option>

@@ -17,7 +17,7 @@
             <div class="ix-form__row">
                 <div class="ix-field">
                     <label class="ix-label" for="imp-target">What are you improving?</label>
-                    <select class="ix-select ix-input" id="imp-target" wire:model.live="form.target">
+                    <select class="ix-select" id="imp-target" wire:model.live="form.target">
                         <option value="description">The description</option>
                         <option value="step">One of the steps</option>
                         <option value="new-step">Add a missing step</option>
@@ -26,7 +26,7 @@
                 @if ($form['target'] === 'step')
                     <div class="ix-field">
                         <label class="ix-label" for="imp-step">Which step</label>
-                        <select class="ix-select ix-input" id="imp-step" wire:model="form.step_id">
+                        <select class="ix-select" id="imp-step" wire:model="form.step_id">
                             <option value="">Pick a step</option>
                             @foreach ($steps as $i => $step)
                                 <option value="{{ $step->id }}">{{ $i + 1 }}. {{ Str::limit($step->solution_heading, 40) }}</option>

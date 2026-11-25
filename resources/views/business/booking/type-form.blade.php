@@ -66,7 +66,7 @@
                     </div>
                     <div>
                         <label class="ix-label" for="currency">Currency</label>
-                        <select class="ix-input" id="currency" name="currency">
+                        <select class="ix-select" id="currency" name="currency">
                             @foreach ($currencies as $code => $label)
                                 <option value="{{ $code }}" @selected(old('currency', $type->currency) === $code)>{{ $label }}</option>
                             @endforeach
@@ -77,7 +77,7 @@
                 <div class="ix-form__row">
                     <div>
                         <label class="ix-label" for="meeting_format">Format</label>
-                        <select class="ix-input" id="meeting_format" name="meeting_format">
+                        <select class="ix-select" id="meeting_format" name="meeting_format">
                             @foreach (\App\Models\AppointmentType::FORMATS as $key => $label)
                                 <option value="{{ $key }}" @selected(old('meeting_format', $type->meeting_format) === $key)>{{ $label }}</option>
                             @endforeach
@@ -85,7 +85,7 @@
                     </div>
                     <div>
                         <label class="ix-label" for="approval">Confirmation</label>
-                        <select class="ix-input" id="approval" name="approval">
+                        <select class="ix-select" id="approval" name="approval">
                             <option value="follow" @selected(old('approval', $approval) === 'follow')>Follow the business setting ({{ $approvalMode === 'auto' ? 'confirm automatically' : 'we confirm each one' }})</option>
                             <option value="always" @selected(old('approval', $approval) === 'always')>Always confirm myself</option>
                             <option value="auto" @selected(old('approval', $approval) === 'auto')>Confirm automatically</option>

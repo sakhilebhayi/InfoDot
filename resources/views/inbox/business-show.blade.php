@@ -33,14 +33,14 @@
                     @csrf
                     <div class="ix-field">
                         <label class="ix-label" for="status">Status</label>
-                        <select class="ix-input" id="status" name="status">
+                        <select class="ix-select" id="status" name="status">
                             @foreach (\App\Models\Enquiry::STATUSES as $value => $label)<option value="{{ $value }}" @selected($enquiry->status === $value)>{{ $label }}</option>@endforeach
                         </select>
                     </div>
                     @if ($manager)
                         <div class="ix-field">
                             <label class="ix-label" for="assigned_to">With</label>
-                            <select class="ix-input" id="assigned_to" name="assigned_to">
+                            <select class="ix-select" id="assigned_to" name="assigned_to">
                                 <option value="">The whole inbox</option>
                                 @foreach ($members as $member)<option value="{{ $member->id }}" @selected($enquiry->assigned_to === $member->id)>{{ $member->name }}</option>@endforeach
                             </select>

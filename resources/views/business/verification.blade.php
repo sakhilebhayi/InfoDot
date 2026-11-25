@@ -93,7 +93,7 @@
                             <div class="ix-evrow">
                                 <div class="ix-field">
                                     <label class="ix-label" for="add-label">What it is</label>
-                                    <select id="add-label" name="evidence[0][label]" class="ix-input">
+                                    <select id="add-label" name="evidence[0][label]" class="ix-select">
                                         @foreach ($labels as $key => $label)<option value="{{ $key }}">{{ $label }}</option>@endforeach
                                     </select>
                                 </div>
@@ -160,7 +160,7 @@
                         <div class="ix-form__row">
                             <div class="ix-field">
                                 <label class="ix-label" for="category">What kind of business</label>
-                                <select id="category" name="category" class="ix-input" required>
+                                <select id="category" name="category" class="ix-select" required>
                                     @foreach (\App\Models\BusinessVerification::CATEGORIES as $key => $label)<option value="{{ $key }}" @selected(old('category') === $key)>{{ $label }}</option>@endforeach
                                 </select>
                             </div>
@@ -210,7 +210,7 @@
                             <div class="ix-evrows">
                                 @foreach ([['registration', true], ['authority', false], ['address', false]] as $i => [$label, $required])
                                     <div class="ix-evrow">
-                                        <select name="evidence[{{ $i }}][label]" class="ix-input" aria-label="Document {{ $i + 1 }}: what it is">
+                                        <select name="evidence[{{ $i }}][label]" class="ix-select" aria-label="Document {{ $i + 1 }}: what it is">
                                             @foreach ($labels as $key => $text)<option value="{{ $key }}" @selected($key === $label)>{{ $text }}</option>@endforeach
                                         </select>
                                         <input type="file" name="evidence[{{ $i }}][file]" accept="application/pdf,image/jpeg,image/png,image/webp" class="ix-input" aria-label="Document {{ $i + 1 }}: file" @required($required)>
@@ -271,7 +271,7 @@
                         </div>
                         <div class="ix-field">
                             <label class="ix-label" for="link-kind">{{ $team->name }} is its…</label>
-                            <select id="link-kind" name="kind" class="ix-input">
+                            <select id="link-kind" name="kind" class="ix-select">
                                 @foreach ($kinds as $key => $label)<option value="{{ $key }}" @selected(old('kind') === $key)>{{ $label }}</option>@endforeach
                             </select>
                         </div>

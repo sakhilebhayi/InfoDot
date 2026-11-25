@@ -29,7 +29,7 @@
 
         <div class="col-span-6 sm:col-span-4">
             <x-jet-label for="industry" value="Industry" />
-            <select id="industry" class="ix-input ix-select block w-full" wire:model.defer="state.industry">
+            <select id="industry" class="ix-select" wire:model.defer="state.industry">
                 <option value="">{{ __('General business') }}</option>
                 @foreach (\App\Support\Industry::options() as $key => $label)
                     @continue($key === 'general')
@@ -42,7 +42,7 @@
 
         <div class="col-span-6 sm:col-span-4">
             <x-jet-label for="description" value="What the business does" />
-            <textarea id="description" class="ix-textarea block w-full" rows="4" maxlength="2000" wire:model.defer="state.description"></textarea>
+            <textarea id="description" class="ix-textarea" rows="4" maxlength="2000" wire:model.defer="state.description"></textarea>
             <p class="ix-hint">A sentence or two a customer would understand. Businesses lists a business once it says this.</p>
             <x-jet-input-error for="description" />
         </div>

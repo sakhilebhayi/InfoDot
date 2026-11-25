@@ -19,7 +19,7 @@
 
                 <!-- Current Profile Photo -->
                 <div class="relative" x-show="! photoPreview">
-                    <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" class="absolute h-20 w-20 cursor-pointer opacity-0" wire:key="photo" x-ref="photo" aria-describedby="photo-hint photo-check" x-on:change="
+                    <input type="file" id="photo" accept="image/jpeg,image/png,image/webp" class="ix-photo-input" wire:key="photo" x-ref="photo" aria-describedby="photo-hint photo-check" x-on:change="
                         const file = $refs.photo.files[0];
                         if (! file) { return; }
                         photoError = null;

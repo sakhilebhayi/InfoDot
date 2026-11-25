@@ -24,7 +24,7 @@
         </div>
         <div class="ix-field">
             <label class="ix-label" for="settlement_bank">Bank</label>
-            <select class="ix-input ix-select" id="settlement_bank" name="settlement_bank" required>
+            <select class="ix-select" id="settlement_bank" name="settlement_bank" required>
                 <option value="">Choose your bank</option>
                 @foreach ($banks as $b)
                     <option value="{{ $b['code'] }}" @selected(old('settlement_bank') === $b['code'])>{{ $b['name'] }}</option>

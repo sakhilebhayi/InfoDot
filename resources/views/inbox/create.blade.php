@@ -20,7 +20,7 @@
             @csrf
             <div class="ix-form__row">
                 <label class="ix-label" for="category">What it is about</label>
-                <select class="ix-input" id="category" name="category" required>
+                <select class="ix-select" id="category" name="category" required>
                     @foreach ($categories as $value => $label)<option value="{{ $value }}" @selected(old('category', 'general') === $value)>{{ $label }}</option>@endforeach
                 </select>
             </div>

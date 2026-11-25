@@ -11,7 +11,7 @@
     @if ($canModerate && ! $solution->isHidden())
         <form wire:submit="{{ $solution->isVerified() ? 'unverify' : 'verify' }}" class="ix-verify__form">
             <label for="verify-note-{{ $solution->id }}">{{ $solution->isVerified() ? 'Why is the verification removed?' : 'Note (optional)' }}</label>
-            <textarea id="verify-note-{{ $solution->id }}" wire:model="note" rows="2" maxlength="1000" @if ($solution->isVerified()) required @endif></textarea>
+            <textarea class="ix-textarea" id="verify-note-{{ $solution->id }}" wire:model="note" rows="2" maxlength="1000" @if ($solution->isVerified()) required @endif></textarea>
             @error('note') <p class="ix-error" role="alert">{{ $message }}</p> @enderror
             <button type="submit" class="ix-btn {{ $solution->isVerified() ? 'ix-btn--danger' : 'ix-btn--primary' }}">
                 {{ $solution->isVerified() ? 'Remove verification' : 'Verify this solution' }}

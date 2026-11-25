@@ -28,7 +28,7 @@
 
         <div class="ix-field">
             <label class="ix-label" for="topic_id">Topic (optional)</label>
-            <select class="ix-input ix-select" id="topic_id" name="topic_id">
+            <select class="ix-select" id="topic_id" name="topic_id">
                 <option value="">No topic</option>
                 @foreach ($topics as $t)
                     <option value="{{ $t->id }}" @selected((int) old('topic_id', $seminar?->topic_id) === $t->id)>{{ $t->name }}</option>

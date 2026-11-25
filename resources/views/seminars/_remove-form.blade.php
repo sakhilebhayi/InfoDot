@@ -4,7 +4,7 @@
     <input class="ix-input" id="{{ $idPrefix }}-why-{{ $seminar->id }}" name="reason" type="text" minlength="10" maxlength="500" required>
     @if ($seminar->starts_at->isPast())
         <label class="ix-label" for="{{ $idPrefix }}-refunds-{{ $seminar->id }}">This seminar has already started. Who is refunded?</label>
-        <select class="ix-input" id="{{ $idPrefix }}-refunds-{{ $seminar->id }}" name="refunds">
+        <select class="ix-select" id="{{ $idPrefix }}-refunds-{{ $seminar->id }}" name="refunds">
             <option value="all">Everyone who paid, in full</option>
             <option value="complainants">Only people who reported the seminar</option>
             <option value="none">No one</option>

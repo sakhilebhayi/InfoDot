@@ -707,6 +707,36 @@ select.ix-input[multiple] {
     opacity: 0.7;
 }
 
+.ix-input--narrow {
+    max-width: 160px;
+}
+
+.ix-input--tiny {
+    width: 88px;
+}
+
+.ix-input--amount {
+    width: 110px;
+}
+
+.ix-select--auto {
+    width: auto;
+    max-width: 100%;
+}
+
+/* The invisible file input laid over a profile photo, so the picture itself is the button. */
+.ix-photo-input {
+    position: absolute;
+    width: 5rem;
+    height: 5rem;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.ix-textarea--short {
+    min-height: 88px;
+}
+
 .ix-input[type='file'] {
     padding: 0 12px 0 0;
     line-height: calc(var(--ix-field-h) - 2px);
@@ -3714,7 +3744,7 @@ button.ix-dir__item:hover:not([disabled]) {
     pointer-events: none;
 }
 
-.ix-cat__search .ix-input {
+.ix-cat__search .ix-input, .ix-cat__search .ix-select {
     padding-left: 38px;
 }
 
@@ -6397,7 +6427,7 @@ a.ix-topic:focus-visible {
     font: 600 var(--dot-text-body-sm-size)/1 var(--ix-font);
 }
 
-.ix-topicbar .ix-input {
+.ix-topicbar .ix-input, .ix-topicbar .ix-select {
     width: auto;
     min-width: 0;
     max-width: 100%;
@@ -6559,7 +6589,7 @@ a.ix-topic:focus-visible {
         align-items: stretch;
     }
 
-    .ix-topicbar .ix-input {
+    .ix-topicbar .ix-input, .ix-topicbar .ix-select {
         flex: 1 1 140px;
     }
 }
@@ -6603,8 +6633,8 @@ a.ix-topic:focus-visible {
     margin: 0 0 20px;
 }
 
-.ix-topicadd .ix-input,
-.ix-topiclist .ix-mod__form .ix-input {
+.ix-topicadd .ix-input, .ix-topicadd .ix-select,
+.ix-topiclist .ix-mod__form .ix-input, .ix-topiclist .ix-mod__form .ix-select {
     width: 100%;
 }
 
@@ -6848,7 +6878,7 @@ a.ix-topic:focus-visible {
     max-width: 520px;
 }
 
-.ix-lib__add .ix-input {
+.ix-lib__add .ix-input, .ix-lib__add .ix-select {
     width: 100%;
 }
 
@@ -7123,7 +7153,7 @@ a.ix-notices__text:hover {
         margin-top: 8px;
     }
 
-    .ix-topicbar .ix-input,
+    .ix-topicbar .ix-input, .ix-topicbar .ix-select,
     .ix-topicbar .ix-btn {
         width: 100%;
     }
@@ -8213,7 +8243,7 @@ body {
 .ix-room__chat { list-style: none; margin: 0; padding: 8px 10px; height: 260px; overflow-y: auto; background: var(--ix-panel); border: 1px solid var(--ix-rule); border-radius: var(--ix-radius); font-size: var(--dot-text-body-sm-size); }
 .ix-room__chat li { padding: 3px 0; overflow-wrap: anywhere; }
 .ix-room__form { display: flex; gap: 8px; }
-.ix-room__form .ix-input { flex: 1; min-width: 0; }
+.ix-room__form .ix-input, .ix-room__form .ix-select { flex: 1; min-width: 0; }
 .ix-room__controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .ix-room__controls [aria-pressed='true'] { background: var(--ix-signal-wash); }
 
@@ -8599,7 +8629,7 @@ body {
 @media (max-width: 599px) { .ix-evrow { grid-template-columns: minmax(0, 1fr); } }
 
 .ix-vcode { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-.ix-vcode .ix-input { max-width: 320px; }
+.ix-vcode .ix-input, .ix-vcode .ix-select { max-width: 320px; }
 .ix-vcode__digits { max-width: 9ch !important; font-variant-numeric: tabular-nums; letter-spacing: 0.2em; text-align: center; }
 
 .ix-vhist { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 0; }
@@ -8658,11 +8688,11 @@ body {
 .ix-dir__form { display: grid; gap: 12px; }
 .ix-dir__bar { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; max-width: 880px; }
 .ix-dir__bar > .material-symbols-rounded { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 24px; color: var(--ix-text-3); pointer-events: none; }
-.ix-dir__bar .ix-input { height: 56px; padding-left: 50px; font-size: var(--dot-text-body-lg-size); background: var(--ix-panel); border-color: var(--ix-rule-strong); }
+.ix-dir__bar .ix-input, .ix-dir__bar .ix-select { height: 56px; padding-left: 50px; font-size: var(--dot-text-body-lg-size); background: var(--ix-panel); border-color: var(--ix-rule-strong); }
 .ix-dir__bar .ix-btn { height: 56px; padding: 0 26px; font-size: var(--dot-text-body-size); }
 .ix-dir__filters { display: flex; flex-wrap: wrap; align-items: end; gap: 10px 12px; }
 .ix-dir__filter { display: grid; gap: 4px; min-width: 0; font-size: var(--dot-text-body-sm-size); font-weight: 600; color: var(--ix-text-3); }
-.ix-dir__filter .ix-input { width: auto; min-width: 150px; max-width: 100%; height: 36px; }
+.ix-dir__filter .ix-input, .ix-dir__filter .ix-select { width: auto; min-width: 150px; max-width: 100%; height: 36px; }
 .ix-dir__check { display: inline-flex; align-items: center; gap: 8px; height: 36px; font-size: var(--dot-text-body-sm-size); color: var(--ix-text-2); }
 .ix-dir__check input { accent-color: var(--ix-ok); width: 16px; height: 16px; }
 

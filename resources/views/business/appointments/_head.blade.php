@@ -33,7 +33,7 @@
             @if (is_string($v))<input type="hidden" name="{{ $k }}" value="{{ $v }}">@endif
         @endforeach
         <label class="ix-sr" for="provider">Filter by provider</label>
-        <select class="ix-input" id="provider" name="provider">
+        <select class="ix-select" id="provider" name="provider">
             <option value="">All providers</option>
             <option value="unassigned" @selected($board->filter() === 'unassigned')>Not assigned to anyone</option>
             @foreach ($providers as $p)

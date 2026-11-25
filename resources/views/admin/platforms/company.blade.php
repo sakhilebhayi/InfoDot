@@ -124,7 +124,7 @@
                 <div class="ix-form__row">
                     <div class="ix-field">
                         <label class="ix-label" for="grant-platform">Platform</label>
-                        <select id="grant-platform" name="platform" class="ix-input ix-select" required>
+                        <select id="grant-platform" name="platform" class="ix-select" required>
                             <option value="" disabled @selected($form !== 'grant')>Choose one</option>
                             @foreach ($grantable as $entry)<option value="{{ $entry->key }}" @selected($form === 'grant' && old('platform') === $entry->key)>{{ $entry->name }}</option>@endforeach
                         </select>
@@ -146,7 +146,7 @@
                 <div class="ix-form__row">
                     <div class="ix-field">
                         <label class="ix-label" for="trial-platform">Platform</label>
-                        <select id="trial-platform" name="platform" class="ix-input ix-select" required>
+                        <select id="trial-platform" name="platform" class="ix-select" required>
                             <option value="" disabled @selected($form !== 'trial')>Choose one</option>
                             @foreach ($grantable as $entry)<option value="{{ $entry->key }}" @selected($form === 'trial' && old('platform') === $entry->key)>{{ $entry->name }}</option>@endforeach
                         </select>
@@ -159,7 +159,7 @@
                 @if ($trialPlans->isNotEmpty())
                     <div class="ix-field">
                         <label class="ix-label" for="trial-plan">Plan it leads to (optional; its own trial length is used when days is empty)</label>
-                        <select id="trial-plan" name="plan" class="ix-input ix-select">
+                        <select id="trial-plan" name="plan" class="ix-select">
                             <option value="">No plan</option>
                             @foreach ($trialPlans as $plan)<option value="{{ $plan->id }}" @selected($form === 'trial' && (string) old('plan') === (string) $plan->id)>{{ $name($plan->platform_key) }}: {{ $plan->name }} ({{ $plan->trial_days }} days)</option>@endforeach
                         </select>

@@ -16,7 +16,7 @@
     <div class="ix-mod__filters">
         <label>
             <span>Show</span>
-            <select wire:model.live="status" class="ix-input ix-select">
+            <select wire:model.live="status" class="ix-select">
                 @foreach ($statuses as $option)
                     <option value="{{ $option }}">{{ ucfirst($option) }}</option>
                 @endforeach
@@ -25,7 +25,7 @@
         @if ($tab === 'reports')
             <label>
                 <span>Reason</span>
-                <select wire:model.live="reason" class="ix-input ix-select">
+                <select wire:model.live="reason" class="ix-select">
                     <option value="">Any reason</option>
                     @foreach (\App\Models\ContentReport::REASON_LABELS as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
@@ -119,7 +119,7 @@
                                             <summary class="ix-btn">Dismiss</summary>
                                             <form wire:submit="dismiss('{{ $item['key'] }}')" class="ix-mod__form">
                                                 <label for="dismiss-{{ $item['key'] }}">Why are these reports dismissed?</label>
-                                                <textarea id="dismiss-{{ $item['key'] }}" wire:model="dismissNotes.{{ $item['key'] }}" rows="3" maxlength="1000" required></textarea>
+                                                <textarea class="ix-textarea" id="dismiss-{{ $item['key'] }}" wire:model="dismissNotes.{{ $item['key'] }}" rows="3" maxlength="1000" required></textarea>
                                                 @error('dismissNotes.'.$item['key']) <p class="ix-error" role="alert">{{ $message }}</p> @enderror
                                                 <button type="submit" class="ix-btn ix-btn--primary">Dismiss reports</button>
                                             </form>
@@ -131,7 +131,7 @@
                                             <summary class="ix-btn ix-btn--danger">Hide</summary>
                                             <form wire:submit="hide('{{ $item['key'] }}')" class="ix-mod__form">
                                                 <label for="hide-{{ $item['key'] }}">Why is it hidden? The author will read this.</label>
-                                                <textarea id="hide-{{ $item['key'] }}" wire:model="hideReasons.{{ $item['key'] }}" rows="3" maxlength="1000" required></textarea>
+                                                <textarea class="ix-textarea" id="hide-{{ $item['key'] }}" wire:model="hideReasons.{{ $item['key'] }}" rows="3" maxlength="1000" required></textarea>
                                                 @if (! empty($item['accepted']))
                                                     <p class="ix-hint">This is the accepted answer. Hiding it removes the acceptance and takes back the points it earned.</p>
                                                 @endif
@@ -144,7 +144,7 @@
                                             <summary class="ix-btn">Restore</summary>
                                             <form wire:submit="restore('{{ $item['key'] }}')" class="ix-mod__form">
                                                 <label for="restore-{{ $item['key'] }}">Note (optional)</label>
-                                                <textarea id="restore-{{ $item['key'] }}" wire:model="restoreNotes.{{ $item['key'] }}" rows="2" maxlength="1000"></textarea>
+                                                <textarea class="ix-textarea" id="restore-{{ $item['key'] }}" wire:model="restoreNotes.{{ $item['key'] }}" rows="2" maxlength="1000"></textarea>
                                                 @error('restoreNotes.'.$item['key']) <p class="ix-error" role="alert">{{ $message }}</p> @enderror
                                                 <button type="submit" class="ix-btn ix-btn--primary">Restore it</button>
                                             </form>
@@ -164,7 +164,7 @@
                                         <summary class="ix-btn">Uphold</summary>
                                         <form wire:submit="uphold({{ $row['appeal']->id }})" class="ix-mod__form">
                                             <label for="uphold-{{ $row['appeal']->id }}">Note (optional)</label>
-                                            <textarea id="uphold-{{ $row['appeal']->id }}" wire:model="appealNotes.{{ $row['appeal']->id }}" rows="2" maxlength="1000"></textarea>
+                                            <textarea class="ix-textarea" id="uphold-{{ $row['appeal']->id }}" wire:model="appealNotes.{{ $row['appeal']->id }}" rows="2" maxlength="1000"></textarea>
                                             @error('appealNotes.'.$row['appeal']->id) <p class="ix-error" role="alert">{{ $message }}</p> @enderror
                                             <button type="submit" class="ix-btn ix-btn--primary">Uphold and show it again</button>
                                         </form>
@@ -173,7 +173,7 @@
                                         <summary class="ix-btn ix-btn--danger">Deny</summary>
                                         <form wire:submit="deny({{ $row['appeal']->id }})" class="ix-mod__form">
                                             <label for="deny-{{ $row['appeal']->id }}">Why is the appeal denied? The author will read this.</label>
-                                            <textarea id="deny-{{ $row['appeal']->id }}" wire:model="appealNotes.{{ $row['appeal']->id }}" rows="3" maxlength="1000" required></textarea>
+                                            <textarea class="ix-textarea" id="deny-{{ $row['appeal']->id }}" wire:model="appealNotes.{{ $row['appeal']->id }}" rows="3" maxlength="1000" required></textarea>
                                             @error('appealNotes.'.$row['appeal']->id) <p class="ix-error" role="alert">{{ $message }}</p> @enderror
                                             <button type="submit" class="ix-btn ix-btn--danger">Deny the appeal</button>
                                         </form>

@@ -13,7 +13,7 @@
     @else
         <form wire:submit="send" class="ix-answer__report" x-init="$nextTick(() => $refs.reason.focus())">
             <label for="report-reason-{{ $kind }}-{{ $itemId }}">What is wrong with it?</label>
-            <select id="report-reason-{{ $kind }}-{{ $itemId }}" x-ref="reason" wire:model="reason">
+            <select class="ix-select" id="report-reason-{{ $kind }}-{{ $itemId }}" x-ref="reason" wire:model="reason">
                 @foreach (\App\Models\ContentReport::REASON_LABELS as $value => $label)
                     <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach

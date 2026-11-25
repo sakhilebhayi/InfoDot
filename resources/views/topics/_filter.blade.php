@@ -2,7 +2,7 @@
 @php($isNone = $filterSlug === 'none')
 <form class="ix-topicbar" action="{{ $route }}" method="GET" role="search" aria-label="Filter by topic">
     <label for="topic-filter">Topic</label>
-    <select id="topic-filter" name="topic" class="ix-input ix-select">
+    <select id="topic-filter" name="topic" class="ix-select">
         <option value="">All topics</option>
         @foreach ($topicChoices as $choice)
             <option value="{{ $choice->slug }}" @selected($filterSlug === $choice->slug)>{{ $choice->name }}</option>

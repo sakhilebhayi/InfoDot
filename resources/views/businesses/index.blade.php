@@ -49,7 +49,7 @@
             <div class="ix-dir__filters">
                 <label class="ix-dir__filter">
                     <span>Category</span>
-                    <select class="ix-input" name="category">
+                    <select class="ix-select" name="category">
                         <option value="">Any</option>
                         @foreach ($categories as $c)<option value="{{ $c->slug }}" @selected(($f['category'] ?? null) === $c->slug)>{{ $c->name }}</option>@endforeach
                     </select>
@@ -60,7 +60,7 @@
                 </label>
                 <label class="ix-dir__filter">
                     <span>Type</span>
-                    <select class="ix-input" name="type">
+                    <select class="ix-select" name="type">
                         <option value="">Any</option>
                         @foreach ($types as $value => $label)<option value="{{ $value }}" @selected(($f['type'] ?? null) === $value)>{{ $label }}</option>@endforeach
                     </select>
@@ -68,7 +68,7 @@
                 @if ($sizes->isNotEmpty())
                     <label class="ix-dir__filter">
                         <span>Size</span>
-                        <select class="ix-input" name="size">
+                        <select class="ix-select" name="size">
                             <option value="">Any</option>
                             @foreach ($sizes as $size)<option value="{{ $size }}" @selected(($f['size'] ?? null) === $size)>{{ $size }}</option>@endforeach
                         </select>
@@ -76,7 +76,7 @@
                 @endif
                 <label class="ix-dir__filter">
                     <span>Order</span>
-                    <select class="ix-input" name="sort">
+                    <select class="ix-select" name="sort">
                         <option value="">Best match</option>
                         <option value="newest" @selected(($f['sort'] ?? null) === 'newest')>Newest on InfoDot</option>
                         <option value="name" @selected(($f['sort'] ?? null) === 'name')>Name, A to Z</option>

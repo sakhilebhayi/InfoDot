@@ -80,7 +80,7 @@
                 <div class="ix-form__row">
                     <div>
                         <label class="ix-label" for="scope">Applies to</label>
-                        <select class="ix-input" id="scope" name="scope">
+                        <select class="ix-select" id="scope" name="scope">
                             @if ($manages)
                                 <option value="business" @selected(old('scope', 'business') === 'business')>The whole business</option>
                             @endif

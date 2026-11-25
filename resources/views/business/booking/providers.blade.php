@@ -71,7 +71,7 @@
                     <div class="ix-form__row">
                         <div>
                             <label class="ix-label" for="user_id">Person</label>
-                            <select class="ix-input" id="user_id" name="user_id" required>
+                            <select class="ix-select" id="user_id" name="user_id" required>
                                 @foreach ($candidates as $person)
                                     <option value="{{ $person->id }}" @selected((int) old('user_id') === $person->id)>{{ $person->name }}</option>
                                 @endforeach

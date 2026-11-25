@@ -45,7 +45,7 @@
                     @endforeach
                 </div>
                 <div class="ix-field"><label class="ix-label" for="b-mode">Mode</label>
-                    <select id="b-mode" name="mode" class="ix-input ix-select"><option value="light" @selected($v('mode') === 'light')>Light</option><option value="dark" @selected($v('mode') === 'dark')>Dark</option></select>
+                    <select id="b-mode" name="mode" class="ix-select"><option value="light" @selected($v('mode') === 'light')>Light</option><option value="dark" @selected($v('mode') === 'dark')>Dark</option></select>
                 </div>
             </div>
         </section>

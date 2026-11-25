@@ -73,7 +73,7 @@
                     <h3 class="ix-dir__h2">Appeal a decision</h3>
                     <div class="ix-form__row">
                         <label class="ix-label" for="subject">Decision</label>
-                        <select class="ix-input" id="subject" name="subject" required>
+                        <select class="ix-select" id="subject" name="subject" required>
                             @foreach ($appealable as $s)
                                 @if ($s instanceof \App\Models\BusinessInvestigation)
                                     <option value="investigation:{{ $s->id }}">{{ $s->isOpen() ? 'Being kept out of the directory during a review' : $s->statusLabel() }} ({{ $s->updated_at->format('j M Y') }})</option>
