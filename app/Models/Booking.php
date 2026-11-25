@@ -49,13 +49,13 @@ class Booking extends Model
 
     protected $fillable = [
         'reference', 'team_id', 'appointment_type_id', 'booking_provider_id', 'customer_user_id', 'customer_name', 'customer_email', 'customer_phone',
-        'customer_company', 'reason', 'answers', 'starts_at', 'ends_at', 'blocks_from', 'blocks_until', 'status', 'internal_notes', 'cancelled_at', 'terms_accepted_at',
+        'customer_company', 'reason', 'answers', 'starts_at', 'ends_at', 'blocks_from', 'blocks_until', 'status', 'internal_notes', 'cancelled_at', 'terms_accepted_at', 'status_note', 'reschedule_requested_at', 'reschedule_note',
     ];
 
     protected function casts(): array
     {
         return [
-            'starts_at' => 'datetime', 'ends_at' => 'datetime', 'blocks_from' => 'datetime', 'blocks_until' => 'datetime', 'cancelled_at' => 'datetime', 'terms_accepted_at' => 'datetime', 'answers' => 'array',
+            'starts_at' => 'datetime', 'ends_at' => 'datetime', 'blocks_from' => 'datetime', 'blocks_until' => 'datetime', 'cancelled_at' => 'datetime', 'terms_accepted_at' => 'datetime', 'reschedule_requested_at' => 'datetime', 'answers' => 'array',
         ];
     }
 
