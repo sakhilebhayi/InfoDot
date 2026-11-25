@@ -16,7 +16,7 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('Your business, all in one place.', $html);
+        $this->assertStringContainsString('Your business, written down and connected.', $html);
         $this->assertStringContainsString('role="search"', $html);
         $this->assertStringContainsString('name="search"', $html);
         $this->assertStringContainsString('has-motion', $html);
@@ -25,7 +25,7 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString("classList.add('motion-failsafe')", $html);
         $this->assertStringContainsString('prefers-reduced-motion', $html);
         // R-55: the value proposition and the three pillars, in the visitor's words.
-        foreach (['Discover', 'Manage', 'Grow', 'Learn what works', 'Run your business', 'Build your future', 'Join InfoDot for Free', 'See how it works', 'Knowledge, people and tools to start, manage and grow your business.',
+        foreach (['Discover', 'Manage', 'Grow', 'Learn what works', 'Run your business', 'Build your future', 'Join InfoDot for Free', 'See how it works', 'Practical answers from other businesses, and one account for the tools that run yours: money, people, work and documents. Free to join.', 'Most small businesses run on memory and chat.',
             'Getting started with InfoDot is simple.', 'Your business. Your tools. One connected ecosystem.', "You don't have to figure it all out yourself.",
             'Built for every stage of your business journey.', 'Your business journey starts here.'] as $words) {
             $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
@@ -33,7 +33,7 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString(route('register'), $html);
         $this->assertStringContainsString(route('solution_search_results'), $html);
         $this->assertSame(1, substr_count($html, '<h1'));
-        $this->assertStringContainsString('<title>InfoDot: everything your business needs, in one place</title>', $html);
+        $this->assertStringContainsString('<title>InfoDot: free business answers and connected tools</title>', $html);
         $this->assertStringContainsString('<meta name="description"', $html);
     }
 
