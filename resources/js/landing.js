@@ -135,10 +135,12 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     gsap.to('[data-hero-inner]', { y: -56, ease: 'none', scrollTrigger: heroEnd });
 
     // Below the hero: whatever comes into view rises into place, grouped so a section's parts arrive one after another.
+    // Content starts arriving the moment its top edge is on screen and is fully there within about half a second, so a normal scroll
+    // never lands on blank space. A group that arrives together shares at most 0.3s of stagger, however many parts it has.
     ScrollTrigger.batch('[data-reveal]', {
-        start: 'top 90%',
+        start: 'top 98%',
         once: true,
-        onEnter: (els) => gsap.fromTo(els, { y: 26, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.85, stagger: 0.09, ease: 'power3.out', overwrite: true }),
+        onEnter: (els) => gsap.fromTo(els, { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, stagger: Math.min(0.06, 0.3 / els.length), ease: 'power3.out', overwrite: true }),
     });
 
     // Photographs drift a little against the scroll, so the page has depth without anything looping.
@@ -172,25 +174,25 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         const lines = pillar.querySelectorAll('.hp-pillar__list li');
         if (plate) {
             gsap.fromTo(plate, { clipPath: 'inset(0 100% 0 0)' }, {
-                clipPath: 'inset(0 0% 0 0)', duration: 1, ease: 'expo.out', clearProps: 'clipPath',
-                scrollTrigger: { trigger: pillar, start: 'top 82%', once: true },
+                clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath',
+                scrollTrigger: { trigger: pillar, start: 'top 98%', once: true },
             });
         }
         if (lines.length) {
             gsap.fromTo(lines, { clipPath: 'inset(0 0 100% 0)', y: 10 }, {
-                clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.7, stagger: 0.09, ease: 'power3.out', clearProps: 'clipPath,transform',
-                scrollTrigger: { trigger: pillar, start: 'top 72%', once: true },
+                clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.5, stagger: Math.min(0.06, 0.3 / lines.length), ease: 'power3.out', clearProps: 'clipPath,transform',
+                scrollTrigger: { trigger: pillar, start: 'top 98%', once: true },
             });
         }
     });
 
-    // The tools: each group's names come into focus one after another as the group arrives.
+    // The tools: each group's logos rise in one after another as the group arrives (no blur: a name must be readable the moment it shows).
     gsap.utils.toArray('[data-group]').forEach((group) => {
         const logos = group.querySelectorAll('[data-logo]');
         if (!logos.length) return;
-        gsap.fromTo(logos, { filter: 'blur(9px)', scale: 0.9 }, {
-            filter: 'blur(0px)', scale: 1, duration: 0.8, stagger: 0.06, ease: 'power3.out', clearProps: 'filter,transform',
-            scrollTrigger: { trigger: group, start: 'top 88%', once: true },
+        gsap.fromTo(logos, { y: 10, autoAlpha: 0 }, {
+            y: 0, autoAlpha: 1, duration: 0.45, stagger: Math.min(0.04, 0.3 / logos.length), ease: 'power3.out', clearProps: 'opacity,visibility,transform',
+            scrollTrigger: { trigger: group, start: 'top 98%', once: true },
         });
     });
 
@@ -215,8 +217,8 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     const ctaTitle = document.querySelector('[data-cta-title]');
     if (ctaTitle) {
         gsap.fromTo(ctaTitle, { clipPath: 'inset(0 100% 0 0)' }, {
-            clipPath: 'inset(0 0% 0 0)', duration: 1.1, ease: 'expo.out', clearProps: 'clipPath',
-            scrollTrigger: { trigger: '.hp-cta', start: 'top 78%', once: true },
+            clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath',
+            scrollTrigger: { trigger: '.hp-cta', start: 'top 98%', once: true },
         });
     }
     gsap.utils.toArray('.lp-photo__frame img, .lp-band__frame img').forEach((img) => {

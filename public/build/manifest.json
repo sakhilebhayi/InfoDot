@@ -309,7 +309,7 @@
     "src": "resources/img/platforms/files.png"
   },
   "resources/js/analytics-chart.js": {
-    "file": "assets/analytics-chart-8rdfhk51.js",
+    "file": "assets/analytics-chart-CT01Wp-3.js",
     "name": "analytics-chart",
     "src": "resources/js/analytics-chart.js",
     "isDynamicEntry": true,
@@ -318,7 +318,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BkH4f2rQ.js",
+    "file": "assets/app-BW-CojF0.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -327,7 +327,7 @@
     ]
   },
   "resources/js/landing.js": {
-    "file": "assets/landing-Ch8ewTqO.js",
+    "file": "assets/landing-43pSYXFy.js",
     "name": "landing",
     "src": "resources/js/landing.js",
     "isEntry": true,
@@ -336,7 +336,7 @@
     ]
   },
   "resources/js/pages.js": {
-    "file": "assets/pages-CEXQv3cp.js",
+    "file": "assets/pages-DQg5WABL.js",
     "name": "pages",
     "src": "resources/js/pages.js",
     "isEntry": true,
@@ -357,7 +357,7 @@
     "isEntry": true
   },
   "resources/js/tools.js": {
-    "file": "assets/tools-BoeoaSEn.js",
+    "file": "assets/tools-DL7ny7Dk.js",
     "name": "tools",
     "src": "resources/js/tools.js",
     "isEntry": true,

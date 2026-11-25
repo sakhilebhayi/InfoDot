@@ -38,7 +38,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
 
     // Whatever comes into view rises into place, grouped so a section's parts arrive one after another.
     ScrollTrigger.batch('[data-pg-reveal], .pg-prose > h2, .pg-prose > h2 + *', {
-        start: 'top 90%',
+        start: 'top 98%',
         once: true,
         onEnter: (els) => reveal(els),
     });
@@ -47,7 +47,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     gsap.utils.toArray('[data-pg-stamp]').forEach((plate) => {
         gsap.fromTo(plate, { clipPath: 'inset(0 100% 0 0)' }, {
             clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath',
-            scrollTrigger: { trigger: plate, start: 'top 90%', once: true },
+            scrollTrigger: { trigger: plate, start: 'top 98%', once: true },
         });
     });
 
