@@ -7,6 +7,7 @@
         'cancelled_by_business' => ['Cancelled by the business', null],
         'completed' => ['Completed', 'done'],
         'no_show' => ['No-show', null],
+        'expired' => ['Expired, not answered', null],
     ];
     [$words, $tone] = $map[$booking->status] ?? [ucfirst(str_replace('_', ' ', $booking->status)), null];
 @endphp

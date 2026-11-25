@@ -48,6 +48,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('seminars:sweep-payments')->everyFiveMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:prune')->dailyAt('03:50')->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:remind')->everyTenMinutes()->withoutOverlapping(30)->onOneServer();
+        // R-63: appointment reminders and the release of requests nobody answered.
+        $schedule->command('booking:remind')->everyTenMinutes()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('booking:expire-pending')->everyFifteenMinutes()->withoutOverlapping(30)->onOneServer();
         $schedule->command('seminars:award-hosts')->everyThirtyMinutes()->withoutOverlapping(30)->onOneServer();
         // Company invitations live 14 days; one that has been expired for 30 more is removed.
         $schedule->command('invitations:prune')->dailyAt('03:15')->withoutOverlapping(30)->onOneServer();

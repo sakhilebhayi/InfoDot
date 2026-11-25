@@ -105,6 +105,36 @@ class UserNotice extends Model
     public const PLATFORM_ENTITLEMENT = 'platform_entitlement';
 
     /**
+     * R-63: appointment booking. For the business (a booking arrived, was cancelled by the customer, a move was asked for, one is coming up) and for the
+     * customer (it was sent, confirmed, rejected, cancelled by the business, moved, the move declined, it expired unanswered, one is coming up).
+     * The booking is the subject; `ref` carries the event and, for a reminder, the lead time.
+     */
+    public const BOOKING_RECEIVED = 'booking_received';
+
+    public const BOOKING_SUBMITTED = 'booking_submitted';
+
+    public const BOOKING_CONFIRMED = 'booking_confirmed';
+
+    public const BOOKING_REJECTED = 'booking_rejected';
+
+    public const BOOKING_CANCELLED = 'booking_cancelled';
+
+    public const BOOKING_RESCHEDULED = 'booking_rescheduled';
+
+    public const BOOKING_RESCHEDULE_REQUESTED = 'booking_reschedule_requested';
+
+    public const BOOKING_RESCHEDULE_DECLINED = 'booking_reschedule_declined';
+
+    public const BOOKING_EXPIRED = 'booking_expired';
+
+    public const BOOKING_REMINDER = 'booking_reminder';
+
+    public const BOOKING_KINDS = [
+        self::BOOKING_RECEIVED, self::BOOKING_SUBMITTED, self::BOOKING_CONFIRMED, self::BOOKING_REJECTED, self::BOOKING_CANCELLED, self::BOOKING_RESCHEDULED,
+        self::BOOKING_RESCHEDULE_REQUESTED, self::BOOKING_RESCHEDULE_DECLINED, self::BOOKING_EXPIRED, self::BOOKING_REMINDER,
+    ];
+
+    /**
      * Notices that are about something the person has booked, paid for or is owed, not about their contributions. The notifications switch
      * silences the second kind only: nobody should miss a cancelled seminar, a changed time, a refund, a dispute or a debt because they
      * switched off "someone answered your question".
@@ -117,6 +147,7 @@ class UserNotice extends Model
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
         self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP,
         self::PLATFORM_ENTITLEMENT,
+        ...self::BOOKING_KINDS,
     ];
 
     public const KINDS = [
@@ -131,6 +162,7 @@ class UserNotice extends Model
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
         self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP,
         self::PLATFORM_ENTITLEMENT,
+        ...self::BOOKING_KINDS,
     ];
 
     public $timestamps = false;
