@@ -12,7 +12,7 @@ test.describe('A. A new user', () => {
         await expect(page.getByRole('heading', { level: 1, name: 'Questions people ask' })).toBeVisible();
         await page.getByRole('navigation', { name: 'About InfoDot' }).getByRole('link', { name: 'Browse public answers' }).click();
         await expect(page).toHaveURL(/\/solution-results/);
-        for (const [link, heading] of [['What it does', 'What InfoDot does'], ['About', 'About InfoDot'], ['Contact', 'Contact us']] as const) {
+        for (const [link, heading] of [['What it does', 'What InfoDot does'], ['About', 'About InfoDot'], ['Contact', 'Tell us what you need.']] as const) {
             await page.getByRole('contentinfo').getByRole('link', { name: link, exact: true }).click();
             await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
         }
@@ -23,7 +23,10 @@ test.describe('A. A new user', () => {
         const email = await register(page, 'Thandi Newcomer');
         expect(rows('users', { email })[0].email_verified_at).toBeNull();
         await verifyByEmailLink(page, email);
-        await expect(page).toHaveURL(/\/home/);
+        // R-62: a newly confirmed person is taken to set up their company first; Home is one step away.
+        await expect(page).toHaveURL(/\/(home|onboarding\/business)/);
+        await page.goto('/home');
+        await expect(page).toHaveURL(/\/(home|onboarding\/business)/);
         expect(rows('users', { email })[0].email_verified_at).not.toBeNull();
         await expect(page.getByRole('button', { name: 'Account menu' })).toBeVisible();
 
