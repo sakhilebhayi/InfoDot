@@ -33,6 +33,7 @@ class GrowthCentreController extends Controller
             'overview' => $tab === 'overview' ? $metrics->overview($from, $to) : null,
             'unmeasured' => $metrics->unmeasured(),
             'funnel' => $tab === 'funnel' ? $metrics->funnel($from, $to) : null,
+            'capture' => $tab === 'funnel' ? $metrics->captureMethods($from, $to) : null,
             'channels' => $tab === 'channels' ? $metrics->channels($from, $to) : null,
             'geography' => $tab === 'geography' ? $metrics->geography() : null,
             'platforms' => $tab === 'platforms' ? $metrics->platforms() : null,

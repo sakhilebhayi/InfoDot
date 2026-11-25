@@ -1,12 +1,14 @@
-<x-guest-layout title="Set up your company">
+<x-guest-layout :title="($another ?? false) ? 'Create another company' : 'Set up your company'">
     <x-jet-authentication-card>
         @if (request()->boolean('verified'))
             <p class="ix-alert" role="status">Your email address is confirmed.</p>
         @endif
 
-        <h1 class="ix-auth-title">Set up your company</h1>
+        <h1 class="ix-auth-title">{{ ($another ?? false) ? 'Create another company' : 'Set up your company' }}</h1>
         <p class="ix-entry__lede">
-            @if ($branding)
+            @if ($another ?? false)
+                Each company has its own people, pages and platforms. Your login stays the same, and you can switch between companies from the menu.
+            @elseif ($branding)
                 {{ $branding->name }} is for businesses. Your account is ready; name your business to continue to {{ $branding->name }}.
             @else
                 Your account is ready. Your company is what you manage on InfoDot: its page, its people and its platforms. A name and a sentence about what it does is enough to start. You can add the rest later.
@@ -19,6 +21,7 @@
 
         <form class="ix-entry__form" method="POST" action="{{ route('onboarding.business.store') }}">
             @csrf
+            @if ($another ?? false)<input type="hidden" name="another" value="1">@endif
 
             <div class="ix-field">
                 <x-jet-label for="name" value="Company name" />
@@ -82,7 +85,7 @@
             <x-jet-button class="ix-entry__go">Create company and continue</x-jet-button>
         </form>
 
-        @unless ($branding)
+        @unless ($branding || ($another ?? false))
             <p class="ix-entry__links"><a href="{{ route('dashboard') }}">Skip for now</a></p>
         @endunless
     </x-jet-authentication-card>

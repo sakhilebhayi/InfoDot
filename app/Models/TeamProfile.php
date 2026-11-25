@@ -72,7 +72,7 @@ class TeamProfile extends Model
         'trading_name', 'description', 'industry', 'category', 'business_type', 'visibility', 'products_services', 'industries_served',
         'location', 'regions', 'website', 'contact_email', 'contact_phone',
         'registration_number', 'registration_country', 'established_on', 'size', 'links',
-        'objectives', 'stage', 'size_band', 'billing_country', 'vat_number',
+        'objectives', 'stage', 'size_band', 'billing_country', 'vat_number', 'field_sources',
     ];
 
     /** Fields a verification vouched for: changing one sends a verified business back for review (R-29 §13). */
@@ -98,6 +98,7 @@ class TeamProfile extends Model
             'established_on' => 'date',
             'links' => 'array',
             'objectives' => 'array',
+            'field_sources' => 'array',
             'public_contact' => 'array',
             'accepts_enquiries' => 'boolean',
             'restricted_at' => 'datetime',

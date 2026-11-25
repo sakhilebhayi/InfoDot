@@ -61,7 +61,7 @@
         ['heading' => $company?->name ?? 'Personal workspace'],
         $company && NavSection::administersTeam($user) ? ['label' => 'Company settings', 'href' => route('teams.show', $company->id), 'current' => $routeIs('teams.show')] : null,
         $company && NavSection::administersTeam($user) && Jetstream::hasApiFeatures() ? ['label' => 'API tokens', 'href' => route('api-tokens.index'), 'current' => $routeIs('api-tokens.*')] : null,
-        Gate::allows('create', Jetstream::newTeamModel()) ? ['label' => 'Create a company', 'href' => route('teams.create'), 'current' => $routeIs('teams.create')] : null,
+        Gate::allows('create', Jetstream::newTeamModel()) ? ['label' => 'Create a company', 'href' => route('onboarding.business', ['another' => 1]), 'current' => $routeIs('teams.create', 'onboarding.business')] : null,
     ]));
 
     if ($user->allTeams()->count() > 1) {

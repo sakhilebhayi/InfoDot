@@ -65,6 +65,20 @@
             </div>
         </section>
         <p class="ix-hint">Steps are counted from the day recording began. People who joined earlier are not in these counts.</p>
+
+        <section class="ix-panel ix-panel--clip ix-vgap" aria-label="How companies were set up">
+            <div class="ix-panel__head"><h2>How companies were set up</h2></div>
+            <div class="ix-tablewrap">
+                <table class="ix-table ix-adm__table">
+                    <thead><tr><th>Way</th><th class="num">Started</th><th class="num">Confirmed</th><th class="num">Still open</th></tr></thead>
+                    <tbody>
+                        @foreach ($capture as $row)
+                            <tr><td class="title">{{ ['manual' => 'Typed by hand', 'website' => 'Read from a website', 'document' => 'Read from a document'][$row['source']] }}</td><td class="num">{{ number_format($row['started']) }}</td><td class="num">{{ number_format($row['confirmed']) }}</td><td class="num">{{ number_format($row['open']) }}</td></tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
     @elseif ($tab === 'channels')
         <section class="ix-panel ix-panel--clip" aria-label="How people arrived">
             @if ($channels['rows'] === [])

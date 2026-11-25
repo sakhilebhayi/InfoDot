@@ -3,6 +3,7 @@
 namespace App\Services\Growth;
 
 use App\Models\AcquisitionTouch;
+use App\Models\CompanyProfileImport;
 use App\Models\GrowthTarget;
 use App\Models\Referral;
 use App\Models\ReferralReward;
@@ -68,6 +69,33 @@ class GrowthMetrics
 
         // Accounts made before arrivals were recorded, or whose arrival was not recorded, are not guessed into a channel.
         return ['rows' => $rows, 'known' => $known, 'unknown' => max(0, $accounts - $known)];
+    }
+
+    /**
+     * How companies were set up (R-62): the way the details arrived and how many of those attempts were confirmed, abandoned or are still open.
+     * Counted from the import records themselves.
+     *
+     * @return list<array{source: string, started: int, confirmed: int, open: int}>
+     */
+    public function captureMethods(?CarbonInterface $from, ?CarbonInterface $to): array
+    {
+        $rows = CompanyProfileImport::query()
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
+            ->selectRaw('source, status, count(*) as n')->groupBy('source', 'status')->get();
+
+        $out = [];
+        foreach (CompanyProfileImport::SOURCES as $source) {
+            $mine = $rows->where('source', $source);
+            $out[] = [
+                'source' => $source,
+                'started' => (int) $mine->sum('n'),
+                'confirmed' => (int) $mine->where('status', 'confirmed')->sum('n'),
+                'open' => (int) $mine->where('status', 'draft')->sum('n'),
+            ];
+        }
+
+        return $out;
     }
 
     /** Where businesses say they are registered. Only what a business has stated; blank is counted as blank. @return array{rows: list<array{country: string, businesses: int}>, stated: int, unstated: int} */
