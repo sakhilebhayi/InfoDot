@@ -8,6 +8,7 @@ use App\Services\Booking\BookingFeature;
 use App\Services\Booking\BookingRefused;
 use App\Services\Booking\Bookings;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
@@ -50,6 +51,24 @@ class MyBookingsController extends Controller
         }
 
         return redirect()->route('my-bookings.show', $booking->reference)->with('status', 'cancelled');
+    }
+
+    public function reschedule(Request $request, string $reference): RedirectResponse
+    {
+        $booking = $this->mine($reference);
+        $data = $request->validate(['note' => ['required', 'string', 'min:3', 'max:300']], [
+            'note.required' => 'Tell '.$booking->team->name.' when would suit you, or why you need to move.',
+            'note.min' => 'Please write a little more, at least 3 characters.',
+            'note.max' => 'Please keep it to 300 characters.',
+        ]);
+
+        try {
+            $this->bookings->requestReschedule($booking, $this->user(), $data['note']);
+        } catch (BookingRefused $refused) {
+            return redirect()->route('my-bookings.show', $booking->reference)->withErrors(['booking' => $refused->getMessage()]);
+        }
+
+        return redirect()->route('my-bookings.show', $booking->reference)->with('status', 'reschedule_requested');
     }
 
     private function mine(string $reference): Booking

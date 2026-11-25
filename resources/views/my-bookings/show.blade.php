@@ -3,6 +3,9 @@
     $type = $booking->appointmentType;
     $why = $bookings->whyNotCancel($booking, auth()->user());
     $visible = $booking->team->isVisibleTo(auth()->user());
+    $holding = in_array($booking->status, \App\Models\Booking::HOLDING, true);
+    $whyMove = $holding ? $bookings->whyNotReschedule($booking, auth()->user()) : null;
+    $asked = $holding && $booking->reschedule_requested_at !== null;
 @endphp
 <x-app-layout :title="'Booking '.$booking->reference">
     @push('meta')<meta name="robots" content="noindex">@endpush
@@ -23,6 +26,8 @@
         @endif
     @elseif (session('status') === 'cancelled')
         <p class="ix-alert" role="status">Your appointment has been cancelled and the time is free for others.</p>
+    @elseif (session('status') === 'reschedule_requested')
+        <p class="ix-alert" role="status">Your request to move this appointment has been sent. {{ $booking->team->name }} will answer here. Until then the appointment stays as it is.</p>
     @endif
     @if ($errors->has('booking'))<div class="ix-error" role="alert"><p>{{ $errors->first('booking') }}</p></div>@endif
 
@@ -30,6 +35,8 @@
         <section class="ix-panel" aria-label="Your booking">
             <div class="ix-panel__body">
                 <p><b>@include('my-bookings._status', ['booking' => $booking])</b></p>
+                @if (filled($booking->status_note))<p>A message from {{ $booking->team->name }}: {{ $booking->status_note }}</p>@endif
+                @if ($asked)<p>You asked to move this appointment: {{ $booking->reschedule_note }}. {{ $booking->team->name }} will answer here.</p>@endif
                 @if ($booking->status === 'pending')<p class="ix-hint">{{ $booking->team->name }} has not yet accepted this request. You will see the answer on this page.</p>@endif
                 <dl class="ix-biz__facts">
                     <div><dt>When</dt><dd><time datetime="{{ $booking->starts_at->utc()->format('Y-m-d\TH:i:s\Z') }}" data-show="full">{{ $booking->starts_at->setTimezone($zone)->format('D j M Y, H:i') }}</time> <span class="ix-hint">{{ $zone->getName() }} time ({{ $booking->starts_at->setTimezone($zone)->format('T') }})</span></dd></div>
@@ -50,7 +57,26 @@
         <form method="post" action="{{ route('my-bookings.cancel', $booking->reference) }}">@csrf
             <button type="submit" class="ix-btn ix-btn--danger">Cancel this appointment</button>
         </form>
-    @elseif (in_array($booking->status, \App\Models\Booking::HOLDING, true))
+    @elseif ($holding && ! ($whyMove !== null && str_contains($whyMove, 'too close')))
         <p class="ix-hint">{{ $why }}</p>
+    @endif
+
+    @if ($holding && $whyMove === null)
+        <section class="ix-panel" aria-labelledby="move-h">
+            <div class="ix-panel__body">
+                <h2 id="move-h" class="ix-h2">Ask to move this appointment</h2>
+                <p class="ix-hint">{{ $booking->team->name }} decides. Nothing changes until they answer, and the appointment stays booked for now.</p>
+                <form method="post" action="{{ route('my-bookings.reschedule', $booking->reference) }}" class="ix-form">@csrf
+                    <div>
+                        <label class="ix-label" for="note">When would suit you, or why do you need to move it?</label>
+                        <textarea class="ix-textarea" id="note" name="note" rows="3" minlength="3" maxlength="300" required>{{ old('note') }}</textarea>
+                        @error('note')<p class="ix-hint" role="alert">{{ $message }}</p>@enderror
+                    </div>
+                    <div><button type="submit" class="ix-btn">Send the request</button></div>
+                </form>
+            </div>
+        </section>
+    @elseif ($holding && ! $asked && $whyMove !== $why)
+        <p class="ix-hint">{{ $whyMove }}</p>
     @endif
 </x-app-layout>

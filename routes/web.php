@@ -12,6 +12,7 @@ use App\Http\Controllers\BookingSettingsController;
 use App\Http\Controllers\BookingTypesController;
 use App\Http\Controllers\BrandingAssetController;
 use App\Http\Controllers\BrandingImageController;
+use App\Http\Controllers\BusinessAppointmentsController;
 use App\Http\Controllers\BusinessCollectionController;
 use App\Http\Controllers\BusinessDirectoryController;
 use App\Http\Controllers\BusinessFeatureController;
@@ -219,6 +220,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/my-bookings', [MyBookingsController::class, 'index'])->middleware('throttle:60,1,my-bookings.index')->name('my-bookings');
     Route::get('/my-bookings/{reference}', [MyBookingsController::class, 'show'])->where('reference', '[A-Za-z0-9-]{1,40}')->middleware('throttle:60,1,my-bookings.show')->name('my-bookings.show');
     Route::post('/my-bookings/{reference}/cancel', [MyBookingsController::class, 'cancel'])->where('reference', '[A-Za-z0-9-]{1,40}')->middleware('throttle:10,1,my-bookings.cancel')->name('my-bookings.cancel');
+    Route::post('/my-bookings/{reference}/reschedule', [MyBookingsController::class, 'reschedule'])->where('reference', '[A-Za-z0-9-]{1,40}')->middleware('throttle:10,1,my-bookings.reschedule')->name('my-bookings.reschedule');
 
     Route::get('/business/{team:uuid}/booking', [BookingSettingsController::class, 'show'])->name('business.booking.settings');
     Route::post('/business/{team:uuid}/booking', [BookingSettingsController::class, 'update'])->middleware('throttle:20,1,business.booking.settings')->name('business.booking.settings.update');
@@ -246,6 +248,22 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/business/{team:uuid}/booking/closures', [BookingClosuresController::class, 'index'])->name('business.booking.closures');
     Route::post('/business/{team:uuid}/booking/closures', [BookingClosuresController::class, 'store'])->middleware('throttle:30,1,business.booking.closures.store')->name('business.booking.closures.store');
     Route::post('/business/{team:uuid}/booking/closures/{closure}/delete', [BookingClosuresController::class, 'destroy'])->whereNumber('closure')->middleware('throttle:30,1,business.booking.closures.delete')->name('business.booking.closures.delete');
+
+    // R-63 phase 4: the business's appointments (lists, calendar, one appointment and what is done to it). 404 until the feature is open.
+    Route::get('/business/{team:uuid}/appointments', [BusinessAppointmentsController::class, 'requests'])->name('business.appointments');
+    Route::get('/business/{team:uuid}/appointments/upcoming', [BusinessAppointmentsController::class, 'upcoming'])->name('business.appointments.upcoming');
+    Route::get('/business/{team:uuid}/appointments/past', [BusinessAppointmentsController::class, 'past'])->name('business.appointments.past');
+    Route::get('/business/{team:uuid}/appointments/calendar', [BusinessAppointmentsController::class, 'calendar'])->name('business.appointments.calendar');
+    Route::get('/business/{team:uuid}/appointments/{booking}', [BusinessAppointmentsController::class, 'show'])->whereNumber('booking')->name('business.appointments.show');
+    Route::post('/business/{team:uuid}/appointments/{booking}/accept', [BusinessAppointmentsController::class, 'accept'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.accept')->name('business.appointments.accept');
+    Route::post('/business/{team:uuid}/appointments/{booking}/reject', [BusinessAppointmentsController::class, 'reject'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.reject')->name('business.appointments.reject');
+    Route::post('/business/{team:uuid}/appointments/{booking}/cancel', [BusinessAppointmentsController::class, 'cancel'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.cancel')->name('business.appointments.cancel');
+    Route::post('/business/{team:uuid}/appointments/{booking}/complete', [BusinessAppointmentsController::class, 'complete'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.complete')->name('business.appointments.complete');
+    Route::post('/business/{team:uuid}/appointments/{booking}/no-show', [BusinessAppointmentsController::class, 'noShow'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.no_show')->name('business.appointments.no_show');
+    Route::post('/business/{team:uuid}/appointments/{booking}/reschedule', [BusinessAppointmentsController::class, 'reschedule'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.reschedule')->name('business.appointments.reschedule');
+    Route::post('/business/{team:uuid}/appointments/{booking}/assign', [BusinessAppointmentsController::class, 'assign'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.assign')->name('business.appointments.assign');
+    Route::post('/business/{team:uuid}/appointments/{booking}/note', [BusinessAppointmentsController::class, 'note'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.note')->name('business.appointments.note');
+    Route::post('/business/{team:uuid}/appointments/{booking}/decline-reschedule', [BusinessAppointmentsController::class, 'declineReschedule'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.decline_reschedule')->name('business.appointments.decline_reschedule');
 
     Route::post('/business/{team:uuid}/profile', [BusinessProfileController::class, 'update'])->middleware('throttle:20,1,business.profile')->name('business.update');
     Route::post('/business/{team:uuid}/directory', [BusinessProfileController::class, 'updateDirectory'])->middleware('throttle:20,1,business.directory')->name('business.directory');

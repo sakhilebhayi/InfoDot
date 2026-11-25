@@ -1,9 +1,11 @@
 @php
     $manages = \Illuminate\Support\Facades\Gate::allows('manageBookings', $team);
     $ownProvider = $manages ? null : $team->bookingProviders()->where('user_id', auth()->id())->first();
+    $waiting = ($manages || $ownProvider) ? \App\Services\Booking\BookingBoard::for(auth()->user(), $team)->pendingCount() : 0;
+    $appointments = ['Appointments'.($waiting > 0 ? ' ('.$waiting.')' : ''), route('business.appointments', $team)];
     $tabs = $manages
-        ? ['settings' => ['Settings', route('business.booking.settings', $team)], 'types' => ['Appointment types', route('business.booking.types', $team)], 'providers' => ['Providers', route('business.booking.providers', $team)], 'hours' => ['Hours', route('business.booking.hours', $team)], 'closures' => ['Closures', route('business.booking.closures', $team)]]
-        : array_filter(['myhours' => $ownProvider ? ['My hours', route('business.booking.providers.hours', [$team, $ownProvider])] : null, 'closures' => $ownProvider ? ['Closures', route('business.booking.closures', $team)] : null]);
+        ? ['appointments' => $appointments, 'settings' => ['Settings', route('business.booking.settings', $team)], 'types' => ['Appointment types', route('business.booking.types', $team)], 'providers' => ['Providers', route('business.booking.providers', $team)], 'hours' => ['Hours', route('business.booking.hours', $team)], 'closures' => ['Closures', route('business.booking.closures', $team)]]
+        : array_filter(['appointments' => $ownProvider ? $appointments : null, 'myhours' => $ownProvider ? ['My hours', route('business.booking.providers.hours', [$team, $ownProvider])] : null, 'closures' => $ownProvider ? ['Closures', route('business.booking.closures', $team)] : null]);
 @endphp
 <nav class="ix-mod__tabs" aria-label="Booking setup">
     @foreach ($tabs as $key => [$label, $url])
