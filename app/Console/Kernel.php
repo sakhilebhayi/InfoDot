@@ -24,6 +24,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('attachments:prune')->dailyAt('03:35')->withoutOverlapping(30)->onOneServer();
         $schedule->command('business:verifications')->dailyAt('03:45')->withoutOverlapping(30)->onOneServer();
         $schedule->command('business:enquiry-follow-ups')->dailyAt('07:30')->withoutOverlapping(30)->onOneServer();
+        $schedule->command('onboarding:prune-imports')->dailyAt('03:55')->withoutOverlapping(30)->onOneServer();
         $schedule->command('referrals:advance')->hourly()->withoutOverlapping(30)->onOneServer();
         $schedule->command('points:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
 

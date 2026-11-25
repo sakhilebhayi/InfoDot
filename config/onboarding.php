@@ -46,6 +46,9 @@ return [
         '100+' => 'More than 100 people',
     ],
 
+    // R-62 phase 2: an unconfirmed company import (and anything kept with it) is deleted after this many days.
+    'import_retention_days' => (int) env('ONBOARDING_IMPORT_RETENTION_DAYS', 30),
+
     'max_objectives' => 5,
     'max_recommendations' => 5,
 
