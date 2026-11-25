@@ -35,7 +35,7 @@
         <section class="ix-panel" aria-label="Your booking">
             <div class="ix-panel__body">
                 <p><b>@include('my-bookings._status', ['booking' => $booking])</b></p>
-                @if (filled($booking->status_note))<p>A message from {{ $booking->team->name }}: {{ $booking->status_note }}</p>@endif
+                @if (filled($booking->status_note) && $booking->status !== 'expired')<p>A message from {{ $booking->team->name }}: {{ $booking->status_note }}</p>@endif
                 @if ($asked)<p>You asked to move this appointment: {{ $booking->reschedule_note }}. {{ $booking->team->name }} will answer here.</p>@endif
                 @if ($booking->status === 'pending')<p class="ix-hint">{{ $booking->team->name }} has not yet accepted this request. You will see the answer on this page.</p>@endif
                 <dl class="ix-biz__facts">

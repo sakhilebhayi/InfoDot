@@ -70,7 +70,7 @@ class Bookings
             throw new BookingRefused(BookingRefused::SLOT_TAKEN, 'That appointment is not offered any more. Choose another.');
         }
 
-        return DB::transaction(function () use ($customer, $team, $type, $start, $providerId, $details) {
+        $booking = DB::transaction(function () use ($customer, $team, $type, $start, $providerId, $details) {
             // The mutex for this business: everyone booking it queues here.
             $setting = BookingSetting::query()->where('team_id', $team->getKey())->lockForUpdate()->first();
 
@@ -80,6 +80,21 @@ class Bookings
 
             // The caps are counted under the lock too, so two requests from one account at the same moment cannot both slip under them.
             $this->withinLimits($customer, $team, $type, $start);
+
+            // Requests waiting for an answer are capped per business, or many accounts could hold its whole calendar.
+            if ($type->needsApproval($setting)) {
+                $cap = (int) config('booking.limits.pending_per_business');
+                $waiting = Booking::query()->where('team_id', $team->getKey())->where('status', Booking::PENDING)->where('starts_at', '>', now());
+                $young = now()->subHours((int) config('booking.limits.new_account_hours'));
+
+                // Accounts made in the last day may hold only part of the places, so a batch of throwaway accounts cannot shut real customers out.
+                $fromNewAccounts = (clone $waiting)->whereIn('customer_user_id', User::query()->where('created_at', '>', $young)->select('id'))->count();
+                $newShare = (int) floor($cap * (float) config('booking.limits.pending_new_account_share'));
+
+                if ((clone $waiting)->count() >= $cap || ($customer->created_at->gt($young) && $fromNewAccounts >= $newShare)) {
+                    throw new BookingRefused(BookingRefused::LIMIT, $team->name.' has a lot of requests waiting for an answer right now. Please try again a little later.');
+                }
+            }
 
             // The type is read again under the lock: one switched off since the page was drawn is no longer offered.
             $type = AppointmentType::query()->whereKey($type->getKey())->where('team_id', $team->getKey())->where('active', true)->first();
@@ -121,6 +136,10 @@ class Bookings
 
             return $booking;
         }, 3); // a deadlock or a lock wait is tried again, twice, instead of failing the person with an error
+
+        app(BookingNotifier::class)->submitted($booking);
+
+        return $booking;
     }
 
     /** Whether this person may withdraw this booking themselves right now, and if not, why. */
@@ -151,7 +170,7 @@ class Bookings
     /** @throws BookingRefused */
     public function cancelByCustomer(Booking $booking, User $actor): Booking
     {
-        return DB::transaction(function () use ($booking, $actor) {
+        $cancelled = DB::transaction(function () use ($booking, $actor) {
             $fresh = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->firstOrFail();
 
             if (($why = $this->whyNotCancel($fresh, $actor)) !== null) {
@@ -164,6 +183,10 @@ class Bookings
 
             return $fresh;
         });
+
+        app(BookingNotifier::class)->cancelledByCustomer($cancelled, $actor);
+
+        return $cancelled;
     }
 
     /** Whether this person may ask to move this appointment, and if not, why. The same cut-off as cancelling applies to a confirmed one. */
@@ -183,7 +206,7 @@ class Bookings
      */
     public function requestReschedule(Booking $booking, User $actor, string $note): Booking
     {
-        return DB::transaction(function () use ($booking, $actor, $note) {
+        $asked = DB::transaction(function () use ($booking, $actor, $note) {
             $fresh = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->firstOrFail();
 
             if (($why = $this->whyNotReschedule($fresh, $actor)) !== null) {
@@ -196,6 +219,10 @@ class Bookings
 
             return $fresh;
         });
+
+        app(BookingNotifier::class)->rescheduleRequested($asked, $actor);
+
+        return $asked;
     }
 
     /**

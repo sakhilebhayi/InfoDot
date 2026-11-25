@@ -25,6 +25,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon $blocks_from
  * @property Carbon $blocks_until
  * @property string $status
+ * @property string|null $status_note
+ * @property Carbon|null $reschedule_requested_at
+ * @property string|null $reschedule_note
  */
 class Booking extends Model
 {
@@ -42,10 +45,13 @@ class Booking extends Model
 
     public const NO_SHOW = 'no_show';
 
+    /** A request the business never answered: it was let go so it stops holding the time (R-63 phase 5). */
+    public const EXPIRED = 'expired';
+
     /** The statuses that hold the time: nobody else can take it. */
     public const HOLDING = [self::PENDING, self::CONFIRMED];
 
-    public const STATUSES = [self::PENDING, self::CONFIRMED, self::REJECTED, self::CANCELLED_BY_CUSTOMER, self::CANCELLED_BY_BUSINESS, self::COMPLETED, self::NO_SHOW];
+    public const STATUSES = [self::PENDING, self::CONFIRMED, self::REJECTED, self::CANCELLED_BY_CUSTOMER, self::CANCELLED_BY_BUSINESS, self::COMPLETED, self::NO_SHOW, self::EXPIRED];
 
     protected $fillable = [
         'reference', 'team_id', 'appointment_type_id', 'booking_provider_id', 'customer_user_id', 'customer_name', 'customer_email', 'customer_phone',

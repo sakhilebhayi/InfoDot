@@ -2,6 +2,7 @@
 
 namespace App\Services\Knowledge;
 
+use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Questions;
 use App\Models\Seminar;
@@ -9,6 +10,7 @@ use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Booking\BookingActions;
 use App\Services\Platforms\PlatformNotices;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
@@ -171,6 +173,10 @@ class InAppNotices
             return $this->enquiry($notice) ?? $gone;
         }
 
+        if ($notice->subject_type === 'booking') {
+            return $this->booking($notice) ?? $gone;
+        }
+
         return $gone;
     }
 
@@ -330,6 +336,57 @@ class InAppNotices
         return null;
     }
 
+    /**
+     * Appointment notices (R-63). Written for whichever side the reader is on, and only while they may still open the booking: the customer who booked it, or
+     * the business people who may act on it. Time is the business's own, with its zone named; nothing about the customer is part of a notice.
+     *
+     * @return array{text: string, url: string}|null
+     */
+    private function booking(UserNotice $notice): ?array
+    {
+        $booking = Booking::with(['team', 'appointmentType'])->find($notice->subject_id);
+        $reader = $notice->user;
+
+        if ($booking === null || $booking->team === null || $booking->appointmentType === null || $reader === null) {
+            return null;
+        }
+
+        $zone = $booking->team->bookingSetting?->zone() ?? new \DateTimeZone('Africa/Johannesburg');
+        $when = $booking->starts_at->copy()->setTimezone($zone)->format('D j M, H:i').' ('.$zone->getName().')';
+        $business = Str::limit($booking->team->name, 60, '…', true);
+        $type = '“'.Str::limit($booking->appointmentType->name, 60, '…', true).'”';
+
+        if ($booking->customer_user_id !== null && (int) $booking->customer_user_id === (int) $reader->getKey()) {
+            $text = match ($notice->kind) {
+                UserNotice::BOOKING_SUBMITTED => "Your request to $business for $type on $when is waiting for them to confirm.",
+                UserNotice::BOOKING_CONFIRMED => "$business confirmed your $type on $when.",
+                UserNotice::BOOKING_REJECTED => "$business could not take your request for $type on $when.",
+                UserNotice::BOOKING_CANCELLED => "$business cancelled your $type on $when.",
+                UserNotice::BOOKING_RESCHEDULED => "$business moved your $type to $when.",
+                UserNotice::BOOKING_RESCHEDULE_DECLINED => "$business kept your $type at $when; it could not be moved.",
+                UserNotice::BOOKING_EXPIRED => "$business did not answer your request for $type on $when in time.",
+                UserNotice::BOOKING_REMINDER => "Reminder: $type with $business, $when.",
+                default => "There is news on your $type with $business.",
+            };
+
+            return ['text' => $text, 'url' => route('my-bookings.show', $booking->reference)];
+        }
+
+        if (BookingActions::canManage($reader, $booking)) {
+            $text = match ($notice->kind) {
+                UserNotice::BOOKING_RECEIVED => str_contains($notice->ref, ':assigned:') ? "The appointment $type on $when is now yours." : "New booking request for $business, $type, $when.",
+                UserNotice::BOOKING_CANCELLED => "The customer cancelled $type on $when.",
+                UserNotice::BOOKING_RESCHEDULE_REQUESTED => "The customer asked to move $type on $when.",
+                UserNotice::BOOKING_REMINDER => "Reminder: $type, $when.",
+                default => "There is news on the appointment $type, $when.",
+            };
+
+            return ['text' => $text, 'url' => route('business.appointments.show', [$booking->team, $booking])];
+        }
+
+        return null;
+    }
+
     /** The short plate shown beside a notice: what kind of thing happened. */
     public static function label(string $kind): string
     {
@@ -349,6 +406,7 @@ class InAppNotices
             UserNotice::RELATIONSHIP_REQUEST, UserNotice::RELATIONSHIP_DECIDED => 'Linked business',
             UserNotice::ENQUIRY_RECEIVED, UserNotice::ENQUIRY_REPLY, UserNotice::ENQUIRY_ASSIGNED, UserNotice::ENQUIRY_FOLLOW_UP => 'Inbox',
             UserNotice::BUSINESS_TRUST_QUEUE, UserNotice::BUSINESS_REPORT_DECIDED, UserNotice::BUSINESS_STANDING => 'Business review',
+            UserNotice::BOOKING_RECEIVED, UserNotice::BOOKING_SUBMITTED, UserNotice::BOOKING_CONFIRMED, UserNotice::BOOKING_REJECTED, UserNotice::BOOKING_CANCELLED, UserNotice::BOOKING_RESCHEDULED, UserNotice::BOOKING_RESCHEDULE_REQUESTED, UserNotice::BOOKING_RESCHEDULE_DECLINED, UserNotice::BOOKING_EXPIRED, UserNotice::BOOKING_REMINDER => 'Bookings',
             UserNotice::BUSINESS_OWNERSHIP => 'Ownership',
             UserNotice::PLATFORM_ENTITLEMENT => 'Platforms',
             default => 'Update',

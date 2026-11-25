@@ -183,7 +183,9 @@ class BookingActions
      */
     private function act(Booking $booking, User $actor, string $event, Closure $change): Booking
     {
-        return DB::transaction(function () use ($booking, $actor, $event, $change) {
+        $extra = [];
+
+        $done = DB::transaction(function () use ($booking, $actor, $event, $change, &$extra) {
             BookingSetting::query()->where('team_id', $booking->team_id)->lockForUpdate()->first();
             $fresh = Booking::query()->whereKey($booking->getKey())->where('team_id', $booking->team_id)->lockForUpdate()->firstOrFail();
 
@@ -191,12 +193,27 @@ class BookingActions
                 throw new BookingRefused(BookingRefused::NOT_ALLOWED, 'You cannot act on this appointment.');
             }
 
-            $details = $change($fresh);
+            $extra = $change($fresh);
 
-            BookingEvent::query()->create(['team_id' => $fresh->team_id, 'actor_id' => $actor->getKey(), 'type' => $event, 'details' => ['booking_id' => $fresh->getKey()] + $details]);
+            BookingEvent::query()->create(['team_id' => $fresh->team_id, 'actor_id' => $actor->getKey(), 'type' => $event, 'details' => ['booking_id' => $fresh->getKey()] + $extra]);
 
             return $fresh;
         }, 3);
+
+        // After the change is saved: who is told, and never able to undo or fail it.
+        $notifier = app(BookingNotifier::class);
+
+        match ($event) {
+            'booking_accepted' => $notifier->confirmed($done, $actor),
+            'booking_rejected' => $notifier->rejected($done, $actor),
+            'booking_cancelled_by_business' => $notifier->cancelledByBusiness($done, $actor),
+            'booking_rescheduled' => $notifier->rescheduled($done, $actor),
+            'booking_reschedule_declined' => $notifier->rescheduleDeclined($done, $actor),
+            'booking_provider_assigned' => $notifier->assigned($done, $actor),
+            default => null,
+        };
+
+        return $done;
     }
 
     private function finish(Booking $booking, User $actor, string $status, string $event): Booking
