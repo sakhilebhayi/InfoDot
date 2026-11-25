@@ -113,6 +113,13 @@
                         </a>
                     </div>
                 @endif
+                @if ($canManageBookings ?? false)
+                    <div class="ix-biz__editbtn">
+                        <a href="{{ route('business.booking.settings', $team) }}" class="ix-btn ix-btn--ghost">
+                            <span class="material-symbols-rounded" aria-hidden="true">tune</span>Bookings
+                        </a>
+                    </div>
+                @endif
                 @if ($canEdit)
                     <div class="ix-biz__editbtn">
                         <a href="{{ route('business.show', [$team, 'as' => 'visitor']) }}" class="ix-btn ix-btn--ghost">

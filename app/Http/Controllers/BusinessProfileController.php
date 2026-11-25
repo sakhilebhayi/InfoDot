@@ -13,6 +13,7 @@ use App\Models\Team;
 use App\Models\TeamProfile;
 use App\Rules\DeliverableEmailDomain;
 use App\Services\Attachments\TeamMediaService;
+use App\Services\Booking\BookingFeature;
 use App\Services\Directory\BusinessDirectory;
 use App\Services\Directory\FeaturedPlacement;
 use App\Services\Growth\OnboardingEvents;
@@ -73,6 +74,8 @@ class BusinessProfileController extends Controller
             'solutions' => $solutions,
             'isMember' => $isMember,
             'canEdit' => $canEdit && ! $preview,
+            // R-63: a manager sees the way into the booking settings, but only while the `bookings` feature is open.
+            'canManageBookings' => ! $preview && Gate::allows('manageBookings', $team) && app(BookingFeature::class)->available(),
             'preview' => $preview,
             'announcements' => $team->announcements()->showing()->limit(5)->get(),
             'offeringPictures' => $team->mediaByRef('offering')->map(fn ($pictures) => $pictures->filter->onDisk()->values()),

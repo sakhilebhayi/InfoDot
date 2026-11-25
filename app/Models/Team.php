@@ -125,6 +125,12 @@ class Team extends JetstreamTeam
         return $this->hasOne(TeamProfile::class);
     }
 
+    /** @return HasOne<BookingSetting, $this> */
+    public function bookingSetting(): HasOne
+    {
+        return $this->hasOne(BookingSetting::class);
+    }
+
     // ---------------------------------------------------------------- directory (R-33)
 
     /** @return BelongsToMany<BusinessCategory, $this> */
