@@ -8,6 +8,8 @@ use App\Models\TeamProfile;
 use App\Models\User;
 use App\Services\Growth\OnboardingEvents;
 use App\Services\Onboarding\CompanyCapture;
+use App\Services\Onboarding\DocumentExtractor;
+use App\Services\Onboarding\DocumentRejected;
 use App\Services\Onboarding\DuplicateCompanyFound;
 use App\Services\Onboarding\WebsiteExtractor;
 use App\Services\Sso\BusinessOnboarding;
@@ -100,21 +102,76 @@ class BusinessController extends Controller
         return redirect()->route('onboarding.business', array_filter(['import' => $import->id, 'another' => $another ? 1 : null]));
     }
 
+    /**
+     * Reads a PDF or text document (R-62 phase 7) the same way: nothing is created, the form comes back filled in for the person to check, and the
+     * file itself is never stored.
+     */
+    public function readDocument(Request $request, CompanyCapture $capture, DocumentExtractor $extractor): RedirectResponse
+    {
+        $user = $request->user();
+        $another = $this->wantsAnother($request);
+
+        if (! $another && ! $this->onboarding->needsBusiness($user)) {
+            return redirect($this->context->pendingUrl() ?? route('dashboard'));
+        }
+        abort_if($another && ! Gate::forUser($user)->allows('create', Jetstream::newTeamModel()), 403);
+
+        $back = redirect()->route('onboarding.business', $another ? ['another' => 1] : []);
+        $request->validate(['document' => ['required', 'file', 'max:5120']], [
+            'document.required' => 'Choose a PDF or text file.',
+            'document.max' => 'That file is too large. The most we can read is 5 MB.',
+            'document.uploaded' => 'That file could not be uploaded. Try again.',
+        ]);
+
+        $key = 'company-import:'.$user->id;
+        if (RateLimiter::tooManyAttempts($key, 10)) {
+            return $back->withErrors(['document' => 'You have read a lot of documents today. Type the details in, or try again tomorrow.']);
+        }
+        RateLimiter::hit($key, 86400);
+
+        $import = $capture->start($user, CompanyProfileImport::DOCUMENT);
+
+        try {
+            $result = $extractor->extract($request->file('document'));
+        } catch (DocumentRejected $e) {
+            $import->forceFill(['status' => CompanyProfileImport::ABANDONED])->save();
+
+            return $back->withErrors(['document' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            report($e);
+            $import->forceFill(['status' => CompanyProfileImport::ABANDONED])->save();
+
+            return $back->withErrors(['document' => 'We could not read that file. You can type the details in instead.']);
+        }
+
+        $import->forceFill(['source_ref' => $result['name']])->save();
+        $capture->propose($import, CompanyProfileImport::DOCUMENT, $result['fields']);
+
+        if ($import->fresh()->extracted === null) {
+            $import->forceFill(['status' => CompanyProfileImport::ABANDONED])->save();
+
+            return $back->withErrors(['document' => 'We could not find company details in that file. You can type them in instead.']);
+        }
+
+        return redirect()->route('onboarding.business', array_filter(['import' => $import->id, 'another' => $another ? 1 : null]));
+    }
+
     /** @return array<string, mixed> the form's starting values and which of them were read from a website, when the person comes from an import */
     private function prefill(Request $request): array
     {
         $import = $request->integer('import') > 0
             ? CompanyProfileImport::where('id', $request->integer('import'))->where('user_id', $request->user()->id)
-                ->where('status', CompanyProfileImport::DRAFT)->where('source', CompanyProfileImport::WEBSITE)->first()
+                ->where('status', CompanyProfileImport::DRAFT)->whereIn('source', [CompanyProfileImport::WEBSITE, CompanyProfileImport::DOCUMENT])->first()
             : null;
 
         if ($import === null) {
-            return ['importId' => null, 'prefill' => [], 'siteHost' => null];
+            return ['importId' => null, 'prefill' => [], 'siteHost' => null, 'importSource' => null];
         }
 
         return [
             'importId' => $import->id,
             'siteHost' => $import->source_ref,
+            'importSource' => $import->source,
             'prefill' => collect($import->extracted ?? [])->map(fn ($e) => $e['value'])->all(),
         ];
     }
@@ -144,11 +201,12 @@ class BusinessController extends Controller
             'contact_email' => ['nullable', 'email', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:40'],
             'location' => ['nullable', 'string', 'max:160'],
+            'registration_number' => ['nullable', 'string', 'max:60'],
             'links' => ['nullable', 'array'],
             'links.*' => ['nullable', 'url:http,https', 'max:255'],
         ], ['description.required' => 'Say what the business does in a sentence or two.']);
 
-        $values = $request->only(['name', 'industry', 'description', 'visibility', 'website', 'contact_email', 'contact_phone', 'location']);
+        $values = $request->only(['name', 'industry', 'description', 'visibility', 'website', 'contact_email', 'contact_phone', 'location', 'registration_number']);
         $links = array_filter(array_intersect_key($about['links'] ?? [], array_flip(TeamProfile::LINK_KEYS)));
         if ($links !== []) {
             $values['links'] = $links;
@@ -170,7 +228,7 @@ class BusinessController extends Controller
             return view('onboarding.duplicate', [
                 'found' => $e->own,
                 'elsewhere' => $e->elsewhere,
-                'fields' => $request->only(['name', 'industry', 'description', 'visibility', 'stage', 'size_band', 'objectives', 'website', 'contact_email', 'contact_phone', 'location', 'links']),
+                'fields' => $request->only(['name', 'industry', 'description', 'visibility', 'stage', 'size_band', 'objectives', 'website', 'contact_email', 'contact_phone', 'location', 'registration_number', 'links']),
                 'import' => $import->id,
                 'another' => $another,
             ]);

@@ -154,6 +154,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // R-54: the short "Set up your business" step a new person meets between registration and a platform that is for businesses.
     Route::get('/onboarding/business', [BusinessController::class, 'show'])->name('onboarding.business');
     Route::post('/onboarding/business/website', [BusinessController::class, 'readWebsite'])->middleware('throttle:6,1,onboarding.website')->name('onboarding.business.website');
+    Route::post('/onboarding/business/document', [BusinessController::class, 'readDocument'])->middleware('throttle:6,1,onboarding.document')->name('onboarding.business.document');
     Route::post('/onboarding/business', [BusinessController::class, 'store'])->middleware('throttle:10,1,onboarding.business')->name('onboarding.business.store');
 
     // R-59 Phase 1B: the platforms that fit what the business told us, each with the reason it was chosen.
