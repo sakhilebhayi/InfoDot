@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="color-scheme" content="light dark">
-    @php($fullTitle = $title === 'InfoDot' ? 'InfoDot: everything your business needs, in one place' : $title.' · InfoDot')
+    @php($fullTitle = $title === 'InfoDot' ? 'InfoDot: free business answers and connected tools' : $title.' · InfoDot')
     @php($metaDescription = $description ?? 'InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.')
     <title>{{ $fullTitle }}</title>
     <meta name="description" content="{{ $metaDescription }}">

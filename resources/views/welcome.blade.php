@@ -31,7 +31,7 @@
     $libraryCount = $library->count() < 6 ? $library->count()
         : \App\Models\Solutions::withoutGlobalScopes()->whereNotNull('seed_key')->where('visibility', \App\Models\Solutions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->count();
 @endphp
-<x-public-layout landing title="InfoDot" description="InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.">
+<x-public-layout landing title="InfoDot" description="Write down how your business works and run it from one place. InfoDot gives you practical answers from other businesses and one free account for finance, people, projects, documents and forms.">
     {{-- Who publishes this site, for search engines (R-17 §13.3). Facts only: name, address, contact page. --}}
     <script type="application/ld+json">{!! json_encode([
         '@context' => 'https://schema.org',
@@ -44,6 +44,17 @@
     {{-- 1. The hero says what InfoDot is, what it does for you and what to do next. The search box stays: it is the quickest way in. --}}
     {{-- 1. The hero says what InfoDot is and what to do next. The search stays. The picture side moves through three compositions; the words never move. --}}
     @include('partials.home-hero')
+
+    {{-- 1b. The problem, in the owner's own situations. No statistics: these are things any owner will recognise. --}}
+    <section class="ix-pubsec hp-problem" aria-labelledby="problem-title">
+        <h2 id="problem-title" data-reveal>Most small businesses run on memory and chat.</h2>
+        <dl class="ix-pubfacts">
+            <div data-reveal><dt>The one person who knows is away</dt><dd>The steps for the job live in someone's head, so work waits until they are back.</dd></div>
+            <div data-reveal><dt>The figure is in five places</dt><dd>Quotes in messages, invoices in a spreadsheet, files on a phone. Nobody is sure which is current.</dd></div>
+            <div data-reveal><dt>You solved this before</dt><dd>The answer exists somewhere, but not where the next person will look.</dd></div>
+        </dl>
+        <p class="lp-lede" data-reveal>InfoDot is where the business writes down how it works, finds checked answers from other businesses, and opens the tools it runs on with one account.</p>
+    </section>
 
     {{-- 2. Three ways InfoDot helps. Discover, Manage and Grow are the frame the rest of the page hangs on. --}}
     <section class="hp-pillars" id="pillars" aria-labelledby="pillars-title">
@@ -280,7 +291,7 @@
     <section class="ix-pubcta hp-cta" aria-labelledby="cta-title">
         <div class="ix-pubcta__inner">
             <h2 id="cta-title" data-cta-title>Your business journey starts here.</h2>
-            <p class="hp-cta__lede" data-reveal>Whether you're starting with an idea, managing an existing business or looking for ways to grow, InfoDot gives you a place to find guidance, discover solutions and access the tools you need.</p>
+            <p class="hp-cta__lede" data-reveal>Businesses that write down how they work keep working when one person is away. Start with yours: find practical answers, open the tools you need, and build it up at your own pace.</p>
             <div class="ix-pubhero__actions" data-reveal>
                 @auth
                     <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">Ask a question</a>
