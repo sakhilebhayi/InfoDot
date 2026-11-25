@@ -94,11 +94,11 @@
                 <div class="ix-form__row">
                     <div>
                         <label class="ix-label" for="starts_on">First day</label>
-                        <input class="ix-input" id="starts_on" name="starts_on" type="date" required value="{{ old('starts_on') }}">
+                        <x-form.date name="starts_on" required />
                     </div>
                     <div>
                         <label class="ix-label" for="ends_on">Last day <span class="ix-hint">leave blank for one day</span></label>
-                        <input class="ix-input" id="ends_on" name="ends_on" type="date" value="{{ old('ends_on') }}">
+                        <x-form.date name="ends_on" />
                     </div>
                 </div>
 

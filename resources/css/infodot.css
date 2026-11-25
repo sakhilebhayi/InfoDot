@@ -873,6 +873,452 @@ select.ix-input[multiple] {
     margin: 0;
 }
 
+/* ---------------------------------------------------------------- complex controls (R-64 phase 4) */
+
+/* Each one is a real form control with a layer drawn over it by controls.js: the plain control shows until the script has run (is-ready). */
+
+.ix-combo,
+.ix-date,
+.ix-drop {
+    position: relative;
+    min-width: 0;
+}
+
+.ix-combo.is-ready > select {
+    display: none;
+}
+
+.ix-combo__box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    min-height: var(--ix-field-h);
+    padding: 0 34px 0 12px;
+    border: 1px solid var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background-color: var(--ix-panel);
+    transition: border-color var(--ix-dur-fast) var(--ix-ease), background-color var(--ix-dur-fast) var(--ix-ease);
+}
+
+.ix-combo__box:hover {
+    border-color: var(--ix-text-3);
+}
+
+.ix-combo__box:focus-within,
+.ix-combo__box.is-open {
+    border-color: var(--ix-text);
+    background-color: var(--ix-field-bg-focus);
+}
+
+.ix-combo__box:has(.ix-combo__input:focus-visible) {
+    outline: 2px solid var(--ix-ring);
+    outline-offset: 0;
+}
+
+.ix-combo__box[data-invalid] {
+    border-color: var(--ix-danger);
+}
+
+.ix-combo__input {
+    flex: 1 1 80px;
+    min-width: 0;
+    height: calc(var(--ix-field-h) - 2px);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+    color: var(--ix-text);
+    font: 400 var(--dot-text-body-sm-size)/1.5 var(--ix-font);
+}
+
+.ix-combo__input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.ix-combo__toggle,
+.ix-combo__clear {
+    position: absolute;
+    top: 0;
+    right: 2px;
+    width: 28px;
+    height: calc(var(--ix-field-h) - 2px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ix-text-2);
+    cursor: pointer;
+}
+
+.ix-combo__toggle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ix-text-2) 50%), linear-gradient(135deg, var(--ix-text-2) 50%, transparent 50%);
+    background-position: calc(50% - 2px) 50%, calc(50% + 3px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+}
+
+.ix-combo__clear {
+    right: 30px;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1;
+}
+
+.ix-combo__box:has(.ix-combo__clear:not([style*='none'])) .ix-combo__input {
+    padding-right: 28px;
+}
+
+.ix-combo__toggle:hover,
+.ix-combo__clear:hover {
+    color: var(--ix-text);
+}
+
+.ix-combo__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin: 4px 0;
+    padding: 0 2px 0 8px;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-sunken);
+    color: var(--ix-text);
+    font-size: var(--dot-text-body-sm-size);
+    line-height: 1.6;
+}
+
+.ix-combo__chip button {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.ix-combo__chip button:hover {
+    color: var(--ix-danger);
+}
+
+/* Panels fade and settle in when they open and vanish at once when they close, so a closing list never shows a half-reset state. */
+.ix-pop-in {
+    transition: opacity var(--ix-dur-fast) var(--ix-ease), transform var(--ix-dur-fast) var(--ix-ease);
+}
+
+.ix-pop-in--from {
+    opacity: 0;
+    transform: translateY(-4px);
+}
+
+.ix-pop-in--to {
+    opacity: 1;
+    transform: none;
+}
+
+.ix-combo__list,
+.ix-cal {
+    z-index: 70;
+    margin: 0;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.ix-combo__list {
+    overflow: auto;
+    padding: 4px;
+    list-style: none;
+}
+
+.ix-combo__list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: calc(var(--ix-field-h) - 4px);
+    padding: 6px 10px;
+    border-radius: var(--ix-radius-sm);
+    font-size: var(--dot-text-body-sm-size);
+    cursor: pointer;
+}
+
+.ix-combo__list li.is-active {
+    background: var(--ix-hover);
+}
+
+.ix-combo__list li.is-chosen {
+    font-weight: 600;
+}
+
+.ix-combo__list li.is-chosen::after {
+    content: '';
+    flex: none;
+    width: 5px;
+    height: 10px;
+    margin-right: 4px;
+    border: solid var(--ix-text);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translateY(-2px);
+}
+
+.ix-combo__list li.is-disabled {
+    color: var(--ix-text-3);
+    cursor: not-allowed;
+}
+
+.ix-combo__list li.ix-combo__empty {
+    color: var(--ix-text-3);
+    cursor: default;
+}
+
+/* Date field and calendar */
+
+.ix-date.is-ready .ix-input {
+    padding-right: calc(var(--ix-field-h) + 4px);
+}
+
+.ix-date__open {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: var(--ix-field-h);
+    height: var(--ix-field-h);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+}
+
+.ix-date.is-ready .ix-date__open {
+    display: flex;
+}
+
+.ix-date__open::before {
+    content: '';
+    width: 14px;
+    height: 13px;
+    border: 1.5px solid var(--ix-text-2);
+    border-top-width: 4px;
+    border-radius: 2px;
+}
+
+.ix-date__open:hover::before {
+    border-color: var(--ix-text);
+}
+
+.ix-date__open:focus-visible,
+.ix-cal button:focus-visible {
+    outline: 2px solid var(--ix-ring);
+    outline-offset: 0;
+}
+
+.ix-cal {
+    width: min(296px, calc(100vw - 16px));
+    padding: 12px;
+}
+
+.ix-cal__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.ix-cal__nav {
+    position: relative;
+    width: var(--ix-field-h-sm);
+    height: var(--ix-field-h-sm);
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--ix-radius-sm);
+    background: transparent;
+    cursor: pointer;
+}
+
+.ix-cal__nav:hover {
+    background: var(--ix-hover);
+}
+
+.ix-cal__nav::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 7px;
+    border: solid var(--ix-text);
+    border-width: 0 0 2px 2px;
+}
+
+.ix-cal__nav--prev::before {
+    transform: translate(-30%, -50%) rotate(45deg);
+}
+
+.ix-cal__nav--next::before {
+    transform: translate(-70%, -50%) rotate(-135deg);
+}
+
+.ix-cal__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 2px;
+}
+
+.ix-cal__dow {
+    padding: 4px 0;
+    text-align: center;
+    font-size: var(--dot-text-caption-size);
+    font-weight: 600;
+    color: var(--ix-text-3);
+}
+
+.ix-cal__day {
+    height: var(--ix-field-h);
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--ix-radius-sm);
+    background: transparent;
+    color: var(--ix-text);
+    font: 400 var(--dot-text-body-sm-size)/1 var(--ix-font);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+}
+
+.ix-cal__day:hover:not([aria-disabled='true']) {
+    background: var(--ix-hover);
+}
+
+.ix-cal__day.is-out {
+    color: var(--ix-text-3);
+}
+
+.ix-cal__day.is-today {
+    border-color: var(--ix-text-2);
+}
+
+.ix-cal__day.is-selected {
+    background: var(--ix-check);
+    border-color: var(--ix-check);
+    color: #fff;
+    font-weight: 600;
+}
+
+.ix-cal__day[aria-disabled='true'] {
+    color: var(--ix-ghost);
+    text-decoration: line-through;
+    cursor: not-allowed;
+}
+
+.ix-cal__foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+
+/* File drop area */
+
+.ix-drop.is-ready {
+    padding: 12px 14px;
+    border: 1px dashed var(--ix-rule-strong);
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-panel);
+    transition: border-color var(--ix-dur-fast) var(--ix-ease), background-color var(--ix-dur-fast) var(--ix-ease);
+}
+
+.ix-drop.is-ready .ix-drop__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.ix-drop.is-over {
+    border-color: var(--ix-text);
+    background: var(--ix-signal-wash);
+}
+
+.ix-drop:has(.ix-drop__input:focus-visible) {
+    outline: 2px solid var(--ix-ring);
+    outline-offset: 0;
+}
+
+.ix-drop__prompt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+}
+
+.ix-drop__prompt .ix-hint {
+    margin: 0;
+}
+
+.ix-drop__list {
+    display: grid;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-drop__list li {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.ix-drop__thumb {
+    display: block;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-sunken);
+}
+
+.ix-drop__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ix-drop__name {
+    overflow-wrap: anywhere;
+}
+
+.ix-drop__name small {
+    margin-left: 6px;
+    color: var(--ix-text-3);
+}
+
+.ix-drop .ix-error {
+    margin: 8px 0 0;
+}
+
+.ix-pw__caps {
+    margin: 6px 0 0;
+}
+
 /* ---------------------------------------------------------------- menus */
 
 .ix-pop {
