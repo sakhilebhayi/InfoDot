@@ -83,7 +83,7 @@ class TeamPolicy
         }
 
         return $this->manageBookings($user, $team)
-            || ($provider->user_id === $user->getKey() && $user->belongsToTeam($team));
+            || ($provider->active && $provider->user_id === $user->getKey() && $user->belongsToTeam($team));
     }
 
     /**

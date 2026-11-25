@@ -158,9 +158,41 @@ class Bookings
                 throw new BookingRefused($fresh->customer_user_id !== null && (int) $fresh->customer_user_id === (int) $actor->getKey() ? BookingRefused::TOO_LATE : BookingRefused::NOT_YOURS, $why);
             }
 
-            $fresh->forceFill(['status' => Booking::CANCELLED_BY_CUSTOMER, 'cancelled_at' => now()])->save();
+            $fresh->forceFill(['status' => Booking::CANCELLED_BY_CUSTOMER, 'cancelled_at' => now(), 'reschedule_requested_at' => null, 'reschedule_note' => null])->save();
 
             BookingEvent::query()->create(['team_id' => $fresh->team_id, 'actor_id' => $actor->getKey(), 'type' => 'booking_cancelled_by_customer', 'details' => ['booking_id' => $fresh->getKey()]]);
+
+            return $fresh;
+        });
+    }
+
+    /** Whether this person may ask to move this appointment, and if not, why. The same cut-off as cancelling applies to a confirmed one. */
+    public function whyNotReschedule(Booking $booking, User $actor): ?string
+    {
+        if (($why = $this->whyNotCancel($booking, $actor)) !== null) {
+            return str_contains($why, 'too close to the appointment to cancel') ? 'It is too close to the appointment to move it here. Please contact '.$booking->team->name.'.' : $why;
+        }
+
+        return $booking->reschedule_requested_at !== null ? 'You have already asked '.$booking->team->name.' to move this appointment. They will answer on this page.' : null;
+    }
+
+    /**
+     * The customer asks the business to move the appointment. Nothing moves: the booking keeps its time until the business moves it or says no.
+     *
+     * @throws BookingRefused
+     */
+    public function requestReschedule(Booking $booking, User $actor, string $note): Booking
+    {
+        return DB::transaction(function () use ($booking, $actor, $note) {
+            $fresh = Booking::query()->whereKey($booking->getKey())->lockForUpdate()->firstOrFail();
+
+            if (($why = $this->whyNotReschedule($fresh, $actor)) !== null) {
+                throw new BookingRefused($fresh->customer_user_id !== null && (int) $fresh->customer_user_id === (int) $actor->getKey() ? BookingRefused::TOO_LATE : BookingRefused::NOT_YOURS, $why);
+            }
+
+            $fresh->forceFill(['reschedule_requested_at' => now(), 'reschedule_note' => mb_substr(trim($note), 0, 300)])->save();
+
+            BookingEvent::query()->create(['team_id' => $fresh->team_id, 'actor_id' => $actor->getKey(), 'type' => 'booking_reschedule_requested', 'details' => ['booking_id' => $fresh->getKey()]]);
 
             return $fresh;
         });

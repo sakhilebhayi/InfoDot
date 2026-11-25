@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\DeactivateBookingProvider;
 use App\Listeners\RecordSeatReleased;
 use App\Listeners\SendMembershipChange;
 use App\Listeners\SendVerificationEmailSafely;
@@ -32,7 +33,7 @@ class EventServiceProvider extends ServiceProvider
             SendVerificationEmailSafely::class,
         ],
         // Platforms that copy a company's membership are told at once (see MembershipWebhook).
-        TeamMemberRemoved::class => [[SendMembershipChange::class, 'handleRemoved'], RecordSeatReleased::class],
+        TeamMemberRemoved::class => [[SendMembershipChange::class, 'handleRemoved'], RecordSeatReleased::class, DeactivateBookingProvider::class],
         TeamMemberUpdated::class => [[SendMembershipChange::class, 'handleUpdated']],
         TeamUpdated::class => [[SyncCompanyToFinance::class, 'updated']],
         TeamDeleted::class => [[SendMembershipChange::class, 'handleDeleted'], [SyncCompanyToFinance::class, 'deleted']],

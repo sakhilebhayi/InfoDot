@@ -21,6 +21,12 @@ class BookingRefused extends RuntimeException
 
     public const NOT_OPEN = 'not_open';
 
+    /** The person may not act on this booking. */
+    public const NOT_ALLOWED = 'not_allowed';
+
+    /** The booking is not in a state this can be done from. */
+    public const STATE = 'state';
+
     public function __construct(public readonly string $reason, string $message)
     {
         parent::__construct($message);
