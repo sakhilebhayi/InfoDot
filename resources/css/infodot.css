@@ -12429,7 +12429,7 @@ body[data-area="home"] .ix-btn--primary:hover,
 /* Scenes B and C share the ground of a ledger page: ruled lines on the left half. */
 .hd__ground { position: absolute; inset: 0 50% 0 0; background: repeating-linear-gradient(0deg, transparent 0 63px, var(--ix-rule) 63px 64px); opacity: 0.55; pointer-events: none; }
 .hd__ref { position: absolute; left: max(24px, calc((100vw - 1232px) / 2)); bottom: 28px; color: var(--ix-rule-strong); font-family: var(--ix-stencil-font); font-weight: 700; font-size: clamp(3rem, 7.5vw, 8rem); letter-spacing: 0.04em; line-height: 1; white-space: nowrap; opacity: 0.55; }
-.hd__stamp { position: absolute; right: 4%; top: 7%; font-size: clamp(1.6rem, 3.4vw, 3.4rem); opacity: 0.28; transform: rotate(-9deg); }
+.hd__stamp { position: absolute; right: 1.5%; top: 3%; font-size: clamp(1.5rem, 3vw, 2.6rem); opacity: 0.28; transform: rotate(-9deg); }
 
 /* Scene B: the photograph bleeds off the right edge, top to bottom. */
 .hd__photo { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; margin: 0; overflow: hidden; }
@@ -12446,7 +12446,7 @@ body[data-area="home"] .ix-btn--primary:hover,
 
 .hd__grid { position: relative; z-index: 2; display: grid; align-content: center; width: 50%; min-height: inherit; box-sizing: border-box; padding: 88px 48px 150px max(24px, calc((100vw - 1232px) / 2)); }
 .hd .lp-hero__inner { max-width: none; padding: 0; text-align: left; }
-.hd .lp-hero__title { margin: 0 0 18px; max-width: 12ch; color: var(--hd-ink); font-size: clamp(2.6rem, 5.4vw, 4.75rem); line-height: 1; transition: color var(--ix-dur-scene-slow) var(--ix-ease); }
+.hd .lp-hero__title { margin: 0 0 18px; max-width: 12ch; color: var(--hd-ink); font-size: clamp(2.3rem, 4.1vw, 3.6rem); line-height: 1; transition: color var(--ix-dur-scene-slow) var(--ix-ease); }
 .hd .lp-hero__sub { margin: 0 0 28px; max-width: 40ch; color: var(--hd-ink-2); text-wrap: pretty; transition: color var(--ix-dur-scene-slow) var(--ix-ease); }
 .hd .lp-search { margin: 0 0 20px; max-width: 620px; }
 .hd .hp-hero__actions { justify-content: flex-start; }

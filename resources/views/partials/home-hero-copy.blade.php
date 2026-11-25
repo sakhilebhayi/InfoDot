@@ -1,5 +1,5 @@
         <div class="lp-hero__inner" data-hero-inner>
-            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'A better, more connected way to build business.' }}</h1>
+            <h1 id="hero-title" class="lp-hero__title" data-hero>{{ $first ? 'Welcome back, '.$first.'.' : 'A better, more connected way to build a business.' }}</h1>
             <p class="lp-hero__sub" data-hero>{{ $first ? 'What do you want to solve today?' : 'We connect you to the knowledge, tools and business opportunities you need to start, manage and grow.' }}</p>
 
             <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>

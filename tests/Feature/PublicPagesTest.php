@@ -16,7 +16,7 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('A better, more connected way to build business.', $html);
+        $this->assertStringContainsString('A better, more connected way to build a business.', $html);
         $this->assertStringContainsString('role="search"', $html);
         $this->assertStringContainsString('name="search"', $html);
         $this->assertStringContainsString('has-motion', $html);
