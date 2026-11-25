@@ -28,7 +28,7 @@
         @endif
 
         {{-- R-62 phase 6: the company first. What it has, what it is missing, and where to go next. --}}
-        <section class="ix-panel" aria-labelledby="co-h" data-company-summary>
+        <section class="ix-panel" aria-labelledby="co-h" data-company-summary data-ix-reveal>
             <div class="ix-panel__body">
                 <h2 id="co-h" class="ix-h2">{{ $company ? $team->name : 'Set up your company' }}</h2>
                 @if ($company === null)
@@ -60,7 +60,7 @@
         {{-- First steps (R-49): shown while something is left to do and the person has not put it away. Every row is
              read from the database when the page is drawn (App\Support\GettingStarted); nothing here is a saved tick. --}}
         @if ($gettingStarted !== [])
-            <section class="ix-start" aria-labelledby="start-h">
+            <section class="ix-start" aria-labelledby="start-h" data-ix-reveal>
                 <div class="ix-start__head">
                     <div>
                         <h2 id="start-h">Getting started</h2>
@@ -89,7 +89,7 @@
         @endif
 
         <div class="ix-fields">
-            <section class="ix-fieldblock" aria-labelledby="needs">
+            <section class="ix-fieldblock" aria-labelledby="needs" data-ix-reveal>
                 <div class="ix-fieldblock__head">
                     <span class="ix-stencil-num ix-fieldblock__num">{{ str_pad((string) $unsolvedTotal, 2, '0', STR_PAD_LEFT) }}</span>
                     <h2 id="needs" class="ix-fieldblock__lbl">{{ $unsolvedTotal === 1 ? 'question is' : 'questions are' }} waiting for an answer</h2>
@@ -122,7 +122,7 @@
         </div>
 
         <div class="ix-split" style="grid-template-columns:minmax(0,7fr) minmax(0,5fr);margin-top:28px">
-            <section aria-labelledby="sols">
+            <section aria-labelledby="sols" data-ix-reveal>
                 <div class="ix-pagehead" style="margin-bottom:12px">
                     <h2 id="sols" class="ix-h1" style="font-size:var(--dot-text-body-size)">Recent solutions</h2>
                     <a href="{{ route('solutions') }}" class="ix-btn ix-btn--sm ix-btn--ghost">All solutions</a>

@@ -5,6 +5,8 @@
         $count = $steps->count();
     @endphp
 
+    <div class="ix-readbar" aria-hidden="true"></div>
+
     <div class="ix-detail">
         <article class="ix-detail__main" x-data="{ copied: false }">
             <div class="ix-itemhead">

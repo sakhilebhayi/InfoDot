@@ -87,6 +87,8 @@
     --ix-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --ix-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
     --ix-rise: 24px;
+    --ix-rise-sm: 12px;
+    --ix-stagger: 60ms;
 
     /* Control sizes: compact with a mouse, thumb-sized on a touch screen (WCAG 2.5.8 target size, 44 px). */
     --ix-field-h: 36px;
@@ -438,13 +440,13 @@ body.ix {
     }
 
     ::view-transition-group(area-band) {
-        animation-duration: 260ms;
+        animation-duration: var(--ix-dur-slow);
         animation-timing-function: var(--ix-ease);
     }
 
     ::view-transition-old(root),
     ::view-transition-new(root) {
-        animation-duration: 140ms;
+        animation-duration: var(--ix-dur-fast);
     }
 }
 
@@ -1771,6 +1773,115 @@ td .ix-prog,
     margin: 0;
     color: var(--ix-text-2);
     font-size: var(--dot-text-body-sm-size);
+}
+
+/* ---------------------------------------------------------------- motion and interaction (R-64 phase 9) */
+
+/*
+ * Rules for everything here: only transform and opacity move (nothing that changes layout); hover is for a mouse (a touch screen gets no sticky hover and
+ * never needs it to do anything); every moving thing uses the duration and curve tokens; reduced motion switches the movement off globally (app.css).
+ */
+
+/* Pressed: a control answers the finger or click at once. */
+.ix-btn,
+.ix-notices__filters a,
+.ix-cal__day,
+.ix-combo__chip button {
+    transition-property: background-color, border-color, color, transform;
+}
+
+.ix-btn:active:not([disabled], [aria-disabled='true']),
+.ix-notices__filters a:active,
+.ix-cal__day:active:not([aria-disabled='true']) {
+    transform: translateY(1px);
+}
+
+.ix .ix-switch:active:not(:disabled) {
+    background-size: 22px 20px;
+}
+
+/* Hover, mouse only: a card that is a link lifts a little and its edge firms up; the row of a table that opens something is already tinted above. */
+@media (hover: hover) and (pointer: fine) {
+    .ix-bizcard,
+    .ix-dir__cats a,
+    .ix-dir__svcs a {
+        transition-property: border-color, background-color, transform, box-shadow;
+    }
+
+    .ix-bizcard:hover,
+    .ix-dir__cats a:hover,
+    .ix-dir__svcs a:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .ix-toast__close:hover,
+    .ix-combo__chip button:hover {
+        transform: scale(1.1);
+    }
+}
+
+/*
+ * Reveal as content scrolls in (reveal.js). Hidden only once the script has run and only for things below the fold of what it can see, so without it,
+ * and under reduced motion, everything is simply there. The delay steps by position in the group (--i, set by the script).
+ */
+.ix-reveal-ready [data-ix-reveal]:not(.is-in) {
+    opacity: 0;
+    transform: translateY(var(--ix-rise-sm));
+}
+
+.ix-reveal-ready [data-ix-reveal] {
+    transition: opacity var(--ix-dur-slow) var(--ix-ease-out), transform var(--ix-dur-slow) var(--ix-ease-out);
+    transition-delay: calc(var(--i, 0) * var(--ix-stagger));
+}
+
+/* A <details> opens and closes smoothly where the browser can animate it; elsewhere it just opens, which is fine. */
+@supports selector(::details-content) {
+    .ix {
+        interpolate-size: allow-keywords;
+    }
+
+    .ix details::details-content {
+        block-size: 0;
+        overflow: clip;
+        transition: block-size var(--ix-dur-slow) var(--ix-ease-out), content-visibility var(--ix-dur-slow) allow-discrete;
+    }
+
+    .ix details[open]::details-content {
+        block-size: auto;
+    }
+}
+
+/* Reading progress on long pages: a thin bar under the header that fills as the page is read. Scroll-linked in the browser (no script, no handler); where the
+   browser cannot link an animation to scroll the bar is simply not shown. */
+.ix-readbar {
+    display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .ix-readbar {
+            display: block;
+            position: fixed;
+            top: var(--ix-top-h);
+            left: 0;
+            right: 0;
+            z-index: 40;
+            height: 3px;
+            background: var(--ix-check);
+            transform: scaleX(0);
+            transform-origin: 0 50%;
+            animation: ix-read linear both;
+            animation-timeline: scroll(root block);
+            pointer-events: none;
+        }
+    }
+}
+
+@keyframes ix-read {
+    to {
+        transform: scaleX(1);
+    }
 }
 
 /* ---------------------------------------------------------------- menus */
