@@ -1,12 +1,18 @@
-<x-guest-layout :title="($another ?? false) ? 'Create another company' : 'Set up your company'">
+@php
+    $another = $another ?? false;
+    $importId = $importId ?? null;
+    $p = $prefill ?? [];
+    $site = $siteHost ?? null;
+@endphp
+<x-guest-layout :title="$another ? 'Create another company' : 'Set up your company'">
     <x-jet-authentication-card>
         @if (request()->boolean('verified'))
             <p class="ix-alert" role="status">Your email address is confirmed.</p>
         @endif
 
-        <h1 class="ix-auth-title">{{ ($another ?? false) ? 'Create another company' : 'Set up your company' }}</h1>
+        <h1 class="ix-auth-title">{{ $another ? 'Create another company' : 'Set up your company' }}</h1>
         <p class="ix-entry__lede">
-            @if ($another ?? false)
+            @if ($another)
                 Each company has its own people, pages and platforms. Your login stays the same, and you can switch between companies from the menu.
             @elseif ($branding)
                 {{ $branding->name }} is for businesses. Your account is ready; name your business to continue to {{ $branding->name }}.
@@ -19,13 +25,34 @@
             <div class="ix-error" role="alert"><p>{{ $errors->first() }}</p></div>
         @endif
 
+        @if ($importId)
+            <p class="ix-alert" role="status">We read {{ $site }} and filled in what it publishes. Check every line and change anything that is wrong: nothing is saved until you create the company, and nothing here is treated as verified.</p>
+        @else
+            <section aria-labelledby="site-h">
+                <h2 id="site-h" class="ix-label">Have a website? Let us read it.</h2>
+                <p class="ix-hint">Type its address and we fill in what we can find. You check it before anything is saved. We only read what the site publishes and we follow its robots.txt.</p>
+                <form class="ix-entry__form" method="POST" action="{{ route('onboarding.business.website') }}">
+                    @csrf
+                    @if ($another)<input type="hidden" name="another" value="1">@endif
+                    <div class="ix-field">
+                        <x-jet-label for="website_url" value="Website address" />
+                        <x-jet-input id="website_url" type="text" name="website" :value="old('website')" maxlength="255" autocomplete="url" placeholder="yourcompany.co.za" />
+                    </div>
+                    <button type="submit" class="ix-btn ix-btn--ghost">Read my website</button>
+                </form>
+            </section>
+            <p class="ix-hint">Or fill in the details yourself.</p>
+        @endif
+
         <form class="ix-entry__form" method="POST" action="{{ route('onboarding.business.store') }}">
             @csrf
-            @if ($another ?? false)<input type="hidden" name="another" value="1">@endif
+            @if ($another)<input type="hidden" name="another" value="1">@endif
+            @if ($importId)<input type="hidden" name="import" value="{{ $importId }}">@endif
 
             <div class="ix-field">
                 <x-jet-label for="name" value="Company name" />
-                <x-jet-input id="name" type="text" name="name" :value="old('name')" required autofocus maxlength="255" autocomplete="organization" />
+                <x-jet-input id="name" type="text" name="name" :value="old('name', $p['name'] ?? '')" required autofocus maxlength="255" autocomplete="organization" />
+                @isset($p['name'])<p class="ix-hint">Read from {{ $site }}. Check it.</p>@endisset
             </div>
 
             <div class="ix-field">
@@ -37,12 +64,45 @@
                         <option value="{{ $key }}" @selected(old('industry') === $key)>{{ __($label) }}</option>
                     @endforeach
                 </select>
+                @if ($importId)<p class="ix-hint">We never guess an industry. Choose one.</p>@endif
             </div>
 
             <div class="ix-field">
                 <x-jet-label for="description" value="What does the business do?" />
-                <textarea id="description" name="description" class="ix-textarea" rows="3" maxlength="600" required placeholder="A sentence or two is plenty.">{{ old('description') }}</textarea>
+                <textarea id="description" name="description" class="ix-textarea" rows="3" maxlength="600" required placeholder="A sentence or two is plenty.">{{ old('description', $p['description'] ?? '') }}</textarea>
+                @isset($p['description'])<p class="ix-hint">Read from {{ $site }}. Check it.</p>@endisset
             </div>
+
+            @if ($importId)
+                <fieldset class="ix-choice">
+                    <legend class="ix-label">Details found on the website (all optional)</legend>
+                    <div class="ix-field">
+                        <x-jet-label for="website" value="Website" />
+                        <x-jet-input id="website" type="text" name="website" :value="old('website', $p['website'] ?? '')" maxlength="255" />
+                    </div>
+                    <div class="ix-field">
+                        <x-jet-label for="contact_email" value="Business email" />
+                        <x-jet-input id="contact_email" type="email" name="contact_email" :value="old('contact_email', $p['contact_email'] ?? '')" maxlength="255" />
+                        @isset($p['contact_email'])<p class="ix-hint">Read from {{ $site }}.</p>@endisset
+                    </div>
+                    <div class="ix-field">
+                        <x-jet-label for="contact_phone" value="Business phone" />
+                        <x-jet-input id="contact_phone" type="text" name="contact_phone" :value="old('contact_phone', $p['contact_phone'] ?? '')" maxlength="40" />
+                        @isset($p['contact_phone'])<p class="ix-hint">Read from {{ $site }}.</p>@endisset
+                    </div>
+                    <div class="ix-field">
+                        <x-jet-label for="location" value="Location" />
+                        <x-jet-input id="location" type="text" name="location" :value="old('location', $p['location'] ?? '')" maxlength="160" />
+                        @isset($p['location'])<p class="ix-hint">Read from {{ $site }}.</p>@endisset
+                    </div>
+                    @foreach (\App\Models\TeamProfile::LINK_KEYS as $slot)
+                        <div class="ix-field">
+                            <x-jet-label for="link_{{ $slot }}" value="{{ ucfirst($slot) }} profile" />
+                            <x-jet-input id="link_{{ $slot }}" type="url" name="links[{{ $slot }}]" :value="old('links.'.$slot, $p['links'][$slot] ?? '')" maxlength="255" />
+                        </div>
+                    @endforeach
+                </fieldset>
+            @endif
 
             <fieldset class="ix-choice">
                 <legend class="ix-label">Who can see the business page</legend>
@@ -85,7 +145,7 @@
             <x-jet-button class="ix-entry__go">Create company and continue</x-jet-button>
         </form>
 
-        @unless ($branding || ($another ?? false))
+        @unless ($branding || $another)
             <p class="ix-entry__links"><a href="{{ route('dashboard') }}">Skip for now</a></p>
         @endunless
     </x-jet-authentication-card>

@@ -9,13 +9,17 @@ use App\Models\User;
 use App\Services\Growth\OnboardingEvents;
 use App\Services\Onboarding\CompanyCapture;
 use App\Services\Onboarding\DuplicateCompanyFound;
+use App\Services\Onboarding\WebsiteExtractor;
 use App\Services\Sso\BusinessOnboarding;
 use App\Services\Sso\PlatformContext;
+use App\Services\Web\FetchFailed;
+use App\Services\Web\UnsafeUrl;
 use App\Support\Industry;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -41,7 +45,78 @@ class BusinessController extends Controller
 
         abort_if($another && ! Gate::forUser($request->user())->allows('create', Jetstream::newTeamModel()), 403);
 
-        return view('onboarding.business', $this->formData($another));
+        return view('onboarding.business', $this->formData($another) + $this->prefill($request));
+    }
+
+    /**
+     * Reads the company's own website (R-62 phase 3) and goes back to the form with what it found filled in, for the person to check. Nothing is
+     * created here; the company only exists once the person confirms the form.
+     */
+    public function readWebsite(Request $request, CompanyCapture $capture, WebsiteExtractor $extractor): RedirectResponse
+    {
+        $user = $request->user();
+        $another = $this->wantsAnother($request);
+
+        if (! $another && ! $this->onboarding->needsBusiness($user)) {
+            return redirect($this->context->pendingUrl() ?? route('dashboard'));
+        }
+        abort_if($another && ! Gate::forUser($user)->allows('create', Jetstream::newTeamModel()), 403);
+
+        $data = $request->validate(['website' => ['required', 'string', 'max:255']], ['website.required' => 'Type your website address.']);
+        $back = redirect()->route('onboarding.business', $another ? ['another' => 1] : []);
+
+        // A few reads a day per person: each one fetches up to five pages of someone else's website.
+        $key = 'company-import:'.$user->id;
+        if (RateLimiter::tooManyAttempts($key, 10)) {
+            return $back->withInput()->withErrors(['website' => 'You have read a lot of websites today. Type the details in, or try again tomorrow.']);
+        }
+        RateLimiter::hit($key, 86400);
+
+        $import = $capture->start($user, CompanyProfileImport::WEBSITE);
+
+        try {
+            $result = $extractor->extract($data['website']);
+        } catch (UnsafeUrl|FetchFailed $e) {
+            $import->forceFill(['status' => CompanyProfileImport::ABANDONED])->save();
+
+            return $back->withInput()->withErrors(['website' => $e->getMessage().' You can type the details in instead.']);
+        } catch (\Throwable $e) {
+            // Whatever a stranger's web page does to the reader, the person gets a plain answer and nothing is left half done.
+            report($e);
+            $import->forceFill(['status' => CompanyProfileImport::ABANDONED])->save();
+
+            return $back->withInput()->withErrors(['website' => 'We could not read that website. You can type the details in instead.']);
+        }
+
+        $import->forceFill(['source_ref' => mb_substr($result['host'], 0, 255)])->save();
+        $capture->propose($import, CompanyProfileImport::WEBSITE, array_map(fn ($f) => ['value' => $f['value'], 'confidence' => $f['confidence']], $result['fields']));
+
+        if ($import->fresh()->extracted === null || count($import->fresh()->extracted) <= 1) {
+            $import->forceFill(['status' => CompanyProfileImport::ABANDONED])->save();
+
+            return $back->withInput()->withErrors(['website' => 'We could not find company details on that website. You can type them in instead.']);
+        }
+
+        return redirect()->route('onboarding.business', array_filter(['import' => $import->id, 'another' => $another ? 1 : null]));
+    }
+
+    /** @return array<string, mixed> the form's starting values and which of them were read from a website, when the person comes from an import */
+    private function prefill(Request $request): array
+    {
+        $import = $request->integer('import') > 0
+            ? CompanyProfileImport::where('id', $request->integer('import'))->where('user_id', $request->user()->id)
+                ->where('status', CompanyProfileImport::DRAFT)->where('source', CompanyProfileImport::WEBSITE)->first()
+            : null;
+
+        if ($import === null) {
+            return ['importId' => null, 'prefill' => [], 'siteHost' => null];
+        }
+
+        return [
+            'importId' => $import->id,
+            'siteHost' => $import->source_ref,
+            'prefill' => collect($import->extracted ?? [])->map(fn ($e) => $e['value'])->all(),
+        ];
     }
 
     public function store(Request $request, CompanyCapture $capture): View|RedirectResponse
@@ -64,9 +139,20 @@ class BusinessController extends Controller
             'size_band' => ['nullable', Rule::in(array_keys(config('onboarding.size_bands')))],
             'objectives' => ['nullable', 'array', 'max:'.(int) config('onboarding.max_objectives')],
             'objectives.*' => ['string', Rule::in(array_keys(config('onboarding.objectives')))],
+            // Details a website import may supply: optional, checked here the way the business page checks them.
+            'website' => ['nullable', 'url:http,https', 'max:255'],
+            'contact_email' => ['nullable', 'email', 'max:255'],
+            'contact_phone' => ['nullable', 'string', 'max:40'],
+            'location' => ['nullable', 'string', 'max:160'],
+            'links' => ['nullable', 'array'],
+            'links.*' => ['nullable', 'url:http,https', 'max:255'],
         ], ['description.required' => 'Say what the business does in a sentence or two.']);
 
-        $values = $request->only(['name', 'industry', 'description', 'visibility']);
+        $values = $request->only(['name', 'industry', 'description', 'visibility', 'website', 'contact_email', 'contact_phone', 'location']);
+        $links = array_filter(array_intersect_key($about['links'] ?? [], array_flip(TeamProfile::LINK_KEYS)));
+        if ($links !== []) {
+            $values['links'] = $links;
+        }
         $objectives = array_values(array_unique($about['objectives'] ?? []));
 
         // The same steps whichever way the details arrive (R-62 phase 2): an import is started (or resumed after the duplicate question), the
@@ -84,7 +170,7 @@ class BusinessController extends Controller
             return view('onboarding.duplicate', [
                 'found' => $e->own,
                 'elsewhere' => $e->elsewhere,
-                'fields' => Arr::except($request->only(['name', 'industry', 'description', 'visibility', 'stage', 'size_band', 'objectives']), []),
+                'fields' => $request->only(['name', 'industry', 'description', 'visibility', 'stage', 'size_band', 'objectives', 'website', 'contact_email', 'contact_phone', 'location', 'links']),
                 'import' => $import->id,
                 'another' => $another,
             ]);

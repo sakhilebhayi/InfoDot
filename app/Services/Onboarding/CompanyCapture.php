@@ -74,7 +74,7 @@ class CompanyCapture
             }
         }
 
-        $import->forceFill(['extracted' => $extracted, 'conflicts' => $conflicts === [] ? null : $conflicts])->save();
+        $import->forceFill(['extracted' => $extracted === [] ? null : $extracted, 'conflicts' => $conflicts === [] ? null : $conflicts])->save();
 
         return $import;
     }

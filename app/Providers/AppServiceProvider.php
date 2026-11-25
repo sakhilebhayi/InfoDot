@@ -35,6 +35,7 @@ use App\Services\Demo\DemoRegistry;
 use App\Services\Growth\OnboardingEvents;
 use App\Services\Platforms\PlatformNotices;
 use App\Services\Sso\PlatformContext;
+use App\Services\Web\SafeFetcher;
 use App\Support\CanonicalUrl;
 use App\Support\Input;
 use App\Support\PlatformSecret;
@@ -60,6 +61,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // One fetcher (and one time budget) per request, shared by robots.txt checks and the page reader.
+        $this->app->scoped(SafeFetcher::class);
+
         // Cashier registers POST /stripe/webhook, and without a webhook secret it accepts unsigned events from anyone. Leave the route out
         // until STRIPE_WEBHOOK_SECRET is set.
         if (! config('cashier.webhook.secret')) {
