@@ -8,13 +8,17 @@ use App\Models\Questions;
 use App\Models\Seminar;
 use App\Models\Solutions;
 use App\Models\Team;
+use App\Models\TeamInvitation;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Booking\BookingActions;
 use App\Services\Platforms\PlatformNotices;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Jetstream\Jetstream;
 
@@ -52,15 +56,121 @@ class InAppNotices
         return true;
     }
 
+    /** Unread notices that are still on the person's list (an archived one has been put away and no longer counts). */
     public function unreadCount(User $user): int
     {
-        return UserNotice::where('user_id', $user->id)->whereNull('read_at')->count();
+        return UserNotice::where('user_id', $user->id)->whereNull('read_at')->whereNull('archived_at')->count();
     }
 
-    /** @return LengthAwarePaginator<UserNotice> */
-    public function page(User $user, int $perPage = 30)
+    /**
+     * The bell's unread count and the newest notice id in one query, kept for the rest of the request: the header and the pop-up area both need them, and a page
+     * should not pay for them twice.
+     *
+     * @return array{unread: int, latest: int}
+     */
+    public function bellSummary(User $user): array
     {
-        return UserNotice::where('user_id', $user->id)->orderByDesc('created_at')->orderByDesc('id')->paginate($perPage);
+        $key = 'notices.bell.'.$user->getKey();
+        $request = request();
+
+        if ($request->attributes->has($key)) {
+            return $request->attributes->get($key);
+        }
+
+        $row = DB::table('user_notices')->where('user_id', $user->getKey())
+            ->selectRaw('max(id) as latest, sum(case when read_at is null and archived_at is null then 1 else 0 end) as unread')->first();
+        $summary = ['unread' => (int) ($row->unread ?? 0), 'latest' => (int) ($row->latest ?? 0)];
+        $request->attributes->set($key, $summary);
+
+        return $summary;
+    }
+
+    /**
+     * One page of the person's notices: the current list, or the archive. `$category` is one of UserNotice::CATEGORIES (anything else means all).
+     *
+     * @return LengthAwarePaginator<UserNotice>
+     */
+    public function page(User $user, int $perPage = 30, ?string $category = null, bool $archived = false)
+    {
+        return $this->scope($user, $category, $archived)->orderByDesc('created_at')->orderByDesc('id')->paginate($perPage);
+    }
+
+    /**
+     * How many notices (current list, or archive) each category holds, with the unread ones counted separately, for the filter chips.
+     *
+     * @return array<string, array{total: int, unread: int}>
+     */
+    public function categoryCounts(User $user, bool $archived = false): array
+    {
+        $out = array_fill_keys(array_keys(UserNotice::CATEGORIES), ['total' => 0, 'unread' => 0]);
+
+        foreach ($this->scope($user, null, $archived)->get(['kind', 'read_at']) as $n) {
+            $c = UserNotice::categoryOf($n->kind);
+            $out[$c]['total']++;
+            $out[$c]['unread'] += $n->read_at === null ? 1 : 0;
+        }
+
+        return $out;
+    }
+
+    /** @return Builder<UserNotice> */
+    private function scope(User $user, ?string $category, bool $archived)
+    {
+        $query = UserNotice::where('user_id', $user->id);
+        $archived ? $query->whereNotNull('archived_at') : $query->whereNull('archived_at');
+
+        if ($category !== null && isset(UserNotice::CATEGORIES[$category])) {
+            $query->whereIn('kind', array_values(array_filter(UserNotice::KINDS, fn (string $k) => UserNotice::categoryOf($k) === $category)));
+        }
+
+        return $query;
+    }
+
+    /** Puts one notice away (and counts it as read: a notice nobody can see should not hold a badge up). Null when it is not this person's. */
+    public function archive(User $user, int $noticeId): ?UserNotice
+    {
+        $notice = UserNotice::where('user_id', $user->id)->whereKey($noticeId)->first();
+
+        if ($notice !== null && $notice->archived_at === null) {
+            $notice->forceFill(['archived_at' => now(), 'read_at' => $notice->read_at ?? now()])->save();
+        }
+
+        return $notice;
+    }
+
+    public function restore(User $user, int $noticeId): ?UserNotice
+    {
+        $notice = UserNotice::where('user_id', $user->id)->whereKey($noticeId)->first();
+
+        if ($notice !== null && $notice->archived_at !== null) {
+            $notice->forceFill(['archived_at' => null])->save();
+        }
+
+        return $notice;
+    }
+
+    /** Puts away everything already read. @return int how many */
+    public function archiveRead(User $user): int
+    {
+        return UserNotice::where('user_id', $user->id)->whereNull('archived_at')->whereNotNull('read_at')->update(['archived_at' => now()]);
+    }
+
+    /**
+     * Notices that arrived after one the page already knew about, still unread and on the list, oldest first, for the pop-ups. Nothing older than
+     * ten minutes is offered (a pop-up is news, not a backlog).
+     *
+     * @return Collection<int, UserNotice>
+     */
+    public function arrivedAfter(User $user, int $afterId, int $limit = 3)
+    {
+        return UserNotice::where('user_id', $user->id)->where('id', '>', $afterId)->whereNull('read_at')->whereNull('archived_at')
+            ->where('created_at', '>=', now()->subMinutes(10))->orderBy('id')->limit($limit)->get();
+    }
+
+    /** The newest notice id the person has, so a page can tell later arrivals from what was already there. */
+    public function latestId(User $user): int
+    {
+        return (int) UserNotice::where('user_id', $user->id)->max('id');
     }
 
     public function markRead(User $user, int $noticeId): ?UserNotice
@@ -166,7 +276,24 @@ class InAppNotices
         if ($notice->subject_type === 'business') {
             $team = Team::find($notice->subject_id);
 
-            return $team === null ? $gone : $this->business($notice, $team);
+            if ($team === null) {
+                return $gone;
+            }
+
+            // A person who has left the company no longer reads its name and standing on an old notice.
+            if (in_array($notice->kind, UserNotice::MEMBERS_ONLY, true)) {
+                $viewer = (int) auth()->id() === (int) $notice->user_id ? auth()->user() : $notice->user;
+
+                if ($viewer === null || ! $viewer->belongsToTeam($team)) {
+                    return $gone;
+                }
+            }
+
+            return $this->business($notice, $team);
+        }
+
+        if ($notice->subject_type === 'invitation') {
+            return $this->invitation($notice) ?? $gone;
         }
 
         if ($notice->subject_type === 'enquiry') {
@@ -178,6 +305,36 @@ class InAppNotices
         }
 
         return $gone;
+    }
+
+    /**
+     * A company invitation (R-64 phase 6). It is shown, with Accept and Decline, only while the invitation is still open and was sent to the address of the
+     * person reading; otherwise the notice says it is no longer open and offers nothing.
+     *
+     * @return array{text: string, url: ?string, actions?: list<array{key: string, label: string}>}|null
+     */
+    private function invitation(UserNotice $notice): ?array
+    {
+        $invitation = TeamInvitation::with('team:id,name')->find($notice->subject_id);
+        $viewer = (int) auth()->id() === (int) $notice->user_id ? auth()->user() : $notice->user;
+
+        if ($invitation === null || $invitation->isExpired() || $viewer === null || ! self::invitationIsFor($invitation, $viewer)) {
+            return null;
+        }
+
+        $role = mb_strtolower((string) (Jetstream::findRole((string) $invitation->role)->name ?? 'member'));
+
+        return [
+            'text' => 'You have been invited to join “'.Str::limit((string) $invitation->team->name, 60, '…', true).'” as '.$role.'.',
+            'url' => null,
+            'actions' => [['key' => 'accept', 'label' => 'Accept'], ['key' => 'decline', 'label' => 'Decline']],
+        ];
+    }
+
+    /** An invitation belongs to whoever owns the address it was sent to, and only once that address is confirmed. */
+    public static function invitationIsFor(TeamInvitation $invitation, User $user): bool
+    {
+        return $user->email_verified_at !== null && mb_strtolower((string) $user->email) === mb_strtolower((string) $invitation->email);
     }
 
     /**
@@ -408,6 +565,7 @@ class InAppNotices
             UserNotice::BUSINESS_TRUST_QUEUE, UserNotice::BUSINESS_REPORT_DECIDED, UserNotice::BUSINESS_STANDING => 'Business review',
             UserNotice::BOOKING_RECEIVED, UserNotice::BOOKING_SUBMITTED, UserNotice::BOOKING_CONFIRMED, UserNotice::BOOKING_REJECTED, UserNotice::BOOKING_CANCELLED, UserNotice::BOOKING_RESCHEDULED, UserNotice::BOOKING_RESCHEDULE_REQUESTED, UserNotice::BOOKING_RESCHEDULE_DECLINED, UserNotice::BOOKING_EXPIRED, UserNotice::BOOKING_REMINDER => 'Bookings',
             UserNotice::BUSINESS_OWNERSHIP => 'Ownership',
+            UserNotice::TEAM_INVITATION => 'Invitation',
             UserNotice::PLATFORM_ENTITLEMENT => 'Platforms',
             default => 'Update',
         };

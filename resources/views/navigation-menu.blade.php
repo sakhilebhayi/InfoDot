@@ -46,7 +46,7 @@
     }
 
     $inboxUnread = app(\App\Services\Enquiries\EnquiryService::class)->unreadCount($user);
-    $bellUnread = app(\App\Services\Knowledge\InAppNotices::class)->unreadCount($user);
+    $bellUnread = app(\App\Services\Knowledge\InAppNotices::class)->bellSummary($user)['unread'];
 
     // The account menu: the person's own places, then the company they are working in (its settings and the switch between
     // companies, which used to be a second popover beside the logo). Notifications are the bell's: they are not repeated here.

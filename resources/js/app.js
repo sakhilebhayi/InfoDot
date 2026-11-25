@@ -3,6 +3,7 @@ import './attachments';
 import './mentions';
 import './business-media';
 import './controls';
+import './notices';
 import Alpine from 'alpinejs';
 
 // The site logo, platform logos and landing photographs are emitted into the build (public/build is the one folder every host serves from),

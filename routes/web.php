@@ -476,6 +476,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // In-app notifications about the signed-in person's own work (an answer to their question, an accepted answer, a verified solution, work added to the library).
     Route::get('/notifications', [NoticesController::class, 'index'])->middleware('throttle:60,1,notices')->name('notices');
     Route::get('/notifications/{id}/open', [NoticesController::class, 'open'])->whereNumber('id')->middleware('throttle:60,1,notices.open')->name('notices.open');
+    Route::get('/notifications/arrivals', [NoticesController::class, 'arrivals'])->middleware('throttle:30,1,notices.arrivals')->name('notices.arrivals');
+    Route::post('/notifications/archive-read', [NoticesController::class, 'archiveRead'])->middleware('throttle:20,1,notices.archive-read')->name('notices.archive-read');
+    Route::post('/notifications/{id}/archive', [NoticesController::class, 'archive'])->whereNumber('id')->middleware('throttle:60,1,notices.archive')->name('notices.archive');
+    Route::post('/notifications/{id}/restore', [NoticesController::class, 'restore'])->whereNumber('id')->middleware('throttle:60,1,notices.restore')->name('notices.restore');
+    Route::post('/notifications/{id}/{answer}', [NoticesController::class, 'answerInvitation'])->whereNumber('id')->whereIn('answer', ['accept', 'decline'])->middleware('throttle:20,1,notices.answer')->name('notices.answer');
     Route::post('/notifications/read-all', [NoticesController::class, 'readAll'])->middleware('throttle:20,1,notices.read-all')->name('notices.read-all');
     Route::post('/notifications/preference', [NoticesController::class, 'preference'])->middleware('throttle:20,1,notices.preference')->name('notices.preference');
 
