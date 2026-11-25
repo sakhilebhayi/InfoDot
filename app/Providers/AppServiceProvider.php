@@ -33,6 +33,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Services\Demo\DemoRegistry;
 use App\Services\Growth\OnboardingEvents;
+use App\Services\Notifications\AccountMail;
 use App\Services\Platforms\PlatformNotices;
 use App\Services\Sso\PlatformContext;
 use App\Services\Web\SafeFetcher;
@@ -52,7 +53,10 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Cashier;
+use Laravel\Fortify\Events\TwoFactorAuthenticationDisabled;
+use Laravel\Fortify\Events\TwoFactorAuthenticationEnabled;
 use Laravel\Jetstream\Events\TeamMemberAdded;
+use Laravel\Jetstream\Events\TeamMemberRemoved;
 use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
@@ -142,6 +146,20 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(TeamMemberAdded::class, function (TeamMemberAdded $e): void {
             if ($e->user instanceof User && $e->team instanceof Team) {
                 app(OnboardingEvents::class)->record($e->user, 'company_joined', $e->team);
+            }
+        });
+
+        // R-64 phase 7: account protection and company membership, told to the person they are about.
+        Event::listen(TwoFactorAuthenticationEnabled::class, fn ($e) => $e->user instanceof User && app(AccountMail::class)->twoFactor($e->user, true));
+        Event::listen(TwoFactorAuthenticationDisabled::class, fn ($e) => $e->user instanceof User && app(AccountMail::class)->twoFactor($e->user, false));
+        Event::listen(TeamMemberAdded::class, function (TeamMemberAdded $e): void {
+            if ($e->user instanceof User && $e->team instanceof Team) {
+                app(AccountMail::class)->membership($e->user, $e->team, true, auth()->user());
+            }
+        });
+        Event::listen(TeamMemberRemoved::class, function ($e): void {
+            if ($e->user instanceof User && $e->team instanceof Team) {
+                app(AccountMail::class)->membership($e->user, $e->team, false, auth()->user());
             }
         });
 

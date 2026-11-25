@@ -73,7 +73,8 @@ class CompanyAndBusinessWordingTest extends TestCase
 
         $this->assertStringContainsString('You have been invited to join Ledger Works on InfoDot.', $text);
         $this->assertStringContainsString('can be accepted for 14 days', $text);
-        $this->assertSame(0, preg_match('/\bteam\b/i', $text));
+        // The copy-this-link line under the button shows the address itself, whose path is /team-invitations/…: an address is not wording.
+        $this->assertSame(0, preg_match('/\bteam\b/i', (string) preg_replace('~https?://\S+~', '', $text)));
         $mail->assertHasSubject('Invitation to join a company on InfoDot');
     }
 
