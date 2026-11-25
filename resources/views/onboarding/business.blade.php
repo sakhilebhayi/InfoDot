@@ -3,6 +3,7 @@
     $importId = $importId ?? null;
     $p = $prefill ?? [];
     $site = $siteHost ?? null;
+    $isDoc = ($importSource ?? null) === 'document';
 @endphp
 <x-guest-layout :title="$another ? 'Create another company' : 'Set up your company'">
     <x-jet-authentication-card>
@@ -26,7 +27,7 @@
         @endif
 
         @if ($importId)
-            <p class="ix-alert" role="status">We read {{ $site }} and filled in what it publishes. Check every line and change anything that is wrong: nothing is saved until you create the company, and nothing here is treated as verified.</p>
+            <p class="ix-alert" role="status">We read {{ $isDoc ? 'the document '.$site : $site }} and filled in what {{ $isDoc ? 'it says' : 'it publishes' }}. Check every line and change anything that is wrong: nothing is saved until you create the company, and nothing here is treated as verified.</p>
         @else
             <section aria-labelledby="site-h">
                 <h2 id="site-h" class="ix-label">Have a website? Let us read it.</h2>
@@ -41,6 +42,19 @@
                     <button type="submit" class="ix-btn ix-btn--ghost">Read my website</button>
                 </form>
             </section>
+            <section aria-labelledby="doc-h">
+                <h2 id="doc-h" class="ix-label">Have a company document? Upload it.</h2>
+                <p class="ix-hint">A PDF or text file such as a registration certificate or company profile, up to 5 MB. We read the text for the name, contact details and registration number, and you check it before anything is saved. We do not keep the file. Scanned pages and Word or Excel files cannot be read yet.</p>
+                <form class="ix-entry__form" method="POST" action="{{ route('onboarding.business.document') }}" enctype="multipart/form-data">
+                    @csrf
+                    @if ($another)<input type="hidden" name="another" value="1">@endif
+                    <div class="ix-field">
+                        <x-jet-label for="document_file" value="Document" />
+                        <input id="document_file" class="ix-input" type="file" name="document" accept=".pdf,.txt,application/pdf,text/plain">
+                    </div>
+                    <button type="submit" class="ix-btn ix-btn--ghost">Read my document</button>
+                </form>
+            </section>
             <p class="ix-hint">Or fill in the details yourself.</p>
         @endif
 
@@ -52,7 +66,7 @@
             <div class="ix-field">
                 <x-jet-label for="name" value="Company name" />
                 <x-jet-input id="name" type="text" name="name" :value="old('name', $p['name'] ?? '')" required autofocus maxlength="255" autocomplete="organization" />
-                @isset($p['name'])<p class="ix-hint">Read from {{ $site }}. Check it.</p>@endisset
+                @isset($p['name'])<p class="ix-hint">Read from {{ $isDoc ? 'your document' : $site }}. Check it.</p>@endisset
             </div>
 
             <div class="ix-field">
@@ -70,12 +84,12 @@
             <div class="ix-field">
                 <x-jet-label for="description" value="What does the business do?" />
                 <textarea id="description" name="description" class="ix-textarea" rows="3" maxlength="600" required placeholder="A sentence or two is plenty.">{{ old('description', $p['description'] ?? '') }}</textarea>
-                @isset($p['description'])<p class="ix-hint">Read from {{ $site }}. Check it.</p>@endisset
+                @isset($p['description'])<p class="ix-hint">Read from {{ $isDoc ? 'your document' : $site }}. Check it.</p>@endisset
             </div>
 
             @if ($importId)
                 <fieldset class="ix-choice">
-                    <legend class="ix-label">Details found on the website (all optional)</legend>
+                    <legend class="ix-label">Details we found (all optional)</legend>
                     <div class="ix-field">
                         <x-jet-label for="website" value="Website" />
                         <x-jet-input id="website" type="text" name="website" :value="old('website', $p['website'] ?? '')" maxlength="255" />
@@ -83,17 +97,22 @@
                     <div class="ix-field">
                         <x-jet-label for="contact_email" value="Business email" />
                         <x-jet-input id="contact_email" type="email" name="contact_email" :value="old('contact_email', $p['contact_email'] ?? '')" maxlength="255" />
-                        @isset($p['contact_email'])<p class="ix-hint">Read from {{ $site }}.</p>@endisset
+                        @isset($p['contact_email'])<p class="ix-hint">Read from {{ $isDoc ? 'your document' : $site }}.</p>@endisset
                     </div>
                     <div class="ix-field">
                         <x-jet-label for="contact_phone" value="Business phone" />
                         <x-jet-input id="contact_phone" type="text" name="contact_phone" :value="old('contact_phone', $p['contact_phone'] ?? '')" maxlength="40" />
-                        @isset($p['contact_phone'])<p class="ix-hint">Read from {{ $site }}.</p>@endisset
+                        @isset($p['contact_phone'])<p class="ix-hint">Read from {{ $isDoc ? 'your document' : $site }}.</p>@endisset
                     </div>
                     <div class="ix-field">
                         <x-jet-label for="location" value="Location" />
                         <x-jet-input id="location" type="text" name="location" :value="old('location', $p['location'] ?? '')" maxlength="160" />
-                        @isset($p['location'])<p class="ix-hint">Read from {{ $site }}.</p>@endisset
+                        @isset($p['location'])<p class="ix-hint">Read from {{ $isDoc ? 'your document' : $site }}.</p>@endisset
+                    </div>
+                    <div class="ix-field">
+                        <x-jet-label for="registration_number" value="Registration number" />
+                        <x-jet-input id="registration_number" type="text" name="registration_number" :value="old('registration_number', $p['registration_number'] ?? '')" maxlength="60" />
+                        @isset($p['registration_number'])<p class="ix-hint">Read from {{ $isDoc ? 'your document' : $site }}. Nothing here is treated as verified.</p>@endisset
                     </div>
                     @foreach (\App\Models\TeamProfile::LINK_KEYS as $slot)
                         <div class="ix-field">
