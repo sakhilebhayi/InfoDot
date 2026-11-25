@@ -8,6 +8,7 @@ use App\Http\Controllers\BookingClosuresController;
 use App\Http\Controllers\BookingHoursController;
 use App\Http\Controllers\BookingProvidersController;
 use App\Http\Controllers\BookingPublicController;
+use App\Http\Controllers\BookingReportsController;
 use App\Http\Controllers\BookingSettingsController;
 use App\Http\Controllers\BookingTypesController;
 use App\Http\Controllers\BrandingAssetController;
@@ -254,6 +255,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/business/{team:uuid}/appointments/upcoming', [BusinessAppointmentsController::class, 'upcoming'])->middleware('throttle:60,1,business.appointments.read')->name('business.appointments.upcoming');
     Route::get('/business/{team:uuid}/appointments/past', [BusinessAppointmentsController::class, 'past'])->middleware('throttle:60,1,business.appointments.read')->name('business.appointments.past');
     Route::get('/business/{team:uuid}/appointments/calendar', [BusinessAppointmentsController::class, 'calendar'])->middleware('throttle:60,1,business.appointments.read')->name('business.appointments.calendar');
+    Route::get('/business/{team:uuid}/appointments/reports', [BookingReportsController::class, 'show'])->middleware('throttle:60,1,business.booking.reports')->name('business.booking.reports');
+    Route::get('/business/{team:uuid}/appointments/reports/export', [BookingReportsController::class, 'export'])->middleware('throttle:6,1,business.booking.export')->name('business.booking.reports.export');
     Route::get('/business/{team:uuid}/appointments/{booking}', [BusinessAppointmentsController::class, 'show'])->whereNumber('booking')->middleware('throttle:60,1,business.appointments.read')->name('business.appointments.show');
     Route::post('/business/{team:uuid}/appointments/{booking}/accept', [BusinessAppointmentsController::class, 'accept'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.accept')->name('business.appointments.accept');
     Route::post('/business/{team:uuid}/appointments/{booking}/reject', [BusinessAppointmentsController::class, 'reject'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.reject')->name('business.appointments.reject');
