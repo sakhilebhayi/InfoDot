@@ -27,6 +27,30 @@
             <p class="ix-alert" role="status">{{ session('getting-started-status') }}</p>
         @endif
 
+        {{-- R-62 phase 6: the company first. What it has, what it is missing, and where to go next. --}}
+        <section class="ix-panel" aria-labelledby="co-h" data-company-summary>
+            <div class="ix-panel__body">
+                <h2 id="co-h" class="ix-h2">{{ $company ? $team->name : 'Set up your company' }}</h2>
+                @if ($company === null)
+                    <p>InfoDot is built around your company: its page, its people and its platforms. Set it up in a minute, or have us read your website.</p>
+                    <p><a class="ix-btn ix-btn--primary" href="{{ route('onboarding.business') }}">Set up your company</a></p>
+                @else
+                    <p>
+                        {{ $company['people'] }} {{ \Illuminate\Support\Str::plural('person', $company['people']) }} in the company.
+                        @if ($company['platforms'] === [])
+                            No platforms switched on yet.
+                            @if ($company['can_manage'])<a href="{{ route('onboarding.recommendations') }}">Choose your first platforms</a>.@endif
+                        @else
+                            Platforms: @foreach ($company['platforms'] as $p)<a href="{{ route('platforms.show', $p['key']) }}">{{ $p['name'] }}</a>{{ $loop->last ? '.' : ',' }} @endforeach
+                        @endif
+                    </p>
+                    @if ($company['missing'] !== [])
+                        <p class="ix-hint">Still to add to the company page: {{ implode(', ', $company['missing']) }}. <a href="{{ route('business.edit', $team) }}">Edit the business page</a></p>
+                    @endif
+                @endif
+            </div>
+        </section>
+
         {{-- First steps (R-49): shown while something is left to do and the person has not put it away. Every row is
              read from the database when the page is drawn (App\Support\GettingStarted); nothing here is a saved tick. --}}
         @if ($gettingStarted !== [])

@@ -100,6 +100,7 @@ class RecommendationsController extends Controller
             try {
                 $entitlements->activate($team, $key, $user);
                 $on[] = $offered[$key];
+                app(OnboardingEvents::class)->record($user, 'platform_activated', $team);
             } catch (EntitlementRefused $e) {
                 $refused[] = $offered[$key].': '.$e->getMessage();
             }

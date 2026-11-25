@@ -7,26 +7,32 @@
 return [
     'steps' => [
         'account_created' => 'Account created',
+        'login_completed' => 'Signed in',
         'email_verified' => 'Email verified',
         'business_created' => 'Business created',
         'profile_established' => 'Business described',
         'category_selected' => 'Category chosen',
         'objectives_set' => 'Aims chosen',
         'team_invited' => 'Colleague invited',
+        'company_joined' => 'Joined a company by invitation',
         'platforms_recommended' => 'Platforms recommended',
+        'platform_activated' => 'First platform switched on',
         'platform_opened' => 'First platform opened',
     ],
 
     // The step each one is measured against. Steps like a colleague invited or a platform opened do not depend on the step just before them
     // in the list, so each is compared with the step it really follows; that way no share can come out above 100 percent.
     'parents' => [
+        'login_completed' => 'account_created',
         'email_verified' => 'account_created',
         'business_created' => 'email_verified',
         'profile_established' => 'business_created',
         'category_selected' => 'business_created',
         'objectives_set' => 'business_created',
         'team_invited' => 'business_created',
+        'company_joined' => 'account_created',
         'platforms_recommended' => 'business_created',
+        'platform_activated' => 'business_created',
         'platform_opened' => 'business_created',
     ],
 

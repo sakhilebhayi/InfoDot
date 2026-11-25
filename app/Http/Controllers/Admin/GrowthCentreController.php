@@ -7,6 +7,7 @@ use App\Models\GrowthTarget;
 use App\Models\ReferralEvent;
 use App\Models\ReferralTier;
 use App\Services\Growth\GrowthMetrics;
+use App\Services\Growth\OnboardingInsights;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,7 +18,7 @@ class GrowthCentreController extends Controller
 {
     private const TABS = ['overview' => 'Overview', 'funnel' => 'Funnel', 'channels' => 'Channels', 'geography' => 'Geography', 'platforms' => 'Platforms', 'referrals' => 'Referrals', 'targets' => 'Targets'];
 
-    public function show(Request $request, GrowthMetrics $metrics, string $tab = 'overview'): View
+    public function show(Request $request, GrowthMetrics $metrics, OnboardingInsights $insights, string $tab = 'overview'): View
     {
         abort_unless(isset(self::TABS[$tab]), 404);
 
@@ -34,6 +35,12 @@ class GrowthCentreController extends Controller
             'unmeasured' => $metrics->unmeasured(),
             'funnel' => $tab === 'funnel' ? $metrics->funnel($from, $to) : null,
             'capture' => $tab === 'funnel' ? $metrics->captureMethods($from, $to) : null,
+            'insights' => $tab === 'funnel' ? [
+                'website' => $insights->websiteFields($from, $to),
+                'time' => $insights->timeToFirstCompany($from, $to),
+                'stopped' => $insights->stoppedAt($from, $to),
+                'retention' => $insights->retention(),
+            ] : null,
             'channels' => $tab === 'channels' ? $metrics->channels($from, $to) : null,
             'geography' => $tab === 'geography' ? $metrics->geography() : null,
             'platforms' => $tab === 'platforms' ? $metrics->platforms() : null,

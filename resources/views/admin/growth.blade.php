@@ -79,6 +79,60 @@
                 </table>
             </div>
         </section>
+        @if ($insights)
+            <section class="ix-panel ix-panel--clip ix-vgap" aria-label="Where people stopped">
+                <div class="ix-panel__head"><h2>Where people stopped</h2></div>
+                <div class="ix-tablewrap">
+                    <table class="ix-table ix-adm__table">
+                        <thead><tr><th>Last step reached</th><th class="num">People</th></tr></thead>
+                        <tbody>@foreach ($insights['stopped'] as $row)<tr><td class="title">{{ $row['label'] }}</td><td class="num">{{ number_format($row['people']) }}</td></tr>@endforeach</tbody>
+                    </table>
+                </div>
+            </section>
+            <p class="ix-hint">"Stopped" means the last step so far. Someone counted here may still carry on.</p>
+
+            <section class="ix-panel ix-vgap" aria-label="Time to first company">
+                <div class="ix-panel__head"><h2>Time from account to first company</h2></div>
+                <div class="ix-panel__body">
+                    @if ($insights['time']['median_minutes'] === null)
+                        <p>Not yet. No one in this range has created a company.</p>
+                    @else
+                        @php($m = $insights['time']['median_minutes'])
+                        <p>The middle time is <strong>{{ $m < 60 ? $m.' minutes' : ($m < 2880 ? round($m / 60, 1).' hours' : round($m / 1440, 1).' days') }}</strong>, from {{ number_format($insights['time']['people']) }} {{ \Illuminate\Support\Str::plural('person', $insights['time']['people']) }}.</p>
+                    @endif
+                </div>
+            </section>
+
+            <section class="ix-panel ix-panel--clip ix-vgap" aria-label="Reading a website">
+                <div class="ix-panel__head"><h2>What reading a website found</h2></div>
+                @if ($insights['website'] === [])
+                    <div class="ix-panel__body"><p>Not yet. No company has been set up from a website.</p></div>
+                @else
+                    <div class="ix-tablewrap">
+                        <table class="ix-table ix-adm__table">
+                            <thead><tr><th>Field</th><th class="num">Found</th><th class="num">Kept as found</th><th class="num">Changed by the person</th></tr></thead>
+                            <tbody>@foreach ($insights['website'] as $row)<tr><td class="title">{{ str_replace('_', ' ', $row['field']) }}</td><td class="num">{{ number_format($row['found']) }}</td><td class="num">{{ number_format($row['kept']) }}</td><td class="num">{{ number_format($row['changed']) }}</td></tr>@endforeach</tbody>
+                        </table>
+                    </div>
+                @endif
+            </section>
+
+            <section class="ix-panel ix-panel--clip ix-vgap" aria-label="People coming back">
+                <div class="ix-panel__head"><h2>People coming back</h2></div>
+                @if ($insights['retention']['since'] === null)
+                    <div class="ix-panel__body"><p>Not yet. Sign-in days have not been recorded long enough.</p></div>
+                @else
+                    <div class="ix-tablewrap">
+                        <table class="ix-table ix-adm__table">
+                            <thead><tr><th>Signed in again at least</th><th class="num">Accounts old enough</th><th class="num">Did</th><th class="num">Share</th></tr></thead>
+                            <tbody>@foreach ($insights['retention']['windows'] as $w)<tr><td class="title">{{ $w['days'] }} {{ \Illuminate\Support\Str::plural('day', $w['days']) }} after signing up</td><td class="num">{{ number_format($w['cohort']) }}</td><td class="num">{{ number_format($w['returned']) }}</td><td class="num">{{ $w['share'] === null ? 'Not yet' : $w['share'].'%' }}</td></tr>@endforeach</tbody>
+                        </table>
+                    </div>
+                    <p class="ix-hint">Counted from the days people signed in, recorded since {{ $insights['retention']['since'] }}. Only accounts made since then are included, and a person who stays signed in without signing in again is not counted.</p>
+                @endif
+            </section>
+        @endif
+
     @elseif ($tab === 'channels')
         <section class="ix-panel ix-panel--clip" aria-label="How people arrived">
             @if ($channels['rows'] === [])

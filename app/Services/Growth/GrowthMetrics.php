@@ -160,7 +160,7 @@ class GrowthMetrics
         return [
             'Monthly recurring revenue' => 'Payments are taken by Dot.Finance and no recurring price is set yet.',
             'Cost of acquiring a business' => 'No marketing spend is recorded in InfoDot.',
-            'Retention' => 'The definition of an active business is still to be agreed.',
+            'Business retention' => 'The definition of an active business is still to be agreed. People coming back is measured on the Funnel tab.',
         ];
     }
 }
