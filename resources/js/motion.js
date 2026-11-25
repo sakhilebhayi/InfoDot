@@ -34,7 +34,8 @@ export function reveal(elements, { delay = 0 } = {}) {
     return gsap.fromTo(
         targets,
         { y: RISE, autoAlpha: 0 },
-        { y: 0, autoAlpha: 1, duration: DUR.scene + 0.2, ease: EASE.out, stagger: STAGGER, delay, overwrite: true, clearProps: 'opacity,visibility,transform' },
+        // However many parts arrive together, the last one is never more than 0.3s behind the first, so nothing waits off-stage.
+        { y: 0, autoAlpha: 1, duration: DUR.scene + 0.2, ease: EASE.out, stagger: Math.min(STAGGER, 0.3 / targets.length), delay, overwrite: true, clearProps: 'opacity,visibility,transform' },
     );
 }
 

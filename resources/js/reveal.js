@@ -22,7 +22,7 @@ function start() {
             entry.target.classList.add('is-in');
             observer.unobserve(entry.target);
         });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    }, { rootMargin: '0px', threshold: 0 });
 
     items.forEach((el) => observer.observe(el));
 }
