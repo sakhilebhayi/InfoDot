@@ -54,7 +54,7 @@
     </x-booking-zone>
 
     @if ($why === null)
-        <form method="post" action="{{ route('my-bookings.cancel', $booking->reference) }}">@csrf
+        <form method="post" action="{{ route('my-bookings.cancel', $booking->reference) }}" data-confirm="Cancel this appointment? The business is told, and the time becomes free for someone else." data-confirm-label="Cancel the appointment">@csrf
             <button type="submit" class="ix-btn ix-btn--danger">Cancel this appointment</button>
         </form>
     @elseif ($holding && ! ($whyMove !== null && str_contains($whyMove, 'too close')))

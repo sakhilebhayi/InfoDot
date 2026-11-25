@@ -87,7 +87,7 @@
                 @endif
 
                 @if ($can['reject'])
-                    <form method="post" action="{{ route('business.appointments.reject', [$team, $booking]) }}" class="ix-form">@csrf
+                    <form method="post" action="{{ route('business.appointments.reject', [$team, $booking]) }}" class="ix-form" data-confirm="Reject this request? The customer is told it could not be taken." data-confirm-label="Reject">@csrf
                         <div>
                             <label class="ix-label" for="reject-note">Reason for the customer <span class="ix-hint">optional, they will see it</span></label>
                             <input class="ix-input" id="reject-note" name="note" type="text" maxlength="300">
@@ -97,7 +97,7 @@
                 @endif
 
                 @if ($can['cancel'])
-                    <form method="post" action="{{ route('business.appointments.cancel', [$team, $booking]) }}" class="ix-form">@csrf
+                    <form method="post" action="{{ route('business.appointments.cancel', [$team, $booking]) }}" class="ix-form" data-confirm="Cancel this appointment? The customer is told, and the time becomes free." data-confirm-label="Cancel the appointment">@csrf
                         <div>
                             <label class="ix-label" for="cancel-note">Reason for the customer <span class="ix-hint">optional, they will see it</span></label>
                             <input class="ix-input" id="cancel-note" name="note" type="text" maxlength="300">

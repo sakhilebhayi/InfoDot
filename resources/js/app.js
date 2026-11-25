@@ -5,6 +5,7 @@ import './business-media';
 import './controls';
 import './notices';
 import './reveal';
+import './feedback';
 import Alpine from 'alpinejs';
 
 // The site logo, platform logos and landing photographs are emitted into the build (public/build is the one folder every host serves from),
@@ -14,7 +15,11 @@ import.meta.glob(['../img/platforms/*.png', '../img/apps/*.png', '../img/landing
 // The Analytics trend chart. The charting library is large, so it is fetched only on a page that has a chart to draw.
 const trendChart = document.getElementById('activityChart');
 if (trendChart) {
-    import('./analytics-chart').then(({ draw }) => draw(trendChart));
+    // A quiet placeholder while the charting code arrives; it is removed whether the chart drew or not, so it can never be left pulsing.
+    trendChart.classList.add('is-loading');
+    import('./analytics-chart')
+        .then(({ draw }) => draw(trendChart))
+        .finally(() => trendChart.classList.remove('is-loading'));
 }
 
 // Livewire 3 bundles and starts its own Alpine on every page that loads it. Starting a second one

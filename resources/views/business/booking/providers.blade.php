@@ -45,7 +45,7 @@
                                         <form method="post" action="{{ route('business.booking.providers.toggle', [$team, $provider]) }}">@csrf
                                             <button type="submit" class="ix-btn ix-btn--sm ix-btn--ghost">{{ $provider->active ? 'Switch off' : 'Switch on' }}</button>
                                         </form>
-                                        <form method="post" action="{{ route('business.booking.providers.delete', [$team, $provider]) }}" x-data x-on:submit="if (! confirm('Remove this provider? This cannot be undone.')) $event.preventDefault()">@csrf
+                                        <form method="post" action="{{ route('business.booking.providers.delete', [$team, $provider]) }}" data-confirm="Remove this provider? This cannot be undone.">@csrf
                                             <button type="submit" class="ix-btn ix-btn--sm ix-btn--danger">Remove</button>
                                         </form>
                                     </div>

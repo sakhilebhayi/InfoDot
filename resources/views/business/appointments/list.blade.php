@@ -38,7 +38,7 @@
                                     <div class="ix-actions">
                                         @if ($tab === 'requests')
                                             <form method="post" action="{{ route('business.appointments.accept', [$team, $b]) }}">@csrf<button type="submit" class="ix-btn ix-btn--sm ix-btn--primary">Accept</button></form>
-                                            <form method="post" action="{{ route('business.appointments.reject', [$team, $b]) }}">@csrf<button type="submit" class="ix-btn ix-btn--sm ix-btn--danger">Reject</button></form>
+                                            <form method="post" action="{{ route('business.appointments.reject', [$team, $b]) }}" data-confirm="Reject this request? The customer is told it could not be taken." data-confirm-label="Reject">@csrf<button type="submit" class="ix-btn ix-btn--sm ix-btn--danger">Reject</button></form>
                                         @endif
                                         <a class="ix-btn ix-btn--sm ix-btn--ghost" href="{{ route('business.appointments.show', [$team, $b]) }}">{{ $b->status === 'confirmed' && $started ? 'Mark done or no-show' : 'Open' }}</a>
                                     </div>

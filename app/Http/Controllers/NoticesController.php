@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Knowledge\InAppNotices;
 use App\Services\Licensing\SeatLedger;
+use App\Support\Toast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -67,14 +68,18 @@ class NoticesController extends Controller
     {
         abort_if($this->notices->archive($request->user(), $id) === null, 404);
 
-        return $this->backToList()->with('notices_notice', 'Put away. It is in the archive.');
+        Toast::flash('Put away. It is in the archive.');
+
+        return $this->backToList();
     }
 
     public function restore(Request $request, int $id): RedirectResponse
     {
         abort_if($this->notices->restore($request->user(), $id) === null, 404);
 
-        return $this->backToList()->with('notices_notice', 'Brought back to your list.');
+        Toast::flash('Brought back to your list.');
+
+        return $this->backToList();
     }
 
     public function archiveRead(Request $request): RedirectResponse

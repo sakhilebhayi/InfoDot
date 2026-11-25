@@ -48,7 +48,7 @@
                                         <form method="post" action="{{ route('business.booking.types.toggle', [$team, $type]) }}">@csrf
                                             <button type="submit" class="ix-btn ix-btn--sm ix-btn--ghost">{{ $type->active ? 'Switch off' : 'Switch on' }}</button>
                                         </form>
-                                        <form method="post" action="{{ route('business.booking.types.delete', [$team, $type]) }}" x-data x-on:submit="if (! confirm('Delete this appointment type? This cannot be undone.')) $event.preventDefault()">@csrf
+                                        <form method="post" action="{{ route('business.booking.types.delete', [$team, $type]) }}" data-confirm="Delete this appointment type? This cannot be undone.">@csrf
                                             <button type="submit" class="ix-btn ix-btn--sm ix-btn--danger">Delete</button>
                                         </form>
                                     </div>

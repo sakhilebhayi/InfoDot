@@ -4,7 +4,7 @@
     "name": "ScrollTrigger"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Dk4fOJF_.css",
+    "file": "assets/app-KX0mDxpe.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -309,7 +309,7 @@
     "src": "resources/img/platforms/files.png"
   },
   "resources/js/analytics-chart.js": {
-    "file": "assets/analytics-chart-DM9tuJdt.js",
+    "file": "assets/analytics-chart-C9DWRios.js",
     "name": "analytics-chart",
     "src": "resources/js/analytics-chart.js",
     "isDynamicEntry": true,
@@ -318,7 +318,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DFBJYK7X.js",
+    "file": "assets/app-BuHU89wQ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
