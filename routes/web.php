@@ -22,6 +22,7 @@ use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\ExpertiseSharingController;
 use App\Http\Controllers\IdentityDeskController;
+use App\Http\Controllers\JoinLinkController;
 use App\Http\Controllers\Knowledge\PickerController;
 use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\LibraryEntryController;
@@ -133,6 +134,10 @@ Route::match(['get', 'post'], '/auth/ecosystem', fn () => redirect('/login', 303
     ->withoutMiddleware(['Illuminate\Foundation\Http\Middleware\PreventRequestForgery', 'Illuminate\Foundation\Http\Middleware\VerifyCsrfToken', 'Illuminate\Foundation\Http\Middleware\ValidateCsrfToken'])
     ->middleware('throttle:30,1,auth-ecosystem')
     ->name('auth.ecosystem');
+
+// R-62 phase 4: joining a company from a shareable link. The page is public (it shows only the company name); joining needs a confirmed account.
+Route::get('/join/{token}', [JoinLinkController::class, 'show'])->middleware('throttle:30,1,join-view')->name('join.show');
+Route::post('/join/{token}', [JoinLinkController::class, 'join'])->middleware(['auth:sanctum', 'verified', 'throttle:10,1,join-accept'])->name('join.accept');
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
