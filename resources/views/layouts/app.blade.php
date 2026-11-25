@@ -72,6 +72,9 @@
         @endunless
 
         <main id="main" class="ix-page" @if($area === 'home') style="padding-top:0;max-width:none;padding-left:0;padding-right:0" @endif>{{ $slot }}</main>
+        @auth
+            <x-ix.toasts :url="route('notices.arrivals')" :last="app(\App\Services\Knowledge\InAppNotices::class)->bellSummary(auth()->user())['latest']" />
+        @endauth
 
         @include('layouts.app-footer')
     </div>

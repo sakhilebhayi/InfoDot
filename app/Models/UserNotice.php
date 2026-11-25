@@ -104,6 +104,9 @@ class UserNotice extends Model
     /** R-50: a platform was switched on, switched off, granted, suspended or restored for the company the reader runs. `ref` is "pe:{event}:{platform}:{type}". */
     public const PLATFORM_ENTITLEMENT = 'platform_entitlement';
 
+    /** R-64 phase 6: you were invited to join a company. The invitation is the subject; the notice carries Accept and Decline. */
+    public const TEAM_INVITATION = 'team_invitation';
+
     /**
      * R-63: appointment booking. For the business (a booking arrived, was cancelled by the customer, a move was asked for, one is coming up) and for the
      * customer (it was sent, confirmed, rejected, cancelled by the business, moved, the move declined, it expired unanswered, one is coming up).
@@ -146,7 +149,7 @@ class UserNotice extends Model
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
         self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP,
-        self::PLATFORM_ENTITLEMENT,
+        self::PLATFORM_ENTITLEMENT, self::TEAM_INVITATION,
         ...self::BOOKING_KINDS,
     ];
 
@@ -161,17 +164,55 @@ class UserNotice extends Model
         self::IDENTITY_CONFLICT, self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
         self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP,
         self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP,
-        self::PLATFORM_ENTITLEMENT,
+        self::PLATFORM_ENTITLEMENT, self::TEAM_INVITATION,
         ...self::BOOKING_KINDS,
+    ];
+
+    /**
+     * The groups the notification page offers (R-64 phase 6): key => name. Every kind belongs to exactly one.
+     *
+     * @var array<string, string>
+     */
+    public const CATEGORIES = [
+        'security' => 'Account and security',
+        'invitations' => 'Invitations',
+        'business' => 'Business workspace',
+        'bookings' => 'Bookings and appointments',
+        'knowledge' => 'Questions and solutions',
+        'seminars' => 'Seminars',
+        'platforms' => 'Platforms',
+    ];
+
+    /** The category a kind is listed under. */
+    public static function categoryOf(string $kind): string
+    {
+        return match (true) {
+            in_array($kind, [self::IDENTITY_CONFLICT, self::IDENTITY_ALERT], true) => 'security',
+            $kind === self::TEAM_INVITATION => 'invitations',
+            in_array($kind, self::BOOKING_KINDS, true) => 'bookings',
+            in_array($kind, [self::PLATFORM_ENTITLEMENT], true) => 'platforms',
+            str_starts_with($kind, 'seminar_') => 'seminars',
+            in_array($kind, [self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::VERIFICATION_QUEUE, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED, self::ENQUIRY_RECEIVED, self::ENQUIRY_REPLY, self::ENQUIRY_ASSIGNED, self::ENQUIRY_FOLLOW_UP, self::BUSINESS_TRUST_QUEUE, self::BUSINESS_REPORT_DECIDED, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP], true) => 'business',
+            default => 'knowledge',
+        };
+    }
+
+    /**
+     * Kinds that tell a person about a company's own affairs. They are shown only while the person still belongs to that company: someone who has left
+     * must not keep reading its name and standing on an old notice. (A reporter's reply and a reviewer's queue are about the person, not their company.)
+     */
+    public const MEMBERS_ONLY = [
+        self::BUSINESS_VERIFICATION, self::BUSINESS_VERIFICATION_RENEWAL, self::BUSINESS_STANDING, self::BUSINESS_OWNERSHIP, self::PLATFORM_ENTITLEMENT,
+        self::IDENTITY_ALERT, self::RELATIONSHIP_REQUEST, self::RELATIONSHIP_DECIDED,
     ];
 
     public $timestamps = false;
 
-    protected $fillable = ['user_id', 'kind', 'subject_type', 'subject_id', 'ref', 'read_at', 'created_at'];
+    protected $fillable = ['user_id', 'kind', 'subject_type', 'subject_id', 'ref', 'read_at', 'archived_at', 'created_at'];
 
     protected function casts(): array
     {
-        return ['read_at' => 'datetime', 'created_at' => 'datetime', 'subject_id' => 'integer'];
+        return ['read_at' => 'datetime', 'archived_at' => 'datetime', 'created_at' => 'datetime', 'subject_id' => 'integer'];
     }
 
     /** @return BelongsTo<User, $this> */

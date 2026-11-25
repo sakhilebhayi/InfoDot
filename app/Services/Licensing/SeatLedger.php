@@ -142,7 +142,7 @@ class SeatLedger
                     $s = $this->summary($locked);
                     $holdsThisSeat = $exceptEmail !== null
                         && config('licensing.pending_invitations_reserve_a_seat', true)
-                        && TeamInvitation::live()->where('team_id', $locked->getKey())->where('email', $exceptEmail)->exists();
+                        && TeamInvitation::live()->where('team_id', $locked->getKey())->whereRaw('lower(email) = ?', [mb_strtolower($exceptEmail)])->exists();
                     $reserved = $s['reserved'] - ($holdsThisSeat ? 1 : 0);
 
                     if ($s['capacity'] < $s['people'] + $reserved + 1) {

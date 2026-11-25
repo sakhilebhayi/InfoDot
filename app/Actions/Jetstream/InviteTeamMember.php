@@ -2,8 +2,11 @@
 
 namespace App\Actions\Jetstream;
 
+use App\Models\User;
+use App\Models\UserNotice;
 use App\Rules\DeliverableEmailDomain;
 use App\Services\Growth\OnboardingEvents;
+use App\Services\Knowledge\InAppNotices;
 use App\Services\Licensing\SeatLedger;
 use App\Support\TeamRoles;
 use Illuminate\Support\Facades\Gate;
@@ -72,6 +75,26 @@ class InviteTeamMember implements InvitesTeamMembers
             throw ValidationException::withMessages([
                 'email' => __('The invitation email could not be sent just now, so nobody was invited. Please try again in a few minutes.'),
             ])->errorBag('addTeamMember');
+        }
+
+        // Only once the invitation really went out: a refused send deletes it, and nobody should be told about an invitation that is gone.
+        $this->tellInvitee($user, $invitation, $email);
+    }
+
+    /**
+     * R-64 phase 6: a person who already has an InfoDot account with that confirmed address finds the invitation in their notifications, where it can be
+     * accepted or declined. Mail still goes to everyone; this only adds the in-app path. It can never fail the invitation.
+     */
+    private function tellInvitee($inviter, \App\Models\TeamInvitation $invitation, string $email): void
+    {
+        try {
+            $invitee = User::whereRaw('lower(email) = ?', [mb_strtolower($email)])->whereNotNull('email_verified_at')->first();
+
+            app(InAppNotices::class)->record(
+                UserNotice::TEAM_INVITATION, $invitee, 'invitation', (int) $invitation->getKey(), 'inv:'.$invitation->getKey(), $inviter,
+            );
+        } catch (\Throwable $e) {
+            Log::warning('team.invitation_notice_failed', ['exception' => $e::class]);
         }
     }
 
