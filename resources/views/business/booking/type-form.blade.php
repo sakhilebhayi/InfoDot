@@ -95,14 +95,14 @@
 
                 <div class="ix-form__row">
                     <div>
-                        <label class="ix-label" for="location_note">Where or how to join <span class="ix-hint">an address, or a link or phone number for joining</span></label>
+                        <label class="ix-label" for="location_note">Where or how to join <span class="ix-hint">an address, or a link or phone number for joining. An in-person address is shown to everyone before they book; for online and phone appointments this is shown only to people who have booked. Do not put anything here you would not tell a stranger if the appointment is in person.</span></label>
                         <input class="ix-input" id="location_note" name="location_note" type="text" maxlength="300" value="{{ old('location_note', $type->location_note) }}">
                     </div>
                 </div>
 
                 <div class="ix-form__row">
                     <div>
-                        <label class="ix-label" for="preparation">What to prepare <span class="ix-hint">shown to the customer once they book</span></label>
+                        <label class="ix-label" for="preparation">What to prepare <span class="ix-hint">shown only to people who have booked</span></label>
                         <textarea class="ix-textarea" id="preparation" name="preparation" rows="3" maxlength="1500">{{ old('preparation', $type->preparation) }}</textarea>
                     </div>
                 </div>

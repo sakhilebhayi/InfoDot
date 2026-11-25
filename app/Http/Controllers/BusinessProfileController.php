@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Rules\DeliverableEmailDomain;
 use App\Services\Attachments\TeamMediaService;
 use App\Services\Booking\BookingFeature;
+use App\Services\Booking\Bookings;
 use App\Services\Directory\BusinessDirectory;
 use App\Services\Directory\FeaturedPlacement;
 use App\Services\Growth\OnboardingEvents;
@@ -79,6 +80,8 @@ class BusinessProfileController extends Controller
             'canManageBookings' => ! $preview && Gate::allows('manageBookings', $team) && app(BookingFeature::class)->available(),
             // R-63: a member who is a provider (and not a manager) gets the way into their own hours only.
             'ownScheduleUrl' => $this->ownScheduleUrl($team, $user, $preview),
+            // R-63 phase 3: the public "Book an appointment" button, only when a customer could really book here.
+            'bookable' => $this->bookable($team),
             'preview' => $preview,
             'announcements' => $team->announcements()->showing()->limit(5)->get(),
             'offeringPictures' => $team->mediaByRef('offering')->map(fn ($pictures) => $pictures->filter->onDisk()->values()),
@@ -88,6 +91,13 @@ class BusinessProfileController extends Controller
             'collections' => $user && ! $isMember ? BusinessCollection::where('user_id', $user->id)->orderBy('name')->get() : collect(),
             'savedIn' => $user ? BusinessCollection::where('user_id', $user->id)->whereHas('items', fn ($q) => $q->where('team_id', $team->id))->pluck('name') : collect(),
         ]);
+    }
+
+    private function bookable(Team $team): bool
+    {
+        return app(BookingFeature::class)->available()
+            && app(Bookings::class)->whyNot(null, $team) === null
+            && $team->appointmentTypes()->active()->exists();
     }
 
     private function ownScheduleUrl(Team $team, ?User $user, bool $preview): ?string

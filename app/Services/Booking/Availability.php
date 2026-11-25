@@ -46,12 +46,12 @@ class Availability
      * @param  string|CarbonInterface  $date  a date in the business's zone ('Y-m-d'), or an instant (taken in the business's zone)
      * @return Collection<int, Slot> in time order; where several providers are free at the same time, the one with the lowest id
      */
-    public function slots(AppointmentType $type, string|CarbonInterface $date, ?int $providerId = null, ?CarbonInterface $now = null, ?int $ignoreBookingId = null): Collection
+    public function slots(AppointmentType $type, string|CarbonInterface $date, ?int $providerId = null, ?CarbonInterface $now = null, ?int $ignoreBookingId = null, bool $forUpdate = false): Collection
     {
         $tz = $this->zone($type);
         $local = $this->localDate($tz, $date);
 
-        return $this->daySlots($this->load($type, $tz, $local, 0, $providerId, $ignoreBookingId), $local, $this->instant($now))['open'];
+        return $this->daySlots($this->load($type, $tz, $local, 0, $providerId, $ignoreBookingId, $forUpdate), $local, $this->instant($now))['open'];
     }
 
     /**
@@ -90,13 +90,14 @@ class Availability
 
     /**
      * The slot starting exactly at this instant, or null when it is not bookable. This is the check a booking is made on: call it inside the
-     * transaction that holds the provider's lock, so what it saw cannot change before the booking is written.
+     * transaction that holds the business's lock, so what it saw cannot change before the booking is written. `$forUpdate` makes the read of the held
+     * bookings a locking read, which on InnoDB sees the latest committed rows whatever the transaction's snapshot is.
      */
-    public function find(AppointmentType $type, CarbonInterface $start, ?int $providerId = null, ?CarbonInterface $now = null, ?int $ignoreBookingId = null): ?Slot
+    public function find(AppointmentType $type, CarbonInterface $start, ?int $providerId = null, ?CarbonInterface $now = null, ?int $ignoreBookingId = null, bool $forUpdate = false): ?Slot
     {
         $wanted = CarbonImmutable::instance($start)->utc()->getTimestamp();
 
-        foreach ($this->slots($type, $start, $providerId, $now, $ignoreBookingId) as $slot) {
+        foreach ($this->slots($type, $start, $providerId, $now, $ignoreBookingId, $forUpdate) as $slot) {
             if ($slot->start->getTimestamp() === $wanted) {
                 return $slot;
             }
@@ -228,7 +229,7 @@ class Availability
      *
      * @return array<string, mixed>
      */
-    private function load(AppointmentType $type, DateTimeZone $tz, string $firstDate, int $days, ?int $providerId, ?int $ignoreBookingId = null): array
+    private function load(AppointmentType $type, DateTimeZone $tz, string $firstDate, int $days, ?int $providerId, ?int $ignoreBookingId = null, bool $forUpdate = false): array
     {
         $team = Team::query()->findOrFail($type->team_id);
         $setting = BookingSetting::forTeam($team);
@@ -264,7 +265,9 @@ class Availability
 
         $bookings = Booking::query()->where('team_id', $team->id)->holding()
             ->where('blocks_from', '<', $to)->where('blocks_until', '>', $from)
-            ->when($ignoreBookingId !== null, fn ($q) => $q->where('id', '!=', $ignoreBookingId))->get()
+            ->when($ignoreBookingId !== null, fn ($q) => $q->where('id', '!=', $ignoreBookingId))
+            // A booking made under the lock must read the LATEST committed bookings, not a snapshot older than the lock (InnoDB repeatable read).
+            ->when($forUpdate, fn ($q) => $q->lockForUpdate())->get()
             ->map(fn (Booking $b) => ['provider' => $b->booking_provider_id, 'from' => CarbonImmutable::instance($b->blocks_from)->utc(), 'until' => CarbonImmutable::instance($b->blocks_until)->utc()])->all();
 
         return [
