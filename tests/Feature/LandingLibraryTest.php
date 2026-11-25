@@ -15,7 +15,7 @@ class LandingLibraryTest extends TestCase
 
     public function test_without_library_entries_the_section_does_not_render(): void
     {
-        $this->get('/')->assertOk()->assertDontSee('A library you can act on');
+        $this->get('/')->assertOk()->assertDontSee('A library you can act on')->assertDontSee('data-hd-panel', false);
     }
 
     public function test_the_landing_page_shows_real_library_entries_with_their_references(): void
@@ -52,5 +52,51 @@ MD);
             ->assertSee('Keep cash under control from week one')
             ->assertSee(Reference::for($entry))
             ->assertSee(route('solutions.view', $entry->id));
+    }
+
+    public function test_the_hero_panel_shows_a_real_entry_and_its_own_steps_as_example_tasks(): void
+    {
+        $dir = storage_path('framework/testing/landing-panel-'.uniqid());
+        File::makeDirectory($dir, 0755, true);
+        File::put($dir.'/hand-over.md', <<<'MD'
+---
+key: hand-over
+title: Write down a job so someone else can finish it
+topics: Operations
+tags: hand-over
+duration: 1
+duration_type: weeks
+evidence: Industry-recognised best practice from official sources.
+---
+A short summary of the method.
+
+## Step one — List what only you know
+Note the contacts, the dates and the places.
+
+## Step two — Write the steps
+One line for each action.
+
+## Step three — Test it
+Ask someone to follow the page.
+
+## Sources and further reading
+Hand-over guidance — Example Publisher — https://example.org/handover — 1 January 2026.
+Last reviewed: 2026-10-31.
+MD);
+
+        $this->artisan('knowledge:seed', ['--dir' => $dir])->assertExitCode(0);
+        File::deleteDirectory($dir);
+
+        $entry = Solutions::withoutGlobalScopes()->where('seed_key', 'hand-over')->firstOrFail();
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-hd-panel', $html);
+        $this->assertStringContainsString('Write down a job so someone else can finish it', $html);
+        $this->assertStringContainsString(Reference::for($entry), $html);
+        // The tasks are the entry's own steps, and the layout says it is an example.
+        $this->assertStringContainsString('List what only you know', $html);
+        $this->assertStringContainsString('The same steps as tasks', $html);
+        $this->assertStringContainsString('Example', $html);
     }
 }

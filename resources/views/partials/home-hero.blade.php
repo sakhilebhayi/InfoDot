@@ -28,6 +28,8 @@
 
     <div class="hd__ledger">@include('partials.home-hero-ledger')</div>
 
+    @include('partials.home-hero-panel')
+
     <div class="hd__ctl" role="group" aria-label="Hero pictures" data-hd-ctl hidden>
         <button type="button" class="hd__pause" data-hd-pause aria-pressed="false" aria-label="Pause the changing pictures"><svg class="hd__ico hd__ico--pause" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg><svg class="hd__ico hd__ico--play" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg></button>
         <button type="button" class="hd__dot" data-hd-dot="a" aria-label="Picture 1 of 3: the market photograph"></button>
