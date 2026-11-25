@@ -159,6 +159,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // R-59 Phase 1B: the platforms that fit what the business told us, each with the reason it was chosen.
     Route::get('/onboarding/recommendations', [RecommendationsController::class, 'show'])->name('onboarding.recommendations');
     Route::post('/onboarding/recommendations', [RecommendationsController::class, 'update'])->middleware('throttle:20,1,onboarding.recommendations')->name('onboarding.recommendations.update');
+    Route::post('/onboarding/platforms', [RecommendationsController::class, 'activate'])->middleware('throttle:10,1,onboarding.platforms')->name('onboarding.platforms.activate');
 
     Route::get('/referrals', [ReferralsController::class, 'show'])->middleware('throttle:60,1,referrals')->name('referrals.show');
 
