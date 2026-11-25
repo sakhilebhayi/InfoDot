@@ -71,6 +71,8 @@ php artisan knowledge:seed --dry    # validate and list, write nothing
 php artisan knowledge:seed         # publish/update under the official account
 ```
 
+Without a host terminal, use the **Knowledge Library** workflow (`.github/workflows/knowledge-library.yml`): mode `status` runs `--dry`, mode `publish` (with `confirm` set to `publish`) runs the real seed. Run the Backups workflow (mode run, keys infodot) before a publish. The host output is encrypted like the other host workflows; the job log shows only the exit status and size.
+
 `--force` publishes a new entry even when a community solution already has the same title (by
 default such entries are skipped and reported, so a batch never shouts over a member). Tests:
 `tests/Feature/Knowledge/KnowledgeSeedTest.php`, including a gate that every shipped entry file
