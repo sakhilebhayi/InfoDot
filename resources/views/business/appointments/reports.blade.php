@@ -60,7 +60,7 @@
                 @endif
                 @if ($report['utilisation'])
                     <p><b>{{ $report['utilisation']['percent'] }}%</b> of the time on offer was booked: {{ intdiv($report['utilisation']['booked'], 60) }} h {{ $report['utilisation']['booked'] % 60 }} min of {{ intdiv($report['utilisation']['offered'], 60) }} h {{ $report['utilisation']['offered'] % 60 }} min.</p>
-                    <progress max="100" value="{{ $report['utilisation']['percent'] }}" aria-label="Share of offered time that was booked">{{ $report['utilisation']['percent'] }}%</progress>
+                    <x-progress.bar label="Share of offered time that was booked" :value="$report['utilisation']['booked']" :max="$report['utilisation']['offered']" hide-label />
                 @else
                     <p class="ix-hint">Use of time is not shown for one appointment type, for appointments with no provider, or when no working hours are set.</p>
                 @endif
@@ -72,7 +72,7 @@
                 <h2 id="rp-types" class="ix-h2">Most booked</h2>
                 <ul class="ix-list">
                     @foreach ($report['types'] as $t)
-                        <li>{{ $t['name'] }}: <b>{{ $t['count'] }}</b> <progress max="{{ $mostType }}" value="{{ $t['count'] }}" aria-label="{{ $t['name'] }}">{{ $t['count'] }}</progress></li>
+                        <li>{{ $t['name'] }}: <b>{{ $t['count'] }}</b> <x-progress.bar :label="$t['name']" :value="$t['count']" :max="$mostType" hide-label size="sm" /></li>
                     @endforeach
                 </ul>
             </div>
@@ -90,7 +90,7 @@
                                 <tr>
                                     <td class="title">{{ $r['label'] }}</td>
                                     <td data-label="Requested">{{ $r['made'] }}</td>
-                                    <td data-label="Appointments">{{ $r['held'] }} <progress max="{{ $most }}" value="{{ $r['held'] }}" aria-label="Appointments on {{ $r['label'] }}">{{ $r['held'] }}</progress></td>
+                                    <td data-label="Appointments">{{ $r['held'] }} <x-progress.bar :label="'Appointments on '.$r['label']" :value="$r['held']" :max="$most" hide-label size="sm" /></td>
                                 </tr>
                             @endif
                         @endforeach

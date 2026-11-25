@@ -1319,6 +1319,285 @@ select.ix-input[multiple] {
     margin: 6px 0 0;
 }
 
+/* ---------------------------------------------------------------- progress (R-64 phase 5) */
+
+/* The fill is a full-width bar scaled from the left (a transform), so a change in the figure moves nothing around it. Reduced motion is handled globally. */
+.ix-prog {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    --ix-prog: var(--ix-check);
+}
+
+.ix-prog--ok,
+.ix-ring.ix-prog--ok {
+    --ix-prog: var(--ix-ok);
+}
+
+.ix-prog--warn,
+.ix-ring.ix-prog--warn {
+    --ix-prog: var(--ix-warn);
+}
+
+.ix-prog__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.ix-prog__label {
+    font-weight: 600;
+    color: var(--ix-text);
+}
+
+.ix-prog__val {
+    color: var(--ix-text-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.ix-prog__track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--ix-sunken);
+    box-shadow: inset 0 0 0 1px var(--ix-rule);
+    overflow: hidden;
+}
+
+.ix-prog--sm .ix-prog__track {
+    height: 4px;
+}
+
+.ix-prog__fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--ix-prog);
+    transform: scaleX(var(--p, 0));
+    transform-origin: left;
+    transition: transform var(--ix-dur-slow) var(--ix-ease-out);
+}
+
+@starting-style {
+    .ix-prog__fill {
+        transform: scaleX(0);
+    }
+}
+
+/* Where bars sit in cards, tables and lists. */
+.ix-prog-pair {
+    display: grid;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+@media (min-width: 720px) {
+    .ix-prog-pair {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+}
+
+.ix-start__bar,
+.ix-seats__bar {
+    margin: 0 0 14px;
+}
+
+td .ix-prog,
+.ix-list .ix-prog {
+    display: inline-grid;
+    width: min(160px, 40vw);
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+/* Circular */
+.ix-ring {
+    --ix-prog: var(--ix-check);
+    display: inline-grid;
+    gap: 6px;
+    justify-items: center;
+}
+
+.ix-ring__dial {
+    position: relative;
+    width: var(--ring, 72px);
+    height: var(--ring, 72px);
+}
+
+.ix-ring__dial svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.ix-ring__track,
+.ix-ring__fill {
+    stroke-width: 3.6;
+}
+
+.ix-ring__track {
+    stroke: var(--ix-sunken);
+}
+
+.ix-ring__fill {
+    stroke: var(--ix-prog);
+    stroke-linecap: butt;
+    transition: stroke-dasharray var(--ix-dur-scene) var(--ix-ease-out);
+}
+
+@starting-style {
+    .ix-ring__fill {
+        stroke-dasharray: 0 100;
+    }
+}
+
+.ix-ring__num {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    font-weight: 700;
+    font-size: var(--dot-text-body-size);
+    font-variant-numeric: tabular-nums;
+    color: var(--ix-text);
+}
+
+.ix-ring__num small {
+    font-size: var(--dot-text-caption-size);
+    font-weight: 600;
+}
+
+.ix-ring__cap {
+    font-size: var(--dot-text-body-sm-size);
+    color: var(--ix-text-2);
+}
+
+/* Steps and milestones */
+.ix-stepper {
+    display: grid;
+    gap: 14px;
+}
+
+.ix-steps {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ix-steps li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 12px;
+    padding-bottom: 18px;
+}
+
+.ix-steps li:last-child {
+    padding-bottom: 0;
+}
+
+.ix-steps li:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    bottom: 0;
+    left: 13px;
+    width: 2px;
+    background: var(--ix-rule);
+}
+
+.ix-steps li.is-done:not(:last-child)::before {
+    background: var(--ix-check);
+}
+
+.ix-steps__mark {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--ix-rule-strong);
+    border-radius: 50%;
+    background: var(--ix-panel);
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-caption-size);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.ix-steps li.is-current .ix-steps__mark {
+    border-color: var(--ix-text);
+    color: var(--ix-text);
+}
+
+.ix-steps li.is-done .ix-steps__mark {
+    border-color: var(--ix-check);
+    background: var(--ix-check);
+}
+
+.ix-steps li.is-done .ix-steps__mark::after {
+    content: '';
+    width: 5px;
+    height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.ix-steps__body {
+    display: grid;
+    gap: 2px;
+    align-content: start;
+    min-width: 0;
+    padding-top: 3px;
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.ix-steps__title {
+    font-weight: 600;
+    color: var(--ix-text);
+}
+
+.ix-steps li.is-todo .ix-steps__title {
+    color: var(--ix-text-2);
+}
+
+.ix-steps__note {
+    color: var(--ix-text-3);
+}
+
+/* Milestones along a line: the same list, laid out in a row from tablet width up. */
+@media (min-width: 720px) {
+    .ix-steps--line {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    .ix-steps--line li {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: start;
+        padding-bottom: 0;
+        gap: 8px;
+    }
+
+    .ix-steps--line li:not(:last-child)::before {
+        top: 13px;
+        bottom: auto;
+        left: 36px;
+        right: -12px;
+        width: auto;
+        height: 2px;
+    }
+}
+
 /* ---------------------------------------------------------------- menus */
 
 .ix-pop {

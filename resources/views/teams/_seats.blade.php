@@ -24,6 +24,9 @@
             @if (session('licence_ok'))<p class="ix-alert" role="status" data-licence-ok>{{ session('licence_ok') }}</p>@endif
             @if (session('licence_error'))<p class="ix-alert" role="alert" data-licence-error>{{ session('licence_error') }}</p>@endif
 
+            <x-progress.bar :label="__('Licences in use')" :value="$seats['people']" :max="$seats['capacity']" :value-text="$seats['people'].' '.__('of').' '.$seats['capacity']"
+                :tone="$seats['people'] >= $seats['capacity'] ? 'warn' : null" class="ix-seats__bar" />
+
             <div class="ix-tablewrap">
             <table class="ix-table">
                 <tbody>
