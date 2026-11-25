@@ -61,7 +61,7 @@
         <div class="ix-panel__body">
             <dl class="ix-biz__facts">
                 <div><dt>Name</dt><dd>{{ $booking->customer_name }}</dd></div>
-                <div><dt>Email</dt><dd><a href="mailto:{{ $booking->customer_email }}">{{ $booking->customer_email }}</a></dd></div>
+                <div><dt>Email</dt><dd><a href="mailto:{{ rawurlencode($booking->customer_email) }}">{{ $booking->customer_email }}</a></dd></div>
                 @if ($booking->customer_phone)<div><dt>Phone</dt><dd>{{ $booking->customer_phone }}</dd></div>@endif
                 @if ($booking->customer_company)<div><dt>Business</dt><dd>{{ $booking->customer_company }}</dd></div>@endif
                 @if ($booking->reason)<div><dt>Reason</dt><dd>{!! nl2br(e($booking->reason)) !!}</dd></div>@endif

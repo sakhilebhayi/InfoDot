@@ -30,6 +30,9 @@ use Illuminate\View\View;
  */
 class BusinessAppointmentsController extends Controller
 {
+    /** The most appointments one calendar view loads: a busy month stays cheap, and the rest are a click away on the day view. */
+    private const CALENDAR_ROWS = 1500;
+
     use GuardsBooking;
 
     private const START_FORMAT = '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/';
@@ -110,7 +113,7 @@ class BusinessAppointmentsController extends Controller
         if (! $showClosed) {
             $query->whereIn('status', Booking::HOLDING);
         }
-        $bookings = $query->with(['appointmentType:id,name,team_id', 'provider:id,public_name'])->orderBy('starts_at')->orderBy('id')->get();
+        $bookings = $query->with(['appointmentType:id,name,team_id', 'provider:id,public_name'])->orderBy('starts_at')->orderBy('id')->limit(self::CALENDAR_ROWS)->get();
         $closures = $board->closures($from->utc(), $to->utc());
 
         $days = [];

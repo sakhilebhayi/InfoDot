@@ -39,8 +39,10 @@ class BookingActions
             return true;
         }
 
+        // A provider acts only while they are still in the business AND still an active provider: leaving or being removed ends it at once.
         return $booking->booking_provider_id !== null
-            && BookingProvider::query()->whereKey($booking->booking_provider_id)->where('team_id', $booking->team_id)->where('user_id', $user->getKey())->exists();
+            && $user->belongsToTeam($booking->team)
+            && BookingProvider::query()->whereKey($booking->booking_provider_id)->where('team_id', $booking->team_id)->where('user_id', $user->getKey())->where('active', true)->exists();
     }
 
     /** @throws BookingRefused */
@@ -159,11 +161,13 @@ class BookingActions
     public function declineReschedule(Booking $booking, User $actor, ?string $note = null): Booking
     {
         return $this->act($booking, $actor, 'booking_reschedule_declined', function (Booking $b) use ($note) {
+            $this->mustBe($b, Booking::HOLDING);
+
             if ($b->reschedule_requested_at === null) {
                 throw new BookingRefused(BookingRefused::STATE, 'There is no request to move this appointment.');
             }
 
-            $b->forceFill(['reschedule_requested_at' => null, 'reschedule_note' => null, 'status_note' => $this->trimNote($note)])->save();
+            $b->forceFill(['reschedule_requested_at' => null, 'reschedule_note' => null, 'status_note' => $this->trimNote($note) ?? $b->status_note])->save();
 
             return [];
         });

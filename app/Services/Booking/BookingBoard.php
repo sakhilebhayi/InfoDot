@@ -31,7 +31,10 @@ class BookingBoard
     private function __construct(private readonly User $user, private readonly Team $team, ?string $filter)
     {
         $this->manages = Gate::forUser($user)->allows('manageBookings', $team);
-        $this->ownProviderIds = BookingProvider::query()->where('team_id', $team->getKey())->where('user_id', $user->getKey())->pluck('id')->map(fn ($id) => (int) $id)->all();
+        // Only while they are still in the business and the provider record is active.
+        $this->ownProviderIds = $user->belongsToTeam($team)
+            ? BookingProvider::query()->where('team_id', $team->getKey())->where('user_id', $user->getKey())->where('active', true)->pluck('id')->map(fn ($id) => (int) $id)->all()
+            : [];
 
         if ($this->manages && $filter !== null) {
             if ($filter === self::UNASSIGNED) {

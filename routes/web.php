@@ -250,11 +250,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/business/{team:uuid}/booking/closures/{closure}/delete', [BookingClosuresController::class, 'destroy'])->whereNumber('closure')->middleware('throttle:30,1,business.booking.closures.delete')->name('business.booking.closures.delete');
 
     // R-63 phase 4: the business's appointments (lists, calendar, one appointment and what is done to it). 404 until the feature is open.
-    Route::get('/business/{team:uuid}/appointments', [BusinessAppointmentsController::class, 'requests'])->name('business.appointments');
-    Route::get('/business/{team:uuid}/appointments/upcoming', [BusinessAppointmentsController::class, 'upcoming'])->name('business.appointments.upcoming');
-    Route::get('/business/{team:uuid}/appointments/past', [BusinessAppointmentsController::class, 'past'])->name('business.appointments.past');
-    Route::get('/business/{team:uuid}/appointments/calendar', [BusinessAppointmentsController::class, 'calendar'])->name('business.appointments.calendar');
-    Route::get('/business/{team:uuid}/appointments/{booking}', [BusinessAppointmentsController::class, 'show'])->whereNumber('booking')->name('business.appointments.show');
+    Route::get('/business/{team:uuid}/appointments', [BusinessAppointmentsController::class, 'requests'])->middleware('throttle:60,1,business.appointments.read')->name('business.appointments');
+    Route::get('/business/{team:uuid}/appointments/upcoming', [BusinessAppointmentsController::class, 'upcoming'])->middleware('throttle:60,1,business.appointments.read')->name('business.appointments.upcoming');
+    Route::get('/business/{team:uuid}/appointments/past', [BusinessAppointmentsController::class, 'past'])->middleware('throttle:60,1,business.appointments.read')->name('business.appointments.past');
+    Route::get('/business/{team:uuid}/appointments/calendar', [BusinessAppointmentsController::class, 'calendar'])->middleware('throttle:60,1,business.appointments.read')->name('business.appointments.calendar');
+    Route::get('/business/{team:uuid}/appointments/{booking}', [BusinessAppointmentsController::class, 'show'])->whereNumber('booking')->middleware('throttle:60,1,business.appointments.read')->name('business.appointments.show');
     Route::post('/business/{team:uuid}/appointments/{booking}/accept', [BusinessAppointmentsController::class, 'accept'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.accept')->name('business.appointments.accept');
     Route::post('/business/{team:uuid}/appointments/{booking}/reject', [BusinessAppointmentsController::class, 'reject'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.reject')->name('business.appointments.reject');
     Route::post('/business/{team:uuid}/appointments/{booking}/cancel', [BusinessAppointmentsController::class, 'cancel'])->whereNumber('booking')->middleware('throttle:30,1,business.appointments.cancel')->name('business.appointments.cancel');
