@@ -1884,6 +1884,107 @@ td .ix-prog,
     }
 }
 
+/* ---------------------------------------------------------------- feedback: working, waiting, asking (R-64 phase 10) */
+
+@keyframes ix-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes ix-pulse {
+    50% {
+        opacity: 0.45;
+    }
+}
+
+/* A spinner is a ring with one dark quarter. Under reduced motion it stands still, and the words (aria-busy, "Working") say the same thing. */
+.ix-spinner,
+.ix-btn.is-busy::before {
+    display: inline-block;
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--ix-rule-strong);
+    border-top-color: var(--ix-text);
+    border-radius: 50%;
+    animation: ix-spin var(--ix-dur-scene-slow) linear infinite;
+}
+
+.ix-btn.is-busy {
+    cursor: progress;
+}
+
+.ix-btn.is-busy::before {
+    content: '';
+    border-color: color-mix(in srgb, currentColor 30%, transparent);
+    border-top-color: currentColor;
+}
+
+/* Skeletons: the shape of what is coming, pulsing quietly. Never shown as if it were content, and always labelled for screen readers. */
+.ix-skel {
+    display: block;
+    height: 14px;
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-sunken);
+    animation: ix-pulse calc(var(--ix-dur-scene-slow) * 3) ease-in-out infinite;
+}
+
+.ix-skel--title {
+    height: 22px;
+    width: 40%;
+}
+
+.ix-skel--block {
+    height: 96px;
+}
+
+.ix-skel-group {
+    display: grid;
+    gap: 10px;
+}
+
+.ixa-chart.is-loading {
+    min-height: 240px;
+    border-radius: var(--ix-radius-sm);
+    background: var(--ix-sunken);
+    animation: ix-pulse calc(var(--ix-dur-scene-slow) * 3) ease-in-out infinite;
+}
+
+/* The question before something that cannot be undone. */
+.ix-confirm {
+    width: min(440px, calc(100vw - 32px));
+    padding: 0;
+    border: 1px solid var(--ix-rule);
+    border-radius: var(--ix-radius);
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+}
+
+.ix-confirm::backdrop {
+    background: rgba(10, 14, 16, 0.55);
+}
+
+.ix-confirm__box {
+    display: grid;
+    gap: 20px;
+    padding: 20px;
+}
+
+.ix-confirm__text {
+    margin: 0;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.4;
+}
+
+.ix-confirm__acts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 /* ---------------------------------------------------------------- menus */
 
 .ix-pop {

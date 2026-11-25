@@ -29,7 +29,7 @@
                                     <td>
                                         @php($why = $bookings->whyNotCancel($b, auth()->user()))
                                         @if ($why === null)
-                                            <form method="post" action="{{ route('my-bookings.cancel', $b->reference) }}">@csrf<button type="submit" class="ix-btn ix-btn--sm ix-btn--danger">Cancel</button></form>
+                                            <form method="post" action="{{ route('my-bookings.cancel', $b->reference) }}" data-confirm="Cancel this appointment? The business is told, and the time becomes free for someone else." data-confirm-label="Cancel the appointment">@csrf<button type="submit" class="ix-btn ix-btn--sm ix-btn--danger">Cancel</button></form>
                                         @else
                                             <a class="ix-btn ix-btn--sm ix-btn--ghost" href="{{ route('my-bookings.show', $b->reference) }}">Details</a>
                                             @if ($rows === $upcoming)<p class="ix-hint">{{ $why }}</p>@endif

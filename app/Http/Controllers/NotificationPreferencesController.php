@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\Notifications\NotificationPreferences;
+use App\Support\Toast;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +39,9 @@ class NotificationPreferencesController extends Controller
 
         $this->preferences->save($request->user(), (array) ($data['prefs'] ?? []) + ['knowledge_in_app' => $data['knowledge_in_app'] ?? '0']);
 
-        return redirect()->route('notices.preferences')->with('notices_notice', 'Your notification settings are saved.');
+        Toast::flash('Your notification settings are saved.');
+
+        return redirect()->route('notices.preferences');
     }
 
     /** From the summary email: shows what the link does and asks once. */

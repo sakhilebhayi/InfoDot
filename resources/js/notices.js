@@ -51,6 +51,9 @@ document.addEventListener('alpine:init', () => {
         onVisible: null,
 
         init() {
+            // What the last request left behind (App\Support\Toast::flash): news that the server has confirmed.
+            if (cfg.flash && cfg.flash.text) this.push({ key: 'flash', label: cfg.flash.label ?? 'Done', text: cfg.flash.text, tone: cfg.flash.tone, ms: SHOW_MS });
+
             if (!cfg.url) return;
 
             this.onVisible = () => {
