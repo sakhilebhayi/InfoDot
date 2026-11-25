@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\BookingProvider;
 use App\Models\Team;
 use App\Models\User;
 use App\Support\TeamRoles;
@@ -69,6 +70,20 @@ class TeamPolicy
     {
         return ! $team->personal_team
             && ($user->ownsTeam($team) || $user->hasTeamRole($team, 'admin') || $user->hasTeamRole($team, 'manager'));
+    }
+
+    /**
+     * One provider's own availability (R-63): their working hours and the time they block off. The people who manage bookings may edit anyone's; a
+     * member who is that provider may edit only their own, and nothing else about bookings.
+     */
+    public function manageProviderSchedule(User $user, Team $team, BookingProvider $provider): bool
+    {
+        if ($team->personal_team || $provider->team_id !== $team->getKey()) {
+            return false;
+        }
+
+        return $this->manageBookings($user, $team)
+            || ($provider->user_id === $user->getKey() && $user->belongsToTeam($team));
     }
 
     /**

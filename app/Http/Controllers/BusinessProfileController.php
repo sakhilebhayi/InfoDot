@@ -11,6 +11,7 @@ use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\TeamProfile;
+use App\Models\User;
 use App\Rules\DeliverableEmailDomain;
 use App\Services\Attachments\TeamMediaService;
 use App\Services\Booking\BookingFeature;
@@ -76,6 +77,8 @@ class BusinessProfileController extends Controller
             'canEdit' => $canEdit && ! $preview,
             // R-63: a manager sees the way into the booking settings, but only while the `bookings` feature is open.
             'canManageBookings' => ! $preview && Gate::allows('manageBookings', $team) && app(BookingFeature::class)->available(),
+            // R-63: a member who is a provider (and not a manager) gets the way into their own hours only.
+            'ownScheduleUrl' => $this->ownScheduleUrl($team, $user, $preview),
             'preview' => $preview,
             'announcements' => $team->announcements()->showing()->limit(5)->get(),
             'offeringPictures' => $team->mediaByRef('offering')->map(fn ($pictures) => $pictures->filter->onDisk()->values()),
@@ -85,6 +88,17 @@ class BusinessProfileController extends Controller
             'collections' => $user && ! $isMember ? BusinessCollection::where('user_id', $user->id)->orderBy('name')->get() : collect(),
             'savedIn' => $user ? BusinessCollection::where('user_id', $user->id)->whereHas('items', fn ($q) => $q->where('team_id', $team->id))->pluck('name') : collect(),
         ]);
+    }
+
+    private function ownScheduleUrl(Team $team, ?User $user, bool $preview): ?string
+    {
+        if ($preview || $user === null || ! $user->belongsToTeam($team) || Gate::allows('manageBookings', $team) || ! app(BookingFeature::class)->available()) {
+            return null;
+        }
+
+        $provider = $team->bookingProviders()->where('user_id', $user->getKey())->first();
+
+        return $provider === null ? null : route('business.booking.providers.hours', [$team, $provider]);
     }
 
     public function edit(Request $request, Team $team)
