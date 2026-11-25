@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $team_id
  * @property int|null $actor_id
+ * @property int|null $booking_id
  * @property string $type
  * @property array<string, mixed>|null $details
  */
@@ -19,7 +20,19 @@ class BookingEvent extends Model
 {
     public const UPDATED_AT = null;
 
-    protected $fillable = ['team_id', 'actor_id', 'type', 'details'];
+    protected $fillable = ['team_id', 'booking_id', 'actor_id', 'type', 'details'];
+
+    /** An event about one appointment carries its id in `details`; the indexed column is filled from it, so no writer can forget it. */
+    protected static function booted(): void
+    {
+        static::creating(function (self $event): void {
+            $id = $event->details['booking_id'] ?? null;
+
+            if ($event->booking_id === null && is_int($id)) {
+                $event->booking_id = $id;
+            }
+        });
+    }
 
     protected function casts(): array
     {

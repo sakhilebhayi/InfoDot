@@ -14,6 +14,8 @@ use App\Services\Booking\Bookings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
 /**
@@ -64,7 +66,7 @@ class BookingPublicController extends Controller
         $date = $this->date($request->query('date'), $zone, $first, $last);
         $month = $date !== null ? $date->startOfMonth() : $this->month($request->query('month'), $zone, $first, $last);
 
-        $statuses = $this->availability->monthStatuses($view['type'], (int) $month->year, (int) $month->month);
+        $statuses = $this->kept($team, 'month:'.$view['type']->getKey().':'.$month->format('Y-m').':'.$view['type']->updated_at?->timestamp, fn () => $this->availability->monthStatuses($view['type'], (int) $month->year, (int) $month->month));
 
         $view['month'] = $month;
         $view['weeks'] = $this->weeks($month, $statuses);
@@ -74,13 +76,37 @@ class BookingPublicController extends Controller
         if ($date !== null) {
             $view['date'] = $date;
             $view['dayStatus'] = $statuses[$date->format('Y-m-d')] ?? Availability::OUTSIDE_WINDOW;
-            $view['slots'] = $this->availability->slots($view['type'], $date->format('Y-m-d'))->map(fn ($slot) => [
+            $view['slots'] = $this->kept($team, 'day:'.$view['type']->getKey().':'.$date->format('Y-m-d').':'.$view['type']->updated_at?->timestamp, fn () => $this->availability->slots($view['type'], $date->format('Y-m-d')))->map(fn ($slot) => [
                 'start' => $slot->start, 'local' => $slot->start->setTimezone($zone),
                 'url' => route('business.book.confirm', ['team' => $team, 'type' => $view['type']->getKey(), 'start' => $this->stamp($slot->start)]),
             ]);
         }
 
         return view('business.book.show', $view);
+    }
+
+    /**
+     * A calendar answer kept for a few seconds. Only what the public page shows is kept (statuses and open slots, never a booking), and a booking is always
+     * re-checked under the business's lock, so an answer a few seconds old can show a time that has just gone but can never double-book it.
+     *
+     * @template T
+     *
+     * @param  callable(): T  $make
+     * @return T
+     */
+    private function kept(Team $team, string $key, callable $make): mixed
+    {
+        $seconds = (int) config('booking.public.cache_seconds');
+
+        // Only an answer that has to be worked out (a miss) counts against the business's allowance, so a crowd re-reading the same page costs nothing
+        // and cannot lock real customers out; it takes many different pages to reach the ceiling.
+        $work = function () use ($team, $make) {
+            abort_unless(RateLimiter::attempt('book-view:'.$team->getKey(), (int) config('booking.public.team_views_per_minute'), fn () => true, 60), 429, 'This calendar is very busy. Try again in a minute.');
+
+            return $make();
+        };
+
+        return $seconds > 0 ? Cache::remember('booking-public:'.$key, $seconds, $work) : $work();
     }
 
     public function confirm(Request $request, Team $team): View|RedirectResponse

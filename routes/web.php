@@ -219,6 +219,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/business/{team:uuid}/book/confirm', [BookingPublicController::class, 'confirm'])->name('business.book.confirm');
     Route::post('/business/{team:uuid}/book', [BookingPublicController::class, 'store'])->middleware('throttle:10,1,business.book.store')->name('business.book.store');
     Route::get('/my-bookings', [MyBookingsController::class, 'index'])->middleware('throttle:60,1,my-bookings.index')->name('my-bookings');
+    Route::get('/my-bookings/export', [MyBookingsController::class, 'export'])->middleware('throttle:10,1,my-bookings.export')->name('my-bookings.export');
     Route::get('/my-bookings/{reference}', [MyBookingsController::class, 'show'])->where('reference', '[A-Za-z0-9-]{1,40}')->middleware('throttle:60,1,my-bookings.show')->name('my-bookings.show');
     Route::post('/my-bookings/{reference}/cancel', [MyBookingsController::class, 'cancel'])->where('reference', '[A-Za-z0-9-]{1,40}')->middleware('throttle:10,1,my-bookings.cancel')->name('my-bookings.cancel');
     Route::post('/my-bookings/{reference}/reschedule', [MyBookingsController::class, 'reschedule'])->where('reference', '[A-Za-z0-9-]{1,40}')->middleware('throttle:10,1,my-bookings.reschedule')->name('my-bookings.reschedule');

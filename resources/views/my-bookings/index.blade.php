@@ -43,4 +43,6 @@
             @endif
         </section>
     @endforeach
+
+    <p class="ix-hint">Want a copy of everything appointment booking holds about you? <a href="{{ route('my-bookings.export') }}">Download my booking data</a>. Businesses remove your details from appointments {{ config('booking.retention_months') }} months after they end.</p>
 </x-app-layout>
