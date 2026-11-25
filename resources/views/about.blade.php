@@ -1,8 +1,8 @@
-<x-public-layout title="About" reveal band="ABOUT" crumb="About" description="InfoDot brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow your business.">
+<x-public-layout title="About" reveal band="ABOUT" crumb="About" description="InfoDot is where a business writes down how it works, finds checked answers from other businesses, and opens the tools it runs on with one free account.">
     <article class="ix-prose ix-prose--ledger pg-prose">
         <span class="pg-plate" data-pg-plate>Who we are</span>
         <h1 class="ix-h1 pg-title" data-pg-in>About InfoDot</h1>
-        <p class="ix-lede" data-pg-in>InfoDot helps people start, manage and grow their businesses. It brings together practical business knowledge, people who share what works, and digital tools in one place, so nobody has to work it all out alone.</p>
+        <p class="ix-lede" data-pg-in>InfoDot is where a business writes down how it works, finds checked answers from other businesses, and opens the tools it runs on with one account. It is free to join, and nobody has to work it all out alone.</p>
 
         <figure class="pg-strip" data-pg-photo>
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" width="1400" height="1050" loading="eager" decoding="async">
@@ -22,6 +22,7 @@
 
         <h2>Who it is for</h2>
         <p>People with a business idea and no plan, people starting their first business, small businesses, growing businesses and established organisations. You do not need a company, a plan or any experience to join.</p>
+        <p>What members have in common is a habit: they write down what they know, keep their tools connected, and learn from other businesses. That is how a business keeps working when one person is away.</p>
 
         <h2>Where things stand</h2>
         <p>Today you can ask a question, answer one, write a solution as steps, have a moderator verify it, and find it again by topic or reference. One account opens the Dot platforms your business can use, grouped by what you want to get done. Which ones you can open depends on your business and how access is arranged. We describe what is there now, not what is planned.</p>
