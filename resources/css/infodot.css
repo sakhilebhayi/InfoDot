@@ -12452,7 +12452,8 @@ body[data-area="home"] .ix-btn--primary:hover,
 .hd .hp-hero__actions { justify-content: flex-start; }
 .hd[data-scene="a"] .hp-hero__actions .ix-btn:not(.ix-btn--primary) { color: #fff; border-color: rgb(255 255 255 / 0.5); background: rgb(10 14 16 / 0.35); }
 
-.hd__ledger { position: absolute; z-index: 3; bottom: 40px; left: calc(50% - 150px); width: min(560px, 44vw); }
+/* The library card stays in the picture half, lined up with the product panel, so it never sits over the search or the buttons. */
+.hd__ledger { position: absolute; z-index: 3; bottom: 40px; left: calc(50% + 24px); right: max(24px, calc((100vw - 1232px) / 2)); width: auto; }
 .hd .hx-ledger { position: static; width: 100%; box-shadow: 0 18px 40px rgb(0 0 0 / 0.35); }
 .hd[data-scene="a"] .hx-ledger { background: rgb(18 24 27 / 0.86); backdrop-filter: blur(8px); border-color: rgb(255 255 255 / 0.18); }
 .hd[data-scene="a"] .hx-ledger__list a, .hd[data-scene="a"] .hx-ledger__head { color: #f3f5f6; }
@@ -12473,7 +12474,7 @@ body[data-area="home"] .ix-btn--primary:hover,
     .hd { min-height: 0; display: flex; flex-direction: column; }
     .hd__stage { position: relative; inset: auto; order: 2; width: 100%; aspect-ratio: 4 / 3; }
     .hd__grid { order: 1; width: 100%; min-height: 0; padding: 36px 16px 28px; }
-    .hd__ledger { order: 3; position: relative; z-index: 3; left: 0; bottom: auto; width: auto; margin: -44px 12px 56px; }
+    .hd__ledger { order: 3; position: relative; z-index: 3; left: 0; right: auto; bottom: auto; width: auto; margin: -44px 12px 56px; }
     .hd__ctl { left: 16px; bottom: 12px; }
     .hd .lp-hero__title { max-width: 14ch; font-size: clamp(2.4rem, 10vw, 3.4rem); }
     .hd[data-scene="a"] { --hd-ink: var(--ix-text); --hd-ink-2: var(--ix-text-2); }
@@ -12514,7 +12515,9 @@ body[data-area="home"] .ix-btn--primary:hover,
     .hd:not([data-scene="b"]) .hd__panel { visibility: visible; opacity: 1; }
     .hdp__answer { display: none; }
 }
-@media (min-width: 901px) and (max-height: 760px) { .hdp__tasks { display: none; } }
+@media (min-width: 901px) and (max-height: 880px) { .hdp__tasks { display: none; } }
+/* Where the picture half is too narrow or short for both, the product panel (which shows the same library entry) stays and the card steps aside. */
+@media (min-width: 901px) and (max-width: 1100px), (min-width: 901px) and (max-height: 700px) { .hd__ledger { display: none; } }
 @media (min-width: 901px) and (max-height: 820px) { .hd__stamp { top: 3%; } }
 @media (prefers-reduced-motion: reduce) { .hd__panel { transition: none; } }
 .hd { place-items: normal; }
