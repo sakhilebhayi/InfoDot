@@ -20,7 +20,7 @@ class BusinessFirstRegistrationTest extends TestCase
     public function test_the_page_asks_for_first_and_last_name_not_a_single_name_or_a_username(): void
     {
         $this->get('/register')->assertOk()
-            ->assertSee('Create your InfoDot account to start and manage your business.')
+            ->assertSee('One account for the knowledge, tools and businesses on InfoDot. It takes a minute.')
             ->assertSee('name="first_name"', false)->assertSee('name="last_name"', false)
             ->assertDontSee('name="name"', false)->assertDontSee('name="username"', false);
     }
@@ -49,6 +49,6 @@ class BusinessFirstRegistrationTest extends TestCase
 
     public function test_the_login_page_says_the_business_starts_here(): void
     {
-        $this->get('/login')->assertOk()->assertSee('Your business starts here. Sign in to your InfoDot workspace.');
+        $this->get('/login')->assertOk()->assertSee('Sign in to pick up where you left off: your questions, your team and your tools.');
     }
 }

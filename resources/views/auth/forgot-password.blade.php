@@ -1,6 +1,6 @@
 <x-guest-layout title="Reset your password">
     <x-jet-authentication-card>
-        <x-auth.heading title="Reset your password" lede="Enter the email address of your account and we will send a link for choosing a new password." />
+        <x-auth.heading title="Reset your password" lede="It happens. Enter the email address of your account and we will send a link for choosing a new password. The link works for an hour." />
 
         @if (session('status'))
             <p class="ix-alert" role="status">{{ session('status') }}</p>

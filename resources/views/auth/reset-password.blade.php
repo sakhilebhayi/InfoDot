@@ -1,6 +1,6 @@
 <x-guest-layout title="Choose a new password">
     <x-jet-authentication-card>
-        <x-auth.heading title="Choose a new password" />
+        <x-auth.heading title="Choose a new password" lede="Pick one you do not use anywhere else. Once it is saved, sign in with it and carry on where you left off." />
 
         <x-jet-validation-errors />
 
