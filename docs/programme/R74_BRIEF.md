@@ -20,13 +20,21 @@ journeys, in this order:
 Keep the existing design and interactions; audit the live registry first; no invented or unfinished platforms; no
 duplicates; tabs usable on phone and tablet; keyboard, focus, links, logos and animations verified.
 
+## Owner's final allocation (2026-11-26, replaces the lists above)
+
+- **Start:** InfoDot.
+- **Manage:** Dot.Finance, Dot.HR, Dot.Projects, Dot.Files, Dot.Tasks, Dot.docs, Dot.Press, Dot.Sheet.
+- **Connect:** Dot.Pulse, Dot.Engage, Dot.Notify.
+- **Grow:** Dot.Analytics, Dot.Forms, beside InfoDot's own growth features (bookings, page insights, seminars, company
+  knowledge).
+- **Special Platforms:** Dot.Mines, Dot.Tutor, Dot.Design, Dot.Auction, Dot.Emall, Dot.Ehail, Dot.Charts.
+
+Every one of the 21 live public platforms on the homepage appears exactly once.
+
 ## Decisions made while building (2026-11-26)
 
-1. **Dot.Sheet** moved to Manage, after Dot.Forms, at the owner's request.
-2. **Grow** therefore holds no platform: every platform that was in Grow now has an explicit place elsewhere. It shows
-   InfoDot's own live growth features instead: bookings, page insights, seminars and company knowledge.
-3. **Dot.Central** stays off the homepage: it has no agreed visitor-facing description. **Dot.Agents** stays off as before
-   (`BusinessTools::shown()` excludes it).
-4. **Special Platforms** copy describes what someone can do with each platform (`opportunity` in
+1. **Dot.Central** stays off the homepage: it has no agreed visitor-facing description. **Dot.Agents** stays off as before
+   (`BusinessTools::shown()` excludes it). Dot.Memory and Dot.Dopemine are internal.
+2. **Special Platforms** copy describes what someone can do with each platform (`opportunity` in
    `config/business_tools.php`), keeps each platform's existing limits (Ehail's routing service and tariff, Charts not being
    financial advice) and says signing up is "a start, not a promise of income, work or customers".

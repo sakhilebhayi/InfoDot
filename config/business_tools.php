@@ -124,27 +124,27 @@ return [
             'infodot' => [
                 ['title' => 'One sign-in for every tool', 'body' => 'Open the tools your business uses with your InfoDot account. Nobody keeps a separate password for each, and people leave the business in one step.', 'route' => 'business-tools'],
             ],
-            'tools' => ['finance', 'hr', 'projects', 'files', 'tasks', 'docs', 'press', 'forms', 'sheet'],
+            'tools' => ['finance', 'hr', 'projects', 'files', 'tasks', 'docs', 'press', 'sheet'],
         ],
         'connect' => [
             'title' => 'Connect',
-            'line' => 'Build relationships and visibility. Reach the people who matter, and see how your business is doing.',
+            'line' => 'Build relationships and visibility. Reach the people who matter, and keep in touch with them.',
             'infodot' => [
                 ['title' => 'A page people can find', 'body' => 'Give your business a page with what you offer and where you work, listed in a directory people search by need and by place.', 'route' => 'businesses.index'],
                 ['title' => 'Messages and appointments', 'body' => 'Customers and other businesses message you from your page or ask for an appointment, and every reply lands in one inbox.', 'route' => 'businesses.index'],
             ],
-            'tools' => ['notify', 'pulse', 'engage', 'analytics'],
+            'tools' => ['pulse', 'engage', 'notify'],
         ],
         'grow' => [
             'title' => 'Grow',
-            'line' => 'Develop and expand your business: take bookings, see what brings people to you and keep learning.',
+            'line' => 'Develop and expand your business: know your numbers, take bookings, see what brings people to you and keep learning.',
             'infodot' => [
                 ['title' => 'Take bookings online', 'body' => 'Publish your appointment types and opening hours, and customers book a time straight from your business page.', 'route' => 'register'],
                 ['title' => 'See what brings people to you', 'body' => 'Your page’s insights show its views, the searches that found you and the enquiries that followed, day by day.', 'route' => 'register'],
                 ['title' => 'Learn and share at seminars', 'body' => 'Join seminars to learn from other businesses, or run one to share what you know.', 'route' => 'register'],
                 ['title' => 'Knowledge that adds up', 'body' => 'What your business learns is kept with your company and improved over time, with earlier versions kept, so the next person starts from the answer.', 'route' => 'register'],
             ],
-            'tools' => [],
+            'tools' => ['analytics', 'forms'],
         ],
         'special' => [
             'title' => 'Special Platforms',

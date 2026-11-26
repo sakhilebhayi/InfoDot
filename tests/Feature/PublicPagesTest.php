@@ -109,8 +109,9 @@ class PublicPagesTest extends TestCase
         $this->assertSame(['start', 'manage', 'connect', 'grow', 'special'], array_column($journey, 'key'));
         $order = collect($journey)->mapWithKeys(fn (array $s) => [$s['key'] => array_column($s['tools'], 'key')]);
         $this->assertSame([], $order['start'], 'Start begins with InfoDot itself, not another platform');
-        $this->assertSame(['finance', 'hr', 'projects', 'files', 'tasks', 'docs', 'press', 'forms', 'sheet'], $order['manage']);
-        $this->assertSame(['notify', 'pulse', 'engage', 'analytics'], $order['connect']);
+        $this->assertSame(['finance', 'hr', 'projects', 'files', 'tasks', 'docs', 'press', 'sheet'], $order['manage']);
+        $this->assertSame(['pulse', 'engage', 'notify'], $order['connect']);
+        $this->assertSame(['analytics', 'forms'], $order['grow']);
         $this->assertSame(['mines', 'tutor', 'design', 'auction', 'emall', 'ehail', 'charts'], $order['special']);
         $this->assertSame('Not every opportunity starts with a business idea.', $journey[4]['heading']);
         $this->assertStringContainsString('not a promise of income, work or customers', $html, 'Special Platforms promises no earnings');
