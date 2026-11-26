@@ -27,6 +27,7 @@ use App\Http\Controllers\BusinessShowcaseController;
 use App\Http\Controllers\BusinessStandingController;
 use App\Http\Controllers\BusinessTrustDeskController;
 use App\Http\Controllers\BusinessVerificationController;
+use App\Http\Controllers\CookieConsentController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\EnquiryController;
 use App\Http\Controllers\ExpertiseSharingController;
@@ -543,6 +544,8 @@ Route::get('/business-tools', 'App\Http\Controllers\PagesController@businessTool
 Route::get('/terms', 'App\Http\Controllers\PagesController@terms')->name('terms');
 Route::get('/policy', 'App\Http\Controllers\PagesController@policy')->name('policy');
 Route::get('/cookies', 'App\Http\Controllers\PagesController@cookies')->name('cookies');
+// R-71: the cookie banner's answer (Accept or Decline), also used to change it on the Cookie Policy page.
+Route::post('/cookie-consent', CookieConsentController::class)->middleware('throttle:20,1,cookie.consent')->name('cookie-consent');
 Route::get('/security', 'App\Http\Controllers\PagesController@security')->name('security');
 Route::get('/solution-results', 'App\Http\Controllers\PagesController@solution_search_results')->middleware('throttle:30,1,solution-results')->name('solution_search_results');
 

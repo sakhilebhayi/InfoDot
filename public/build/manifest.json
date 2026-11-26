@@ -4,7 +4,7 @@
     "name": "motion"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CP-g0ZQV.css",
+    "file": "assets/app-BaOrsN4y.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -325,7 +325,7 @@
     "src": "resources/img/platforms/files.png"
   },
   "resources/js/analytics-chart.js": {
-    "file": "assets/analytics-chart-Ih4g0tQ2.js",
+    "file": "assets/analytics-chart-DshRq_rj.js",
     "name": "analytics-chart",
     "src": "resources/js/analytics-chart.js",
     "isDynamicEntry": true,
@@ -334,7 +334,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-B_GQYDdJ.js",
+    "file": "assets/app-DceE0jUR.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

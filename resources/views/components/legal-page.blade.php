@@ -21,6 +21,7 @@
             <h1 class="ix-h1">{{ $title }}</h1>
             @if ($doc['updated'])<p class="ix-hint">Last updated {{ $doc['updated'] }}</p>@endif
             {!! $doc['html'] !!}
+            {{ $slot ?? '' }}
         </article>
     </div>
 </x-public-layout>

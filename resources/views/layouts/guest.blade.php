@@ -24,6 +24,7 @@
     <a href="#main" class="ix-skip">Skip to content</a>
 
     @if ($brand)
+        @include('partials.cookie-banner')
         <div class="ix-auth">
             <x-auth.brand-panel :brand="$brand" />
             <main id="main" class="ix-auth__main">{{ $slot }}</main>
@@ -32,6 +33,7 @@
     @else
     <div class="ix-shell">
         <x-ix.top-public way :search="false" />
+        @include('partials.cookie-banner')
 
         @if ($panel ?? null)
             {{-- R-69: InfoDot's own sign-in pages are split: a photograph with InfoDot's message on one half, the form on the other.

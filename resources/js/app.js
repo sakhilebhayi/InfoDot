@@ -6,6 +6,7 @@ import './controls';
 import './notices';
 import './reveal';
 import './feedback';
+import './cookie-banner';
 import Alpine from 'alpinejs';
 
 // The site logo, platform logos and landing photographs are emitted into the build (public/build is the one folder every host serves from),

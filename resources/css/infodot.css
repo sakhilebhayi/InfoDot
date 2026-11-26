@@ -12932,3 +12932,80 @@ body[data-area="home"] .ix-btn--primary:hover,
 @media (max-width: 900px) {
     .hp-aim { padding: 64px 16px 56px; }
 }
+
+/* ===== R-71: the cookie banner. A graphite strip in the page's own flow directly under the top bar: it pushes the page down rather than
+   covering any of it. Accept and Decline look the same: neither choice is pushed. ===== */
+.ix-cookies {
+    position: relative;
+    border-bottom: 3px solid #eab31f;
+    background: #1b2124;
+    color: #e6eaec;
+}
+
+.ix-cookies__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px 32px;
+    max-width: 1232px;
+    margin: 0 auto;
+    padding: 16px 24px;
+}
+
+.ix-cookies__title {
+    margin: 0 0 4px;
+    color: #fff;
+    font-weight: 600;
+    font-size: var(--dot-text-body-size);
+}
+
+.ix-cookies__text p {
+    margin: 0;
+    max-width: 92ch;
+    font-size: var(--dot-text-body-sm-size);
+    line-height: 1.55;
+}
+
+.ix-cookies__text a {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.ix-cookies__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+}
+
+.ix-cookies .ix-btn {
+    min-width: 112px;
+    min-height: 44px;
+    justify-content: center;
+    border-color: #f2f4f5;
+    background: #f2f4f5;
+    color: #14181c;
+}
+
+.ix-cookies .ix-btn:hover { background: #fff; border-color: #fff; }
+.ix-cookies .ix-btn:focus-visible { outline: 3px solid #eab31f; outline-offset: 2px; }
+
+/* The choice on the Cookie Policy page. */
+.ix-cookie-choice {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 4px solid var(--ix-text);
+}
+
+.ix-cookie-choice .ix-cookies__actions { margin-top: 16px; }
+
+@media (max-width: 700px) {
+    .ix-cookies__inner { grid-template-columns: minmax(0, 1fr); padding: 14px 16px; }
+    .ix-cookies__actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .ix-cookies .ix-btn { min-width: 0; }
+}
+
+@media print {
+    .ix-cookies { display: none; }
+}

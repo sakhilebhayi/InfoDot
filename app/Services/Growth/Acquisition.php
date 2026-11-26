@@ -6,6 +6,7 @@ use App\Models\AcquisitionTouch;
 use App\Models\User;
 use App\Services\Sso\PlatformContext;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * R-59 Phase 1A: reads where a visitor came from, keeps it in one encrypted first-party cookie, and turns it into a single row when they
@@ -26,6 +27,26 @@ class Acquisition
         }
 
         return ['r' => $ref, 'u' => $utm, 'h' => $host, 'p' => $this->landingPath($request), 'at' => time()];
+    }
+
+    /**
+     * The first-party cookie that keeps an arriving visit (R-71: only ever set after the visitor accepted it).
+     *
+     * @param  array{r: ?string, u: array<string, string>, h: ?string, p: ?string, at: int}  $arrival
+     */
+    public function cookieFor(array $arrival, bool $secure): Cookie
+    {
+        return cookie(
+            (string) config('acquisition.cookie'),
+            json_encode($arrival, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            (int) config('acquisition.days') * 1440,
+            '/',
+            null,
+            $secure,
+            true,
+            false,
+            'lax',
+        );
     }
 
     /** @return array{r: ?string, u: array<string, string>, h: ?string, p: ?string, at: int}|null the visit the cookie holds, checked again */
