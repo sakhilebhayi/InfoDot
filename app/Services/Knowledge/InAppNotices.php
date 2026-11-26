@@ -112,10 +112,13 @@ class InAppNotices
     {
         $out = array_fill_keys(array_keys(UserNotice::CATEGORIES), ['total' => 0, 'unread' => 0]);
 
-        foreach ($this->scope($user, null, $archived)->get(['kind', 'read_at']) as $n) {
-            $c = UserNotice::categoryOf($n->kind);
-            $out[$c]['total']++;
-            $out[$c]['unread'] += $n->read_at === null ? 1 : 0;
+        // R-72 (P-24): counted by the database, one row per kind, not one per notice.
+        $rows = $this->scope($user, null, $archived)->reorder()->toBase()
+            ->selectRaw('kind, count(*) as total, sum(case when read_at is null then 1 else 0 end) as unread')->groupBy('kind')->get();
+        foreach ($rows as $row) {
+            $c = UserNotice::categoryOf((string) $row->kind);
+            $out[$c]['total'] += (int) $row->total;
+            $out[$c]['unread'] += (int) $row->unread;
         }
 
         return $out;

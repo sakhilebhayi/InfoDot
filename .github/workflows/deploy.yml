@@ -290,6 +290,15 @@ jobs:
             printf '\nQUEUE_CONNECTION=database\n' >> .env
           fi
           echo "== QUEUE_CONNECTION forced to database: $(grep '^QUEUE_CONNECTION=' .env | tail -1)"
+          # R-72 (P-29): the cache moves from files to the database (the cache and cache_locks tables come with this deploy's
+          # migrations). Files on this host were never pruned and their increments were not atomic, which the sign-in limits
+          # and the scheduler's one-at-a-time locks depend on. Switching only empties the cache, which refills by itself.
+          if grep -q '^CACHE_DRIVER=' .env; then
+            sed -i 's/^CACHE_DRIVER=.*/CACHE_DRIVER=database/' .env
+          else
+            printf '\nCACHE_DRIVER=database\n' >> .env
+          fi
+          echo "== CACHE_DRIVER forced to database: $(grep '^CACHE_DRIVER=' .env | tail -1)"
           if grep -qE '^APP_URL=http://' .env; then echo "::warning::APP_URL is http://, not https://; set it to the https address."; fi
 
           # ---- frontend: swap the staged build in, keep the docroot copy in step

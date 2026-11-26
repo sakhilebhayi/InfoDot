@@ -28,7 +28,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('business:enquiry-follow-ups')->dailyAt('07:30')->withoutOverlapping(30)->onOneServer();
         $schedule->command('onboarding:prune-imports')->dailyAt('03:55')->withoutOverlapping(30)->onOneServer();
         $schedule->command('referrals:advance')->hourly()->withoutOverlapping(30)->onOneServer();
-        $schedule->command('points:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('points:flush-outbox')->everyMinute()->withoutOverlapping(5)->onOneServer()->runInBackground();
 
         // Emails people before some of their points lapse (the points service pulls no addresses; see the command).
         $schedule->command('points:deliver-expiry-warnings')->hourly()->withoutOverlapping(30)->onOneServer();
@@ -40,7 +40,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('points:deliver-digests month')->cron('0 8-23 1 * *')->withoutOverlapping(30)->onOneServer();
 
         // Participation events waiting for Dot.Memory (only for people who opted in; retried with growing delays).
-        $schedule->command('participation:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('participation:flush-outbox')->everyMinute()->withoutOverlapping(5)->onOneServer()->runInBackground();
 
         // In-app notifications: read ones go after 90 days, any after a year.
         // Advisory ring flags first, so the score recalculation that follows already reflects what is open.
@@ -64,6 +64,9 @@ class Kernel extends ConsoleKernel
         // Company invitations live 14 days; one that has been expired for 30 more is removed.
         $schedule->command('invitations:prune')->dailyAt('03:15')->withoutOverlapping(30)->onOneServer();
         $schedule->command('notices:prune')->dailyAt('03:20')->withoutOverlapping(30)->onOneServer();
+        // R-72 (P-29): the database cache keeps expired rows until they are read again; remove them once a day.
+        $schedule->call(fn () => config('cache.default') === 'database' && Schema::hasTable('cache')
+            ? DB::table('cache')->where('expiration', '<', now()->getTimestamp())->delete() : 0)->name('cache:prune-expired')->dailyAt('03:05')->withoutOverlapping(30)->onOneServer();
         // Launch codes live for a minute and are deleted when redeemed; one that is never redeemed stayed in the table for
         // good (31 on the live site on 2026-11-13). Expired ones are removed an hour after they lapse.
         $schedule->command('sanctum:prune-expired --hours=1')->dailyAt('03:25')->withoutOverlapping(30)->onOneServer();
@@ -72,12 +75,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('ux:prune')->dailyAt('03:30')->withoutOverlapping(30)->onOneServer();
 
         // What moderators decided about Dot.Brain's library recommendations, waiting to be reported to Dot.Memory (retried with growing delays).
-        $schedule->command('library:flush-outcomes')->everyMinute()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('library:flush-outcomes')->everyMinute()->withoutOverlapping(5)->onOneServer()->runInBackground();
 
         // Entitlement changes waiting to be told to their platform (R-50; retried with growing delays, see EntitlementOutbox).
-        $schedule->command('platforms:flush-outbox')->everyMinute()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('platforms:flush-outbox')->everyMinute()->withoutOverlapping(5)->onOneServer()->runInBackground();
         // Trials, dated complimentary grants and grace periods that have run out (R-50). Before the next outbox flush picks the changes up.
-        $schedule->command('platforms:lifecycle')->everyMinute()->withoutOverlapping(30)->onOneServer();
+        $schedule->command('platforms:lifecycle')->everyMinute()->withoutOverlapping(5)->onOneServer()->runInBackground();
         // Paid licence batches whose period or grace has run out, and the people who then lose or regain a licence (R-53).
         $schedule->command('licence:sweep')->everyFiveMinutes()->withoutOverlapping(30)->onOneServer();
         // Renewal, failed-payment, shortfall and end-of-free-period reminders. Idempotent, so the hourly runs only retry a failed send.

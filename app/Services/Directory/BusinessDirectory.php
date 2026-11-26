@@ -9,6 +9,7 @@ use App\Models\Team;
 use App\Models\TeamProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -22,14 +23,13 @@ use Illuminate\Support\Str;
  * matched, so search is explainable; nothing is inferred or invented.
  *
  * Matching is done in two steps — SQL narrows to candidates that contain at least one search word
- * anywhere relevant, then each candidate is scored by where the words appear. That is quick and
- * honest at InfoDot's size; the method is the one place to swap in a full-text engine later.
+ * anywhere relevant, then each candidate is scored by where the words appear. Every candidate is
+ * scored (R-72: there is no cap, so results beyond the first few hundred are not lost), and the
+ * pictures are loaded only for the page shown. Without words the database sorts and pages alone.
  */
 final class BusinessDirectory
 {
     private const PER_PAGE = 24;
-
-    private const CANDIDATES = 600;
 
     /** Words that say "a business" rather than which one. */
     private const NOISE = ['a', 'an', 'the', 'and', 'or', 'of', 'for', 'to', 'in', 'near', 'around', 'with', 'that', 'who', 'which',
@@ -57,13 +57,13 @@ final class BusinessDirectory
         }
         if ($location) {
             // Where it says it is, where it says it works, or any location it lists (R-33 Phase 2).
-            $like = '%'.$location.'%';
+            $like = '%'.self::escapeLike($location).'%';
             $query->where(fn (Builder $w) => $w
                 ->whereHas('profile', fn (Builder $p) => $p->where(fn ($p) => $p->where('location', 'like', $like)->orWhere('regions', 'like', $like)))
                 ->orWhereHas('locations', fn (Builder $l) => $l->where('city', 'like', $like)->orWhere('province', 'like', $like)));
         }
         if ($f['region'] ?? null) {
-            $query->whereHas('profile', fn (Builder $p) => $p->where('regions', 'like', '%'.$f['region'].'%'));
+            $query->whereHas('profile', fn (Builder $p) => $p->where('regions', 'like', '%'.self::escapeLike((string) $f['region']).'%'));
         }
         if ($f['size'] ?? null) {
             $query->whereHas('profile', fn (Builder $p) => $p->where('size', $f['size']));
@@ -78,7 +78,7 @@ final class BusinessDirectory
         if ($words !== []) {
             $query->where(function (Builder $q) use ($words) {
                 foreach ($words as $w) {
-                    $like = '%'.$w.'%';
+                    $like = '%'.self::escapeLike($w).'%';
                     $q->orWhere('name', 'like', $like)
                         ->orWhereHas('profile', fn (Builder $p) => $p->where(fn ($p) => $p->where('trading_name', 'like', $like)->orWhere('description', 'like', $like)
                             ->orWhere('industry', 'like', $like)->orWhere('category', 'like', $like)->orWhere('products_services', 'like', $like)))
@@ -89,7 +89,28 @@ final class BusinessDirectory
         }
 
         $sort = $f['sort'] ?? ($words ? 'relevance' : 'newest');
-        $candidates = $query->limit(self::CANDIDATES)->get();
+        $page = max(1, (int) ($f['page'] ?? 1));
+        $options = [
+            'path' => route('businesses.index'),
+            'query' => array_filter(['q' => $f['q'] ?? null, 'category' => $f['category'] ?? null, 'location' => $f['location'] ?? null, 'region' => $f['region'] ?? null,
+                'size' => $f['size'] ?? null, 'type' => $f['type'] ?? null, 'verified' => ($f['verified'] ?? false) ? 1 : null, 'sort' => $f['sort'] ?? null, 'view' => $f['view'] ?? null, 'all' => ($f['all'] ?? false) ? 1 : null]),
+        ];
+
+        // R-72 (P-20): with no words there is nothing to score, so the database sorts and pages, however many businesses are listed.
+        if ($words === []) {
+            $sorted = match ($sort) {
+                'name' => $query->orderByRaw('lower(teams.name)')->orderBy('teams.id'),
+                default => $query->orderByDesc('teams.created_at')->orderByDesc('teams.id'),
+            };
+            $total = (clone $sorted)->toBase()->getCountForPagination();
+            $items = $sorted->forPage($page, self::PER_PAGE)->get();
+
+            return ['results' => new LengthAwarePaginator($items, $total, self::PER_PAGE, $page, $options), 'reasons' => [], 'words' => $words, 'location' => $location ?: null, 'service_hits' => []];
+        }
+
+        // With words, every match is scored (no cap, so nothing beyond the first few hundred is lost); only what scoring reads is
+        // loaded for all of them, and the pictures and standing only for the page shown.
+        $candidates = $query->setEagerLoads([])->with(['profile', 'categories', 'services', 'standing'])->get();
 
         $reasons = [];
         $scores = [];
@@ -99,23 +120,20 @@ final class BusinessDirectory
             $scores[$team->id] = $score;
             $reasons[$team->id] = $why;
             // Which of its services the words found, for the business's "popular services" insight.
-            $serviceHits[$team->id] = $words === [] ? [] : $team->services
+            $serviceHits[$team->id] = $team->services
                 ->filter(fn (BusinessService $s) => collect($words)->contains(fn ($w) => str_contains(mb_strtolower($s->name.' '.$s->description), $w)))
                 ->pluck('id')->all();
         }
 
         $sorted = match ($sort) {
-            'name' => $candidates->sortBy(fn (Team $t) => mb_strtolower($t->name)),
-            'newest' => $candidates->sortByDesc(fn (Team $t) => $t->created_at?->getTimestamp() ?? 0),
-            default => $candidates->sortByDesc(fn (Team $t) => [$scores[$t->id], (int) $t->isVerified(), $t->created_at?->getTimestamp() ?? 0]),
+            'name' => $candidates->sortBy(fn (Team $t) => [mb_strtolower($t->name), $t->id]),
+            'newest' => $candidates->sortByDesc(fn (Team $t) => [$t->created_at?->getTimestamp() ?? 0, $t->id]),
+            default => $candidates->sortByDesc(fn (Team $t) => [$scores[$t->id], (int) $t->isVerified(), $t->created_at?->getTimestamp() ?? 0, $t->id]),
         };
 
-        $page = max(1, (int) ($f['page'] ?? 1));
-        $results = new LengthAwarePaginator($sorted->values()->forPage($page, self::PER_PAGE), $sorted->count(), self::PER_PAGE, $page, [
-            'path' => route('businesses.index'),
-            'query' => array_filter(['q' => $f['q'] ?? null, 'category' => $f['category'] ?? null, 'location' => $f['location'] ?? null, 'region' => $f['region'] ?? null,
-                'size' => $f['size'] ?? null, 'type' => $f['type'] ?? null, 'verified' => ($f['verified'] ?? false) ? 1 : null, 'sort' => $f['sort'] ?? null, 'view' => $f['view'] ?? null, 'all' => ($f['all'] ?? false) ? 1 : null]),
-        ]);
+        $items = $sorted->values()->forPage($page, self::PER_PAGE)->values();
+        (new EloquentCollection($items->all()))->load('logo');
+        $results = new LengthAwarePaginator($items, $sorted->count(), self::PER_PAGE, $page, $options);
 
         return ['results' => $results, 'reasons' => $reasons, 'words' => $words, 'location' => $location ?: null, 'service_hits' => $serviceHits];
     }
@@ -158,7 +176,7 @@ final class BusinessDirectory
                     $q->orWhereHas('categories', fn (Builder $c) => $c->whereIn('business_categories.id', $categoryIds));
                 }
                 foreach ($words as $w) {
-                    $q->orWhereHas('services', fn (Builder $s) => $s->where('name', 'like', '%'.$w.'%'));
+                    $q->orWhereHas('services', fn (Builder $s) => $s->where('name', 'like', '%'.self::escapeLike($w).'%'));
                 }
             })
             ->with(['profile', 'categories', 'services', 'standing', 'logo'])->limit(200)->get();
@@ -274,5 +292,11 @@ final class BusinessDirectory
         }
 
         return [$score, array_values($why)];
+    }
+
+    /** R-72 (P-33): a % or _ typed into a search is a character to find, not a wildcard (same as Related and the header search). */
+    private static function escapeLike(string $value): string
+    {
+        return addcslashes($value, '\\%_');
     }
 }

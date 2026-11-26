@@ -9,6 +9,7 @@ use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -96,6 +97,12 @@ class Solutions extends Model
                 $this->attachments()->whereNotNull('extracted_text')->pluck('extracted_text')->implode(' ')
                 .' '.$this->stepAttachments()->whereNotNull('extracted_text')->pluck('extracted_text')->implode(' '), 15000, ''),
         ];
+    }
+
+    /** People who said they tried this solution (R-16). @return HasMany<SolutionConfirmation, $this> */
+    public function confirmations(): HasMany
+    {
+        return $this->hasMany(SolutionConfirmation::class, 'solution_id');
     }
 
     public function user(): BelongsTo

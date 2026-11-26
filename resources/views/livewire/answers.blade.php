@@ -32,7 +32,7 @@
                     <span class="ix-reccard__title">{{ $recommendation->solution->solution_title }}</span>
                     <span class="ix-reccard__meta">
                         {{ Str::limit((string) $recommendation->solution->solution_description, 110) }}
-                        — by {{ $recommendation->solution->user->name ?? 'Former member' }}@if ($n = \App\Models\SolutionConfirmation::where('solution_id', $recommendation->solution_id)->count()), tried by {{ $n }}@endif
+                        — by {{ $recommendation->solution->user->name ?? 'Former member' }}@if ($n = (int) $recommendation->solution->confirmations_count), tried by {{ $n }}@endif
                     </span>
                 </a>
             @endforeach
