@@ -113,16 +113,16 @@ class PlatformRegistryConsistencyTest extends TestCase
         $this->assertNotEmpty($names);
         $this->assertSame([], array_values(array_diff($names, $known)));
 
-        preg_match_all('/<li[^>]*>\s*<img[^>]* alt="(Dot\.[^"]+)"/', $html, $wall);
-        // R-55: the wall is grouped by what a visitor wants to get done, so its order is the groups' order, not the registry's.
-        // Central is live but has no agreed visitor-facing description yet, so no goal group holds it; a platform added to the
-        // registry fails here until it is placed in a group on the landing page or added to this short list on purpose.
-        $notPlacedYet = ['central'];
+        preg_match_all('/<span class="hp-tool__name">(Dot\.[A-Za-z]+)/', $html, $shown);
+        // R-73: the journey (Start, Manage, Connect, Grow) shows every live, public platform once. Central has no agreed visitor-facing
+        // description yet; Mines and Ehail are specialised and reached through "Explore Business Tools" instead. A platform added to
+        // the registry fails here until it is placed in a stage (config/business_tools.php 'journey') or added to this short list on purpose.
+        $notOnTheHomepage = ['central', 'mines', 'ehail'];
         $expected = collect(config('ecosystem.platforms'))
-            ->filter(fn (array $p, string $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && ! in_array($key, ['infodot', 'agents', ...$notPlacedYet], true))
+            ->filter(fn (array $p, string $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && ! in_array($key, ['infodot', 'agents', ...$notOnTheHomepage], true))
             ->pluck('name')->sort()->values()->all();
-        $this->assertSame($expected, collect($wall[1])->sort()->values()->all(), 'the logo wall shows exactly the live, public platforms of the registry that have been placed in a group');
-        $this->assertSame(count($wall[1]), count(array_unique($wall[1])), 'each platform appears once');
+        $this->assertSame($expected, collect($shown[1])->sort()->values()->all(), 'the journey shows exactly the live, public platforms of the registry that have been placed in a stage');
+        $this->assertSame(count($shown[1]), count(array_unique($shown[1])), 'each platform appears once');
     }
 
     public function test_the_platforms_page_lists_only_platforms_from_the_registry(): void

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\ContactMessage;
+use App\Support\BusinessTools;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -25,12 +26,16 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString("classList.add('motion-failsafe')", $html);
         $this->assertStringContainsString('prefers-reduced-motion', $html);
         // R-67: the story under the owner's hero: the reality (the owner's own heading), four pillars, a week, what opens when you join.
-        foreach (['Knowledge', 'Tools', 'Connections', 'Progress', 'Stop figuring it out alone', 'Stop juggling disconnected apps', "Stop missing what you can't see", 'Turn what you learn into what you do',
+        foreach ([
+            // R-73 phase 2: the support and the possibility.
+            'Behind every business is a dream. Behind every growing business is the right support.', 'Knowledge you can act on', 'Tools for the work itself',
+            'Other businesses within reach', 'Resources ready to use', 'Room to learn and keep going',
+            'Imagine what your business could become with the right things behind it.', 'An ordinary week can look like this.',
             // R-73 phase 1: the promise, the dream it is for, and the reality, in the owner's approved words.
             'Join InfoDot for free', 'Explore the ecosystem', "Give the business you've been dreaming about a place to grow, get it right the first time.",
             'Every business starts with someone who decided to try.', "Wherever you're starting from, there's a next step.",
             'You started this business to build something. Not to spend every day figuring everything out.', "None of this means you're doing it wrong.",
-            'What a week with InfoDot can look like.', 'Your business. Your tools. One connected ecosystem.', 'What opens when you join.', 'Creating an InfoDot account is free.',
+            'What opens when you join.', 'Creating an InfoDot account is free.',
             'Build your business with InfoDot in your corner.',
             'Our aim is to help one million businesses every year reach the goals they set for themselves.'] as $words) {
             $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
@@ -47,7 +52,9 @@ class PublicPagesTest extends TestCase
             // R-73: the R-67 reality heading is replaced, and the ambition section is not said twice.
             "most businesses don't really know what they're doing", 'InfoDot is here to change that.', "Wherever you are, there's a next step.", 'See how it works',
             // The owner's tagline replaced the dream question and the line that followed it.
-            "That business you've been dreaming about? Let's give it somewhere to grow.", 'InfoDot brings business knowledge, tools and other businesses together in one free account.'] as $old) {
+            "That business you've been dreaming about? Let's give it somewhere to grow.", 'InfoDot brings business knowledge, tools and other businesses together in one free account.',
+            // R-73 phase 2: the pillar cards, the five-day week and the logo wall are replaced by the support and the journey.
+            'Four things every business needs. One place to find them.', 'What a week with InfoDot can look like.', 'Your business. Your tools. One connected ecosystem.'] as $old) {
             $this->assertStringNotContainsString($old, strip_tags(str_replace('&#039;', "'", $html)), $old);
         }
         $this->assertStringContainsString(route('register'), $html);
@@ -88,18 +95,46 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('.has-motion.motion-failsafe [data-hero]', (string) file_get_contents(resource_path('css/infodot.css')), 'the failsafe brings every hero part back');
     }
 
-    public function test_the_tools_are_grouped_by_goal_and_only_show_platforms_that_exist(): void
+    public function test_the_journey_shows_only_live_platforms_with_their_problem_value_and_limits(): void
     {
+        // R-73 phase 2: Start, Manage, Connect, Grow, from the same verified data as the Business Tools page.
         $html = $this->get('/')->assertOk()->getContent();
+        $journey = BusinessTools::journey();
 
-        foreach (['Understand your business', 'Manage your money', 'Manage your people', 'Organise your work', 'Create and collaborate', 'Communicate and connect', 'Access specialised solutions'] as $goal) {
-            $this->assertStringContainsString($goal, $html, $goal);
+        $this->assertSame(['start', 'manage', 'connect', 'grow'], array_column($journey, 'key'));
+        foreach ($journey as $stage) {
+            $this->assertStringContainsString('id="stage-'.$stage['key'].'"', $html);
+            foreach ($stage['tools'] as $tool) {
+                $this->assertTrue(BusinessTools::shown($tool['key']), $tool['key'].' is shown only when it is live and public');
+                $this->assertStringContainsString(e($tool['problem']), $html, $tool['key'].' says the problem it addresses');
+                $this->assertStringContainsString(e($tool['outcome']), $html, $tool['key'].' says the value it offers');
+                $this->assertStringContainsString(route('business-tools').'#tool-'.$tool['key'], $html, $tool['key'].' links to its own entry');
+                if (filled($tool['note'] ?? null)) {
+                    $this->assertStringContainsString(e($tool['note']), $html, $tool['key'].' shows its limit before anyone signs up');
+                }
+            }
         }
         // Retired platforms are never shown, and nothing implies every tool is in every account.
         foreach (['Dot.Billing', 'Dot.Farms', 'Dot.Plug'] as $retired) {
             $this->assertStringNotContainsString($retired, $html, $retired);
         }
-        $this->assertStringContainsString('not every tool comes with every account', $html);
+        $this->assertStringContainsString('depends on your business and how access is arranged', $html);
+        // No platform count is written into the page.
+        $this->assertDoesNotMatchRegularExpression('/\b\d+ (Dot )?(platforms|tools)\b/i', strip_tags($html));
+    }
+
+    public function test_without_javascript_every_stage_is_on_the_page_and_the_tabs_are_hidden_until_the_script_runs(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/role="tablist"[^>]*data-journey-tabs hidden/', $html, 'the tab row only appears once the script turns the stages into tabs');
+        preg_match_all('/<section class="hp-stage"[^>]*>/', $html, $panels);
+        $this->assertCount(4, $panels[0]);
+        foreach ($panels[0] as $panel) {
+            $this->assertStringNotContainsString(' hidden', $panel, 'no stage is hidden in the page as sent');
+        }
+        // Each platform is a native disclosure: it opens from the keyboard without any script.
+        $this->assertStringContainsString('<details class="hp-tool">', $html);
     }
 
     public function test_the_page_keeps_community_answers_accepted_solutions_and_verified_information_apart(): void
@@ -265,16 +300,13 @@ class PublicPagesTest extends TestCase
         $this->assertFileExists(resource_path('img/arrow-mask.png'));
     }
 
-    public function test_the_platforms_on_the_landing_page_are_shown_as_logos_with_their_names_as_alt_text(): void
+    public function test_platform_logos_beside_their_names_are_decorative(): void
     {
+        // R-73: the name is written beside each logo, so the logo itself is empty alt text (a screen reader hears the name once).
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('class="lp-logos"', $html);
-        foreach (['Dot.Files', 'Dot.Analytics', 'Dot.Tasks'] as $name) {
-            $this->assertStringContainsString('alt="'.$name.'"', $html);
-        }
-        $this->assertStringNotContainsString('class="ix-platlist"', $html, 'no longer a list of names');
-        $this->assertStringNotContainsString('alt="Dot.Agents"', $html, 'the one mark without wording is not in the wall');
+        $this->assertStringNotContainsString('class="lp-logos"', $html, 'the logo wall is gone');
+        $this->assertMatchesRegularExpression('/<summary>\s*<img [^>]*alt=""[^>]*>\s*<span class="hp-tool__name">Dot\.Finance/', $html);
     }
 
     public function test_the_visitor_tab_row_has_the_search_links_the_directory_and_the_business_tools_page_and_nothing_else(): void

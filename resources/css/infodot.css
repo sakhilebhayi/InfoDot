@@ -8027,34 +8027,6 @@ body {
     --lp-logo-ground: #1b2124;
 }
 
-.lp-logos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-    gap: 12px;
-    margin: 0 0 20px;
-    padding: 0;
-    list-style: none;
-}
-
-.lp-logos li {
-    position: relative;
-    height: 104px;
-    border-radius: var(--ix-radius);
-    background: var(--lp-logo-ground);
-}
-
-.lp-logos img {
-    position: absolute;
-    top: 14px;
-    right: 18px;
-    bottom: 14px;
-    left: 18px;
-    display: block;
-    width: calc(100% - 36px);
-    height: calc(100% - 28px);
-    object-fit: contain;
-}
-
 /* Search bars never show the blue form-field ring: the box itself lifts and its border darkens (the hero), or its own gold outline shows (the top bar). */
 .ix-topicbar .ix-input[type='search']:focus,
 .ix-topicbar .ix-input[type='search']:focus-visible {
@@ -10082,9 +10054,6 @@ button.ix-avatar,
 }
 
 /* Section headings share one voice with the existing landing sections */
-.hp-pillars h2,
-.hp-how h2,
-.hp-tools h2,
 .hp-chain h2,
 .hp-trust h2,
 .hp-who h2 {
@@ -10097,84 +10066,6 @@ button.ix-avatar,
 }
 
 /* Discover, Manage, Grow: the intro stays in view while the three plates pass beside it */
-.hp-pillars {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 96px 24px 72px;
-    display: grid;
-    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-    gap: 56px;
-    align-items: start;
-}
-
-.hp-pillars__intro {
-    position: sticky;
-    top: 88px;
-}
-
-.hp-pillars__list {
-    display: grid;
-    gap: 72px;
-}
-
-.hp-pillar {
-    display: grid;
-    grid-template-columns: minmax(150px, 3fr) minmax(0, 7fr);
-    gap: 32px;
-    align-items: stretch;
-}
-
-.hp-pillar__plate {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin: 0;
-    padding: 22px 20px;
-    min-height: 220px;
-    border-radius: var(--ix-radius);
-    color: #fff;
-    transform-origin: left center;
-}
-
-.hp-pillar--discover .hp-pillar__plate { background: var(--ix-knowledge); }
-.hp-pillar--manage .hp-pillar__plate { background: var(--ix-platforms); color: #1a1300; }
-.hp-pillar--grow .hp-pillar__plate { background: var(--ix-documents); }
-
-.hp-pillar__word {
-    font-family: var(--ix-stencil-font);
-    font-weight: 700;
-    font-size: clamp(1.3rem, 1.9vw, 1.8rem);
-    letter-spacing: 0.05em;
-    overflow-wrap: anywhere;
-    line-height: 1;
-    text-transform: uppercase;
-}
-
-.hp-pillar__tag {
-    font-weight: 500;
-    font-size: var(--dot-text-body-size);
-    line-height: 1.35;
-}
-
-.hp-pillar__lede {
-    margin: 0 0 14px;
-    max-width: 58ch;
-    font-size: var(--dot-text-body-lg-size);
-    line-height: 1.55;
-    text-wrap: pretty;
-}
-
-.hp-pillar__list {
-    margin-bottom: 20px;
-}
-
-.hp-pillar__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 20px;
-    margin: 0 0 22px;
-}
 
 .hp-stages__label {
     margin: 0 0 8px;
@@ -10216,11 +10107,6 @@ button.ix-avatar,
 }
 
 /* How it works: three steps on a line that fills as you scroll */
-.hp-how {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 72px 24px 80px;
-}
 
 .hp-steps {
     position: relative;
@@ -10290,75 +10176,7 @@ button.ix-avatar,
     line-height: 1.6;
 }
 
-.hp-how__cta {
-    margin: 36px 0 0;
-}
-
 /* Tools by what you want to get done: the head stays in view beside a register of groups */
-.hp-tools {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 72px 24px 96px;
-    display: grid;
-    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-    gap: 56px;
-    align-items: start;
-}
-
-.hp-tools__head {
-    position: sticky;
-    top: 88px;
-}
-
-.hp-tools__note {
-    margin: 10px 0 0;
-    color: var(--ix-text-2);
-    font-size: var(--dot-text-body-sm-size);
-}
-
-.hp-tools__groups {
-    display: grid;
-    gap: 14px;
-}
-
-.hp-group {
-    display: grid;
-    grid-template-columns: minmax(150px, 3fr) minmax(0, 8fr);
-    gap: 20px 28px;
-    align-items: center;
-    padding: 20px 22px;
-    border-radius: var(--ix-radius);
-    background: var(--ix-panel);
-}
-
-.hp-group:nth-child(even) {
-    background: var(--ix-sunken);
-}
-
-.hp-group h3 {
-    margin: 0;
-    font-weight: 600;
-    font-size: var(--dot-text-body-lg-size);
-    line-height: 1.25;
-}
-
-.hp-group .lp-logos {
-    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-    margin: 0;
-}
-
-.hp-group .lp-logos li {
-    height: 84px;
-}
-
-.hp-group .lp-logos img {
-    top: 12px;
-    right: 14px;
-    bottom: 12px;
-    left: 14px;
-    width: calc(100% - 28px);
-    height: calc(100% - 24px);
-}
 
 /* The collective knowledge section */
 .hp-know__list {
@@ -10566,48 +10384,23 @@ button.ix-avatar,
 }
 
 @media (max-width: 900px) {
-    .hp-pillars,
-    .hp-tools {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 32px;
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+        .hp-chain {
         padding: 56px 16px;
     }
 
-    .hp-pillars__intro,
-    .hp-tools__head {
-        position: static;
-    }
-
-    .hp-pillars__list {
-        gap: 48px;
-    }
-
-    .hp-pillar {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 20px;
-    }
-
-    .hp-pillar__plate {
-        min-height: 0;
-        flex-direction: row;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 16px;
-    }
-
-    .hp-pillar__tag {
-        margin: 0;
-    }
-
-    .hp-how,
-    .hp-chain {
-        padding: 56px 16px;
-    }
-
-    .hp-group {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 14px;
-    }
+    
 
     .hp-know__list {
         grid-template-columns: minmax(0, 1fr);
@@ -10702,15 +10495,8 @@ button.ix-avatar,
 }
 
 /* If the script stalls the failsafe shows everything as it is meant to read at rest. */
-.has-motion.motion-failsafe .hp-pillar__plate,
-.has-motion.motion-failsafe .hp-pillar__list li,
 .has-motion.motion-failsafe [data-cta-title] {
     clip-path: none !important;
-    transform: none !important;
-}
-
-.has-motion.motion-failsafe .hp-group .lp-logos li {
-    filter: none !important;
     transform: none !important;
 }
 
@@ -11997,34 +11783,6 @@ button.ix-avatar,
 
 /* R-57: the Discover, Manage and Grow plates carry a photograph under their colour: the colour holds the word at the top, the picture
    shows through below, and a scrim keeps the tag readable. The plate keeps its area colour if the picture does not load. */
-.hp-pillar__plate {
-    --pillar-tone: var(--ix-knowledge);
-    isolation: isolate;
-    overflow: hidden;
-    background-image: var(--pillar-img, none);
-    background-size: cover;
-    background-position: center;
-}
-
-.hp-pillar--discover .hp-pillar__plate { --pillar-tone: var(--ix-knowledge); background-color: var(--ix-knowledge); }
-.hp-pillar--manage .hp-pillar__plate { --pillar-tone: var(--ix-platforms); background-color: var(--ix-platforms); }
-.hp-pillar--grow .hp-pillar__plate { --pillar-tone: var(--ix-documents); background-color: var(--ix-documents); }
-
-.hp-pillar__plate::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-        linear-gradient(180deg, var(--pillar-tone) 0%, var(--pillar-tone) 18%, color-mix(in srgb, var(--pillar-tone) 40%, transparent) 55%, transparent 80%),
-        linear-gradient(0deg, rgb(8 12 14 / 0.78) 0%, transparent 45%);
-}
-
-.hp-pillar__tag { color: #fff; }
-
-@media (min-width: 901px) {
-    .hp-pillar__plate { min-height: 320px; }
-}
 
 /* The long reading pages: the plate and heading arrive first, the photograph spans both columns, and each question or heading rises as it is reached. */
 .pg-prose > .pg-plate { margin-bottom: 14px; }
@@ -12052,16 +11810,9 @@ button.ix-avatar,
     .pg-prose > :not(.pg-strip):not(.pg-plate):not(.ix-h1):not(.ix-lede):not(.pg-vignettes) { max-width: 68ch; }
 }
 
-.hp-pillar--discover .hp-pillar__plate,
-.hp-pillar--manage .hp-pillar__plate,
-.hp-pillar--grow .hp-pillar__plate { background-image: var(--pillar-img, none); background-size: cover; background-position: center; }
-
 /* The platform logos have thin, pale wordmarks: bigger tiles and a lift in brightness let every name read at full strength on the graphite ground. */
-.hp-group .lp-logos { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+
 /* Every logo file is drawn on the same canvas at the same scale (round icon, same-size wordmark), so each tile just shows the file at its natural proportions: nothing is stretched or squeezed. */
-.hp-group .lp-logos li { height: auto; aspect-ratio: 3 / 2; background: #080b0d; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); transition: box-shadow var(--ix-dur-base) var(--ix-ease), translate var(--ix-dur-base) var(--ix-ease); }
-.hp-group .lp-logos li:hover { box-shadow: inset 0 0 0 1px #eab31f; translate: 0 -2px; }
-.hp-group .lp-logos img { top: 6px; right: 6px; bottom: 6px; left: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: contain; filter: none; }
 
 /* Links in running text read as links: underlined at rest, in the page's own link colour. */
 .ix-prose p a,
@@ -12144,7 +11895,7 @@ body[data-area="home"] .ix-btn--primary:hover,
 
 @media (max-width: 900px) {
     .pg-vignettes { grid-template-columns: 1fr; }
-    .hp-pillar--manage .hp-pillar__tag { color: #1a1300; }
+    
 }
 
 /* Directory: the filters sit on one aligned grid, and Apply lines up with the fields. */
@@ -12198,14 +11949,7 @@ body[data-area="home"] .ix-btn--primary:hover,
 .pg-dir .ix-hint { margin-top: 4px; }
 
 /* Home on a phone: the labels on the Discover, Manage and Grow plates sit on a solid scrim, whatever the photograph is. */
-@media (max-width: 900px) {
-    .hp-pillar__plate::before {
-        background:
-            linear-gradient(180deg, var(--pillar-tone) 0%, var(--pillar-tone) 30%, transparent 75%),
-            linear-gradient(0deg, rgb(8 12 14 / 0.88) 0%, rgb(8 12 14 / 0.4) 40%, transparent 70%);
-    }
-    .hp-pillar--manage .hp-pillar__tag { color: #fff; }
-}
+
 .ix-prose .pg-vignettes { padding: 0; }
 .pg-vignettes li { margin: 0; }
 
@@ -12213,7 +11957,6 @@ body[data-area="home"] .ix-btn--primary:hover,
 @media (max-width: 640px) {
     .hp-chain__steps li::before { top: 7px; left: -34px; }
 }
-
 
 /* ===== R-57 round 3 ===== */
 .ix-prose .pg-vignettes { margin-bottom: 44px; align-items: stretch; }
@@ -12354,11 +12097,6 @@ body[data-area="home"] .ix-btn--primary:hover,
 }
 
 /* The tools: two columns of goal cards instead of one long list, so the whole ecosystem reads at a glance. */
-@media (min-width: 901px) {
-    .hp-tools__groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-    .hp-tools__groups .hp-group { margin: 0; align-content: start; }
-    .hp-group { display: grid; grid-template-columns: 1fr; gap: 12px; }
-}
 
 /* "You don't have to figure it out": the six points sit in three columns now the photograph is gone. */
 @media (min-width: 901px) {
@@ -12367,22 +12105,8 @@ body[data-area="home"] .ix-btn--primary:hover,
 }
 
 /* Discover, Manage, Grow: three columns side by side, each a photograph with its word, then what it holds. One row, not three tall ones. */
-@media (min-width: 1000px) {
-    .hp-pillars { grid-template-columns: minmax(0, 1fr); gap: 36px; padding-top: 72px; padding-bottom: 56px; }
-    .hp-pillars__intro { position: static; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px 56px; align-items: end; }
-    .hp-pillars__intro h2 { margin: 0; }
-    .hp-pillars__intro .lp-lede { margin: 0; }
-    .hp-pillars__list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-    .hp-pillar { grid-template-columns: minmax(0, 1fr); gap: 20px; align-content: start; }
-    .hp-pillar__plate { min-height: 0; aspect-ratio: 16 / 11; }
-    .hp-pillar__list { margin-bottom: 16px; }
-}
 
 /* The tools flow into two balanced columns of goal cards, so a group with one tool never leaves a hole. */
-@media (min-width: 901px) {
-    .hp-tools__groups { display: block; columns: 2; column-gap: 16px; }
-    .hp-tools__groups .hp-group { break-inside: avoid; margin: 0 0 16px; }
-}
 
 /* ===== R-57 round 4 ===== */
 /* Home: the library sits on the same left edge as every other section. */
@@ -12403,8 +12127,8 @@ body[data-area="home"] .ix-btn--primary:hover,
 @media (max-width: 900px) {
     .hx-ledger__list a { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
     .hx-ledger__list a .ix-ref { grid-column: 1 / -1; }
-    .hp-pillar__plate { min-height: 200px; aspect-ratio: 16 / 10; }
-    .hp-pillar__word { font-size: var(--dot-text-h3-size); }
+    
+    
 }
 
 /* ===== R-57: the home hero. The words and the search stay still on the left; the picture side moves through three compositions. ===== */
@@ -12621,19 +12345,8 @@ body[data-area="home"] .ix-btn--primary:hover,
 }
 
 /* Four pillars: Connections takes the People steel livery. Four across on a wide screen, two by two below that. */
-.hp-pillar--connect .hp-pillar__plate { --pillar-tone: var(--ix-people); background-color: var(--ix-people); background-image: var(--pillar-img, none); background-size: cover; background-position: center; }
-
-@media (min-width: 1000px) and (max-width: 1239px) {
-    .hp-pillars--four .hp-pillars__list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
-}
-
-@media (min-width: 1240px) {
-    .hp-pillars--four .hp-pillars__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
-    .hp-pillars--four .hp-pillar__lede { font-size: var(--dot-text-body-size); }
-}
 
 /* A week: five days on the same filling line as the old three steps; the day is a plate, not a number. */
-.hp-week .hp-how__head .lp-lede { margin-bottom: 0; }
 
 .hp-steps--week .hp-steps__n {
     width: auto;
@@ -12654,13 +12367,6 @@ body[data-area="home"] .ix-btn--primary:hover,
 }
 
 /* The tools: the access caveat is a quiet line under the lede, not part of the promise. */
-.hp-tools__note {
-    max-width: 62ch;
-    margin: -8px 0 24px;
-    color: var(--ix-text-2);
-    font-size: var(--dot-text-body-sm-size);
-    line-height: 1.55;
-}
 
 /* What opens when you join: the invitation beside a register of five things, each on its own ruled row. */
 .hp-join {
@@ -12728,24 +12434,9 @@ body[data-area="home"] .ix-btn--primary:hover,
 }
 
 /* R-67: the pillar tags are sentences now, so each sits on a solid strip at the foot of its photograph and reads whatever the picture. */
-.hp-pillar__plate { padding-bottom: 0; }
-.hp-pillar__tag,
-.hp-pillar--manage .hp-pillar__tag {
-    margin: 0 -20px;
-    padding: 10px 20px 12px;
-    background: rgb(8 12 14 / 0.86);
-    color: #fff;
-    font-weight: 600;
-    line-height: 1.35;
-}
+
 .hp-steps--week .hp-steps__n { justify-self: start; width: max-content; }
 /* R-67 on a phone: the word sits at the top of the photograph and the tag strip runs across its foot, so neither has to break. */
-@media (max-width: 900px) {
-    .hp-pillar__plate { flex-direction: column; align-items: stretch; justify-content: space-between; gap: 0; padding-top: 20px; }
-    .hp-pillar__word { overflow-wrap: normal; }
-    .hp-pillar__tag,
-    .hp-pillar--manage .hp-pillar__tag { margin: 0 -20px; }
-}
 
 /* ===== R-69: InfoDot's own way in is a split page. A photograph taken in South Africa with InfoDot's message over its foot on one half,
    the form flat on the concrete on the other. On a phone the photograph is a short band with the message, the form comes next and the
@@ -13038,4 +12729,348 @@ body[data-area="home"] .ix-btn--primary:hover,
 
 @media print {
     .ix-cookies { display: none; }
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------------------
+   R-73: the support and the possibility.
+   The support: the heading holds its place beside five capabilities, each marked with a top rule in its area colour (the Yard's way
+   of marking a list item; never a side stripe). The possibility: the journey's stages as tabs once the script runs, stacked without
+   it; each platform a disclosure row so the stage reads as a short list, not a directory. */
+.hp-support {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 96px 24px 88px;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 24px 64px;
+    align-items: start;
+}
+
+.hp-support__head { position: sticky; top: 96px; }
+
+.hp-support__head h2 {
+    margin: 0 0 20px;
+    font-weight: 700;
+    font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+.hp-support__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 40px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hp-support__item {
+    padding: 20px 0 24px;
+    border-top: 4px solid var(--tone, var(--ix-text));
+}
+
+.hp-support__item h3 {
+    margin: 0 0 8px;
+    font-weight: 600;
+    font-size: var(--dot-text-h3-size);
+    line-height: 1.3;
+}
+
+.hp-support__item p {
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.6;
+}
+
+.hp-support__close {
+    grid-column: 2;
+    max-width: 58ch;
+    margin: 16px 0 0;
+    color: var(--ix-text);
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.55;
+}
+
+.hp-journey {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 88px 24px 96px;
+    border-top: 1px solid var(--ix-rule);
+}
+
+.hp-journey__head { max-width: 900px; }
+
+.hp-journey__head h2 {
+    margin: 0 0 16px;
+    font-weight: 700;
+    font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+.hp-journey__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 32px 0 0;
+    padding: 4px;
+    width: max-content;
+    max-width: 100%;
+    border-radius: var(--ix-radius);
+    background: var(--ix-sunken);
+}
+
+.hp-journey__tabs[hidden] { display: none; }
+
+.hp-journey__tab {
+    min-height: 44px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: var(--ix-radius);
+    background: transparent;
+    color: var(--ix-text-2);
+    font: 600 var(--dot-text-body-lg-size)/1 var(--ix-font);
+    cursor: pointer;
+    transition: background-color var(--ix-dur-fast) var(--ix-ease), color var(--ix-dur-fast) var(--ix-ease);
+}
+
+.hp-journey__tab:hover { color: var(--ix-text); }
+
+.hp-journey__tab[aria-selected="true"] {
+    background: var(--ix-panel);
+    color: var(--ix-text);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+}
+
+.hp-journey__tab:focus-visible { outline: 3px solid var(--ix-focus); outline-offset: 2px; }
+
+.hp-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 24px 64px;
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 4px solid var(--ix-text);
+}
+
+.hp-stage[hidden] { display: none; }
+.hp-stage:focus-visible { outline: 3px solid var(--ix-focus); outline-offset: 6px; }
+
+/* Once the stages are tabs, the tab names the stage, so the panel's own title is kept for screen readers only. */
+.is-tabbed .hp-stage { margin-top: 24px; }
+.is-tabbed .hp-stage__title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.hp-stage__title {
+    margin: 0 0 8px;
+    font-weight: 700;
+    font-size: var(--dot-text-h2-size);
+    line-height: 1.15;
+}
+
+.hp-stage__line {
+    margin: 0 0 24px;
+    color: var(--ix-text);
+    font-weight: 600;
+    font-size: var(--dot-text-h3-size);
+    line-height: 1.35;
+    text-wrap: balance;
+}
+
+.hp-stage__own {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hp-stage__own a {
+    display: block;
+    padding: 14px 0 16px;
+    border-top: 1px solid var(--ix-rule);
+    color: var(--ix-text);
+    text-decoration: none;
+}
+
+.hp-stage__own strong {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+}
+
+.hp-stage__own span {
+    display: block;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.55;
+}
+
+.hp-stage__own a:hover strong { text-decoration: underline; text-underline-offset: 4px; }
+
+.hp-stage__label {
+    margin: 0 0 8px;
+    color: var(--ix-text-3);
+    font-weight: 600;
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.hp-stage__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--ix-rule);
+}
+
+.hp-tool { border-top: 1px solid var(--ix-rule); }
+
+.hp-tool summary {
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr) minmax(0, 1.1fr) 20px;
+    gap: 16px;
+    align-items: center;
+    min-height: 44px;
+    padding: 12px 0;
+    cursor: pointer;
+    list-style: none;
+}
+
+.hp-tool summary::-webkit-details-marker { display: none; }
+
+.hp-tool summary::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    justify-self: center;
+    border-right: 2px solid var(--ix-text-2);
+    border-bottom: 2px solid var(--ix-text-2);
+    transform: rotate(45deg) translateY(-3px);
+    transition: transform var(--ix-dur-fast) var(--ix-ease);
+}
+
+.hp-tool[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+.hp-tool summary:focus-visible { outline: 3px solid var(--ix-focus); outline-offset: 2px; }
+
+.hp-tool summary img { width: 60px; height: 40px; object-fit: contain; }
+
+.hp-tool__name {
+    color: var(--ix-text);
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.25;
+}
+
+.hp-tool__role {
+    display: block;
+    color: var(--ix-text-2);
+    font-weight: 400;
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.hp-tool__value {
+    color: var(--ix-text);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.45;
+}
+
+.hp-tool summary:hover .hp-tool__name { text-decoration: underline; text-underline-offset: 4px; }
+
+.hp-tool__body {
+    display: grid;
+    gap: 12px;
+    margin: 0 0 12px 76px;
+}
+
+.hp-tool__body dt {
+    margin: 0 0 2px;
+    color: var(--ix-text-3);
+    font-weight: 600;
+    font-size: var(--dot-text-body-sm-size);
+}
+
+.hp-tool__body dd {
+    margin: 0;
+    max-width: 64ch;
+    color: var(--ix-text);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.6;
+}
+
+.hp-tool__note dd { color: var(--ix-text-2); }
+
+.hp-tool .hp-textlink {
+    display: inline-block;
+    margin: 0 0 18px 76px;
+}
+
+.hp-journey__more {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 32px;
+    margin: 32px 0 0;
+}
+
+.hp-journey__more p {
+    max-width: 62ch;
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.6;
+}
+
+.hp-support__photo {
+    margin: 32px 0 0;
+}
+
+.hp-support__photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--ix-radius);
+}
+
+.hp-journey__week { margin-top: 72px; }
+
+.hp-journey__week h3 {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--dot-text-h2-size);
+    line-height: 1.2;
+}
+
+.hp-steps h4 {
+    margin: 0 0 6px;
+    font-weight: 600;
+    font-size: var(--dot-text-h3-size);
+    line-height: 1.25;
+}
+
+@media (min-width: 1100px) {
+    .hp-journey .hp-steps--week { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 900px) {
+    .hp-support,
+    .hp-stage { grid-template-columns: minmax(0, 1fr); }
+    .hp-support__head { position: static; }
+    .hp-support__close { grid-column: auto; }
+}
+
+@media (max-width: 640px) {
+    .hp-support { padding: 64px 16px 56px; }
+    .hp-support__list { grid-template-columns: minmax(0, 1fr); }
+    .hp-journey { padding: 64px 16px 64px; }
+    .hp-journey__tabs { width: 100%; }
+    .hp-journey__tab { flex: 1 1 auto; padding: 0 12px; }
+    .hp-tool summary { grid-template-columns: 60px minmax(0, 1fr) 20px; }
+    .hp-tool summary::after { grid-column: 3; grid-row: 1; }
+    .hp-tool__value { grid-column: 2 / 3; grid-row: 2; }
+    .hp-tool__body,
+    .hp-tool .hp-textlink { margin-left: 0; }
 }

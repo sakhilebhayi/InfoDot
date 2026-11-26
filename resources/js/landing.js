@@ -109,6 +109,41 @@ if (hd) {
     schedule();
 }
 
+// R-73: the journey's stages become tabs (WAI-ARIA tabs: arrows, Home and End move between them, only the chosen tab is in the Tab
+// order). Without this script every stage is simply shown in turn, so nothing depends on it. It runs with or without motion: it is
+// navigation, not decoration.
+const tablist = document.querySelector('[data-journey-tabs]');
+if (tablist) {
+    const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+    const panels = tabs.map((tab) => document.getElementById(tab.getAttribute('aria-controls')));
+    const select = (index, focus) => {
+        tabs.forEach((tab, i) => {
+            const on = i === index;
+            tab.setAttribute('aria-selected', on ? 'true' : 'false');
+            tab.tabIndex = on ? 0 : -1;
+            if (panels[i]) {
+                panels[i].hidden = !on;
+                panels[i].setAttribute('aria-labelledby', tab.id);
+                panels[i].tabIndex = 0;
+            }
+        });
+        if (focus) tabs[index].focus();
+    };
+    tablist.hidden = false;
+    document.querySelector('.hp-journey')?.classList.add('is-tabbed');
+    select(0, false);
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => select(index, false));
+        tab.addEventListener('keydown', (event) => {
+            const last = tabs.length - 1;
+            const next = { ArrowRight: index === last ? 0 : index + 1, ArrowLeft: index === 0 ? last : index - 1, Home: 0, End: last }[event.key];
+            if (next === undefined) return;
+            event.preventDefault();
+            select(next, true);
+        });
+    });
+}
+
 // The layout's own timer shows the page if this file is late. If it has already fired, the visitor is looking at the finished
 // page: hiding it again to animate it in would be a flicker, so the motion is skipped altogether.
 const shownAlready = root.classList.contains('motion-failsafe');
@@ -164,27 +199,6 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
                 stages.forEach((stage, index) => stage.classList.toggle('is-passed', index === 0 || self.progress >= index / Math.max(1, stages.length - 1) * 0.92));
             },
         });
-    });
-
-    // Knowledge, Tools, Connections, Progress: the coloured plate wipes in from the left, then the points under it appear one line at a time.
-    gsap.utils.toArray('[data-pillar]').forEach((pillar) => {
-        const plate = pillar.querySelector('.hp-pillar__plate');
-        const lines = pillar.querySelectorAll('.hp-pillar__list li');
-        if (plate) {
-            arrive(ScrollTrigger, pillar, plate, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath' });
-        }
-        if (lines.length) {
-            arrive(ScrollTrigger, pillar, lines, { clipPath: 'inset(0 0 100% 0)', y: 10 },
-                { clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.5, stagger: Math.min(0.06, 0.3 / lines.length), ease: 'power3.out', clearProps: 'clipPath,transform' });
-        }
-    });
-
-    // The tools: each group's logos rise in one after another as the group arrives (no blur: a name must be readable the moment it shows).
-    gsap.utils.toArray('[data-group]').forEach((group) => {
-        const logos = group.querySelectorAll('[data-logo]');
-        if (!logos.length) return;
-        arrive(ScrollTrigger, group, logos, { y: 10, autoAlpha: 0 },
-            { y: 0, autoAlpha: 1, duration: 0.45, stagger: Math.min(0.04, 0.3 / logos.length), ease: 'power3.out', clearProps: 'transform' });
     });
 
     // A question becomes knowledge: the line runs through four stations, and the stamp lands on the third.
