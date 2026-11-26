@@ -269,4 +269,40 @@ class EnquiryInboxTest extends TestCase
         Mail::assertQueuedCount(1);
         $this->assertSame(2, UserNotice::where('user_id', $this->customer->id)->count(), 'the bell still shows each reply');
     }
+
+    public function test_the_inbox_lists_preview_the_latest_public_message_and_never_an_internal_note(): void
+    {
+        $e = $this->enquiry();
+        $this->travel(5)->minutes();
+        $this->actingAs($this->admin)->post($this->inbox('/'.$e->uuid.'/reply'), ['body' => 'We can be there on Tuesday.'])->assertRedirect();
+        $this->actingAs($this->admin)->post($this->inbox('/'.$e->uuid.'/reply'), ['body' => 'Internal: check rig availability first.', 'internal' => 1])->assertRedirect();
+
+        // The customer's list shows the business's reply as the preview; the note never appears.
+        $this->actingAs($this->customer)->get('/inbox')->assertOk()
+            ->assertSee('We can be there on Tuesday.')
+            ->assertSee('New reply')
+            ->assertDontSee('Internal: check rig availability first.');
+
+        // The business's list shows the same line, marked as its own reply, and still not the note.
+        $this->actingAs($this->owner)->get($this->inbox())->assertOk()
+            ->assertSeeInOrder(['Borehole quote', 'Replied:', 'We can be there on Tuesday.'])
+            ->assertDontSee('Internal: check rig availability first.');
+    }
+
+    public function test_reading_a_conversation_clears_its_unread_mark_in_both_lists(): void
+    {
+        $e = $this->enquiry();
+        $this->travel(5)->minutes();
+        $this->actingAs($this->admin)->post($this->inbox('/'.$e->uuid.'/reply'), ['body' => 'We can be there on Tuesday.'])->assertRedirect();
+
+        $this->actingAs($this->customer)->get('/inbox')->assertOk()->assertSee('New reply');
+        $this->travel(1)->minutes();
+        $this->actingAs($this->customer)->get('/inbox/'.$e->uuid)->assertOk();
+        $this->actingAs($this->customer)->get('/inbox')->assertOk()->assertDontSee('New reply');
+
+        $this->actingAs($this->owner)->get($this->inbox())->assertOk()->assertSee('Unread');
+        $this->travel(1)->minutes();
+        $this->actingAs($this->owner)->get($this->inbox('/'.$e->uuid))->assertOk();
+        $this->actingAs($this->owner)->get($this->inbox())->assertOk()->assertDontSee('Unread');
+    }
 }

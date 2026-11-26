@@ -1,32 +1,45 @@
 <x-app-layout :title="$enquiry->subject">
-    <div class="ix-pagehead">
-        <div>
+    @php
+        $firstReply = $enquiry->first_response_at ? $enquiry->created_at->diffInSeconds($enquiry->first_response_at) : null;
+    @endphp
+    <header class="ix-convhead">
+        <a href="{{ route('business.inbox', $team) }}" class="ix-convhead__back"><span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>Back to the inbox</a>
+        <div class="ix-convhead__title">
             <h1 class="ix-h1">{{ $enquiry->subject }}</h1>
-            <p class="ix-lede">From {{ $enquiry->customer?->name ?? 'a former InfoDot user' }}@if ($enquiry->customerTeam), for @if ($enquiry->customerTeam->isVisibleTo(auth()->user()))<a href="{{ route('business.show', $enquiry->customerTeam) }}">{{ $enquiry->customerTeam->name }}</a>@else{{ $enquiry->customerTeam->name }}@endif @endif. {{ $enquiry->categoryLabel() }}, received {{ $enquiry->created_at->format('j M Y, H:i') }}{{ $enquiry->first_response_at ? '; first answered '.$enquiry->created_at->diffForHumans($enquiry->first_response_at, ['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE]).' later' : '' }}. <x-demo-mark :of="$enquiry" /></p>
+            <span @class(['ix-chip', 'ix-chip--open' => $enquiry->status === 'new', 'ix-chip--done' => in_array($enquiry->status, ['resolved', 'closed'], true)])>{{ \App\Models\Enquiry::STATUSES[$enquiry->status] ?? $enquiry->status }}</span>
+            <x-demo-mark :of="$enquiry" />
         </div>
-        <a href="{{ route('business.inbox', $team) }}" class="ix-btn ix-btn--ghost">Back to the inbox</a>
-    </div>
+        <dl class="ix-convhead__meta">
+            <div><dt>From</dt><dd>{{ $enquiry->customer?->name ?? 'A former InfoDot user' }}@if ($enquiry->customerTeam), for @if ($enquiry->customerTeam->isVisibleTo(auth()->user()))<a href="{{ route('business.show', $enquiry->customerTeam) }}">{{ $enquiry->customerTeam->name }}</a>@else{{ $enquiry->customerTeam->name }}@endif @endif</dd></div>
+            <div><dt>About</dt><dd>{{ $enquiry->categoryLabel() }}</dd></div>
+            <div><dt>Received</dt><dd>{{ $enquiry->created_at->format('j M Y, H:i') }}</dd></div>
+            <div><dt>First reply</dt><dd>{{ match (true) { $firstReply === null => 'Not yet', $firstReply < 60 => 'Within a minute', default => $enquiry->created_at->diffForHumans($enquiry->first_response_at, ['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE]).' after it arrived' } }}</dd></div>
+        </dl>
+    </header>
 
     @if (session('status'))<p class="ix-alert" role="status">{{ session('status') }}</p>@endif
     @if ($errors->any())<div class="ix-error" role="alert"><p>{{ $errors->first() }}</p></div>@endif
 
-    <div class="ix-convo">
-        <div class="ix-convo__main">
+    <div class="ix-conv">
+        <div class="ix-conv__main">
             @include('inbox._thread', ['side' => 'business'])
 
-            <form method="post" action="{{ route('business.inbox.reply', [$team, $enquiry]) }}" enctype="multipart/form-data" class="ix-form ix-compose ix-vgap">
+            <form method="post" action="{{ route('business.inbox.reply', [$team, $enquiry]) }}" enctype="multipart/form-data" class="ix-composer">
                 @csrf
-                <div class="ix-form__row"><label class="ix-label" for="body">Write</label><textarea class="ix-textarea" id="body" name="body" rows="5" maxlength="{{ config('enquiries.max_length') }}" required>{{ old('body') }}</textarea></div>
-                <div class="ix-form__row"><label class="ix-label" for="files">Files <span class="ix-hint">optional, up to {{ config('enquiries.max_files') }}</span></label><input class="ix-input" type="file" id="files" name="files[]" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4"></div>
-                <div class="ix-compose__send">
-                    <button type="submit" class="ix-btn ix-btn--primary" @if(! $enquiry->customer) disabled @endif><span class="material-symbols-rounded" aria-hidden="true">send</span>Reply to {{ $enquiry->customer?->name ?? 'the customer' }}</button>
-                    <button type="submit" name="internal" value="1" class="ix-btn"><span class="material-symbols-rounded" aria-hidden="true">sticky_note_2</span>Add internal note</button>
+                <label class="ix-composer__label" for="body">Write</label>
+                <textarea class="ix-textarea ix-composer__text" id="body" name="body" rows="5" maxlength="{{ config('enquiries.max_length') }}" required placeholder="Reply to {{ $enquiry->customer?->name ?? 'the customer' }}, or add a note for the team">{{ old('body') }}</textarea>
+                <div class="ix-composer__bar">
+                    <label class="ix-composer__files"><span class="ix-sr">Files, optional, up to {{ config('enquiries.max_files') }}</span><input type="file" id="files" name="files[]" multiple accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4"></label>
+                    <div class="ix-composer__send">
+                        <button type="submit" class="ix-btn ix-btn--primary" @if(! $enquiry->customer) disabled @endif><span class="material-symbols-rounded" aria-hidden="true">send</span>Reply to {{ $enquiry->customer?->name ?? 'the customer' }}</button>
+                        <button type="submit" name="internal" value="1" class="ix-btn"><span class="material-symbols-rounded" aria-hidden="true">sticky_note_2</span>Add internal note</button>
+                    </div>
                 </div>
-                <p class="ix-hint">Replies go out as {{ $team->name }}; the customer does not see which of you wrote them. Internal notes stay inside the business.</p>
             </form>
+            <p class="ix-composer__hint">Replies go out as {{ $team->name }}; the customer does not see which of you wrote them. Internal notes stay inside the business. Files are optional: up to {{ config('enquiries.max_files') }}.</p>
         </div>
 
-        <aside class="ix-convo__rail" aria-label="Handling">
+        <aside class="ix-conv__rail" aria-label="Handling">
             @include('inbox._appointment')
             @if ($enquiry->isAppointmentRequest() && $enquiry->appointment_state === \App\Models\Enquiry::APPOINTMENT_REQUESTED && $enquiry->customer)
                 <section class="ix-biz__card" aria-labelledby="appt-answer-h">
