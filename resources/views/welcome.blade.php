@@ -125,7 +125,7 @@
                         <p class="hp-stage__label">Where to begin</p>
                         <article class="hp-lead" aria-labelledby="lead-{{ $stage['key'] }}">
                             <div class="hp-lead__head">
-                                <img src="{{ $lead['logo'] }}" alt="" width="60" height="40" loading="lazy" decoding="async">
+                                <picture class="hp-lead__logo"><source media="(prefers-color-scheme: dark)" srcset="{{ $lead['logo_on_dark'] }}"><img src="{{ $lead['logo'] }}" alt="" width="98" height="40" loading="lazy" decoding="async"></picture>
                                 <span class="hp-tool__name" id="lead-{{ $stage['key'] }}">{{ $lead['name'] }}<span class="hp-tool__role">{{ $lead['role'] }}</span></span>
                             </div>
                             <p class="hp-lead__value">{{ $lead['outcome'] }}</p>

@@ -4,7 +4,7 @@
     "name": "motion"
   },
   "resources/css/app.css": {
-    "file": "assets/app-D9bAXyKD.css",
+    "file": "assets/app-C3nlPoFf.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -72,10 +72,6 @@
     "file": "assets/hr-BO-2lgM3.png",
     "src": "resources/img/apps/hr.png"
   },
-  "resources/img/apps/infodot.png": {
-    "file": "assets/infodot-Bgj5iiFj.png",
-    "src": "resources/img/apps/infodot.png"
-  },
   "resources/img/apps/memory.png": {
     "file": "assets/memory-DyWZLu4o.png",
     "src": "resources/img/apps/memory.png"
@@ -127,6 +123,10 @@
   "resources/img/auth/auth-start-here.jpg": {
     "file": "assets/auth-start-here-D4zObs-z.jpg",
     "src": "resources/img/auth/auth-start-here.jpg"
+  },
+  "resources/img/brand/logo_dark.png": {
+    "file": "assets/logo_dark-CXSd8Ol_.png",
+    "src": "resources/img/brand/logo_dark.png"
   },
   "resources/img/brand/logo_white.png": {
     "file": "assets/logo_white-C3-KiFFF.png",
@@ -195,10 +195,6 @@
   "resources/img/landing/platforms/hr.png": {
     "file": "assets/hr-CUdojrnF.png",
     "src": "resources/img/landing/platforms/hr.png"
-  },
-  "resources/img/landing/platforms/infodot.png": {
-    "file": "assets/infodot-abSzFYkd.png",
-    "src": "resources/img/landing/platforms/infodot.png"
   },
   "resources/img/landing/platforms/memory.png": {
     "file": "assets/memory-Cp_QPlPx.png",

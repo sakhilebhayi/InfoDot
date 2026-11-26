@@ -124,7 +124,9 @@ final class BusinessTools
                     'why' => (string) $l['why'],
                     'url' => route((string) $l['route'], (array) ($l['route_params'] ?? [])),
                     'cta' => (string) $l['cta'],
-                    'logo' => Vite::asset('resources/img/landing/platforms/infodot.png'),
+                    // Owner rule 2026-11-26: the yellow-and-white logo on dark grounds, its dark-lettered twin on light grounds.
+                    'logo' => Vite::asset('resources/img/brand/logo_dark.png'),
+                    'logo_on_dark' => Vite::asset('resources/img/brand/logo_white.png'),
                 ];
             }
 
