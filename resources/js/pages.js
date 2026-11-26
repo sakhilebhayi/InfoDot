@@ -3,7 +3,7 @@
 // clip-path. Nothing here runs for a visitor who asked for reduced motion, and the layout's own timer shows the page if this file is late.
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { reducedMotion, reveal } from './motion.js';
+import { arrive, arriveEach, reducedMotion } from './motion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -37,18 +37,13 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     });
 
     // Whatever comes into view rises into place, grouped so a section's parts arrive one after another.
-    ScrollTrigger.batch('[data-pg-reveal], .pg-prose > h2, .pg-prose > h2 + *', {
-        start: 'top 98%',
-        once: true,
-        onEnter: (els) => reveal(els),
-    });
+    // R-68: the old reveal cleared its own "visible" and the stylesheet hid the part again a moment later. Now only what is still below the
+    // screen is hidden, each part arrives once and stays (motion.js).
+    arriveEach(ScrollTrigger, '[data-pg-reveal], .pg-prose > h2, .pg-prose > h2 + *', { rise: 24, duration: 0.6 });
 
     // A stencilled code plate is stamped as its section arrives.
     gsap.utils.toArray('[data-pg-stamp]').forEach((plate) => {
-        gsap.fromTo(plate, { clipPath: 'inset(0 100% 0 0)' }, {
-            clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath',
-            scrollTrigger: { trigger: plate, start: 'top 98%', once: true },
-        });
+        arrive(ScrollTrigger, plate, plate, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath' });
     });
 
     window.addEventListener('load', () => ScrollTrigger.refresh());

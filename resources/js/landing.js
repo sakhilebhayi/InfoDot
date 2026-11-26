@@ -2,6 +2,7 @@
 // slow parallax, all with transform and opacity, and none of it when the visitor has asked for reduced motion.
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { arrive, arriveEach } from './motion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -137,11 +138,8 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     // Below the hero: whatever comes into view rises into place, grouped so a section's parts arrive one after another.
     // Content starts arriving the moment its top edge is on screen and is fully there within about half a second, so a normal scroll
     // never lands on blank space. A group that arrives together shares at most 0.3s of stagger, however many parts it has.
-    ScrollTrigger.batch('[data-reveal]', {
-        start: 'top 98%',
-        once: true,
-        onEnter: (els) => gsap.fromTo(els, { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, stagger: Math.min(0.06, 0.3 / els.length), ease: 'power3.out', overwrite: true }),
-    });
+    // R-68: only what is still below the screen is hidden, each part arrives once and stays (motion.js).
+    arriveEach(ScrollTrigger, '[data-reveal]');
 
     // Photographs drift a little against the scroll, so the page has depth without anything looping.
     gsap.utils.toArray('[data-parallax]').forEach((frame) => {
@@ -173,16 +171,11 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         const plate = pillar.querySelector('.hp-pillar__plate');
         const lines = pillar.querySelectorAll('.hp-pillar__list li');
         if (plate) {
-            gsap.fromTo(plate, { clipPath: 'inset(0 100% 0 0)' }, {
-                clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath',
-                scrollTrigger: { trigger: pillar, start: 'top 98%', once: true },
-            });
+            arrive(ScrollTrigger, pillar, plate, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath' });
         }
         if (lines.length) {
-            gsap.fromTo(lines, { clipPath: 'inset(0 0 100% 0)', y: 10 }, {
-                clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.5, stagger: Math.min(0.06, 0.3 / lines.length), ease: 'power3.out', clearProps: 'clipPath,transform',
-                scrollTrigger: { trigger: pillar, start: 'top 98%', once: true },
-            });
+            arrive(ScrollTrigger, pillar, lines, { clipPath: 'inset(0 0 100% 0)', y: 10 },
+                { clipPath: 'inset(0 0 0% 0)', y: 0, duration: 0.5, stagger: Math.min(0.06, 0.3 / lines.length), ease: 'power3.out', clearProps: 'clipPath,transform' });
         }
     });
 
@@ -190,10 +183,8 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     gsap.utils.toArray('[data-group]').forEach((group) => {
         const logos = group.querySelectorAll('[data-logo]');
         if (!logos.length) return;
-        gsap.fromTo(logos, { y: 10, autoAlpha: 0 }, {
-            y: 0, autoAlpha: 1, duration: 0.45, stagger: Math.min(0.04, 0.3 / logos.length), ease: 'power3.out', clearProps: 'opacity,visibility,transform',
-            scrollTrigger: { trigger: group, start: 'top 98%', once: true },
-        });
+        arrive(ScrollTrigger, group, logos, { y: 10, autoAlpha: 0 },
+            { y: 0, autoAlpha: 1, duration: 0.45, stagger: Math.min(0.04, 0.3 / logos.length), ease: 'power3.out', clearProps: 'transform' });
     });
 
     // A question becomes knowledge: the line runs through four stations, and the stamp lands on the third.
@@ -216,10 +207,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     // The closing line is written across the page once, and the photographs breathe in as they pass.
     const ctaTitle = document.querySelector('[data-cta-title]');
     if (ctaTitle) {
-        gsap.fromTo(ctaTitle, { clipPath: 'inset(0 100% 0 0)' }, {
-            clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath',
-            scrollTrigger: { trigger: '.hp-cta', start: 'top 98%', once: true },
-        });
+        arrive(ScrollTrigger, document.querySelector('.hp-cta'), ctaTitle, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath' });
     }
     gsap.utils.toArray('.lp-photo__frame img, .lp-band__frame img').forEach((img) => {
         gsap.fromTo(img, { scale: 1.1 }, {

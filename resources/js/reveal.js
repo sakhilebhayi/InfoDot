@@ -17,6 +17,12 @@ function start() {
     const observer = new IntersectionObserver((entries) => {
         window.clearTimeout(failsafe);
 
+        // R-68: anything already above the screen (a restored scroll position, an anchor link) is shown as it is, not left waiting.
+        entries.filter((e) => !e.isIntersecting && e.boundingClientRect.bottom <= 0).forEach((entry) => {
+            entry.target.classList.add('is-in');
+            observer.unobserve(entry.target);
+        });
+
         entries.filter((e) => e.isIntersecting).forEach((entry, index) => {
             entry.target.style.setProperty('--i', String(Math.min(index, GROUP_LIMIT)));
             entry.target.classList.add('is-in');

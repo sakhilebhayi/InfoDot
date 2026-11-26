@@ -7854,8 +7854,7 @@ body {
 
 /* Motion: everything is visible by default. When motion is allowed (the has-motion flag), script-driven items start hidden and are
    revealed by it; if the script does not finish, the failsafe class brings everything back. Only transform and opacity move. */
-.has-motion [data-hero],
-.has-motion [data-reveal] {
+.has-motion [data-hero] {
     opacity: 0;
 }
 
@@ -11973,11 +11972,10 @@ button.ix-avatar,
 }
 
 /* Motion: parts start hidden only while the motion script is running, and the layout's timer shows them if it is late. */
-.has-motion [data-pg-in],
-.has-motion [data-pg-reveal] { opacity: 0; }
+.has-motion [data-pg-in] { opacity: 0; }
 
 .has-motion.motion-failsafe [data-pg-in],
-.has-motion.motion-failsafe [data-pg-reveal] { opacity: 1; }
+.has-motion.motion-failsafe [data-pg-reveal] { opacity: 1 !important; visibility: visible !important; transform: none !important; }
 
 .has-motion.motion-failsafe [data-pg-plate],
 .has-motion.motion-failsafe [data-pg-photo],
@@ -12035,11 +12033,10 @@ button.ix-avatar,
     .pg-prose > .pg-plate { justify-self: start; }
 }
 
-.has-motion .pg-prose > h2,
-.has-motion .pg-prose > h2 + * { opacity: 0; }
+/* R-68: headings and paragraphs on the reading pages are never hidden by the stylesheet; pages.js hides only what is still below the screen. */
 
 .has-motion.motion-failsafe .pg-prose > h2,
-.has-motion.motion-failsafe .pg-prose > h2 + * { opacity: 1; }
+.has-motion.motion-failsafe .pg-prose > h2 + * { opacity: 1 !important; visibility: visible !important; transform: none !important; }
 
 @media (min-width: 1024px) {
     .pg-prose { grid-template-columns: 280px minmax(0, 1fr); }
