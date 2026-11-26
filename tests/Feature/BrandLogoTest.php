@@ -44,11 +44,15 @@ class BrandLogoTest extends TestCase
         $this->assertSame([], $hits);
     }
 
-    public function test_the_homepage_shows_infodot_with_the_yellow_and_white_logo_on_a_dark_plate(): void
+    public function test_the_homepage_shows_the_dark_lettered_logo_on_light_and_the_white_one_on_dark(): void
     {
-        $this->get('/')->assertOk()->assertSee('<span class="hp-lead__plate"><img', false);
+        $this->get('/')->assertOk()
+            ->assertSee('<picture class="hp-lead__logo"><source media="(prefers-color-scheme: dark)"', false);
 
-        // Vite is faked in tests (empty src), so the source is checked directly: the Start card's logo is the yellow-and-white one.
-        $this->assertStringContainsString("'logo' => Vite::asset('resources/img/brand/logo_white.png')", (string) file_get_contents(app_path('Support/BusinessTools.php')));
+        // Vite is faked in tests (empty src), so the source is checked directly.
+        $source = (string) file_get_contents(app_path('Support/BusinessTools.php'));
+        $this->assertStringContainsString("'logo' => Vite::asset('resources/img/brand/logo_dark.png')", $source);
+        $this->assertStringContainsString("'logo_on_dark' => Vite::asset('resources/img/brand/logo_white.png')", $source);
+        $this->assertFileExists(resource_path('img/brand/logo_dark.png'));
     }
 }

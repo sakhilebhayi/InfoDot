@@ -4,7 +4,7 @@
     "name": "motion"
   },
   "resources/css/app.css": {
-    "file": "assets/app-pGmNsom6.css",
+    "file": "assets/app-C3nlPoFf.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -123,6 +123,10 @@
   "resources/img/auth/auth-start-here.jpg": {
     "file": "assets/auth-start-here-D4zObs-z.jpg",
     "src": "resources/img/auth/auth-start-here.jpg"
+  },
+  "resources/img/brand/logo_dark.png": {
+    "file": "assets/logo_dark-DyybQhGy.png",
+    "src": "resources/img/brand/logo_dark.png"
   },
   "resources/img/brand/logo_white.png": {
     "file": "assets/logo_white-C3-KiFFF.png",
