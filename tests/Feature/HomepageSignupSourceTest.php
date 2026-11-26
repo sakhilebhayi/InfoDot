@@ -40,6 +40,9 @@ class HomepageSignupSourceTest extends TestCase
 
         $this->assertStringContainsString('href="'.route('register', ['from' => 'hero']).'"', $html);
         $this->assertStringContainsString('href="'.route('register', ['from' => 'close']).'"', $html);
+        // R-74: InfoDot's card on the Start tab has its own button and its own source, so the join call is still made only twice.
+        $this->assertStringContainsString('href="'.route('register', ['from' => 'start']).'"', $html);
+        $this->assertStringContainsString('Start with InfoDot', $html);
         $this->assertSame(2, substr_count(strip_tags($html), 'Join InfoDot for free'), 'the join call is made twice: at the top and at the close');
     }
 

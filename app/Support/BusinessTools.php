@@ -122,7 +122,7 @@ final class BusinessTools
                     'outcome' => (string) $l['outcome'],
                     'problem' => (string) $l['problem'],
                     'why' => (string) $l['why'],
-                    'url' => route((string) $l['route']),
+                    'url' => route((string) $l['route'], (array) ($l['route_params'] ?? [])),
                     'cta' => (string) $l['cta'],
                     'logo' => Vite::asset('resources/img/landing/platforms/infodot.png'),
                 ];
