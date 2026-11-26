@@ -1,6 +1,6 @@
 <x-guest-layout title="Create your account">
-    <x-jet-authentication-card>
-        <x-auth.heading title="Create your account" kind="register" :brand="$platformBranding" lede="Create your InfoDot account to start and manage your business. It is free. We email you a link to confirm the address first, because other Dot platforms trust it." />
+    <x-jet-authentication-card :panel="$platformBranding ? null : 'register'">
+        <x-auth.heading title="Create your free InfoDot account" kind="register" :brand="$platformBranding" lede="One account for the knowledge, tools and businesses on InfoDot. It takes a minute." />
 
         <x-jet-validation-errors />
 
@@ -21,7 +21,8 @@
 
             <div class="ix-field">
                 <x-jet-label for="email" value="{{ __('Email') }}" />
-                <x-jet-input id="email" type="email" name="email" :value="old('email')" required autocomplete="username" />
+                <x-jet-input id="email" type="email" name="email" :value="old('email')" required autocomplete="username" aria-describedby="email-hint" />
+                <p class="ix-hint" id="email-hint">We send a link to confirm it, because every Dot platform you open trusts this address.</p>
             </div>
 
             <div class="ix-field">
