@@ -25,13 +25,19 @@ Rollback: on the host `cp -p ~/authorized_keys.before-backup-pull ~/.ssh/authori
 Rule of this file, as for the rest of the programme: a statement is **verified** (with the proof named), **estimated**
 or **planned**. Nothing here is a measured number unless the table says so.
 
+Status table, corrected 2026-11-26 (R-72, O-09): the earlier version of this table still said "never dispatched" and "no destination"
+after the work above was done.
+
 | Piece | File | Status |
 |---|---|---|
-| The tool that runs on the host (`dot-backup`) | `tools/backup-host.sh` | built; verified only against `tools/test-backup-host.sh` (fake host) |
-| Fake-host test | `tools/test-backup-host.sh`, CI job `backup tool (fake host)` | built |
-| Workflow to install, run, verify, restore-test and schedule | `.github/workflows/backups.yml` | built; **never dispatched** |
-| Off-host copy | `~/.dot-backup/offsite.sh` (optional hook) | hook implemented; **no destination chosen** |
-| Measured restore, RPO/RTO | table below | **pending** |
+| The tool that runs on the host (`dot-backup`) | `tools/backup-host.sh` | **installed on the host** (2026-10-27) and run there; also tested against `tools/test-backup-host.sh` (fake host) in CI |
+| Fake-host test | `tools/test-backup-host.sh`, CI job `backup tool (fake host)` | runs on every change |
+| Workflow to install, run, verify, restore-test and schedule | `.github/workflows/backups.yml` | **dispatched**: install, run and verify on 2026-10-27, and before every InfoDot deploy since |
+| Nightly schedule | cron line `40 2 * * *` (`# dot-backup`) | **on** since 2026-10-27 |
+| Backup at every release | `.github/workflows/deploy.yml` (R-72, O-03) | the deploy runs `dot-backup run infodot` and `verify infodot` before maintenance mode; no backup, no release |
+| Off-host copy | pull to the owner's Mac (`tools/pull-dot-backups.sh`, daily 04:15) | **done** (2026-10-27). A second, cloud destination through `~/.dot-backup/offsite.sh` is **not chosen** (owner: bucket) |
+| Passphrase kept off the host | the owner's password manager | **not evidenced**: the owner confirms it is there (owner item) |
+| Measured restore, RPO/RTO | table below | **pending**: needs the owner-timed manual swap and a scratch database (`runbooks/mysql-restore-drill.md`) |
 
 ## What is backed up, and what is not
 
@@ -117,7 +123,7 @@ no database, flagged `no_database`), `env`, and `uploads.tar` when there are upl
 
 ## Schedule and retention
 
-* **Cadence (planned, set by the `schedule` mode):** nightly at 02:40 host time, `flock -n`, output appended to
+* **Cadence (on since 2026-10-27, set by the `schedule` mode):** nightly at 02:40 host time, `flock -n`, output appended to
   `~/dot-backups/cron.log`. The line is added through the same safe block the deploy pipelines use for the shared
   crontab (one writer on `~/.dot-crontab.lock`, a read trusted only when non-empty or "no crontab", a timestamped backup
   `~/.dot-crontab.backup-*`, a read-back check, the previous crontab restored on any difference). Only the line marked

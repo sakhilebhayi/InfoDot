@@ -21,9 +21,11 @@ name: Deploy to Production
 #   1. CI gate (ci.yml): tests, Pint, frontend build + Vite manifest check.
 #   2. Builds the frontend on the runner (the host has no Node) and syncs it to
 #      public/build.incoming on the host.
-#   3. On the host: rollback copy, maintenance mode, code to origin/main,
+#   3. On the host: rollback copy, database backup (dot-backup run + verify),
+#      maintenance mode (must start), code to the commit CI tested (github.sha, on main),
 #      composer install, production invariants (APP_DEBUG forced false; APP_ENV
-#      forced to production; a warning, not a change, for an http APP_URL), swap in the
+#      forced to production; QUEUE_CONNECTION and CACHE_DRIVER database; LOG_LEVEL info
+#      unless set above debug; a warning, not a change, for an http APP_URL), swap in the
 #      new public/build, keep the docroot's build/ in step, migrations, caches,
 #      back up.
 #   4. Installs this app's cron lines through the account's shared crontab, or hands them to the
@@ -31,7 +33,7 @@ name: Deploy to Production
 #      `artisan schedule:list` shows a task (points:flush-outbox delivers contribution events to the
 #      Dot Points ledger), `queue:work` only when the code queues something.
 #   5. Smoke check from the runner, like a browser: / and /login answer 200,
-#      the built CSS answers 200, /up answers 200, and a harmless POST /up (a
+#      the built CSS answers 200, /up and /ready answer 200, and a harmless POST /up (a
 #      405) does not return a debug page.
 #
 # A failure after maintenance mode starts LEAVES the site down on purpose, with
@@ -162,6 +164,7 @@ jobs:
               DEPLOY_PATH="$APP_PATH" \
               MODE="${{ needs.confirm.outputs.mode }}" \
               MIGRATE="${{ needs.confirm.outputs.migrate }}" \
+              DEPLOY_SHA="${{ github.sha }}" \
               REPO_URL="$REPO_URL" \
               'bash -s' <<'DEPLOY'
           set -euo pipefail
@@ -180,6 +183,16 @@ jobs:
           chmod 600 "$BACKUP"
           ls -1t "$HOME"/dot-infodot-*.tgz | tail -n +4 | xargs -r rm -f
           echo "== Rollback copy: $BACKUP ($(du -h "$BACKUP" | cut -f1))  [restore: stop writes, tar xzf it over $DEPLOY_PATH]"
+
+          # ---- R-72 (O-03): the database is backed up by the release itself, before maintenance mode and before any migration, with
+          # the same encrypted tool the nightly backup uses (backups.yml installs ~/bin/dot-backup), and the archive is checked by
+          # decrypting it. No backup, no release: a failure here leaves the previous release serving and changes nothing.
+          if [ "$MODE" = "deploy" ]; then
+            [ -x "$HOME/bin/dot-backup" ] || { echo "::error::~/bin/dot-backup is not installed, so the release cannot back the database up first. Run backups.yml with mode=install, then deploy again."; exit 1; }
+            "$HOME/bin/dot-backup" run infodot
+            "$HOME/bin/dot-backup" verify infodot
+            echo "== Database backed up and verified before the release (dot-backup infodot)."
+          fi
 
           # A failure leaves the site exactly as it is -- DOWN if maintenance
           # mode had started -- and says which, with the way back.
@@ -220,9 +233,14 @@ jobs:
               git status --short | grep -v '^??' | head -40 || echo "   (none)"
             fi
             git fetch -q origin main
-            $PHP artisan down --retry=30 || true
-            git reset --hard origin/main
-            git checkout -q -B main origin/main
+            # R-72 (O-10): the release is the commit CI tested for this run (github.sha), not whatever main is by the time the host
+            # fetches; it must be on main.
+            git cat-file -e "$DEPLOY_SHA^{commit}" 2>/dev/null || { echo "::error::$DEPLOY_SHA is not in the fetched history."; exit 1; }
+            git merge-base --is-ancestor "$DEPLOY_SHA" origin/main || { echo "::error::$DEPLOY_SHA is not on main; deploy from main."; exit 1; }
+            # R-72 (O-04): maintenance mode must start before the code and the database change; if it cannot, nothing changes.
+            $PHP artisan down --retry=30 || { echo "::error::maintenance mode did not start, so nothing was changed."; exit 1; }
+            git reset --hard "$DEPLOY_SHA"
+            git checkout -q -B main "$DEPLOY_SHA"
           fi
           echo "== Code: $(git rev-parse --short HEAD)"
 
@@ -299,6 +317,14 @@ jobs:
             printf '\nCACHE_DRIVER=database\n' >> .env
           fi
           echo "== CACHE_DRIVER forced to database: $(grep '^CACHE_DRIVER=' .env | tail -1)"
+          # R-72 (O-12): the live log keeps information, warnings and errors; debug lines (the framework default when LOG_LEVEL is
+          # missing) fill the disk and can carry request detail.
+          if grep -q '^LOG_LEVEL=' .env; then
+            if grep -qE '^LOG_LEVEL=("?)debug("?)\s*$' .env; then sed -i 's/^LOG_LEVEL=.*/LOG_LEVEL=info/' .env; fi
+          else
+            printf '\nLOG_LEVEL=info\n' >> .env
+          fi
+          echo "== LOG_LEVEL: $(grep '^LOG_LEVEL=' .env | tail -1)"
           if grep -qE '^APP_URL=http://' .env; then echo "::warning::APP_URL is http://, not https://; set it to the https address."; fi
 
           # ---- frontend: swap the staged build in, keep the docroot copy in step
@@ -516,7 +542,7 @@ jobs:
           set -uo pipefail
           WORK="$(mktemp -d)"
           FAILED=0
-          for PAGE in "/" "/login" "/up"; do
+          for PAGE in "/" "/login" "/up" "/ready"; do
             CODE=$(curl -s --max-time 30 -o /dev/null -w '%{http_code}' "$SITE_URL$PAGE" || true)
             if [ "$CODE" = "200" ]; then echo "200 $SITE_URL$PAGE"; else echo "::error::$SITE_URL$PAGE answered ${CODE:-no response} (expected 200)"; FAILED=1; fi
           done
@@ -538,7 +564,9 @@ jobs:
             echo "No debug page on POST $SITE_URL/up ($(wc -c < "$WORK/probe.html" | tr -d ' ') bytes)"
           fi
           rm -rf "$WORK"
-          [ "$FAILED" -eq 0 ] || { echo "::error::Smoke check failed: the deploy is NOT healthy."; exit 1; }
+          # R-72 (O-04): the release stays live when the smoke check fails (an automatic rollback would guess). The run goes red with
+          # what to do: read server-logs.yml, then deploy a fix or restore the rollback copy and the database archive named above.
+          [ "$FAILED" -eq 0 ] || { echo "::error::Smoke check failed: the deploy is NOT healthy. The new release is live. Read server-logs.yml; to go back, restore the rollback copy and the database archive this run named (docs/programme/RUNBOOK.md)."; exit 1; }
           echo "== Smoke check passed."
 
       - name: Probe the application folder from outside

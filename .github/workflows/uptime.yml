@@ -41,4 +41,10 @@ jobs:
             if awk -v t="$secs" 'BEGIN{exit !(t+0 > 10)}'; then echo "::warning::$h /up took ${secs}s"; fi
             echo "| $h | $code | $secs | $env_code |" >> "$GITHUB_STEP_SUMMARY"
           done
+          # R-72 (O-02): /up only says the framework booted; InfoDot's /ready also asks the database, the cache, the storage disk and
+          # the scheduler's heartbeat, and answers "ok" or "degraded" without saying which (that goes to the log).
+          r="$(probe infodot.co.za /ready)"; code="${r%% *}"
+          if [ "$code" != 200 ]; then sleep 10; r="$(probe infodot.co.za /ready)"; code="${r%% *}"; fi
+          if [ "$code" != 200 ]; then fail=1; echo "::error::infodot.co.za /ready answered $code (twice): read server-logs.yml for which check failed"; fi
+          echo "| infodot.co.za/ready | $code | ${r##* } | |" >> "$GITHUB_STEP_SUMMARY"
           exit $fail
