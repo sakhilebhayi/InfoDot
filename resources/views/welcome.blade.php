@@ -31,7 +31,7 @@
     $libraryCount = $library->count() < 6 ? $library->count()
         : \App\Models\Solutions::withoutGlobalScopes()->whereNotNull('seed_key')->where('visibility', \App\Models\Solutions::VISIBILITY_PUBLIC)->whereNull('hidden_at')->count();
 @endphp
-<x-public-layout landing title="InfoDot" description="Write down how your business works and run it from one place. InfoDot gives you practical answers from other businesses and one free account for finance, people, projects, documents and forms.">
+<x-public-layout landing title="InfoDot" description="Most businesses are figuring it out as they go. InfoDot brings business knowledge, connected tools and other businesses into one free account, so you can start, manage and grow with more to go on.">
     {{-- Who publishes this site, for search engines (R-17 §13.3). Facts only: name, address, contact page. --}}
     <script type="application/ld+json">{!! json_encode([
         '@context' => 'https://schema.org',
@@ -41,114 +41,124 @@
         ],
     ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 
-    {{-- 1. The hero says what InfoDot is, what it does for you and what to do next. The search box stays: it is the quickest way in. --}}
     {{-- 1. The hero says what InfoDot is and what to do next. The search stays. The picture side moves through three compositions; the words never move. --}}
     @include('partials.home-hero')
 
-    {{-- 1b. The problem, in the owner's own situations. No statistics: these are things any owner will recognise. --}}
-    <section class="ix-pubsec hp-problem" aria-labelledby="problem-title">
-        <h2 id="problem-title" data-reveal>Most small businesses run on memory and chat.</h2>
-        <dl class="ix-pubfacts">
-            <div data-reveal><dt>The one person who knows is away</dt><dd>The steps for the job live in someone's head, so work waits until they are back.</dd></div>
-            <div data-reveal><dt>The figure is in five places</dt><dd>Quotes in messages, invoices in a spreadsheet, files on a phone. Nobody is sure which is current.</dd></div>
-            <div data-reveal><dt>You solved this before</dt><dd>The answer exists somewhere, but not where the next person will look.</dd></div>
-        </dl>
-        <p class="lp-lede" data-reveal>InfoDot is where the business writes down how it works, finds checked answers from other businesses, and opens the tools it runs on with one account.</p>
+    {{-- 2. The reality (R-67). The owner's own heading: provocative on purpose. The list and the turn below it stand with the
+         reader: ambition is not the problem, access is. No statistics; every line is a situation an owner will recognise. --}}
+    <section class="hp-reality" aria-labelledby="reality-title">
+        <div class="hp-reality__head">
+            <h2 id="reality-title" class="hp-reality__title" data-reveal>The truth is, most businesses don't really know what they're doing. <span class="hp-reality__turn">InfoDot is here to change that.</span></h2>
+            <p class="lp-lede" data-reveal>Nobody hands you a manual when you start a business. So most of us learn the expensive way, one decision at a time. If you run a business, some of this will sound familiar.</p>
+        </div>
+        <ul class="hp-reality__list" role="list">
+            <li data-reveal>You make big decisions without knowing who to ask, or whether the advice you found is any good.</li>
+            <li data-reveal>The business runs on spreadsheets, WhatsApp threads, email and a phone full of files.</li>
+            <li data-reveal>You fix the same problem twice, because nobody wrote down how it was solved the first time.</li>
+            <li data-reveal>You know there must be a better tool for the job. You just don't know which one.</li>
+            <li data-reveal>The supplier, partner or customer you need is out there. You can't see them from where you stand.</li>
+            <li data-reveal>You want to grow, but nobody can tell you what the next step is.</li>
+        </ul>
+        <p class="hp-reality__close" data-reveal><strong>None of this is a lack of ambition. It's a lack of access.</strong> To knowledge, to the right tools and to the people who could help. That is the gap InfoDot fills.</p>
     </section>
 
-    {{-- 2. Three ways InfoDot helps. Discover, Manage and Grow are the frame the rest of the page hangs on. --}}
-    <section class="hp-pillars" id="pillars" aria-labelledby="pillars-title">
+    {{-- 3. The answer: four things every business needs, each a tension and what InfoDot gives instead. Every promise is something that works today. --}}
+    <section class="hp-pillars hp-pillars--four" id="pillars" aria-labelledby="pillars-title">
         <div class="hp-pillars__intro">
-            <h2 id="pillars-title" data-reveal>What you can do with InfoDot</h2>
-            <p class="lp-lede" data-reveal>Find answers, run your business from connected tools, and grow with what you learn. Start with whichever you need today.</p>
+            <h2 id="pillars-title" data-reveal>Four things every business needs. One place to find them.</h2>
+            <p class="lp-lede" data-reveal>InfoDot brings knowledge, tools and other businesses together, and helps you act on what you find. Start with whichever you need today.</p>
         </div>
 
         <div class="hp-pillars__list">
-            <article class="hp-pillar hp-pillar--discover" id="discover" data-pillar aria-labelledby="discover-title">
-                <h3 id="discover-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-jars-800.jpg') }}')"><span class="hp-pillar__word">Discover</span><span class="hp-pillar__tag">Learn what works</span></h3>
+            <article class="hp-pillar hp-pillar--discover" id="knowledge" data-pillar aria-labelledby="knowledge-title">
+                <h3 id="knowledge-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-jars-800.jpg') }}')"><span class="hp-pillar__word">Knowledge</span><span class="hp-pillar__tag">Stop figuring it out alone</span></h3>
                 <div class="hp-pillar__body">
-                    <p class="hp-pillar__lede" data-reveal>Find practical answers, business guides, proven solutions and experiences shared by other entrepreneurs and businesses.</p>
+                    <p class="hp-pillar__lede" data-reveal>Ask in plain words and hear from people who have been there. Follow researched solutions, step by step, with their sources named and dated.</p>
                     <ul class="lp-checks hp-pillar__list">
-                        <li>Ask business-related questions.</li>
-                        <li>Find answers to common business challenges.</li>
-                        <li>Learn from other businesses' experiences.</li>
-                        <li>Discover verified solutions and practical guidance.</li>
-                        <li>Share knowledge and contribute solutions.</li>
+                        <li>Ask a question; other businesses answer.</li>
+                        <li>See which answer solved it, and which have been checked.</li>
+                        <li>Follow researched steps on tax, hiring, pricing and more.</li>
                     </ul>
                     <p class="hp-pillar__actions" data-reveal><a href="{{ route('solution_search_results') }}" class="ix-btn lp-btn">Search business solutions</a><a href="{{ route('seek') }}" class="hp-textlink">Ask a question</a></p>
-                    <nav class="hp-stages" aria-label="Start from the stage you are in" data-reveal>
-                        <p class="hp-stages__label">Start from where you are</p>
-                        <ul>
-                            <li><a href="{{ $search('idea') }}">Explore</a></li>
-                            <li><a href="{{ $search('plan') }}">Plan</a></li>
-                            <li><a href="{{ $search('register') }}">Establish</a></li>
-                            <li><a href="{{ $search('customers') }}">Launch</a></li>
-                            <li><a href="{{ $search('cash') }}">Operate</a></li>
-                            <li><a href="{{ $search('profit') }}">Improve</a></li>
-                            <li><a href="{{ $search('grow') }}">Grow</a></li>
-                        </ul>
-                    </nav>
                 </div>
             </article>
 
-            <article class="hp-pillar hp-pillar--manage" id="manage" data-pillar aria-labelledby="manage-title">
-                <h3 id="manage-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-burger-800.jpg') }}')"><span class="hp-pillar__word">Manage</span><span class="hp-pillar__tag">Run your business</span></h3>
+            <article class="hp-pillar hp-pillar--manage" id="tools-pillar" data-pillar aria-labelledby="tools-pillar-title">
+                <h3 id="tools-pillar-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-burger-800.jpg') }}')"><span class="hp-pillar__word">Tools</span><span class="hp-pillar__tag">Stop juggling disconnected apps</span></h3>
                 <div class="hp-pillar__body">
-                    <p class="hp-pillar__lede" data-reveal>Access the digital tools you need to organise, manage and operate your business from one connected ecosystem.</p>
+                    <p class="hp-pillar__lede" data-reveal>One InfoDot account signs you in to the Dot tools your business uses, built to work together instead of living in separate corners.</p>
                     <ul class="lp-checks hp-pillar__list">
-                        <li>Finance and invoicing.</li>
-                        <li>Human resources.</li>
-                        <li>Projects and tasks.</li>
-                        <li>Documents and files.</li>
-                        <li>Business analytics and reporting.</li>
-                        <li>Communication and collaboration.</li>
-                        <li>Other specialised business operations.</li>
+                        <li>Keep your books and send invoices.</li>
+                        <li>Look after your people and their records.</li>
+                        <li>Plan projects, share tasks, keep documents and files.</li>
                     </ul>
                     <p class="hp-pillar__actions" data-reveal><a href="#tools" class="ix-btn lp-btn">See the tools by goal</a></p>
                 </div>
             </article>
 
-            <article class="hp-pillar hp-pillar--grow" id="grow" data-pillar aria-labelledby="grow-title">
-                <h3 id="grow-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/kalkbay-boats-800.jpg') }}')"><span class="hp-pillar__word">Grow</span><span class="hp-pillar__tag">Build your future</span></h3>
+            <article class="hp-pillar hp-pillar--connect" id="connections" data-pillar aria-labelledby="connections-title">
+                <h3 id="connections-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/bokaap-street-800.jpg') }}')"><span class="hp-pillar__word">Connections</span><span class="hp-pillar__tag">Stop missing what you can't see</span></h3>
                 <div class="hp-pillar__body">
-                    <p class="hp-pillar__lede" data-reveal>Use knowledge, connected tools and shared experiences to improve how you work, make better decisions and discover opportunities to grow.</p>
+                    <p class="hp-pillar__lede" data-reveal>Find businesses by what they do and where they work. Message them as your company, or ask for an appointment, straight from their page.</p>
                     <ul class="lp-checks hp-pillar__list">
-                        <li>Track business progress where supported.</li>
-                        <li>Improve business processes.</li>
-                        <li>Learn from other businesses.</li>
-                        <li>Identify operational challenges.</li>
-                        <li>Discover additional tools as your business needs evolve.</li>
+                        <li>Give your business a page people can find.</li>
+                        <li>Search the directory by need and place.</li>
+                        <li>Message, book or request an appointment.</li>
                     </ul>
                     <p class="hp-pillar__actions" data-reveal><a href="{{ route('businesses.index') }}" class="ix-btn lp-btn">Browse businesses</a></p>
+                </div>
+            </article>
+
+            <article class="hp-pillar hp-pillar--grow" id="progress" data-pillar aria-labelledby="progress-title">
+                <h3 id="progress-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/kalkbay-boats-800.jpg') }}')"><span class="hp-pillar__word">Progress</span><span class="hp-pillar__tag">Turn what you learn into what you do</span></h3>
+                <div class="hp-pillar__body">
+                    <p class="hp-pillar__lede" data-reveal>Knowledge only counts once it changes how you work. InfoDot keeps what your business learns, so the next person starts from the answer, not from zero.</p>
+                    <ul class="lp-checks hp-pillar__list">
+                        <li>Keep your company's questions and solutions together.</li>
+                        <li>Improve a solution over time; earlier versions are kept.</li>
+                        <li>Add people and tools as the business grows.</li>
+                    </ul>
+                    <p class="hp-pillar__actions" data-reveal>@guest<a href="{{ route('register') }}" class="ix-btn lp-btn">Start for free</a>@else<a href="{{ route('seek') }}" class="ix-btn lp-btn">Ask a question</a>@endguest</p>
                 </div>
             </article>
         </div>
     </section>
 
-    {{-- 3. How it works: three steps, no jargon. The line fills as the visitor scrolls through them. --}}
-    <section class="hp-how" id="how-it-works" aria-labelledby="how-title">
+    {{-- 4. The possibilities, made ordinary: five days, each using something InfoDot does today. The line fills as the visitor scrolls. --}}
+    <section class="hp-how hp-week" id="how-it-works" aria-labelledby="how-title">
         <div class="hp-how__head">
-            <h2 id="how-title" data-reveal>Getting started with InfoDot is simple.</h2>
+            <h2 id="how-title" data-reveal>What a week with InfoDot can look like.</h2>
+            <p class="lp-lede" data-reveal>Five ordinary days. Each one uses something InfoDot does today.</p>
         </div>
-        <ol class="hp-steps" role="list" data-journey>
+        <ol class="hp-steps hp-steps--week" role="list" data-journey>
             <li data-stage>
-                <span class="hp-steps__n" aria-hidden="true">1</span>
-                <h3>Create your account.</h3>
-                <p>Join InfoDot for free and tell us about yourself, your business or your business idea.</p>
+                <span class="hp-steps__n" aria-hidden="true">Mon</span>
+                <h3><span class="ix-sr">Monday: </span>Sort out tax.</h3>
+                <p>You search "SARS", open a researched solution and work through its steps, with the sources beside them.</p>
             </li>
             <li data-stage>
-                <span class="hp-steps__n" aria-hidden="true">2</span>
-                <h3>Discover what you need.</h3>
-                <p>Explore business solutions, learn from other people and access the digital tools relevant to your business.</p>
+                <span class="hp-steps__n" aria-hidden="true">Tue</span>
+                <h3><span class="ix-sr">Tuesday: </span>Send an invoice.</h3>
+                <p>You open Dot.Finance with the same InfoDot sign-in and bill the customer you finished for last week.</p>
             </li>
             <li data-stage>
-                <span class="hp-steps__n" aria-hidden="true">3</span>
-                <h3>Build and grow.</h3>
-                <p>Put what you learn into action, manage your business and continuously improve as your business develops.</p>
+                <span class="hp-steps__n" aria-hidden="true">Wed</span>
+                <h3><span class="ix-sr">Wednesday: </span>Find a supplier.</h3>
+                <p>You need a printer for a launch. You find one in the directory and ask for an appointment from their page.</p>
+            </li>
+            <li data-stage>
+                <span class="hp-steps__n" aria-hidden="true">Thu</span>
+                <h3><span class="ix-sr">Thursday: </span>Bring someone in.</h3>
+                <p>A new person starts. You add them to your company, and they sign in with a login of their own.</p>
+            </li>
+            <li data-stage>
+                <span class="hp-steps__n" aria-hidden="true">Fri</span>
+                <h3><span class="ix-sr">Friday: </span>Write it down.</h3>
+                <p>A customer's question stumped you this week. You record how you solved it, so nobody solves it twice.</p>
             </li>
         </ol>
         @guest
-            <p class="hp-how__cta" data-reveal><a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for Free</a></p>
+            <p class="hp-how__cta" data-reveal><a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for free</a></p>
         @endguest
     </section>
 
@@ -156,7 +166,8 @@
     <section class="hp-tools" id="tools" aria-labelledby="tools-title">
         <div class="hp-tools__head">
             <h2 id="tools-title" data-reveal>Your business. Your tools. One connected ecosystem.</h2>
-            <p class="lp-lede" data-reveal>Tools are grouped by what you want to get done. You find and open the ones that fit your business. What you can open depends on your business, who you are and how access is arranged, and not every tool comes with every account.</p>
+            <p class="lp-lede" data-reveal>Grouped by what you want to get done, and opened with your one InfoDot account. Use the ones your business needs and add more when it needs them.</p>
+            <p class="hp-tools__note" data-reveal>Which tools you can open depends on your business and how access is arranged; not every tool comes with every account.</p>
             <p data-reveal><a href="{{ $tools }}" class="ix-btn ix-btn--primary lp-btn">Explore Business Tools</a></p>
         </div>
         <div class="hp-tools__groups">
@@ -173,23 +184,7 @@
         </div>
     </section>
 
-    {{-- 5. The collective knowledge advantage: what makes InfoDot more than a set of tools. --}}
-    <section class="lp-split lp-split--flip lp-split--tint hp-know" aria-labelledby="alone-title">
-        <div class="lp-split__body">
-            <h2 id="alone-title" data-reveal>You don't have to figure it all out yourself.</h2>
-            <p class="lp-lede" data-reveal>Every business faces challenges. InfoDot helps you find practical answers, learn from the experiences of others and contribute solutions that can help businesses facing similar situations.</p>
-            <dl class="hp-know__list">
-                <div data-reveal><dt>Questions and answers</dt><dd>Ask in plain words. People who have been there reply.</dd></div>
-                <div data-reveal><dt>Accepted solutions</dt><dd>You choose the answer that solved it.</dd></div>
-                <div data-reveal><dt>Verified business knowledge</dt><dd>A moderator who did not write a solution can mark the steps they have checked as verified.</dd></div>
-                <div data-reveal><dt>Community contributions</dt><dd>Your name stays on what you share, and people are told when it helps.</dd></div>
-                <div data-reveal><dt>Practical guides and resources</dt><dd>Researched solutions with named, dated sources, written as steps you can follow.</dd></div>
-                <div data-reveal><dt>Knowledge that gets better</dt><dd>Solutions can be improved over time, and the earlier versions are kept.</dd></div>
-            </dl>
-            <p data-reveal class="hp-know__lead">InfoDot is not just a place to post questions. It turns what businesses learn into knowledge the next business can use.</p>
-        </div>
-    </section>
-
+    {{-- 5. The proof: how a question becomes something a business can rely on, and the researched library. --}}
     <section class="hp-chain" id="how-knowledge-grows" aria-labelledby="chain-title">
         <div class="hp-chain__head">
             <h2 id="chain-title" data-reveal>How a question becomes knowledge</h2>
@@ -255,8 +250,8 @@
             </div>
         </figure>
         <div class="lp-split__body">
-            <h2 id="who-title" data-reveal>Built for every stage of your business journey.</h2>
-            <p class="lp-lede" data-reveal>You don't need a company, a plan or any experience to join. Start with where you are.</p>
+            <h2 id="who-title" data-reveal>Wherever you are, there's a next step.</h2>
+            <p class="lp-lede" data-reveal>You don't need a company, a plan or any experience to join. Start from where your business is today.</p>
             <ol class="hp-who__list" role="list" data-journey data-vertical>
                 <li data-stage><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}"><strong>You have a business idea and don't know where to start</strong><span>Read the first steps other people wrote down.</span></a></li>
                 <li data-stage><a href="{{ $search('register') }}"><strong>You're starting your first business</strong><span>Registration, pricing and your first customers, in the words of people who did it.</span></a></li>
@@ -267,15 +262,31 @@
         </div>
     </section>
 
-    {{-- 7. Trust: what is true today, in plain words. Detail lives on the pages linked below. --}}
+    {{-- 7. The invitation: what is waiting on the other side of "Join", in one place. Only what works today; the account is free. --}}
+    <section class="hp-join" id="join" aria-labelledby="join-title">
+        <div class="hp-join__head">
+            <h2 id="join-title" data-reveal>What opens when you join.</h2>
+            <p class="lp-lede" data-reveal>Creating an InfoDot account is free. This is what is waiting on the other side.</p>
+            @guest
+                <p class="hp-join__actions" data-reveal><a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for free</a><a href="{{ route('login') }}" class="hp-textlink">I already have an account</a></p>
+            @endguest
+        </div>
+        <dl class="hp-join__list">
+            <div data-reveal><dt>Answers when you need them</dt><dd>Ask questions, search what other businesses learned and follow researched solutions.</dd></div>
+            <div data-reveal><dt>Your business, easy to find</dt><dd>A business page with your logo, photographs and what you offer, listed in the directory.</dd></div>
+            <div data-reveal><dt>Your team in one place</dt><dd>Bring in the people who work with you, each with a login of their own.</dd></div>
+            <div data-reveal><dt>A way to reach other businesses</dt><dd>Message businesses, book or request appointments, and keep every reply in your inbox.</dd></div>
+            <div data-reveal><dt>One sign-in for the Dot tools</dt><dd>Open the tools your business uses without creating a new account for each one.</dd></div>
+        </dl>
+    </section>
+
+    {{-- 8. Trust: what is true today, in plain words. Detail lives on the pages linked below. --}}
     <section class="ix-pubsec ix-pubsec--tint hp-trust" aria-labelledby="trust-title">
         <h2 id="trust-title" data-reveal>A place you can rely on</h2>
         <dl class="ix-pubfacts" data-trust>
-            <div data-reveal><dt>Your own account and business profile</dt><dd>You sign up with your own account, and a business can have a profile so people know who they are learning from.</dd></div>
             <div data-reveal><dt>Company first, public by choice</dt><dd>A question is visible to your company by default. It becomes public only when someone explicitly chooses that, and another company can never open it.</dd></div>
             <div data-reveal><dt>Every answer shows how it earned its place</dt><dd>Accepted by the person who asked, or verified by a moderator who did not write it. Nobody approves their own work.</dd></div>
             <div data-reveal><dt>Your name stays on what you write</dt><dd>The people who help are credited for it.</dd></div>
-            <div data-reveal><dt>One place to look</dt><dd>Find what other businesses learned here, instead of searching the open internet and hoping.</dd></div>
             <div data-reveal><dt>Guidance, not advice</dt><dd>Legal, tax and financial questions get answers from people's experience. Check them with a professional before you rely on them.</dd></div>
         </dl>
         <ul class="hp-trust__links" data-reveal>
@@ -287,20 +298,20 @@
         </ul>
     </section>
 
-    {{-- 8. The close. --}}
+    {{-- 9. The close: the promise, made personal. --}}
     <section class="ix-pubcta hp-cta" aria-labelledby="cta-title">
         <div class="ix-pubcta__inner">
-            <h2 id="cta-title" data-cta-title>Your business journey starts here.</h2>
-            <p class="hp-cta__lede" data-reveal>Businesses that write down how they work keep working when one person is away. Start with yours: find practical answers, open the tools you need, and build it up at your own pace.</p>
+            <h2 id="cta-title" data-cta-title>Build your business with InfoDot in your corner.</h2>
+            <p class="hp-cta__lede" data-reveal>You won't have every answer on day one. Nobody does. But you won't have to find them alone.</p>
             <div class="ix-pubhero__actions" data-reveal>
                 @auth
                     <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">Ask a question</a>
                 @else
-                    <a href="{{ route('register') }}" class="ix-btn ix-btn--primary">Join InfoDot for Free</a>
+                    <a href="{{ route('register') }}" class="ix-btn ix-btn--primary">Join InfoDot for free</a>
                     <a href="{{ route('login') }}" class="ix-btn">Sign in</a>
                 @endauth
             </div>
-            <p class="hp-cta__support" data-reveal>Start where you are. Build at your own pace. Grow with InfoDot.</p>
+            <p class="hp-cta__support" data-reveal>Free to join. Start where you are.</p>
         </div>
     </section>
 

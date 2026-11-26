@@ -24,11 +24,17 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('__motionFailsafe', $html);
         $this->assertStringContainsString("classList.add('motion-failsafe')", $html);
         $this->assertStringContainsString('prefers-reduced-motion', $html);
-        // R-55: the value proposition and the three pillars, in the visitor's words.
-        foreach (['Discover', 'Manage', 'Grow', 'Learn what works', 'Run your business', 'Build your future', 'Join InfoDot for Free', 'See how it works', 'We connect you to the knowledge, tools and business opportunities you need to start, manage and grow.', 'Most small businesses run on memory and chat.',
-            'Getting started with InfoDot is simple.', 'Your business. Your tools. One connected ecosystem.', "You don't have to figure it all out yourself.",
-            'Built for every stage of your business journey.', 'Your business journey starts here.'] as $words) {
+        // R-67: the story under the owner's hero: the reality (the owner's own heading), four pillars, a week, what opens when you join.
+        foreach (['Knowledge', 'Tools', 'Connections', 'Progress', 'Stop figuring it out alone', 'Stop juggling disconnected apps', "Stop missing what you can't see", 'Turn what you learn into what you do',
+            'Join InfoDot for free', 'See how it works', 'We connect you to the knowledge, tools and business opportunities you need to start, manage and grow.',
+            "The truth is, most businesses don't really know what they're doing.", 'InfoDot is here to change that.', "None of this is a lack of ambition. It's a lack of access.",
+            'What a week with InfoDot can look like.', 'Your business. Your tools. One connected ecosystem.', 'What opens when you join.', 'Creating an InfoDot account is free.',
+            "Wherever you are, there's a next step.", 'Build your business with InfoDot in your corner.'] as $words) {
             $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
+        }
+        // The old frame and the sections it replaced are gone, so the page does not say the same thing twice.
+        foreach (['Most small businesses run on memory and chat.', "You don't have to figure it all out yourself.", 'Getting started with InfoDot is simple.', 'Your business journey starts here.', 'Learn what works'] as $old) {
+            $this->assertStringNotContainsString($old, strip_tags(str_replace('&#039;', "'", $html)), $old);
         }
         $this->assertStringContainsString(route('register'), $html);
         $this->assertStringContainsString(route('solution_search_results'), $html);

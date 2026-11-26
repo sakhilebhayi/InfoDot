@@ -12523,3 +12523,199 @@ body[data-area="home"] .ix-btn--primary:hover,
 .hd { place-items: normal; }
 .hd__ico--play, .hd__pause[aria-pressed="true"] .hd__ico--pause { display: none; }
 .hd__pause[aria-pressed="true"] .hd__ico--play { display: block; }
+
+/* ===== R-67: the homepage story. Reality, four pillars, a week, what opens when you join. ===== */
+
+/* The reality: the owner's heading at display size, the turn underlined in stencil gold, then six situations on ruled rows. */
+.hp-reality {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 104px 24px 88px;
+}
+
+.hp-reality__head { max-width: 980px; }
+
+.hp-reality__title {
+    margin: 0 0 24px;
+    font-weight: 700;
+    font-size: clamp(2rem, 4.2vw, 3.5rem);
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+}
+
+.hp-reality__turn {
+    display: block;
+    margin-top: 0.35em;
+    font-weight: 600;
+    color: var(--ix-text);
+    text-decoration: underline;
+    text-decoration-color: #eab31f;
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.16em;
+    text-decoration-skip-ink: none;
+}
+
+.hp-reality__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 48px;
+    margin: 48px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hp-reality__list li {
+    margin: 0;
+    padding: 20px 0 22px;
+    border-top: 1px solid var(--ix-rule);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.5;
+    text-wrap: pretty;
+}
+
+.hp-reality__close {
+    max-width: 62ch;
+    margin: 40px 0 0;
+    padding-top: 28px;
+    border-top: 4px solid var(--ix-text);
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.6;
+}
+
+.hp-reality__close strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--ix-text);
+    font-weight: 700;
+    font-size: var(--dot-text-h3-size);
+    line-height: 1.3;
+}
+
+/* Four pillars: Connections takes the People steel livery. Four across on a wide screen, two by two below that. */
+.hp-pillar--connect .hp-pillar__plate { --pillar-tone: var(--ix-people); background-color: var(--ix-people); background-image: var(--pillar-img, none); background-size: cover; background-position: center; }
+
+@media (min-width: 1000px) and (max-width: 1239px) {
+    .hp-pillars--four .hp-pillars__list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
+}
+
+@media (min-width: 1240px) {
+    .hp-pillars--four .hp-pillars__list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+    .hp-pillars--four .hp-pillar__lede { font-size: var(--dot-text-body-size); }
+}
+
+/* A week: five days on the same filling line as the old three steps; the day is a plate, not a number. */
+.hp-week .hp-how__head .lp-lede { margin-bottom: 0; }
+
+.hp-steps--week .hp-steps__n {
+    width: auto;
+    min-width: 64px;
+    height: 40px;
+    padding: 0 12px;
+    font-size: var(--dot-text-body-lg-size);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+@media (min-width: 1100px) {
+    .hp-steps--week { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 28px; }
+}
+
+@media (min-width: 641px) and (max-width: 1099px) {
+    .hp-steps--week { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 32px; }
+}
+
+/* The tools: the access caveat is a quiet line under the lede, not part of the promise. */
+.hp-tools__note {
+    max-width: 62ch;
+    margin: -8px 0 24px;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-sm-size);
+    line-height: 1.55;
+}
+
+/* What opens when you join: the invitation beside a register of five things, each on its own ruled row. */
+.hp-join {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 88px 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 56px;
+    align-items: start;
+}
+
+.hp-join h2 {
+    margin: 0 0 12px;
+    font-weight: 600;
+    font-size: var(--dot-text-h2-size);
+    line-height: 1.15;
+    letter-spacing: -0.014em;
+    text-wrap: balance;
+}
+
+.hp-join__head { position: sticky; top: 88px; }
+
+.hp-join__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    margin: 0;
+}
+
+.hp-join__list { margin: 0; }
+
+.hp-join__list > div {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 6px 32px;
+    padding: 22px 0;
+    border-top: 1px solid var(--ix-rule);
+}
+
+.hp-join__list > div:last-child { border-bottom: 1px solid var(--ix-rule); }
+
+.hp-join__list dt {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.35;
+}
+
+.hp-join__list dd {
+    margin: 0;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-size);
+    line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+    .hp-reality { padding: 64px 16px 56px; }
+    .hp-reality__list { grid-template-columns: minmax(0, 1fr); margin-top: 32px; }
+    .hp-reality__list li { padding: 16px 0 18px; }
+    .hp-join { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 56px 16px; }
+    .hp-join__head { position: static; }
+    .hp-join__list > div { grid-template-columns: minmax(0, 1fr); padding: 18px 0; }
+}
+
+/* R-67: the pillar tags are sentences now, so each sits on a solid strip at the foot of its photograph and reads whatever the picture. */
+.hp-pillar__plate { padding-bottom: 0; }
+.hp-pillar__tag,
+.hp-pillar--manage .hp-pillar__tag {
+    margin: 0 -20px;
+    padding: 10px 20px 12px;
+    background: rgb(8 12 14 / 0.86);
+    color: #fff;
+    font-weight: 600;
+    line-height: 1.35;
+}
+.hp-steps--week .hp-steps__n { justify-self: start; width: max-content; }
+/* R-67 on a phone: the word sits at the top of the photograph and the tag strip runs across its foot, so neither has to break. */
+@media (max-width: 900px) {
+    .hp-pillar__plate { flex-direction: column; align-items: stretch; justify-content: space-between; gap: 0; padding-top: 20px; }
+    .hp-pillar__word { overflow-wrap: normal; }
+    .hp-pillar__tag,
+    .hp-pillar--manage .hp-pillar__tag { margin: 0 -20px; }
+}
