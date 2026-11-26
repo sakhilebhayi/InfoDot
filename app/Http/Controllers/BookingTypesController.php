@@ -3,15 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\GuardsBooking;
+use App\Http\Requests\Booking\AppointmentTypeRequest;
 use App\Models\AppointmentType;
 use App\Models\BookingSetting;
 use App\Models\Team;
 use App\Models\WorkingHour;
 use App\Services\Booking\BookingAudit;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -24,8 +23,6 @@ class BookingTypesController extends Controller
     use GuardsBooking;
 
     /** The approval choices as the form shows them, and what each stores in `requires_approval`. */
-    private const APPROVAL = ['follow' => null, 'always' => true, 'auto' => false];
-
     private const TEXT_FIELDS = ['description', 'location_note', 'preparation'];
 
     public function __construct(private readonly BookingAudit $audit) {}
@@ -56,9 +53,8 @@ class BookingTypesController extends Controller
         return $this->form($team, $type);
     }
 
-    public function store(Request $request, Team $team): RedirectResponse
+    public function store(AppointmentTypeRequest $request, Team $team): RedirectResponse
     {
-        $this->manage($team);
         $values = $this->values($request, $team);
 
         $type = DB::transaction(function () use ($team, $values) {
@@ -74,10 +70,8 @@ class BookingTypesController extends Controller
         return redirect()->route('business.booking.types', $team)->with('status', "{$type->name} is added.");
     }
 
-    public function update(Request $request, Team $team, AppointmentType $type): RedirectResponse
+    public function update(AppointmentTypeRequest $request, Team $team, AppointmentType $type): RedirectResponse
     {
-        $this->manage($team);
-        $this->belongs($team, $type);
         $values = $this->values($request, $team, $type);
 
         DB::transaction(function () use ($team, $type, $values) {
@@ -143,35 +137,13 @@ class BookingTypesController extends Controller
     }
 
     /**
-     * Validate the form and turn it into what is stored.
+     * Turn the validated form (AppointmentTypeRequest) into what is stored.
      *
      * @return array{fields: array<string, mixed>, providers: list<int>}
      */
-    private function values(Request $request, Team $team, ?AppointmentType $type = null): array
+    private function values(AppointmentTypeRequest $request, Team $team, ?AppointmentType $type = null): array
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:120'],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'duration_minutes' => ['required', 'integer', 'min:'.AppointmentType::MIN_DURATION, 'max:'.AppointmentType::MAX_DURATION],
-            'slot_interval_minutes' => ['required', 'integer', 'min:5', 'max:240'],
-            'buffer_before_minutes' => ['required', 'integer', 'min:0', 'max:240'],
-            'buffer_after_minutes' => ['required', 'integer', 'min:0', 'max:240'],
-            'fee' => ['nullable', 'string', 'max:20'],
-            'currency' => ['required', Rule::in(array_keys(config('booking.currencies')))],
-            'meeting_format' => ['required', Rule::in(array_keys(AppointmentType::FORMATS))],
-            'location_note' => ['nullable', 'string', 'max:300'],
-            'preparation' => ['nullable', 'string', 'max:1500'],
-            'approval' => ['required', Rule::in(array_keys(self::APPROVAL))],
-            'sort' => ['nullable', 'integer', 'min:0', 'max:9999'],
-            'providers' => ['nullable', 'array', 'max:200'],
-            'providers.*' => ['integer', Rule::exists('booking_providers', 'id')->where('team_id', $team->getKey())],
-        ], [
-            'duration_minutes.min' => 'An appointment must be at least '.AppointmentType::MIN_DURATION.' minutes long.',
-            'duration_minutes.max' => 'An appointment can be at most '.AppointmentType::MAX_DURATION.' minutes (8 hours).',
-            'slot_interval_minutes.min' => 'Start times can be at most every 5 minutes apart or less often.',
-            'slot_interval_minutes.max' => 'Start times can be at most 4 hours (240 minutes) apart.',
-            'providers.*.exists' => 'Choose people from this business only.',
-        ]);
+        $data = $request->validated();
 
         $allowed = $team->bookingProviders()->active()->pluck('id')->map(fn ($id) => (int) $id)->all();
         $picked = collect($data['providers'] ?? [])->map(fn ($id) => (int) $id);
@@ -197,7 +169,7 @@ class BookingTypesController extends Controller
                 'meeting_format' => $data['meeting_format'],
                 'location_note' => $this->text($data['location_note'] ?? null),
                 'preparation' => $this->text($data['preparation'] ?? null),
-                'requires_approval' => self::APPROVAL[$data['approval']],
+                'requires_approval' => AppointmentTypeRequest::APPROVAL[$data['approval']],
                 'sort' => (int) ($data['sort'] ?? 0),
                 'active' => $request->has('active') ? $request->boolean('active') : ($type->active ?? true),
             ],

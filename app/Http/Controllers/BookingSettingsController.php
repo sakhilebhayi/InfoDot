@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Booking\BookingSettingsRequest;
 use App\Models\BookingSetting;
 use App\Models\Team;
 use App\Services\Booking\BookingFeature;
@@ -10,7 +11,6 @@ use DateTimeZone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -33,25 +33,9 @@ class BookingSettingsController extends Controller
         ]);
     }
 
-    public function update(Request $request, Team $team): RedirectResponse
+    public function update(BookingSettingsRequest $request, Team $team): RedirectResponse
     {
-        $this->guard($team);
-
-        $data = $request->validate([
-            'enabled' => ['sometimes', 'boolean'],
-            'calendar_published' => ['sometimes', 'boolean'],
-            'approval_mode' => ['required', Rule::in(BookingSetting::APPROVAL_MODES)],
-            'timezone' => ['required', 'string', Rule::in(DateTimeZone::listIdentifiers())],
-            'min_notice_hours' => ['required', 'integer', 'min:0', 'max:336'],
-            'horizon_days' => ['required', 'integer', 'min:1', 'max:365'],
-            'cancel_cutoff_hours' => ['required', 'integer', 'min:0', 'max:336'],
-            'instructions' => ['nullable', 'string', 'max:1500'],
-            'terms' => ['nullable', 'string', 'max:4000'],
-        ], [
-            'timezone.in' => 'Choose a time zone from the list.',
-            'min_notice_hours.max' => 'Notice can be at most 14 days (336 hours).',
-            'horizon_days.max' => 'Customers can book at most a year ahead.',
-        ]);
+        $data = $request->validated();
 
         // An unticked box is absent from the form, so absent means off.
         $this->settings->save($team, $request->user(), [

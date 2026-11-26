@@ -9,8 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
+/**
+ * @property Carbon|null $accepted_at
+ */
 class Answer extends Model
 {
     use HasAttachments;
@@ -52,17 +56,20 @@ class Answer extends Model
         return $this->hasMany(SolutionRecommendation::class, 'answer_id');
     }
 
+    /** @return BelongsTo<Questions, $this> */
     public function question(): BelongsTo
     {
         // Unscoped on purpose: who may see the question is decided explicitly by AnswerService::canSee().
         return $this->belongsTo(Questions::class, 'question_id')->withoutGlobalScopes();
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function acceptedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'accepted_by');

@@ -25,12 +25,14 @@ class LibraryEntry extends Model
         return ['adopted_at' => 'datetime', 'withdrawn_at' => 'datetime'];
     }
 
+    /** @return BelongsTo<Answer, $this> */
     public function answer(): BelongsTo
     {
         // Unscoped on purpose: whether the source may be shown is decided by scopeShown(), the same for every viewer.
         return $this->belongsTo(Answer::class)->withoutGlobalScopes();
     }
 
+    /** @return BelongsTo<Solutions, $this> */
     public function solution(): BelongsTo
     {
         return $this->belongsTo(Solutions::class)->withoutGlobalScopes();
@@ -85,7 +87,7 @@ class LibraryEntry extends Model
     }
 
     /** The source, whichever kind it is (null if it has been deleted). */
-    public function source(): ?Model
+    public function source(): Answer|Solutions|null
     {
         return $this->kind === self::ANSWER ? $this->answer : $this->solution;
     }

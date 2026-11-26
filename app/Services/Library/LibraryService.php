@@ -30,7 +30,7 @@ class LibraryService
     public const REASON_MAX = 1000;
 
     /** The answer or solution a reference names, whatever its state (hidden and deleted included). Null if it does not exist. */
-    public function find(string $ref): ?Model
+    public function find(string $ref): Answer|Solutions|null
     {
         $parsed = LibraryEntry::parseRef($ref);
 
@@ -55,7 +55,7 @@ class LibraryService
      *
      * @return array{by: User|null, at: Carbon, label: string}|null
      */
-    public function corroboration(Model $item): ?array
+    public function corroboration(Answer|Solutions $item): ?array
     {
         if ($item instanceof Answer) {
             return $item->accepted_at !== null && $item->accepted_by !== null && (int) $item->accepted_by !== (int) $item->user_id
@@ -63,17 +63,13 @@ class LibraryService
                 : null;
         }
 
-        if ($item instanceof Solutions) {
-            return $item->verified_at !== null && $item->verified_by !== null && (int) $item->verified_by !== (int) $item->user_id
-                ? ['by' => $item->verifier, 'at' => $item->verified_at, 'label' => 'Verified by']
-                : null;
-        }
-
-        return null;
+        return $item->verified_at !== null && $item->verified_by !== null && (int) $item->verified_by !== (int) $item->user_id
+            ? ['by' => $item->verifier, 'at' => $item->verified_at, 'label' => 'Verified by']
+            : null;
     }
 
     /** Why this item cannot be in the library right now, in words for a moderator; null when it can. */
-    public function problem(?Model $item): ?string
+    public function problem(Answer|Solutions|null $item): ?string
     {
         if ($item instanceof Answer) {
             $question = $item->question;
@@ -111,7 +107,7 @@ class LibraryService
      *
      * @return array{entry: LibraryEntry, added: bool} added is false when it was already in the library
      */
-    public function adopt(Model $item, User $by, ?string $decisionEventId = null): array
+    public function adopt(Answer|Solutions $item, User $by, ?string $decisionEventId = null): array
     {
         $this->authorize($item, $by);
 
@@ -125,7 +121,7 @@ class LibraryService
         }
     }
 
-    private function adoptOnce(Model $item, User $by, ?string $decisionEventId): array
+    private function adoptOnce(Answer|Solutions $item, User $by, ?string $decisionEventId): array
     {
         return DB::transaction(function () use ($item, $by, $decisionEventId): array {
             $row = $this->lock($item);
@@ -249,15 +245,20 @@ class LibraryService
     }
 
     /** A moderator, and not the author of what they decide on. */
-    private function authorize(Model $item, User $by): void
+    private function authorize(Answer|Solutions $item, User $by): void
     {
         abort_unless($by->isModerator(), 403);
-        abort_unless($item instanceof Answer || $item instanceof Solutions, 404);
         abort_if($item->user_id === $by->id, 403, 'You cannot decide on your own content: another moderator does.');
     }
 
     /** The item as stored, locked for the length of the transaction, ignoring what the caller was allowed to see. */
-    private function lock(Model $item): Model
+    /**
+     * @template T of Answer|Solutions
+     *
+     * @param  T  $item
+     * @return T
+     */
+    private function lock(Answer|Solutions $item): Answer|Solutions
     {
         return $item::withoutGlobalScopes()->lockForUpdate()->findOrFail($item->getKey());
     }
@@ -277,7 +278,7 @@ class LibraryService
     }
 
     /** What the points ledger needs to know about an item, as ids: who wrote it, where it lives, and which audit row caused this. */
-    private function ledgerFacts(Model $row, ModerationAction $action): array
+    private function ledgerFacts(Answer|Solutions $row, ModerationAction $action): array
     {
         $home = $row instanceof Answer ? $row->question : $row;
 

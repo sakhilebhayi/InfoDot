@@ -9,6 +9,7 @@ use App\Services\Booking\BookingAudit;
 use App\Services\Booking\BookingBoard;
 use App\Services\Booking\BookingCsv;
 use App\Services\Booking\BookingReport;
+use App\Support\LocalDate;
 use Carbon\CarbonImmutable;
 use DateTimeZone;
 use Illuminate\Http\Request;
@@ -109,12 +110,6 @@ class BookingReportsController extends Controller
 
     private function date(mixed $value, DateTimeZone $zone): ?CarbonImmutable
     {
-        if (! is_string($value) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) !== 1) {
-            return null;
-        }
-
-        $date = CarbonImmutable::createFromFormat('!Y-m-d', $value, $zone);
-
-        return $date instanceof CarbonImmutable && $date->format('Y-m-d') === $value ? $date : null;
+        return LocalDate::parse($value, $zone);
     }
 }

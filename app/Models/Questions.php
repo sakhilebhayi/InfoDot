@@ -96,6 +96,7 @@ class Questions extends Model
         return $this->hasMany(Answer::class, 'question_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

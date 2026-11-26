@@ -150,7 +150,7 @@ class Queue extends Component
         }
     }
 
-    private function item(string $key): Model
+    private function item(string $key): Questions|Answer|Solutions
     {
         [$letter, $id] = array_pad(explode('-', $key, 2), 2, '');
         abort_unless(isset(self::LETTERS[$letter]) && ctype_digit($id), 404);
@@ -256,7 +256,7 @@ class Queue extends Component
     }
 
     /** What the row shows about the item. Items private to another company are named but never shown. */
-    private function describe(?Model $item, User $me, ModerationService $moderation, AnswerService $answers): array
+    private function describe(Questions|Answer|Solutions|null $item, User $me, ModerationService $moderation, AnswerService $answers): array
     {
         if ($item === null) {
             return ['gone' => true];

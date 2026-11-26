@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Booking;
+use App\Models\Enquiry;
 use App\Models\Passport\Client;
 use App\Models\Team;
 use App\Models\User;
+use App\Policies\BookingPolicy;
+use App\Policies\EnquiryPolicy;
 use App\Policies\TeamPolicy;
 use App\Support\EcosystemHandoff;
 use App\Support\Input;
@@ -27,6 +31,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Team::class => TeamPolicy::class,
+        Enquiry::class => EnquiryPolicy::class,
+        Booking::class => BookingPolicy::class,
     ];
 
     /**

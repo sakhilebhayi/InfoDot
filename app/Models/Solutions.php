@@ -28,6 +28,7 @@ use Laravel\Scout\Searchable;
  * @property string|null $hidden_reason
  * @property-read User $user
  * @property-read Team|null $team
+ * @property Carbon|null $verified_at
  */
 class Solutions extends Model
 {
@@ -80,7 +81,8 @@ class Solutions extends Model
         return $this->verified_at !== null;
     }
 
-    public function verifier()
+    /** @return BelongsTo<User, $this> */
+    public function verifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
@@ -105,6 +107,7 @@ class Solutions extends Model
         return $this->hasMany(SolutionConfirmation::class, 'solution_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
