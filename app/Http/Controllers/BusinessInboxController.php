@@ -50,6 +50,7 @@ class BusinessInboxController extends Controller
             'team' => $team,
             'enquiries' => $list,
             'reads' => $this->enquiries->readTimes($list, $user),
+            'latest' => $this->enquiries->latestPublicMessages($list),
             'manager' => $manager,
             'f' => $f + ['status' => $status],
             'stats' => $manager ? $this->enquiries->stats($team) : null,

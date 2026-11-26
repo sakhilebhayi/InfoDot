@@ -13,6 +13,7 @@ use App\Models\UserNotice;
 use App\Services\Attachments\AttachmentService;
 use App\Services\Knowledge\InAppNotices;
 use App\Services\Notifications\NotificationPreferences;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -224,10 +225,45 @@ final class EnquiryService
     /** @param iterable<Enquiry> $enquiries @return array<int, Carbon> enquiry id => when this person last read it */
     public function readTimes(iterable $enquiries, User $user): array
     {
-        $ids = collect($enquiries)->pluck('id')->all();
+        $ids = $this->ids($enquiries);
 
         return DB::table('enquiry_reads')->where('user_id', $user->id)->whereIn('enquiry_id', $ids)->pluck('read_at', 'enquiry_id')
             ->map(fn ($at) => Carbon::parse($at))->all();
+    }
+
+    /**
+     * The ids of a page or list of enquiries. A paginator is read through its items(): collect() on a paginator turns
+     * it into its pagination array (current_page, data, ...), whose rows have no id.
+     *
+     * @param  iterable<Enquiry>  $enquiries
+     * @return list<int>
+     */
+    private function ids(iterable $enquiries): array
+    {
+        $items = $enquiries instanceof Paginator ? $enquiries->items() : $enquiries;
+
+        return collect($items)->pluck('id')->filter()->values()->all();
+    }
+
+    /**
+     * The latest message both sides can read (never an internal note or an event), for the inbox list's preview line.
+     * Two queries for the whole page, whatever its length.
+     *
+     * @param  iterable<Enquiry>  $enquiries
+     * @return array<int, EnquiryMessage> enquiry id => its latest public message
+     */
+    public function latestPublicMessages(iterable $enquiries): array
+    {
+        $ids = $this->ids($enquiries);
+        if ($ids === []) {
+            return [];
+        }
+
+        $latest = EnquiryMessage::query()->whereIn('enquiry_id', $ids)
+            ->whereIn('kind', [EnquiryMessage::CUSTOMER, EnquiryMessage::BUSINESS])
+            ->groupBy('enquiry_id')->selectRaw('max(id) as id');
+
+        return EnquiryMessage::query()->whereIn('id', $latest)->get(['id', 'enquiry_id', 'kind', 'body'])->keyBy('enquiry_id')->all();
     }
 
     public function block(Team $team, User $actor, User $customer): void

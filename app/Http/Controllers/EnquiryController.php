@@ -62,6 +62,7 @@ class EnquiryController extends Controller
         return view('inbox.index', [
             'enquiries' => $mine,
             'reads' => $this->enquiries->readTimes($mine, $user),
+            'latest' => $this->enquiries->latestPublicMessages($mine),
             // Businesses whose inbox this person works in, with how many conversations wait for them.
             'businesses' => $this->enquiries->handledQuery($user)->with('team')->get()->groupBy('team_id')
                 ->map(fn (Collection $group) => ['team' => $group->first()?->team, 'active' => $group->whereNotIn('status', [Enquiry::RESOLVED, Enquiry::CLOSED])->count()])
