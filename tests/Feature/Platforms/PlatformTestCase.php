@@ -51,7 +51,7 @@ abstract class PlatformTestCase extends TestCase
     protected function administrator(): User
     {
         $user = $this->person();
-        $user->forceFill(['is_platform_admin' => true])->save();
+        $user->forceFill(['is_platform_admin' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         return $user;
     }

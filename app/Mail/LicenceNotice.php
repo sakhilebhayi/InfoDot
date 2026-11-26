@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Support\MailText;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -19,13 +20,15 @@ class LicenceNotice extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: $this->heading.' ('.$this->team->name.')');
+        return new Envelope(subject: $this->heading.' ('.MailText::safe((string) $this->team->name, 'your company', 120).')');
     }
 
     public function content(): Content
     {
         return new Content(markdown: 'emails.licence-notice', with: [
-            'name' => $this->recipient->name, 'heading' => $this->heading, 'lines' => $this->lines, 'company' => $this->team->name,
+            // R-72 (E-05): the company and person names are typed by people; they are shown as plain words.
+            'name' => MailText::safe((string) $this->recipient->name, 'there'), 'heading' => $this->heading, 'lines' => $this->lines,
+            'company' => MailText::safe((string) $this->team->name, 'your company', 120),
             'url' => route('teams.show', $this->team).'#seats', 'isOwner' => $this->recipient->ownsTeam($this->team),
         ]);
     }

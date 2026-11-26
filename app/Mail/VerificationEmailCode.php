@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Support\MailText;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -20,14 +21,15 @@ class VerificationEmailCode extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Your InfoDot verification code: '.$this->code);
+        // R-72 (E-11): the code stays inside the message, never in a subject line that shows in previews and notifications.
+        return new Envelope(subject: 'Your InfoDot verification code');
     }
 
     public function content(): Content
     {
         return new Content(markdown: 'emails.verification-code', with: [
             'code' => $this->code,
-            'business' => $this->businessName,
+            'business' => MailText::safe($this->businessName, 'the business', 120),
             'minutes' => $this->minutes,
         ]);
     }

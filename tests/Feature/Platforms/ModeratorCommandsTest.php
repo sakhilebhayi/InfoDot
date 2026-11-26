@@ -13,9 +13,14 @@ class ModeratorCommandsTest extends PlatformTestCase
     {
         $person = $this->person();
         $other = $this->person();
-        $other->forceFill(['is_moderator' => true])->save();
+        $other->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
-        $this->artisan('moderator:grant', ['email' => $person->email])->expectsOutputToContain('is now a moderator')->assertSuccessful();
+        $this->artisan('moderator:grant', ['email' => $person->email])->expectsOutputToContain('is now a moderator')
+            ->expectsOutputToContain('only once they turn on two-factor')->assertSuccessful();
+        // R-72: the role is granted, but it works only with two-factor sign-in on.
+        $this->assertTrue($person->fresh()->hasModeratorRole());
+        $this->assertFalse($person->fresh()->isModerator());
+        $person->forceFill(['two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $this->assertTrue($person->fresh()->isModerator());
 
         $this->artisan('moderator:grant', ['email' => $person->email])->expectsOutputToContain('already')->assertSuccessful();
@@ -45,7 +50,7 @@ class ModeratorCommandsTest extends PlatformTestCase
     public function test_the_only_moderator_cannot_be_removed_without_force(): void
     {
         $only = $this->person();
-        $only->forceFill(['is_moderator' => true])->save();
+        $only->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         $this->artisan('moderator:revoke', ['email' => $only->email])->expectsOutputToContain('only moderator')->assertFailed();
         $this->assertTrue($only->fresh()->isModerator());

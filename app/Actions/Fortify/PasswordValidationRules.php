@@ -2,17 +2,18 @@
 
 namespace App\Actions\Fortify;
 
-use Laravel\Fortify\Rules\Password;
+use Illuminate\Validation\Rules\Password;
 
 trait PasswordValidationRules
 {
     /**
-     * Get the validation rules used to validate passwords.
+     * The rules for a new password: the app-wide default (R-72, S-03: at least 12 characters and not found in a public breach,
+     * see AppServiceProvider::boot), typed twice.
      *
-     * @return array
+     * @return array<int, mixed>
      */
-    protected function passwordRules()
+    protected function passwordRules(): array
     {
-        return ['required', 'string', new Password, 'confirmed'];
+        return ['required', 'string', Password::defaults(), 'confirmed'];
     }
 }

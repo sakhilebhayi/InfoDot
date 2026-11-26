@@ -52,9 +52,9 @@ class BusinessTrustTest extends TestCase
         $this->editor = User::factory()->withPersonalTeam()->create();
         $this->reporter = User::factory()->withPersonalTeam()->create(['name' => 'Rita Reporter']);
         $this->reviewer = User::factory()->withPersonalTeam()->create(['name' => 'First Reviewer']);
-        $this->reviewer->forceFill(['is_moderator' => true])->save();
+        $this->reviewer->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $this->reviewer2 = User::factory()->withPersonalTeam()->create(['name' => 'Second Reviewer']);
-        $this->reviewer2->forceFill(['is_moderator' => true])->save();
+        $this->reviewer2->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         $this->acme = Team::forceCreate(['user_id' => $this->owner->id, 'name' => 'Acme Boreholes', 'personal_team' => false]);
         $this->owner->switchTeam($this->acme);
@@ -117,7 +117,7 @@ class BusinessTrustTest extends TestCase
         $this->actingAs($this->reviewer)->get('/attachments/'.$file->uuid)->assertOk();
         $this->actingAs($this->owner)->get('/attachments/'.$file->uuid)->assertNotFound();
         $insider = User::factory()->withPersonalTeam()->create();
-        $insider->forceFill(['is_moderator' => true])->save();
+        $insider->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $this->acme->users()->attach($insider, ['role' => 'editor']);
         $this->actingAs($insider)->get('/attachments/'.$file->uuid)->assertNotFound();
     }

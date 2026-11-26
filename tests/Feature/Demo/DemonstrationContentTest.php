@@ -551,7 +551,8 @@ class DemonstrationContentTest extends TestCase
         $this->artisan('demo:install', ['--with-moderator' => true])->expectsOutputToContain('real moderation powers')->assertSuccessful();
         app(DemoRegistry::class)->flush();
         $moderator = $this->person('thabo');
-        $this->assertTrue($moderator->isModerator());
+        // R-72: the demonstration moderator holds the role; like any moderator it works once two-factor is on.
+        $this->assertTrue($moderator->hasModeratorRole());
         $this->assertTrue(app(DemoRegistry::class)->isDemoUser($moderator));
         $this->assertNotNull($moderator->email_verified_at);
         $this->assertSame(4, User::where('email', 'like', '%@demo.infodot.test')->count());
@@ -573,7 +574,7 @@ class DemonstrationContentTest extends TestCase
 
         $this->artisan('demo:install', ['--with-moderator' => true])->expectsOutputToContain('moderator was added')->assertSuccessful();
         app(DemoRegistry::class)->flush();
-        $this->assertTrue($this->person('thabo')->isModerator());
+        $this->assertTrue($this->person('thabo')->hasModeratorRole());
         $this->assertSame($hash, $this->person('naledi')->password);
         $this->assertSame($questions, Questions::withoutGlobalScopes()->count());
 

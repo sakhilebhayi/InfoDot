@@ -132,8 +132,8 @@ class AuthenticationFlowSmokeTest extends TestCase
         $registerResponse = $this->post('/register', [
             'name' => 'Smoke Test User',
             'email' => 'smoke@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'green-kettle-river-9',
+            'password_confirmation' => 'green-kettle-river-9',
             'terms' => 'on',
         ]);
 
@@ -146,7 +146,7 @@ class AuthenticationFlowSmokeTest extends TestCase
 
         $loginResponse = $this->post('/login', [
             'email' => 'smoke@example.com',
-            'password' => 'password',
+            'password' => 'green-kettle-river-9',
         ]);
 
         $this->assertAuthenticated();

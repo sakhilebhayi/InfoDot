@@ -1,0 +1,2 @@
+# Composer advisories allowed through the release gate (tools/ci-composer-audit.sh). One per line: the advisory id, then why it is safe
+# to ship and when it will be removed. Keep this empty unless there is no fixed version yet.

@@ -55,7 +55,7 @@ class BusinessVerificationTest extends TestCase
         $this->acme->users()->attach($this->editor, ['role' => 'editor']);
         $this->outsider = User::factory()->withPersonalTeam()->create();
         $this->reviewer = User::factory()->withPersonalTeam()->create();
-        $this->reviewer->forceFill(['is_moderator' => true])->save();
+        $this->reviewer->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
     }
 
     private function pdf(string $name = 'cor14-3.pdf'): UploadedFile

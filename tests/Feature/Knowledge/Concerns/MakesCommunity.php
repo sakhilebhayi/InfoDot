@@ -27,7 +27,7 @@ trait MakesCommunity
     private function moderator(string $name = 'Moderator'): User
     {
         $user = $this->person($name);
-        $user->forceFill(['is_moderator' => true])->save();
+        $user->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         return $user->fresh();
     }

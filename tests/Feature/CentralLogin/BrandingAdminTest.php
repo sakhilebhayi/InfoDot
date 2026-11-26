@@ -44,7 +44,7 @@ class BrandingAdminTest extends CentralLoginTestCase
         $this->actingAs($this->newcomer())->post($url, $this->fields())->assertForbidden();
 
         $moderator = $this->newcomer();
-        $moderator->forceFill(['is_moderator' => true])->save();
+        $moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $this->actingAs($moderator->fresh())->get('/admin/platforms/branding')->assertForbidden();
 
         $this->actingAs($this->administrator())->get('/admin/platforms/branding')->assertOk()->assertSee('Dot.Central');

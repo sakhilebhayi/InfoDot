@@ -34,6 +34,10 @@ trait ChangesPlatformAdministrator
         }
 
         $this->info("{$user->email} ".($grant ? 'is now a platform administrator.' : 'is no longer a platform administrator.'));
+        if ($grant && ! $user->fresh()?->hasSecuredSignIn()) {
+            // R-72 (S-02): the role is in place, but it does nothing until the person signs in with two-factor.
+            $this->warn('Their administrator powers work only once they turn on two-factor sign-in (Account settings, Two factor).');
+        }
 
         return self::SUCCESS;
     }

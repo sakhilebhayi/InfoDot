@@ -135,7 +135,7 @@ class AdminCentreAccessTest extends AdminCentreTestCase
             'owner' => $this->team->owner,
             'company administrator' => $this->memberOf($this->team, 'admin'),
             'member' => $this->memberOf($this->team),
-            'moderator who owns the company' => tap($this->company('Second Yard')->owner, fn (User $u) => $u->forceFill(['is_moderator' => true])->save())->fresh(),
+            'moderator who owns the company' => tap($this->company('Second Yard')->owner, fn (User $u) => $u->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save())->fresh(),
         ];
 
         foreach ($people as $who => $person) {

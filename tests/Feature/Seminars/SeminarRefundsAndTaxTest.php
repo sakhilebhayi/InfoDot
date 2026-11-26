@@ -204,7 +204,7 @@ class SeminarRefundsAndTaxTest extends TestCase
         $reg = $this->paidTicket($s);
         $this->cb('ticket.disputed', $reg->ticket_ref);
         $mod = $this->person('Mod');
-        $mod->forceFill(['is_moderator' => true])->save();
+        $mod->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         $this->actingAs($this->person('Nobody'))->get('/moderation/seminar-payments')->assertForbidden();
         $this->actingAs($mod->fresh())->get('/moderation/seminar-payments')->assertOk()->assertSee($reg->ticket_ref)->assertSee('Dispute open');

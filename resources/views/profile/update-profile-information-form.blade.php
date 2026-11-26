@@ -80,10 +80,18 @@
         </div>
 
         <!-- Email -->
-        <div class="col-span-6 sm:col-span-4">
+        <div class="col-span-6 sm:col-span-4" x-data="{ original: @js($this->user->email), changed: false }">
             <x-jet-label for="email" value="{{ __('Email') }}" />
-            <x-jet-input id="email" type="email" class="block w-full" wire:model.defer="state.email" />
+            <x-jet-input id="email" type="email" class="block w-full" wire:model.defer="state.email" x-on:input="changed = $event.target.value.trim() !== original" />
             <x-jet-input-error for="email" />
+
+            {{-- R-72 (E-07): a new email address is where password resets go, so changing it needs the current password. --}}
+            <div class="ix-field" x-show="changed" x-cloak>
+                <x-jet-label for="email_current_password" value="{{ __('Your current password') }}" />
+                <x-jet-input id="email_current_password" type="password" class="block w-full" wire:model.defer="state.current_password" autocomplete="current-password" />
+                <p class="ix-hint">Needed to change your email address. Password resets go to the new address once it is confirmed.</p>
+                <x-jet-input-error for="current_password" />
+            </div>
         </div>
     </x-slot>
 

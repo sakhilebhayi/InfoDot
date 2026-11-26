@@ -24,7 +24,7 @@ class AccountsDeskTest extends TestCase
 
     private function moderator(string $name = 'Mod Mokoena'): User
     {
-        return User::factory()->create(['name' => $name, 'email_verified_at' => now(), 'is_moderator' => true]);
+        return User::factory()->create(['name' => $name, 'email_verified_at' => now(), 'is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()]);
     }
 
     private function member(array $attributes = []): User
@@ -201,6 +201,8 @@ class AccountsDeskTest extends TestCase
         app(DemoRegistry::class)->flush();
 
         $demoModerator = User::where('email', 'thabo@demo.infodot.test')->firstOrFail();
+        // R-72: moderation needs two-factor sign-in, demonstration moderators included.
+        $demoModerator->forceFill(['two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $demoPerson = User::where('email', 'lerato@demo.infodot.test')->firstOrFail();
         $this->actingAs($demoModerator);
 

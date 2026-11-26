@@ -42,7 +42,7 @@ class Moderators
     {
         $this->hostOnly();
 
-        if ($user->isModerator() && ! $force && User::where('is_moderator', true)->count() <= 1) {
+        if ($user->hasModeratorRole() && ! $force && User::where('is_moderator', true)->count() <= 1) {
             throw new EntitlementRefused('That account is the only moderator. Taking the role away leaves nobody to moderate. Add another moderator first, or run it again with --force.');
         }
 
@@ -51,7 +51,7 @@ class Moderators
 
     private function set(User $user, bool $now): bool
     {
-        $was = $user->isModerator();
+        $was = $user->hasModeratorRole();
 
         if ($was === $now) {
             return false;

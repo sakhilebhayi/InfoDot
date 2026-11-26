@@ -43,7 +43,9 @@ use App\Support\PlatformSecret;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\Blade;
@@ -52,6 +54,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\NotPwnedVerifier;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Cashier\Cashier;
 use Laravel\Fortify\Events\TwoFactorAuthenticationDisabled;
 use Laravel\Fortify\Events\TwoFactorAuthenticationEnabled;
@@ -71,11 +75,13 @@ class AppServiceProvider extends ServiceProvider
         // One fetcher (and one time budget) per request, shared by robots.txt checks and the page reader.
         $this->app->scoped(SafeFetcher::class);
 
-        // Cashier registers POST /stripe/webhook, and without a webhook secret it accepts unsigned events from anyone. Leave the route out
-        // until STRIPE_WEBHOOK_SECRET is set.
-        if (! config('cashier.webhook.secret')) {
-            Cashier::ignoreRoutes();
-        }
+        // Cashier registers POST /stripe/webhook. InfoDot takes no payments through Stripe (payments are Dot.Finance's), so the route is
+        // never registered, whatever is in the environment (R-72, F-03).
+        Cashier::ignoreRoutes();
+
+        // R-72 (S-03): the breached-password check asks Pwned Passwords for the first five characters of the password's SHA-1 hash only.
+        // Laravel's default waits up to 30 seconds; three is plenty, and if the service does not answer the password is not refused.
+        $this->app->singleton(UncompromisedVerifier::class, fn ($app) => new NotPwnedVerifier($app[HttpFactory::class], 3));
 
         // One register of demonstration content per request (R-49): it is read once and asked many times.
         $this->app->scoped(DemoRegistry::class);
@@ -88,6 +94,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // R-72 (S-03): every new or changed password is at least 12 characters and not one found in a public breach.
+        Password::defaults(fn () => Password::min(12)->uncompromised());
+
         if ($this->app->isProduction()) {
             CanonicalUrl::apply($this->app->runningInConsole() ? null : $this->app['request']);
         }

@@ -41,7 +41,7 @@ class SeminarReportsAndErasureTest extends TestCase
     private function moderator(): User
     {
         $m = $this->person('Moderator');
-        $m->forceFill(['is_moderator' => true])->save();
+        $m->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         return $m;
     }

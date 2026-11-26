@@ -20,7 +20,12 @@ class PlatformAdminRoleTest extends AdminCentreTestCase
     {
         $person = $this->person();
 
-        $this->artisan('platform-admin:grant', ['email' => $person->email])->expectsOutputToContain('is now a platform administrator')->assertSuccessful();
+        $this->artisan('platform-admin:grant', ['email' => $person->email])->expectsOutputToContain('is now a platform administrator')
+            ->expectsOutputToContain('only once they turn on two-factor')->assertSuccessful();
+        // R-72: the role is granted, but it works only with two-factor sign-in on.
+        $this->assertTrue($person->fresh()->hasPlatformAdminRole());
+        $this->assertFalse(Gate::forUser($person->fresh())->allows('administer-platforms'));
+        $person->forceFill(['two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $this->assertTrue($person->fresh()->isPlatformAdmin());
         $this->assertTrue(Gate::forUser($person->fresh())->allows('administer-platforms'));
 

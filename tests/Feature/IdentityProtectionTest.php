@@ -40,7 +40,7 @@ class IdentityProtectionTest extends TestCase
         Mail::fake();
 
         $this->reviewer = User::factory()->withPersonalTeam()->create();
-        $this->reviewer->forceFill(['is_moderator' => true])->save();
+        $this->reviewer->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         $this->owner = User::factory()->withPersonalTeam()->create();
         $this->acme = $this->business($this->owner, 'Acme Boreholes (Pty) Ltd', [

@@ -6,10 +6,13 @@ use App\Notifications\EmailAddressChanged;
 use App\Rules\DeliverableEmailDomain;
 use App\Services\Profile\ProfilePhoto;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
@@ -23,16 +26,33 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      */
     public function update($user, array $input)
     {
+        // R-72 (E-07): password resets go to the account's address, so taking it over must need the current password. Five wrong tries per
+        // account in ten minutes, like changing the password.
+        $changingEmail = ($input['email'] ?? null) !== $user->email;
+        $key = 'email-change:'.$user->getAuthIdentifier();
+        if ($changingEmail && RateLimiter::tooManyAttempts($key, 5)) {
+            throw ValidationException::withMessages([
+                'current_password' => 'Too many wrong passwords. Wait '.max(1, (int) ceil(RateLimiter::availableIn($key) / 60)).' minutes and try again.',
+            ])->errorBag('updateProfileInformation');
+        }
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => array_filter(['bail', 'required', ($input['email'] ?? null) !== $user->email ? new DeliverableEmailDomain : null, 'email', 'max:255', Rule::unique('users')->ignore($user->id)]),
             'photo' => ['nullable', 'image', 'mimes:'.ProfilePhoto::MIMES, 'max:'.ProfilePhoto::MAX_KILOBYTES],
+            'current_password' => $changingEmail ? ['required', 'string'] : ['nullable'],
         ], [
+            'current_password.required' => 'Enter your current password to change your email address.',
             'photo.image' => 'Choose a picture: JPG, PNG or WebP.',
             'photo.mimes' => 'Choose a picture: JPG, PNG or WebP.',
             'photo.max' => 'That picture is over 10 MB. Choose a smaller one.',
             'photo.uploaded' => 'The picture did not upload. Check your connection and try again.',
-        ])->validateWithBag('updateProfileInformation');
+        ])->after(function ($validator) use ($user, $input, $changingEmail, $key) {
+            if ($changingEmail && isset($input['current_password']) && ! Hash::check((string) $input['current_password'], (string) $user->password)) {
+                RateLimiter::hit($key, 600);
+                $validator->errors()->add('current_password', 'That is not your current password.');
+            }
+        })->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
             app(ProfilePhoto::class)->store($user, $input['photo']);

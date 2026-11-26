@@ -66,8 +66,11 @@ class EcosystemRedeemController extends Controller
             return $this->refuse($platform, 'user missing or email not verified (token kept)');
         }
 
-        // Single use: gone whatever happens next.
-        $accessToken->delete();
+        // Single use: gone whatever happens next. R-72 (S-08): the delete is the gate. Two redeems of the same code at the same moment
+        // can both reach this line, but only one of them removes the row; the other is refused.
+        if (PersonalAccessToken::whereKey($accessToken->getKey())->delete() !== 1) {
+            return $this->refuse($platform, 'token already used');
+        }
 
         if ($user->isSuspended()) {
             return $this->refuse($platform, 'account suspended');

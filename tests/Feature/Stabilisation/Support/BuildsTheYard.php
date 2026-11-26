@@ -93,7 +93,7 @@ trait BuildsTheYard
         $this->member = User::factory()->withPersonalTeam()->create(['name' => 'Mpho Member']);
         $this->colleague2 = User::factory()->withPersonalTeam()->create(['name' => 'Cara Customer']);
         $this->moderator = User::factory()->withPersonalTeam()->create(['name' => 'Rea Reviewer']);
-        $this->moderator->forceFill(['is_moderator' => true])->save();
+        $this->moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         // The member has a profile picture; the owner has none and is shown by an initial.
         $this->member->updateProfilePhoto(UploadedFile::fake()->image('me.jpg', 320, 320));

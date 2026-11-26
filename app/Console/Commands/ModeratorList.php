@@ -15,7 +15,7 @@ class ModeratorList extends Command
     public function handle(): int
     {
         $rows = User::query()->where(fn ($q) => $q->where('is_moderator', true)->orWhere('is_platform_admin', true))->orderBy('id')->get()
-            ->map(fn (User $u) => [$u->email, $u->isPlatformAdmin() ? 'yes' : 'no', $u->isModerator() ? 'yes' : 'no', $u->isSuspended() ? 'suspended' : 'active']);
+            ->map(fn (User $u) => [$u->email, $u->hasPlatformAdminRole() ? ($u->hasSecuredSignIn() ? 'yes' : 'yes (needs two-factor)') : 'no', $u->hasModeratorRole() ? ($u->hasSecuredSignIn() ? 'yes' : 'yes (needs two-factor)') : 'no', $u->isSuspended() ? 'suspended' : 'active']);
 
         if ($rows->isEmpty()) {
             $this->info('Nobody holds either role.');

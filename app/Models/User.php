@@ -124,10 +124,25 @@ class User extends Authenticatable implements MustVerifyEmail
         }
     }
 
-    /** Moderators accept answers on others' questions, verify solutions and handle reports. Granted by an administrator. */
+    /**
+     * Moderators accept answers on others' questions, verify solutions and handle reports. Granted by an administrator.
+     * R-72 (S-02): the powers only work while the person signs in with two-factor; the role alone is hasModeratorRole().
+     */
     public function isModerator(): bool
     {
+        return $this->hasModeratorRole() && $this->hasSecuredSignIn();
+    }
+
+    /** The moderator role as granted, whether or not two-factor is on yet: for granting, listing and asking them to turn it on. */
+    public function hasModeratorRole(): bool
+    {
         return (bool) $this->is_moderator;
+    }
+
+    /** Two-factor sign-in is on and confirmed (Fortify's own test: a secret and a confirmed code). Privileged roles need it. */
+    public function hasSecuredSignIn(): bool
+    {
+        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
     }
 
     /** The official InfoDot account that platform-curated library entries are published under (R-14). */
@@ -136,6 +151,12 @@ class User extends Authenticatable implements MustVerifyEmail
      * moderation on purpose, and only ever set by `platform-admin:grant` on the host.
      */
     public function isPlatformAdmin(): bool
+    {
+        return $this->hasPlatformAdminRole() && $this->hasSecuredSignIn();
+    }
+
+    /** The platform administrator role as granted, whether or not two-factor is on yet (R-72). */
+    public function hasPlatformAdminRole(): bool
     {
         return (bool) $this->is_platform_admin;
     }

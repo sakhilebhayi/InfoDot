@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Actions\Fortify\ThrottledConfirmPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Http\Controllers\Auth\ResendVerificationEmailController;
+use App\Http\Responses\GenericPasswordResetLinkResponse;
 use App\Http\Responses\VerifiedEmailResponse;
 use App\Models\User;
 use App\Services\Accounts\AccountSuspension;
@@ -16,6 +18,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Actions\ConfirmPassword;
+use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Contracts\VerifyEmailResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
@@ -33,6 +37,10 @@ class FortifyServiceProvider extends ServiceProvider
         $this->app->bind(EmailVerificationNotificationController::class, ResendVerificationEmailController::class);
         // R-54: a platform's pending sign-in continues after the address is confirmed.
         $this->app->singleton(VerifyEmailResponse::class, VerifiedEmailResponse::class);
+        // R-72 (S-04): "forgot password" never says whether an account uses the address.
+        $this->app->bind(FailedPasswordResetLinkRequestResponse::class, GenericPasswordResetLinkResponse::class);
+        // R-72 (S-05): confirming the password is limited per account, on the page and in the settings dialogs.
+        $this->app->bind(ConfirmPassword::class, ThrottledConfirmPassword::class);
     }
 
     /**

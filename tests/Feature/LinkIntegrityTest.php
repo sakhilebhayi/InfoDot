@@ -28,7 +28,7 @@ class LinkIntegrityTest extends TestCase
 
     private function person(): User
     {
-        $user = User::factory()->create(['email_verified_at' => Carbon::now(), 'is_moderator' => true]);
+        $user = User::factory()->create(['email_verified_at' => Carbon::now(), 'is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()]);
         $team = Team::factory()->create(['user_id' => $user->id, 'personal_team' => true]);
         $user->forceFill(['current_team_id' => $team->id])->save();
 

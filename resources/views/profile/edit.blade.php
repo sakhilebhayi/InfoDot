@@ -16,6 +16,10 @@
         <a href="{{ route('profile.show', auth()->id()) }}" class="ix-btn">View public profile</a>
     </div>
 
+    @if (session('status'))
+        <p class="ix-alert" role="status">{{ session('status') }}</p>
+    @endif
+
     <div class="ix-settings">
         <nav class="ix-settings__index" aria-label="Settings sections">
             @foreach ($sections as $i => [$id, $label])

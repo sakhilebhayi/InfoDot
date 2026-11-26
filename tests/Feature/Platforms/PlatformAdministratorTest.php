@@ -15,7 +15,7 @@ class PlatformAdministratorTest extends PlatformTestCase
     {
         $team = $this->company();
         $moderator = $this->person();
-        $moderator->forceFill(['is_moderator' => true])->save();
+        $moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         $this->assertFalse($team->owner->isPlatformAdmin());
         $this->assertFalse($moderator->fresh()->isPlatformAdmin());
@@ -36,6 +36,8 @@ class PlatformAdministratorTest extends PlatformTestCase
         $person = $this->person();
 
         $this->artisan('platform:admin', ['action' => 'grant', 'email' => $person->email])->expectsOutputToContain('is now a platform administrator')->assertSuccessful();
+        $this->assertTrue($person->fresh()->hasPlatformAdminRole());
+        $person->forceFill(['two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $this->assertTrue($person->fresh()->isPlatformAdmin());
 
         $this->artisan('platform:admin', ['action' => 'grant', 'email' => $person->email])->expectsOutputToContain('already')->assertSuccessful();
@@ -67,7 +69,7 @@ class PlatformAdministratorTest extends PlatformTestCase
         Route::middleware(['web', 'auth', 'platform.admin'])->get('/_test/platform-admin', fn () => 'in');
 
         $moderator = $this->person();
-        $moderator->forceFill(['is_moderator' => true])->save();
+        $moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         $this->get('/_test/platform-admin')->assertRedirect('/login');
         $this->actingAs($this->company()->owner)->get('/_test/platform-admin')->assertForbidden();
