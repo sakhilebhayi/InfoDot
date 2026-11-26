@@ -8902,7 +8902,7 @@ body {
 .ix-inbox__search .ix-input { min-width: 200px; }
 .ix-inbox__rows { margin: 0; padding: 0; list-style: none; }
 
-.ix-inrow { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 0 16px; align-items: start; padding: 16px 20px; border-top: 1px solid var(--ix-rule); transition: background-color 120ms ease-out; }
+.ix-inrow { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 0 16px; align-items: start; padding: 16px 20px; border-top: 1px solid var(--ix-rule); transition: background-color var(--ix-dur-fast) var(--ix-ease-out); }
 .ix-inrow:first-child { border-top: 0; }
 .ix-inrow:hover { background: var(--ix-hover); }
 .ix-inrow:focus-within { outline: 2px solid var(--ix-focus); outline-offset: -2px; }
@@ -9033,12 +9033,12 @@ body {
 .ix-letters .ix-thread__event .ix-hint { margin: 0; }
 .ix-letters .ix-thread__event .ix-hint::before { content: '\00B7'; margin: 0 6px; color: var(--ix-ghost); }
 
-.ix-composer { border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius); background: var(--ix-panel); overflow: hidden; transition: border-color 120ms ease-out; }
+.ix-composer { border: 1px solid var(--ix-rule-strong); border-radius: var(--ix-radius); background: var(--ix-panel); overflow: hidden; transition: border-color var(--ix-dur-fast) var(--ix-ease-out); }
 .ix-composer:focus-within { border-color: var(--ix-text); }
 .ix-composer:has(.ix-composer__text:focus-visible) { outline: 2px solid var(--ix-focus); outline-offset: 2px; }
 .ix-composer__label { display: block; padding: 12px 18px 0; font-size: var(--dot-text-body-sm-size); font-weight: 600; color: var(--ix-text-3); }
-.ix-composer__text { display: block; width: 100%; min-height: 120px; padding: 6px 18px 14px; border: 0; background: transparent; color: var(--ix-text); font: inherit; line-height: 1.6; resize: vertical; }
-.ix-composer__text:focus, .ix-composer__text:focus-visible { outline: none; }
+.ix-composer .ix-composer__text { display: block; width: 100%; min-height: 120px; padding: 6px 18px 14px; border: 0; background: transparent; color: var(--ix-text); font: inherit; line-height: 1.6; resize: vertical; }
+.ix-composer .ix-composer__text:focus, .ix-composer .ix-composer__text:focus-visible { outline: none; box-shadow: none; background-color: transparent; }
 .ix-composer__text::placeholder { color: var(--ix-text-3); }
 .ix-composer__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 10px 12px 10px 14px; border-top: 1px solid var(--ix-rule); background: var(--ix-hover); }
 .ix-composer__files { min-width: 0; font-size: var(--dot-text-body-sm-size); color: var(--ix-text-3); }
