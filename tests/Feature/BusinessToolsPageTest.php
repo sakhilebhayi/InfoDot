@@ -46,6 +46,17 @@ class BusinessToolsPageTest extends TestCase
         $this->assertStringContainsString('__motionFailsafe', $html, 'the layout shows the page if the motion script is late');
     }
 
+    public function test_the_page_states_infodots_aim_as_an_aim(): void
+    {
+        $html = $this->get(route('business-tools'))->assertOk()->getContent();
+
+        // R-70: the owner's aim, worded as an aim and shown once, before the closing invitation; never as a figure plate.
+        $this->assertStringContainsString('Our aim is to help <span class="hp-aim__mark">one million businesses every year</span> reach the goals they set for themselves.', $html);
+        $this->assertSame(1, substr_count($html, 'class="hp-aim"'));
+        $this->assertLessThan(strpos($html, 'id="bt-cta-title"'), strpos($html, 'id="bt-aim-title"'));
+        $this->assertStringNotContainsString('1,000,000', $html);
+    }
+
     public function test_every_platform_on_the_homepage_wall_has_its_own_showcase(): void
     {
         $html = $this->get('/business-tools')->assertOk()->getContent();
