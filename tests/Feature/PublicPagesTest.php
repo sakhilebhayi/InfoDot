@@ -27,8 +27,7 @@ class PublicPagesTest extends TestCase
         // R-67: the story under the owner's hero: the reality (the owner's own heading), four pillars, a week, what opens when you join.
         foreach (['Knowledge', 'Tools', 'Connections', 'Progress', 'Stop figuring it out alone', 'Stop juggling disconnected apps', "Stop missing what you can't see", 'Turn what you learn into what you do',
             // R-73 phase 1: the promise, the dream it is for, and the reality, in the owner's approved words.
-            'Join InfoDot for free', 'Explore the ecosystem', "That business you've been dreaming about? Let's give it somewhere to grow.",
-            'InfoDot brings business knowledge, tools and other businesses together in one free account.',
+            'Join InfoDot for free', 'Explore the ecosystem', "Give the business you've been dreaming about a place to grow, get it right the first time.",
             'Every business starts with someone who decided to try.', "Wherever you're starting from, there's a next step.",
             'You started this business to build something. Not to spend every day figuring everything out.', "None of this means you're doing it wrong.",
             'What a week with InfoDot can look like.', 'Your business. Your tools. One connected ecosystem.', 'What opens when you join.', 'Creating an InfoDot account is free.',
@@ -46,7 +45,9 @@ class PublicPagesTest extends TestCase
         // The old frame and the sections it replaced are gone, so the page does not say the same thing twice.
         foreach (['Most small businesses run on memory and chat.', "You don't have to figure it all out yourself.", 'Getting started with InfoDot is simple.', 'Your business journey starts here.', 'Learn what works',
             // R-73: the R-67 reality heading is replaced, and the ambition section is not said twice.
-            "most businesses don't really know what they're doing", 'InfoDot is here to change that.', "Wherever you are, there's a next step.", 'See how it works'] as $old) {
+            "most businesses don't really know what they're doing", 'InfoDot is here to change that.', "Wherever you are, there's a next step.", 'See how it works',
+            // The owner's tagline replaced the dream question and the line that followed it.
+            "That business you've been dreaming about? Let's give it somewhere to grow.", 'InfoDot brings business knowledge, tools and other businesses together in one free account.'] as $old) {
             $this->assertStringNotContainsString($old, strip_tags(str_replace('&#039;', "'", $html)), $old);
         }
         $this->assertStringContainsString(route('register'), $html);

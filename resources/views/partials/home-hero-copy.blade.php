@@ -3,9 +3,8 @@
             @if ($first)
                 <p class="lp-hero__sub" data-hero>What do you want to solve today?</p>
             @else
-                {{-- R-73: the promise, then the dream it is for, then in one line what InfoDot is. --}}
-                <p class="lp-hero__sub hd__dream" data-hero>That business you've been dreaming about? Let's give it somewhere to grow.</p>
-                <p class="lp-hero__ctx" data-hero>InfoDot brings business knowledge, tools and other businesses together in one free account.</p>
+                {{-- R-73: the promise, then the dream it is for (the owner's wording). --}}
+                <p class="lp-hero__sub hd__dream" data-hero>Give the business you've been dreaming about a place to grow, get it right the first time.</p>
             @endif
 
             <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>

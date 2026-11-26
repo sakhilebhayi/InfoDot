@@ -128,8 +128,6 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         .fromTo('.hx-ledger__list li', { x: 18, autoAlpha: 0 }, { x: 0, autoAlpha: 1, duration: 0.7, stagger: 0.12 }, 0.95)
         .fromTo('.lp-hero__title', { y: 28, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.1)
         .fromTo('.lp-hero__sub', { y: 20, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9 }, 0.3)
-        // R-73: every [data-hero] part the CSS hides must be named here, or it stays hidden.
-        .fromTo('.lp-hero__ctx', { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.9 }, 0.38)
         .fromTo('.lp-search', { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 1 }, 0.45)
         .fromTo('.hp-hero__actions', { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.8 }, 0.75);
 
