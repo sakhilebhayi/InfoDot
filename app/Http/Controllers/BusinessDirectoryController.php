@@ -9,6 +9,7 @@ use App\Services\Directory\BusinessDirectory;
 use App\Services\Directory\FeaturedPlacement;
 use App\Services\Insights\BusinessInsights;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -39,7 +40,9 @@ class BusinessDirectoryController extends Controller
         // Results show once someone searches, filters, sorts, pages or asks for everything; before that, browsing.
         $searching = collect($f)->except(['view', 'verified'])->filter()->isNotEmpty() || $f['verified'];
         $viewer = $request->user();
-        $search = $directory->search($f, $viewer);
+        // R-72 (P-21): someone only browsing gets no results list, so the search is not run for them.
+        $search = $searching ? $directory->search($f, $viewer)
+            : ['results' => new LengthAwarePaginator([], 0, 24), 'reasons' => [], 'words' => [], 'location' => null, 'service_hits' => []];
 
         // Each business on this page of results appeared in a search (R-33 §9), counted for it.
         if ($searching && $search['results']->isNotEmpty()) {

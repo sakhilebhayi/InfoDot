@@ -40,6 +40,7 @@ use App\Services\Sso\PlatformContext;
 use App\Services\Web\SafeFetcher;
 use App\Support\CanonicalUrl;
 use App\Support\Input;
+use App\Support\LazyLoadLog;
 use App\Support\PlatformSecret;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Verified;
@@ -47,6 +48,7 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Request;
@@ -102,6 +104,12 @@ class AppServiceProvider extends ServiceProvider
     {
         // R-72 (S-03): every new or changed password is at least 12 characters and not one found in a public breach.
         Password::defaults(fn () => Password::min(12)->uncompromised());
+
+        // R-72 (P-27): lazy loading is logged on the live site (App\Support\LazyLoadLog); tests and development are unchanged.
+        if ($this->app->isProduction()) {
+            Model::preventLazyLoading();
+            Model::handleLazyLoadingViolationUsing(new LazyLoadLog);
+        }
 
         // R-72 (E-13): the two framework emails speak in InfoDot's own words, without the default "Regards" sign-off.
         ResetPassword::toMailUsing(fn ($notifiable, string $token) => (new MailMessage)

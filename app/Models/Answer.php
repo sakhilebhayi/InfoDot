@@ -7,6 +7,7 @@ use App\Models\Concerns\HasMentions;
 use App\Models\Concerns\IsModerated;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -41,8 +42,12 @@ class Answer extends Model
         return hash('sha256', mb_strtolower(preg_replace('/\s+/u', ' ', trim($body))));
     }
 
-    /** Existing solutions offered with this answer (R-16): references to the originals, drawn as cards. */
-    public function recommendations()
+    /**
+     * Existing solutions offered with this answer (R-16): references to the originals, drawn as cards.
+     *
+     * @return HasMany<SolutionRecommendation, $this>
+     */
+    public function recommendations(): HasMany
     {
         return $this->hasMany(SolutionRecommendation::class, 'answer_id');
     }

@@ -147,7 +147,7 @@ class Answers extends Component
 
         $answers = Answer::where('question_id', $this->question->id)
             ->where('status', Answer::PUBLISHED)
-            ->with('user', 'question', 'attachments', 'mentions.mentionedUser', 'mentions.mentionedTeam', 'recommendations.solution.user')
+            ->with(['user', 'question', 'attachments', 'mentions.mentionedUser', 'mentions.mentionedTeam', 'recommendations.solution' => fn ($q) => $q->withCount('confirmations'), 'recommendations.solution.user'])
             ->orderByRaw('accepted_at is null')->orderBy('created_at')
             ->get();
 
