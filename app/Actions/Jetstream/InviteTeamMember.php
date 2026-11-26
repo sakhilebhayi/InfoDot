@@ -66,7 +66,6 @@ class InviteTeamMember implements InvitesTeamMembers
                 'category' => 'mail',
                 'team_id' => $team->id,
                 'exception' => $e::class,
-                'reason' => mb_substr($e->getMessage(), 0, 300),
             ]);
 
             $invitation->delete();
@@ -120,7 +119,7 @@ class InviteTeamMember implements InvitesTeamMembers
         try {
             Mail::to($invitation->email)->send(new TeamInvitation($invitation));
         } catch (TransportExceptionInterface $e) {
-            Log::error('team.invitation_mail_failed', ['category' => 'mail', 'team_id' => $team->id, 'exception' => $e::class, 'reason' => mb_substr($e->getMessage(), 0, 300)]);
+            Log::error('team.invitation_mail_failed', ['category' => 'mail', 'team_id' => $team->id, 'exception' => $e::class]);
             $invitation->forceFill(['expires_at' => $before])->save();
 
             throw ValidationException::withMessages([

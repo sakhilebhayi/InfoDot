@@ -400,6 +400,11 @@ final class EnquiryService
 
         $this->notices->record($kind, $recipient, 'enquiry', $enquiry->id, 'enq:'.$enquiry->id.':'.$ref, $actor);
 
+        // R-72 (E-12): an address nobody has confirmed may not be theirs; the notice is on their list, the email waits for confirmation.
+        if ($recipient->email_verified_at === null) {
+            return;
+        }
+
         // The person's choice for their companies' notifications (R-64 phase 8): email as it happens, in the daily summary, or none.
         if (! app(NotificationPreferences::class)->instantEmail($recipient, $kind)) {
             return;

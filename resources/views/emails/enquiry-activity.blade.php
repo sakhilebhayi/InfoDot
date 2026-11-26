@@ -16,4 +16,6 @@ Open the conversation
 @endcomponent
 
 The message itself stays on InfoDot. You will not get another email about this conversation for {{ config('enquiries.email_quiet_minutes') }} minutes; the bell on InfoDot shows everything as it arrives.
+
+[Choose which emails you get]({{ $settingsUrl }})
 @endcomponent

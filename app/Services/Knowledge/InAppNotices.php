@@ -2,6 +2,7 @@
 
 namespace App\Services\Knowledge;
 
+use App\Jobs\SendNoticeEmail;
 use App\Models\Booking;
 use App\Models\Enquiry;
 use App\Models\Questions;
@@ -46,12 +47,18 @@ class InAppNotices
         }
 
         try {
-            UserNotice::create([
+            $notice = UserNotice::create([
                 'user_id' => $recipient->id, 'kind' => $kind, 'subject_type' => $subjectType,
                 'subject_id' => $subjectId, 'ref' => mb_substr($ref, 0, 96), 'created_at' => now(),
             ]);
         } catch (UniqueConstraintViolationException) {
             return false;
+        }
+
+        // R-72 (E-03): security and business notices without a message of their own are emailed as it happens (the job checks the
+        // person's settings and everything else when it runs). After the current transaction, so a rolled-back change sends nothing.
+        if (SendNoticeEmail::covers($kind)) {
+            SendNoticeEmail::dispatch($notice->id)->afterCommit();
         }
 
         return true;
@@ -237,6 +244,15 @@ class InAppNotices
         }
     }
 
+    /** R-72 (E-08): the person a notice is for, once per request, so a title is shown only if they may read it. */
+    private function recipientOf(UserNotice $notice): ?User
+    {
+        return $this->recipients[$notice->user_id] ??= User::find($notice->user_id);
+    }
+
+    /** @var array<int, User|null> */
+    private array $recipients = [];
+
     private function subject(string $type, int $id): ?Model
     {
         if (isset($this->preloaded[$type]) && array_key_exists($id, $this->preloaded[$type])) {
@@ -258,13 +274,13 @@ class InAppNotices
         if ($notice->subject_type === 'question') {
             $q = $this->subject('question', $notice->subject_id);
 
-            return $q === null || $q->isHidden() ? $gone : ['text' => $this->words($notice->kind, (string) $q->question), 'url' => route('questions.view', ['qid' => $q->id])];
+            return ! $q instanceof Questions || $q->isHidden() || ! $q->visibleTo($this->recipientOf($notice)) ? $gone : ['text' => $this->words($notice->kind, (string) $q->question), 'url' => route('questions.view', ['qid' => $q->id])];
         }
 
         if ($notice->subject_type === 'solution') {
             $s = $this->subject('solution', $notice->subject_id);
 
-            return $s === null || $s->isHidden() ? $gone : ['text' => $this->words($notice->kind, (string) $s->solution_title), 'url' => route('solutions.view', ['id' => $s->id])];
+            return ! $s instanceof Solutions || $s->isHidden() || ! $s->visibleTo($this->recipientOf($notice)) ? $gone : ['text' => $this->words($notice->kind, (string) $s->solution_title), 'url' => route('solutions.view', ['id' => $s->id])];
         }
 
         if ($notice->subject_type === 'seminar') {
@@ -274,7 +290,7 @@ class InAppNotices
                 return $gone;
             }
 
-            return ['text' => $this->words($notice->kind, (string) $sem->title, $sem).($notice->kind === UserNotice::SEMINAR_REMINDER ? ' Starts '.$sem->starts_at->timezone(config('app.timezone'))->format('j M, H:i').'.' : ''), 'url' => route('seminars.show', ['seminar' => $sem->id])];
+            return ['text' => $this->words($notice->kind, (string) $sem->title, $sem).($notice->kind === UserNotice::SEMINAR_REMINDER ? ' Starts '.$sem->starts_at->copy()->timezone(config('app.display_timezone'))->format('j M, H:i').'.' : ''), 'url' => route('seminars.show', ['seminar' => $sem->id])];
         }
 
         if ($notice->subject_type === 'business') {

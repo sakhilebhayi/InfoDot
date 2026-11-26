@@ -90,7 +90,6 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'category' => 'mail',
                 'user_id' => $user->getAuthIdentifier(),
                 'exception' => $e::class,
-                'reason' => mb_substr($e->getMessage(), 0, 300),
             ]);
         }
     }
@@ -118,7 +117,6 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 'category' => 'mail',
                 'user_id' => $user->getAuthIdentifier(),
                 'exception' => $e::class,
-                'reason' => mb_substr($e->getMessage(), 0, 300),
             ]);
 
             if (app()->bound('session') && request()->hasSession()) {

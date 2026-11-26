@@ -87,7 +87,7 @@ class BookingNotificationsTest extends TestCase
 
     private function mails(User $user, ?string $kind = null): int
     {
-        return Mail::sent(BookingActivity::class, fn (BookingActivity $m) => $m->hasTo($user->email) && ($kind === null || $m->kind === $kind))->count();
+        return Mail::queued(BookingActivity::class, fn (BookingActivity $m) => $m->hasTo($user->email) && ($kind === null || $m->kind === $kind))->count();
     }
 
     // ------------------------------------------------------------------------------------------------------------------- a new booking
@@ -110,7 +110,7 @@ class BookingNotificationsTest extends TestCase
         $booking = $this->book($customer, '2026-11-30 08:00:00', 'auto');
 
         $this->assertSame(1, $this->notices($customer, UserNotice::BOOKING_CONFIRMED));
-        Mail::assertSent(BookingActivity::class, function (BookingActivity $m) use ($customer, $booking) {
+        Mail::assertQueued(BookingActivity::class, function (BookingActivity $m) use ($customer, $booking) {
             if (! $m->hasTo($customer->email) || $m->kind !== UserNotice::BOOKING_CONFIRMED) {
                 return false;
             }
@@ -125,10 +125,10 @@ class BookingNotificationsTest extends TestCase
         $customer = $this->customer('real.account@example.test');
         $this->book($customer);
 
-        Mail::assertNotSent(BookingActivity::class, fn (BookingActivity $m) => $m->hasTo('typed-address@victim.test'));
+        Mail::assertNotQueued(BookingActivity::class, fn (BookingActivity $m) => $m->hasTo('typed-address@victim.test'));
         $this->assertSame(1, $this->mails($customer));
 
-        foreach (Mail::sent(BookingActivity::class) as $mail) {
+        foreach (Mail::queued(BookingActivity::class) as $mail) {
             $html = $mail->render();
             foreach (['typed-address@victim.test', '082 000 0000', 'Secret Traders', 'A private matter', 'meet.example', 'passcode', 'Zodwa Typed'] as $private) {
                 $this->assertStringNotContainsString($private, $html, 'an email never carries '.$private);
@@ -238,7 +238,7 @@ class BookingNotificationsTest extends TestCase
         $actions->reschedule($booking->fresh(), $this->owner, $this->at('2026-11-30 10:00:00'));
 
         $this->assertSame(2, $this->notices($customer, UserNotice::BOOKING_RESCHEDULED));
-        Mail::assertSent(BookingActivity::class, fn (BookingActivity $m) => $m->kind === UserNotice::BOOKING_RESCHEDULED && count($m->attachments()) === 1);
+        Mail::assertQueued(BookingActivity::class, fn (BookingActivity $m) => $m->kind === UserNotice::BOOKING_RESCHEDULED && count($m->attachments()) === 1);
     }
 
     public function test_declining_a_move_request_and_handing_over_a_booking_tell_the_right_person(): void
@@ -523,8 +523,8 @@ class BookingNotificationsTest extends TestCase
         $booking = $this->book($customer);
         app(BookingActions::class)->reject($booking, $this->owner, 'Click [here](https://evil.example/note) to fix it.');
 
-        $this->assertGreaterThan(1, Mail::sent(BookingActivity::class)->count());
-        foreach (Mail::sent(BookingActivity::class) as $mail) {
+        $this->assertGreaterThan(1, Mail::queued(BookingActivity::class)->count());
+        foreach (Mail::queued(BookingActivity::class) as $mail) {
             $html = $mail->render();
             $this->assertStringNotContainsString('href="https://evil.example', $html);
             $this->assertStringNotContainsString('src="https://evil.example', $html);
@@ -543,7 +543,7 @@ class BookingNotificationsTest extends TestCase
         $booking = $this->book($customer);
         app(BookingActions::class)->reject($booking, $this->owner, 'We are shut that week.');
 
-        $rejected = Mail::sent(BookingActivity::class, fn (BookingActivity $m) => $m->kind === UserNotice::BOOKING_REJECTED)->first();
+        $rejected = Mail::queued(BookingActivity::class, fn (BookingActivity $m) => $m->kind === UserNotice::BOOKING_REJECTED)->first();
         $html = $rejected->render();
         $this->assertStringContainsString('left you a message', $html);
         $this->assertStringNotContainsString('shut that week', $html);
@@ -555,7 +555,7 @@ class BookingNotificationsTest extends TestCase
         $this->type->update(['name' => "Visit\r\nBcc: x"]);
         $this->book();
 
-        foreach (Mail::sent(BookingActivity::class) as $mail) {
+        foreach (Mail::queued(BookingActivity::class) as $mail) {
             $subject = $mail->envelope()->subject;
             $this->assertDoesNotMatchRegularExpression('/[\x00-\x1F\x{2028}\x{2029}]/u', $subject);
             $this->assertLessThan(160, mb_strlen($subject));

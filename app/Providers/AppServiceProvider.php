@@ -31,6 +31,7 @@ use App\Models\Questions;
 use App\Models\Solutions;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\Accounts\SignInDevices;
 use App\Services\Demo\DemoRegistry;
 use App\Services\Growth\OnboardingEvents;
 use App\Services\Notifications\AccountMail;
@@ -42,12 +43,15 @@ use App\Support\Input;
 use App\Support\PlatformSecret;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -61,6 +65,8 @@ use Laravel\Fortify\Events\TwoFactorAuthenticationDisabled;
 use Laravel\Fortify\Events\TwoFactorAuthenticationEnabled;
 use Laravel\Jetstream\Events\TeamMemberAdded;
 use Laravel\Jetstream\Events\TeamMemberRemoved;
+use Laravel\Jetstream\Events\TeamMemberUpdated;
+use Laravel\Jetstream\Jetstream;
 use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
@@ -96,6 +102,24 @@ class AppServiceProvider extends ServiceProvider
     {
         // R-72 (S-03): every new or changed password is at least 12 characters and not one found in a public breach.
         Password::defaults(fn () => Password::min(12)->uncompromised());
+
+        // R-72 (E-13): the two framework emails speak in InfoDot's own words, without the default "Regards" sign-off.
+        ResetPassword::toMailUsing(fn ($notifiable, string $token) => (new MailMessage)
+            ->subject('Choose a new InfoDot password')
+            ->greeting('Hello'.($notifiable->name ? ' '.$notifiable->name : '').',')
+            ->line('Someone asked to choose a new password for the InfoDot account that uses this email address.')
+            ->action('Choose a new password', url(route('password.reset', ['token' => $token, 'email' => $notifiable->getEmailForPasswordReset()], false)))
+            ->line('The link works for '.config('auth.passwords.'.config('auth.defaults.passwords').'.expire').' minutes.')
+            ->line('If you did not ask for this, you can ignore this email. Your password stays as it is.')
+            ->salutation('InfoDot'));
+
+        VerifyEmail::toMailUsing(fn ($notifiable, string $url) => (new MailMessage)
+            ->subject('Confirm your email address for InfoDot')
+            ->greeting('Hello'.($notifiable->name ? ' '.$notifiable->name : '').',')
+            ->line('Confirm this email address to finish setting up your InfoDot account.')
+            ->action('Confirm my email address', $url)
+            ->line('If you did not create an InfoDot account, you can ignore this email.')
+            ->salutation('InfoDot'));
 
         if ($this->app->isProduction()) {
             CanonicalUrl::apply($this->app->runningInConsole() ? null : $this->app['request']);
@@ -149,6 +173,15 @@ class AppServiceProvider extends ServiceProvider
             } catch (\Throwable $x) {
                 report($x);
             }
+
+            // R-72 (S-06): a sign-in from a browser this account has not used before is told to the person. Never stops a sign-in.
+            try {
+                if (($device = app(SignInDevices::class)->record($e->user, request())) !== null) {
+                    app(AccountMail::class)->newSignIn($e->user, $device);
+                }
+            } catch (\Throwable $x) {
+                report($x);
+            }
         });
 
         // R-62 phase 6: someone who joined a company by accepting an invitation or using a link.
@@ -171,6 +204,17 @@ class AppServiceProvider extends ServiceProvider
                 app(AccountMail::class)->membership($e->user, $e->team, false, auth()->user());
             }
         });
+        // R-72 (E-04): a changed role, and a welcome once the address is confirmed.
+        Event::listen(TeamMemberUpdated::class, function (TeamMemberUpdated $e): void {
+            if ($e->user instanceof User && $e->team instanceof Team) {
+                $role = DB::table('team_user')->where('team_id', $e->team->getKey())->where('user_id', $e->user->getKey())->value('role');
+                $name = is_string($role) ? (Jetstream::findRole($role)->name ?? $role) : null;
+                if ($name !== null) {
+                    app(AccountMail::class)->roleChanged($e->user, $e->team, $name, auth()->user());
+                }
+            }
+        });
+        Event::listen(Verified::class, fn (Verified $e) => $e->user instanceof User && app(AccountMail::class)->welcome($e->user));
 
         // Community knowledge events -> durable outbox -> the Dot Points ledger (signed, retried).
         foreach ([

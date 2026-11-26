@@ -6,10 +6,14 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\UserNotice;
 use App\Services\Booking\BookingIcs;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Something happened to an appointment (R-63). Goes only to a signed-up, verified account (never to an address typed into a booking form), says what
@@ -17,8 +21,29 @@ use Illuminate\Mail\Mailables\Envelope;
  * the business's private notes or how to join an online appointment: those stay on InfoDot behind a sign-in. A customer's confirmation or move comes with a
  * calendar file.
  */
-class BookingActivity extends Mailable
+class BookingActivity extends Mailable implements ShouldQueue
 {
+    use Queueable;
+    use SerializesModels;
+
+    /** R-72 (E-06): sent by the queue worker, so the page never waits on the mail server. Three tries, then failed() records it. */
+    public int $tries = 3;
+
+    /** A booking, enquiry or person deleted before the job runs means there is nothing to say. */
+    public bool $deleteWhenMissingModels = true;
+
+    /** @return list<int> */
+    public function backoff(): array
+    {
+        return [60, 300];
+    }
+
+    public function failed(\Throwable $e): void
+    {
+        // R-72 (E-09): at error level, so the ops alert counts it; the class only, never the message (it can hold the address).
+        Log::error('booking.mail_failed', ['category' => 'mail', 'mail' => self::class, 'exception' => $e::class]);
+    }
+
     public function __construct(
         public readonly string $kind,
         public readonly Booking $booking,
@@ -55,6 +80,7 @@ class BookingActivity extends Mailable
         // Names are written by people other than the reader. They go into the mail as plain text only: HTML-escaped by Blade, and with every Markdown
         // character escaped here, so a business or type name cannot make a link, an image or a heading in a mail that comes from InfoDot's own address.
         return new Content(markdown: 'emails.booking-activity', with: [
+            'settingsUrl' => route('notices.preferences'),
             'name' => $this->markdownSafe($this->recipient->name),
             'business' => $this->markdownSafe($this->booking->team->name),
             'type' => $this->markdownSafe($this->booking->appointmentType->name),

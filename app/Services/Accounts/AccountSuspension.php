@@ -6,6 +6,7 @@ use App\Models\AccountSuspensionEvent;
 use App\Models\SsoPlatformSession;
 use App\Models\User;
 use App\Services\Demo\DemoRegistry;
+use App\Services\Notifications\AccountMail;
 use App\Services\Sso\BackchannelLogoutService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -60,6 +61,9 @@ class AccountSuspension
         // Tells every platform the person is signed in to, revokes the provider tokens and clears the session registry.
         $this->backchannel->propagate($user);
 
+        // R-72 (E-04): the person hears it from InfoDot, with the reason, rather than finding they cannot sign in.
+        app(AccountMail::class)->suspension($user, true, $reason);
+
         return $summary;
     }
 
@@ -101,6 +105,8 @@ class AccountSuspension
 
             $this->record($user, AccountSuspensionEvent::RESTORED, $this->clean($reason), $actor);
         });
+
+        app(AccountMail::class)->suspension($user, false, $this->clean($reason));
     }
 
     /** Production keeps sessions in the database; with any other driver there is no table and nothing to delete here. */

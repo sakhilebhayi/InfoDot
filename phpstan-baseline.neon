@@ -325,18 +325,6 @@ parameters:
 			path: app/Services/Knowledge/AnswerService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/InAppNotices.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_title\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/InAppNotices.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$starts_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -352,12 +340,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Services/Knowledge/InAppNotices.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
-			identifier: method.notFound
-			count: 2
 			path: app/Services/Knowledge/InAppNotices.php
 
 		-

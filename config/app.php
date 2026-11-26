@@ -136,6 +136,9 @@ return [
 
     'timezone' => 'UTC',
 
+    // R-72 (E-14): times shown to people in mail and notices. Storage stays in UTC.
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Africa/Johannesburg'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

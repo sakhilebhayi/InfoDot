@@ -83,6 +83,12 @@ class OpsCheck
                 ->orWhere(fn ($q) => $q->where('status', 'active')->whereNotNull('ended_at')->where('ended_at', '<', now()->subHour())))->count();
         }
 
+        // R-72 (E-09): a queued job (an email, a notice email) that failed for good. Each one is a message a person never got, so a
+        // person must look at it; `php artisan queue:failed` lists them and `queue:retry` sends them again. Queued work still waiting
+        // after an hour means the worker is not running.
+        $found['queue_jobs_failed_24h'] = (int) (Schema::hasTable('failed_jobs') ? DB::table('failed_jobs')->where('failed_at', '>=', now()->subDay())->count() : 0);
+        $found['queue_jobs_waiting_1h'] = (int) (Schema::hasTable('jobs') ? DB::table('jobs')->where('created_at', '<', now()->subHour()->getTimestamp())->count() : 0);
+
         // The host conditions behind uploads and sign-ups failing: a folder the web user cannot write to, and a full disk.
         foreach ($this->writablePaths() as $label => $path) {
             $found["{$label}_not_writable"] = $this->canWrite($path) ? 0 : 1;
