@@ -144,3 +144,8 @@ Severity per the brief. Owner = needs the owner's access, credentials, DNS, mone
 - **Two-factor for admins and moderators**: required (you will need to turn on two-factor on your own account first).
 - **Breached-password check**: uses the public Pwned Passwords service, which only ever receives the first five characters of a password's SHA-1 hash.
 - **Queued email in production**: switch the host to `QUEUE_CONNECTION=database`; the worker already runs every minute.
+
+### Decided by the owner, 2026-11-26
+- Two-factor is **required** for platform admins and moderators (the owner switches it on for their own account first).
+- New passwords: **at least 12 characters and a breached-password check** (Pwned Passwords k-anonymity range lookup).
+- Production mail moves to the **background queue** (`QUEUE_CONNECTION=database`) with the R72-2 deploy.
