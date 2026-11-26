@@ -97,7 +97,7 @@
             </article>
 
             <article class="hp-pillar hp-pillar--connect" id="connections" data-pillar aria-labelledby="connections-title">
-                <h3 id="connections-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/camps-bay-cafe-800.jpg') }}')"><span class="hp-pillar__word">Connections</span><span class="hp-pillar__tag">Stop missing what you can't see</span></h3>
+                <h3 id="connections-title" class="hp-pillar__plate" style="--pillar-img: url('{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/houtbay-street-800.jpg') }}')"><span class="hp-pillar__word">Connections</span><span class="hp-pillar__tag">Stop missing what you can't see</span></h3>
                 <div class="hp-pillar__body">
                     <p class="hp-pillar__lede" data-reveal>Find businesses by what they do and where they work. Message them as your company, or ask for an appointment, straight from their page.</p>
                     <ul class="lp-checks hp-pillar__list">

@@ -48,7 +48,8 @@
             <li><a href="https://unsplash.com/photos/y0njljTYxHA" rel="noopener">Market stall, Cape Town</a> by FitNish Media (home page)</li>
             <li><a href="https://unsplash.com/photos/ime_dBOnmwY" rel="noopener">Fishing boats at Kalk Bay</a> by M Lagan (home page)</li>
             <li><a href="https://unsplash.com/photos/mQ2mZMcI1dc" rel="noopener">Produce stall, Cape Town market</a> by FitNish Media (home page)</li>
-            <li><a href="https://unsplash.com/photos/hgm1xkVxsX0" rel="noopener">Outdoor cafe, Cape Town</a> by Mario Scheibl (Contact, home page)</li>
+            <li><a href="https://unsplash.com/photos/hgm1xkVxsX0" rel="noopener">Outdoor cafe, Cape Town</a> by Mario Scheibl (Contact)</li>
+            <li><a href="https://unsplash.com/photos/TxoIosWDP7M" rel="noopener">Hout Bay harbour, Cape Town</a> by Gerhard Venter (home page)</li>
             <li><a href="https://unsplash.com/photos/NLVj-FTLwu4" rel="noopener">Stained glass door at a Cape Town market</a> by Amy Harrison (Businesses)</li>
             <li><a href="https://unsplash.com/photos/xvJVDUoGpoU" rel="noopener">Johannesburg views</a> by Clodagh Da Paixao (What InfoDot does)</li>
             <li><a href="https://unsplash.com/photos/D4l8jOd-7jI" rel="noopener">Bo-Kaap street and mural</a> by Nigel SB Photography (Questions people ask)</li>

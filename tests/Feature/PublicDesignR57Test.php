@@ -111,8 +111,11 @@ class PublicDesignR57Test extends TestCase
         );
         $uses = [];
         foreach ($files as $file) {
-            preg_match_all('#resources/img/(?:pages|landing)/([a-z0-9-]+?)(?:-\d+)?\.jpg#', (string) file_get_contents($file), $m);
-            foreach (array_unique($m[1]) as $name) {
+            $source = (string) file_get_contents($file);
+            preg_match_all('#resources/img/(?:pages|landing)/([a-z0-9-]+?)(?:-\d+)?\.jpg#', $source, $m);
+            // Some pages name their photographs through a small helper, $img('name-1600'); count those too.
+            preg_match_all('#\$img\(\'([a-z0-9-]+?)(?:-\d+)?\'\)#', $source, $helper);
+            foreach (array_unique(array_merge($m[1], $helper[1])) as $name) {
                 $uses[$name][] = basename($file);
             }
         }
