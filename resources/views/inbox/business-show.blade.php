@@ -52,7 +52,7 @@
                             <label class="ix-label" for="appt_note">Note <span class="ix-hint">optional, for example where to meet</span></label>
                             <textarea class="ix-textarea" id="appt_note" name="note" rows="2" maxlength="1000">{{ old('note') }}</textarea>
                         </div>
-                        <button type="submit" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">event_available</span>Accept</button>
+                        <button type="submit" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Accept</button>
                     </form>
                     <details class="ix-vgap"><summary class="ix-btn ix-btn--sm">Decline</summary>
                         <form method="post" action="{{ route('business.inbox.appointment', [$team, $enquiry]) }}" class="ix-form ix-vgap">

@@ -45,7 +45,7 @@
                 <textarea class="ix-textarea" id="about" name="about" rows="6" minlength="{{ config('enquiries.min_length') }}" maxlength="{{ config('enquiries.max_length') }}" required placeholder="What you would like to discuss, and where you would like to meet or whether a call suits you.">{{ old('about') }}</textarea>
             </div>
             <p class="ix-hint">A request does not hold a time until {{ $team->name }} accepts it. Only its owner, administrators and the person they give it to can read it.</p>
-            <div><button type="submit" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">event</span>Send the request</button></div>
+            <div><button type="submit" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">send</span>Send the request</button></div>
         </form>
     @endif
 </x-app-layout>

@@ -109,9 +109,9 @@
                 @if (($requestable ?? false) && ($preview || ! $isMember))
                     <div class="ix-biz__editbtn">
                         @if ($preview)
-                            <span class="ix-btn ix-btn--primary" aria-disabled="true"><span class="material-symbols-rounded" aria-hidden="true">event</span>Request an appointment</span>
+                            <span class="ix-btn ix-btn--primary" aria-disabled="true"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span>Request an appointment</span>
                         @else
-                            <a href="{{ route('business.appointment-request', $team) }}" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">event</span>Request an appointment</a>
+                            <a href="{{ route('business.appointment-request', $team) }}" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span>Request an appointment</a>
                         @endif
                     </div>
                 @endif
