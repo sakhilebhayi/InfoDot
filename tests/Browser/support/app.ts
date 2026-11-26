@@ -50,10 +50,10 @@ export function unique(prefix = ''): string {
     return `${prefix}${stamp}`;
 }
 
-export function makeUser(name: string, options: { moderator?: boolean } = {}): Person {
+export function makeUser(name: string, options: { moderator?: boolean; platform_admin?: boolean } = {}): Person {
     const email = `${unique('e2e-')}@infodot.test`;
 
-    return op<Person>({ op: 'make-user', name, email, moderator: options.moderator ?? false });
+    return op<Person>({ op: 'make-user', name, email, moderator: options.moderator ?? false, platform_admin: options.platform_admin ?? false });
 }
 
 export type Business = { id: number; uuid: string; name: string };

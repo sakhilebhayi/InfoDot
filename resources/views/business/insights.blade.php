@@ -25,10 +25,10 @@
     </div>
 
     <dl class="ix-inboxstats" aria-label="The last {{ $r['days'] }} days">
-        <div><dt>Page views</dt><dd>{{ $t['view'] }}</dd>@if ($c = $change('view'))<p class="ix-hint">{{ $c }}</p>@endif</div>
-        <div><dt>Appeared in searches</dt><dd>{{ $t['search'] }}</dd>@if ($c = $change('search'))<p class="ix-hint">{{ $c }}</p>@endif</div>
+        <div><dt>Page views</dt><dd>{{ $t['view'] }}</dd>@if ($c = $change('view'))<dd class="ix-hint">{{ $c }}</dd>@endif</div>
+        <div><dt>Appeared in searches</dt><dd>{{ $t['search'] }}</dd>@if ($c = $change('search'))<dd class="ix-hint">{{ $c }}</dd>@endif</div>
         <div><dt>Contact actions</dt><dd>{{ $contactTotal }}</dd></div>
-        <div><dt>Enquiries received</dt><dd>{{ $enquiriesInRange }}</dd>@if ($enquiries['median_first_response_hours'] !== null)<p class="ix-hint">Typical first reply {{ $enquiries['median_first_response_hours'] < 1 ? max(1, (int) round($enquiries['median_first_response_hours'] * 60)).' min' : $enquiries['median_first_response_hours'].' h' }}</p>@endif</div>
+        <div><dt>Enquiries received</dt><dd>{{ $enquiriesInRange }}</dd>@if ($enquiries['median_first_response_hours'] !== null)<dd class="ix-hint">Typical first reply {{ $enquiries['median_first_response_hours'] < 1 ? max(1, (int) round($enquiries['median_first_response_hours'] * 60)).' min' : $enquiries['median_first_response_hours'].' h' }}</dd>@endif</div>
     </dl>
 
     @if ($r['since'] === null)

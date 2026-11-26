@@ -149,7 +149,7 @@ jobs:
     # Not yet a required check: the owner adds it to branch protection once it has been green for a while.
     name: browser accessibility and keyboard (Chromium)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -172,8 +172,8 @@ jobs:
         run: |
           sudo apt-get update -q
           npx playwright install --with-deps chromium || { sleep 20; sudo apt-get update -q; npx playwright install --with-deps chromium; }
-      - name: Accessibility scan and keyboard journeys
-        run: npm run test:browser -- --project=desktop-chromium h-accessibility i-keyboard
+      - name: Accessibility scan, keyboard journeys, and every signed-in screen at three widths
+        run: npm run test:browser -- --project=desktop-chromium h-accessibility i-keyboard n-signed-in-sweep
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -181,6 +181,7 @@ jobs:
           path: |
             tests/Browser/playwright-report
             tests/Browser/test-results
+            tests/Browser/.data/sweep
 
   cron-runner:
     name: cron runner (fake host)

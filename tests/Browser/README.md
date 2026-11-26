@@ -2,7 +2,7 @@
 
 Real-browser journeys through InfoDot, written with Playwright. They click and type the way a person does, on desktop, phone and tablet sizes, in Chromium, Firefox and WebKit (the engine Safari uses), and they scan the pages for accessibility problems with axe-core.
 
-They are not part of `php artisan test`. CI runs the accessibility scan (H) and the keyboard-only journeys (I) in Chromium on every change (the `browser accessibility and keyboard` job); the rest need three browsers, a heavy download, so run them on your own machine before a demonstration or after a change to a journey.
+They are not part of `php artisan test`. CI runs the accessibility scan (H), the keyboard-only journeys (I) and the signed-in sweep (N: every signed-in screen at desktop, tablet and phone width) in Chromium on every change (the `browser accessibility and keyboard` job); the rest need three browsers, a heavy download, so run them on your own machine before a demonstration or after a change to a journey.
 
 ## Run them
 

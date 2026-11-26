@@ -20,6 +20,7 @@ export default async function globalSetup(): Promise<void> {
         fs.rmSync(stale, { force: true });
     }
     fs.rmSync(path.join(dataDir, 'a11y'), { recursive: true, force: true });
+    fs.rmSync(path.join(dataDir, 'sweep'), { recursive: true, force: true });
     fs.writeFileSync(databaseFile, '');
 
     // Generated here, kept only in the ignored .data folder, never written into a spec.
