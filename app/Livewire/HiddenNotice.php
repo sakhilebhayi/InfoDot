@@ -2,13 +2,13 @@
 
 namespace App\Livewire;
 
+use App\Models\Answer;
 use App\Models\ModerationAction;
 use App\Models\ModerationAppeal;
 use App\Models\Questions;
 use App\Models\Solutions;
 use App\Services\Knowledge\ModerationService;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
@@ -59,7 +59,7 @@ class HiddenNotice extends Component
         });
     }
 
-    private function item(ModerationService $moderation): Model
+    private function item(ModerationService $moderation): Questions|Answer|Solutions
     {
         return $moderation->find($this->kind, $this->itemId);
     }

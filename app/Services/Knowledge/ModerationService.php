@@ -47,7 +47,7 @@ class ModerationService
     }
 
     /** The item named by a short kind and id, as the signed-in person is allowed to see it. */
-    public function find(string $kind, int $id): Model
+    public function find(string $kind, int $id): Questions|Answer|Solutions
     {
         $class = self::KINDS[$kind] ?? null;
         abort_if($class === null, 404);
@@ -56,7 +56,7 @@ class ModerationService
     }
 
     /** The item a content report or audit row points at, whatever the person may see. Null if it no longer exists. */
-    public function resolve(string $morphType, int $id): ?Model
+    public function resolve(string $morphType, int $id): Questions|Answer|Solutions|null
     {
         $class = Relation::getMorphedModel($morphType) ?? $morphType;
 
@@ -68,14 +68,14 @@ class ModerationService
     }
 
     /** A moderator, for an item they can see, that is not their own. */
-    public function canModerate(Model $item, User $by): bool
+    public function canModerate(Questions|Answer|Solutions $item, User $by): bool
     {
         return $by->isModerator()
             && $item->user_id !== $by->id
             && $this->answers->canSeeContent($item, $by);
     }
 
-    private function authorize(Model $item, User $by): void
+    private function authorize(Questions|Answer|Solutions $item, User $by): void
     {
         abort_unless($by->isModerator(), 403);
         abort_unless($this->answers->canSeeContent($item, $by), 403);
@@ -98,13 +98,19 @@ class ModerationService
     }
 
     /** The item as stored, locked for the length of the transaction, ignoring what the caller was allowed to see. */
-    private function lock(Model $item): Model
+    /**
+     * @template T of Questions|Answer|Solutions
+     *
+     * @param  T  $item
+     * @return T
+     */
+    private function lock(Questions|Answer|Solutions $item): Questions|Answer|Solutions
     {
         return $item::withoutGlobalScopes(self::VISIBILITY_SCOPES)->lockForUpdate()->findOrFail($item->getKey());
     }
 
     /** @return Collection<int, ContentReport> */
-    private function openReports(Model $item): Collection
+    private function openReports(Questions|Answer|Solutions $item): Collection
     {
         return ContentReport::where('reportable_type', $item->getMorphClass())
             ->where('reportable_id', $item->getKey())
@@ -126,7 +132,7 @@ class ModerationService
      *
      * @return bool false when it was already hidden (nothing happened)
      */
-    public function hide(Model $item, User $by, string $reason): bool
+    public function hide(Questions|Answer|Solutions $item, User $by, string $reason): bool
     {
         $this->authorize($item, $by);
         $reason = $this->cleanNote($reason, 'reason', true, 'Say why it is hidden, in at least '.self::NOTE_MIN.' characters. The author will read this.');
@@ -161,7 +167,7 @@ class ModerationService
      *
      * @return int how many reports were dismissed (0 when there was nothing open)
      */
-    public function dismiss(Model $item, User $by, string $note): int
+    public function dismiss(Questions|Answer|Solutions $item, User $by, string $note): int
     {
         $this->authorize($item, $by);
         $note = $this->cleanNote($note, 'note', true, 'Say why the reports are dismissed, in at least '.self::NOTE_MIN.' characters.');
@@ -187,7 +193,7 @@ class ModerationService
      *
      * @return bool false when it was not hidden
      */
-    public function restore(Model $item, User $by, ?string $note = null): bool
+    public function restore(Questions|Answer|Solutions $item, User $by, ?string $note = null): bool
     {
         $this->authorize($item, $by);
         $note = $this->cleanNote($note, 'note', false, 'A note must be at least '.self::NOTE_MIN.' characters, or left empty.');
@@ -214,13 +220,13 @@ class ModerationService
         });
     }
 
-    private function unhide(Model $row): void
+    private function unhide(Questions|Answer|Solutions $row): void
     {
         $row->forceFill(['hidden_at' => null, 'hidden_by' => null, 'hidden_reason' => null])->save();
     }
 
     /** Tell the milestone keeper, once the change is committed, that this content now counts (or stops counting) as contribution. */
-    private function announce(Model $row, string $change): void
+    private function announce(Questions|Answer|Solutions $row, string $change): void
     {
         $kind = self::kindOf($row);
 
@@ -228,7 +234,7 @@ class ModerationService
     }
 
     /** The author of hidden content may appeal it, once per hide. */
-    public function fileAppeal(Model $item, User $author, string $body): ModerationAppeal
+    public function fileAppeal(Questions|Answer|Solutions $item, User $author, string $body): ModerationAppeal
     {
         abort_unless($item->user_id === $author->id, 403);
         $body = $this->cleanNote($body, 'appeal', true, 'Tell the moderators why this should be shown again, in at least '.self::NOTE_MIN.' characters.');
@@ -417,7 +423,7 @@ class ModerationService
     }
 
     /** What the points ledger needs to know about an item, as ids: who wrote it, where it lives, and which audit row caused this. */
-    private function ledgerFacts(Model $row, ModerationAction $action): array
+    private function ledgerFacts(Questions|Answer|Solutions $row, ModerationAction $action): array
     {
         return [
             'author_uuid' => $row->user?->uuid,
@@ -434,7 +440,7 @@ class ModerationService
     }
 
     /** Everything moderators have done about an item, oldest first. */
-    public function history(Model $item): Collection
+    public function history(Questions|Answer|Solutions $item): Collection
     {
         return ModerationAction::with('actor')
             ->where('subject_type', $item->getMorphClass())->where('subject_id', $item->getKey())

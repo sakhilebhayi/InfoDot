@@ -12,6 +12,9 @@ use OpenIDConnect\Interfaces\IdentityEntityInterface;
  * immutable ecosystem identity (R-20 §11: never the email, and not the numeric id, which is
  * internal to this database). The claims below are filtered by the granted scopes (profile, email)
  * before they reach the token.
+ *
+ * Nothing in app/ names this class: the OIDC package's IdentityRepository loads App\Entities\IdentityEntity by its class name
+ * when it exists (vendor/jeremy379/laravel-openid-connect). Renaming or moving it silently puts the numeric id back in `sub`.
  */
 class IdentityEntity implements IdentityEntityInterface
 {

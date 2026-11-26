@@ -149,7 +149,7 @@ class BusinessInboxController extends Controller
     /** The enquiry must be this business's, and the person must handle it. Anything else is not found. */
     private function guard(Request $request, Team $team, Enquiry $enquiry): void
     {
-        abort_unless($enquiry->team_id === $team->id && $enquiry->isHandler($request->user()), 404);
+        abort_unless($enquiry->team_id === $team->id && $request->user()->can('handle', $enquiry), 404);
     }
 
     private function back(Team $team, Enquiry $enquiry, string $status): RedirectResponse

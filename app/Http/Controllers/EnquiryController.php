@@ -73,8 +73,9 @@ class EnquiryController extends Controller
     {
         $user = $request->user();
 
-        if (! $enquiry->isCustomer($user)) {
-            abort_unless($enquiry->isHandler($user), 404);
+        abort_unless($user->can('view', $enquiry), 404);
+
+        if (! $user->can('replyAsCustomer', $enquiry)) {
 
             return redirect()->route('business.inbox.show', [$enquiry->team, $enquiry]);
         }
@@ -91,7 +92,7 @@ class EnquiryController extends Controller
 
     public function reply(Request $request, Enquiry $enquiry): RedirectResponse
     {
-        abort_unless($enquiry->isCustomer($request->user()), 404);
+        abort_unless($request->user()->can('replyAsCustomer', $enquiry), 404);
 
         $data = $request->validate([
             'body' => ['required', 'string', 'min:2', 'max:'.config('enquiries.max_length')],

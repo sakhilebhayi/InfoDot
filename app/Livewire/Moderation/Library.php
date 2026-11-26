@@ -12,7 +12,6 @@ use App\Services\Library\LibraryService;
 use App\Services\Library\MemoryRecommendationsClient;
 use App\Services\Library\RecommendationsUnavailableException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -182,7 +181,7 @@ class Library extends Component
     }
 
     /** Whether the library page would list this source right now (public, published, not hidden). */
-    private function isLive(?Model $source): bool
+    private function isLive(Answer|Solutions|null $source): bool
     {
         return match (true) {
             $source instanceof Answer => ! $source->trashed() && $source->status === Answer::PUBLISHED && ! $source->isHidden()
@@ -198,7 +197,7 @@ class Library extends Component
      *
      * @return array<string, mixed>
      */
-    private function describe(?Model $item, User $me, LibraryService $library): array
+    private function describe(Answer|Solutions|null $item, User $me, LibraryService $library): array
     {
         if ($item === null) {
             return ['gone' => true];
@@ -218,11 +217,12 @@ class Library extends Component
             return $base;
         }
 
-        $topics = ($isAnswer ? $home?->topics : $item->topics)?->sortBy(['sort_order', 'id'])->pluck('name')->all() ?? [];
+        // Past the public check, $home is the item's question (or the solution itself) and always exists.
+        $topics = ($isAnswer ? $home->topics : $item->topics)->sortBy(['sort_order', 'id'])->pluck('name')->all();
         $corroboration = $library->corroboration($item);
 
         return $base + [
-            'title' => $isAnswer ? 'Answer to: '.Str::limit((string) $home?->question, 140) : Str::limit((string) $item->solution_title, 160),
+            'title' => $isAnswer ? 'Answer to: '.Str::limit((string) $home->question, 140) : Str::limit((string) $item->solution_title, 160),
             'excerpt' => Str::limit((string) ($isAnswer ? $item->body : $item->solution_description), 260),
             'url' => $isAnswer ? route('questions.view', ['qid' => $item->question_id]).'#answer-'.$item->id : route('solutions.view', ['id' => $item->id]),
             'author' => $item->user,

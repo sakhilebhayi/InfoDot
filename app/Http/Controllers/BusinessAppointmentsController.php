@@ -12,6 +12,7 @@ use App\Services\Booking\Availability;
 use App\Services\Booking\BookingActions;
 use App\Services\Booking\BookingBoard;
 use App\Services\Booking\BookingRefused;
+use App\Support\LocalDate;
 use Carbon\CarbonImmutable;
 use Closure;
 use DateTimeZone;
@@ -24,7 +25,7 @@ use Illuminate\View\View;
 /**
  * The business's appointments (R-63 phase 4): the lists, the calendar, one appointment and what is done to it.
  *
- * Who sees what is decided by BookingBoard (the lists, the calendar and the counts) and BookingActions::canManage (one appointment); what may be
+ * Who sees what is decided by BookingBoard (the lists, the calendar and the counts) and BookingPolicy::manage (one appointment, which asks BookingActions::canManage); what may be
  * done is decided by BookingActions, which refuses anything not allowed. This controller only asks them and draws the answer. Order of checks on every
  * route: the feature is open (404), the appointment belongs to this business (404), then the person's permission (403).
  */
@@ -266,7 +267,7 @@ class BusinessAppointmentsController extends Controller
     {
         $this->featureOpen();
         $this->belongs($team, $booking);
-        abort_unless(BookingActions::canManage($this->user(), $booking), 403);
+        abort_unless($this->user()->can('manage', $booking), 403);
     }
 
     /** @param  Closure(Booking, User): mixed  $do */
@@ -312,13 +313,7 @@ class BusinessAppointmentsController extends Controller
     /** A real date (Y-m-d) in the business's zone, or null. */
     private function date(mixed $value, DateTimeZone $zone): ?CarbonImmutable
     {
-        if (! is_string($value) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) !== 1) {
-            return null;
-        }
-
-        $date = CarbonImmutable::createFromFormat('!Y-m-d', $value, $zone);
-
-        return $date instanceof CarbonImmutable && $date->format('Y-m-d') === $value ? $date : null;
+        return LocalDate::parse($value, $zone);
     }
 
     private function instant(string $value): ?CarbonImmutable

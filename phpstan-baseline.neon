@@ -97,72 +97,6 @@ parameters:
 			path: app/Http/Controllers/Solutions/SolutionsController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/HiddenNotice.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/HiddenNotice.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Livewire/HiddenNotice.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_description\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_title\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$topics\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isPublic\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Livewire/Moderation/Library.php
-
-		-
 			message: '#^Cannot unset offset int on array\<string, string\>\.$#'
 			identifier: unset.offset
 			count: 1
@@ -175,44 +109,8 @@ parameters:
 			path: app/Livewire/Moderation/Library.php
 
 		-
-			message: '#^Using nullsafe property access on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Livewire/Moderation/Library.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden_reason\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Queue.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Queue.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Moderation/Queue.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Livewire/Moderation/Queue.php
-
-		-
 			message: '#^Called ''count'' on Laravel collection, but could have been retrieved as a query\.$#'
 			identifier: larastan.noUnnecessaryCollectionCall
-			count: 1
-			path: app/Livewire/Moderation/Queue.php
-
-		-
-			message: '#^Match expression does not handle remaining value\: true$#'
-			identifier: match.unhandled
 			count: 1
 			path: app/Livewire/Moderation/Queue.php
 
@@ -227,18 +125,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: app/Livewire/Moderation/Topics.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ReportContent.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Livewire/ReportContent.php
 
 		-
 			message: '#^Access to an undefined property App\\Livewire\\Search\:\:\$industry\.$#'
@@ -289,42 +175,6 @@ parameters:
 			path: app/Providers/EventServiceProvider.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$question\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/AchievementService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$visibility\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
-			message: '#^Parameter \#1 \$question of method App\\Services\\Knowledge\\AnswerService\:\:canSee\(\) expects App\\Models\\Questions, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Services/Knowledge/AnswerService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$starts_at\.$#'
 			identifier: property.notFound
 			count: 1
@@ -373,54 +223,6 @@ parameters:
 			path: app/Services/Knowledge/LikeToggle.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden_by\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/ModerationService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/ModerationService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/ModerationService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/Knowledge/ModerationService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$visibility\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Knowledge/ModerationService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: app/Services/Knowledge/ModerationService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isPublic\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/Knowledge/ModerationService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isVerified\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Services/Knowledge/ModerationService.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\UserTopicBadge\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -443,60 +245,6 @@ parameters:
 			identifier: method.notFound
 			count: 2
 			path: app/Services/Knowledge/TopicService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Solutions\:\:\$verifier\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$team_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$visibility\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Access to undefined constant Illuminate\\Database\\Eloquent\\Model\:\:VISIBILITY_PUBLIC\.$#'
-			identifier: classConstant.notFound
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Method App\\Services\\Library\\LibraryService\:\:corroboration\(\) should return array\{by\: App\\Models\\User\|null, at\: Illuminate\\Support\\Carbon, label\: string\}\|null but returns array\{by\: Illuminate\\Database\\Eloquent\\Model\|null, at\: string, label\: ''Accepted by''\}\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/Library/LibraryService.php
-
-		-
-			message: '#^Method App\\Services\\Library\\LibraryService\:\:corroboration\(\) should return array\{by\: App\\Models\\User\|null, at\: Illuminate\\Support\\Carbon, label\: string\}\|null but returns array\{by\: mixed, at\: string, label\: ''Verified by''\}\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/Library/LibraryService.php
 
 		-
 			message: '#^Call to function in_array\(\) with arguments int, array\{string\} and true will always evaluate to false\.$#'
@@ -549,12 +297,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$solution_title\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Support/Knowledge/ModerationStatus.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isHidden\(\)\.$#'
-			identifier: method.notFound
 			count: 1
 			path: app/Support/Knowledge/ModerationStatus.php
 

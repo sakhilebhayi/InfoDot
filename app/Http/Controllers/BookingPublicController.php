@@ -12,6 +12,7 @@ use App\Services\Booking\BookingFeature;
 use App\Services\Booking\BookingRefused;
 use App\Services\Booking\Bookings;
 use App\Support\ActingCompany;
+use App\Support\LocalDate;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -234,17 +235,9 @@ class BookingPublicController extends Controller
     /** The date asked for, only when it is a real date inside the months the calendar can show. */
     private function date(mixed $value, \DateTimeZone $zone, CarbonImmutable $first, CarbonImmutable $last): ?CarbonImmutable
     {
-        if (! is_string($value) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) !== 1) {
-            return null;
-        }
+        $date = LocalDate::parse($value, $zone);
 
-        $date = CarbonImmutable::createFromFormat('!Y-m-d', $value, $zone);
-
-        if (! $date instanceof CarbonImmutable || $date->format('Y-m-d') !== $value || $date->lt($first) || $date->gt($last->endOfMonth())) {
-            return null;
-        }
-
-        return $date;
+        return $date === null || $date->lt($first) || $date->gt($last->endOfMonth()) ? null : $date;
     }
 
     /**

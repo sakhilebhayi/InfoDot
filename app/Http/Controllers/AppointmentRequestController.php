@@ -67,7 +67,7 @@ class AppointmentRequestController extends Controller
     /** Accept with a date and time (read in the business's own time zone), or decline with a reason. Owners, administrators and the member it is given to may answer. */
     public function decide(Request $request, Team $team, Enquiry $enquiry): RedirectResponse
     {
-        abort_unless($enquiry->team_id === $team->id && $enquiry->isHandler($request->user()) && $enquiry->isAppointmentRequest(), 404);
+        abort_unless($enquiry->team_id === $team->id && $request->user()->can('handle', $enquiry) && $enquiry->isAppointmentRequest(), 404);
 
         $data = $request->validate([
             'decision' => ['required', 'in:accept,decline'],
