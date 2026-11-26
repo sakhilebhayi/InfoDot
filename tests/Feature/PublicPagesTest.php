@@ -16,7 +16,7 @@ class PublicPagesTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('A better, more connected way to build a business.', $html);
+        $this->assertStringContainsString('A better, more connected way to build your business.', $html);
         $this->assertStringContainsString('role="search"', $html);
         $this->assertStringContainsString('name="search"', $html);
         $this->assertStringContainsString('has-motion', $html);
@@ -26,10 +26,12 @@ class PublicPagesTest extends TestCase
         $this->assertStringContainsString('prefers-reduced-motion', $html);
         // R-67: the story under the owner's hero: the reality (the owner's own heading), four pillars, a week, what opens when you join.
         foreach (['Knowledge', 'Tools', 'Connections', 'Progress', 'Stop figuring it out alone', 'Stop juggling disconnected apps', "Stop missing what you can't see", 'Turn what you learn into what you do',
-            'Join InfoDot for free', 'See how it works', 'We connect you to the knowledge, tools and business opportunities you need to start, manage and grow.',
-            "The truth is, most businesses don't really know what they're doing.", 'InfoDot is here to change that.', "None of this is a lack of ambition. It's a lack of access.",
+            // R-73 phase 1: the promise, the dream it is for, and the reality, in the owner's approved words.
+            'Join InfoDot for free', 'Explore the ecosystem', "Give the business you've been dreaming about a place to grow, get it right the first time.",
+            'Every business starts with someone who decided to try.', "Wherever you're starting from, there's a next step.",
+            'You started this business to build something. Not to spend every day figuring everything out.', "None of this means you're doing it wrong.",
             'What a week with InfoDot can look like.', 'Your business. Your tools. One connected ecosystem.', 'What opens when you join.', 'Creating an InfoDot account is free.',
-            "Wherever you are, there's a next step.", 'Build your business with InfoDot in your corner.',
+            'Build your business with InfoDot in your corner.',
             'Our aim is to help one million businesses every year reach the goals they set for themselves.'] as $words) {
             $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
         }
@@ -41,7 +43,11 @@ class PublicPagesTest extends TestCase
             $this->assertStringNotContainsString($old, $html, $old);
         }
         // The old frame and the sections it replaced are gone, so the page does not say the same thing twice.
-        foreach (['Most small businesses run on memory and chat.', "You don't have to figure it all out yourself.", 'Getting started with InfoDot is simple.', 'Your business journey starts here.', 'Learn what works'] as $old) {
+        foreach (['Most small businesses run on memory and chat.', "You don't have to figure it all out yourself.", 'Getting started with InfoDot is simple.', 'Your business journey starts here.', 'Learn what works',
+            // R-73: the R-67 reality heading is replaced, and the ambition section is not said twice.
+            "most businesses don't really know what they're doing", 'InfoDot is here to change that.', "Wherever you are, there's a next step.", 'See how it works',
+            // The owner's tagline replaced the dream question and the line that followed it.
+            "That business you've been dreaming about? Let's give it somewhere to grow.", 'InfoDot brings business knowledge, tools and other businesses together in one free account.'] as $old) {
             $this->assertStringNotContainsString($old, strip_tags(str_replace('&#039;', "'", $html)), $old);
         }
         $this->assertStringContainsString(route('register'), $html);
@@ -57,12 +63,29 @@ class PublicPagesTest extends TestCase
 
         // The search box is part of the hero and stays there, above the two buttons.
         $this->assertMatchesRegularExpression('/class="lp-hero hd".*role="search".*class="hp-hero__actions"/s', $html);
-        foreach (['#how-it-works', '#tools', '#pillars'] as $anchor) {
-            $id = ltrim($anchor, '#');
-            $this->assertStringContainsString('id="'.$id.'"', $html, "the page links to {$anchor} but has no such section");
+        // Every in-page link has somewhere to land (R-73 moves sections; a link left pointing at a removed one would go nowhere).
+        preg_match_all('/href="#([a-z0-9-]+)"/', $html, $links);
+        $this->assertNotEmpty($links[1]);
+        foreach (array_unique($links[1]) as $id) {
+            $this->assertStringContainsString('id="'.$id.'"', $html, "the page links to #{$id} but has no such section");
         }
-        $this->assertStringContainsString('href="#how-it-works"', $html);
+        $this->assertStringContainsString('href="#ecosystem"', $html, 'the hero offers a way to explore the ecosystem');
         $this->assertSame(1, substr_count($html, '<h1'));
+    }
+
+    public function test_every_hero_part_the_css_hides_is_revealed_by_the_hero_timeline(): void
+    {
+        // R-73: the CSS hides every [data-hero] element while motion runs, and landing.js reveals them by class name. A part added to
+        // the hero without a line in the timeline stays invisible (the context line did, until this test).
+        $copy = (string) file_get_contents(resource_path('views/partials/home-hero-copy.blade.php'));
+        $timeline = (string) file_get_contents(resource_path('js/landing.js'));
+
+        preg_match_all('/<[a-z0-9]+ class="([a-z0-9_-]+)[^"]*"[^>]*\sdata-hero[\s>]/', $copy, $parts);
+        $this->assertNotEmpty($parts[1]);
+        foreach (array_unique($parts[1]) as $class) {
+            $this->assertStringContainsString("'.{$class}'", $timeline, "the hero hides .{$class} but the timeline never reveals it");
+        }
+        $this->assertStringContainsString('.has-motion.motion-failsafe [data-hero]', (string) file_get_contents(resource_path('css/infodot.css')), 'the failsafe brings every hero part back');
     }
 
     public function test_the_tools_are_grouped_by_goal_and_only_show_platforms_that_exist(): void

@@ -12454,6 +12454,8 @@ body[data-area="home"] .ix-btn--primary:hover,
 .hd .lp-hero__inner { max-width: none; padding: 0; text-align: left; }
 .hd .lp-hero__title { margin: 0 0 18px; max-width: 14ch; color: var(--hd-ink); font-size: clamp(2.3rem, 4.1vw, 3.6rem); line-height: 1; transition: color var(--ix-dur-scene-slow) var(--ix-ease); }
 .hd .lp-hero__sub { margin: 0 0 28px; max-width: 40ch; color: var(--hd-ink-2); text-wrap: pretty; transition: color var(--ix-dur-scene-slow) var(--ix-ease); }
+/* R-73: the dream line is the sentence the promise is for, so it reads straight after the heading, in the ink colour. */
+.hd .lp-hero__sub.hd__dream { margin: 0 0 28px; max-width: 34ch; color: var(--hd-ink); font-weight: 600; font-size: var(--dot-text-h3-size); line-height: 1.35; text-wrap: balance; }
 .hd .lp-search { margin: 0 0 20px; max-width: 620px; }
 .hd .hp-hero__actions { justify-content: flex-start; }
 .hd[data-scene="a"] .hp-hero__actions .ix-btn:not(.ix-btn--primary) { color: #fff; border-color: rgb(255 255 255 / 0.5); background: rgb(10 14 16 / 0.35); }
@@ -12550,18 +12552,6 @@ body[data-area="home"] .ix-btn--primary:hover,
     text-wrap: balance;
 }
 
-.hp-reality__turn {
-    display: block;
-    margin-top: 0.35em;
-    font-weight: 600;
-    color: var(--ix-text);
-    text-decoration: underline;
-    text-decoration-color: #eab31f;
-    text-decoration-thickness: 0.12em;
-    text-underline-offset: 0.16em;
-    text-decoration-skip-ink: none;
-}
-
 .hp-reality__list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -12597,6 +12587,37 @@ body[data-area="home"] .ix-btn--primary:hover,
     font-weight: 700;
     font-size: var(--dot-text-h3-size);
     line-height: 1.3;
+}
+
+/* R-73: the dream. Same editorial scale as the reality heading that follows, so the two read as a pair: what you set out to build, then
+   what gets in the way. The closing line hands the reader on to that. */
+.hp-dream .hp-dream__title {
+    margin: 0 0 20px;
+    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 1.08;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+}
+
+.hp-dream__sub {
+    margin: 8px 0 14px;
+    color: var(--ix-text);
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.35;
+}
+
+.hp-dream__turn {
+    max-width: 44ch;
+    margin: 28px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--ix-rule-strong);
+    color: var(--ix-text);
+    font-weight: 600;
+    font-size: var(--dot-text-h3-size);
+    line-height: 1.35;
+    text-wrap: balance;
 }
 
 /* Four pillars: Connections takes the People steel livery. Four across on a wide screen, two by two below that. */

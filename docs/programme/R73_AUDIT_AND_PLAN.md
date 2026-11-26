@@ -52,7 +52,7 @@ Problems in today's page the brief asks to remove:
 
 | Step | Section | Heading (approved message, lightly edited only where noted) | Built from |
 |---|---|---|---|
-| 1 The promise | Hero | A better, more connected way to build your business. *Supporting:* That business you've been dreaming about? Let's give it somewhere to grow. | Hero today |
+| 1 The promise | Hero | A better, more connected way to build your business. *Supporting (owner's tagline, 2026-11-26):* Give the business you've been dreaming about a place to grow, get it right the first time. | Hero today |
 | 2 The dream | Ambition | A new heading of its own (see decision 2), so the hero's line is not repeated. It speaks to the person, celebrates starting, and moves through "wherever you are starting from". | `hp-who` |
 | 3 The reality | Challenges | You started this business to build something. Not to spend every day figuring everything out. | `hp-reality`, reworded |
 | 4 The support | Ecosystem, explained | Behind every business is a dream. Behind every growing business is the right support. | `hp-pillars`, reworked |
@@ -73,6 +73,7 @@ doesn't have to be this hard", which the support section answers). This is the "
 3. **Reality heading:** replaced by "You started this business to build something. Not to spend every day figuring
    everything out."
 4. **The week:** kept, shortened, inside Section 5 as the concrete example.
+5. **Hero tagline (after phase 1 review):** "Give the business you've been dreaming about a place to grow, get it right the first time." The context line under it was removed at the owner's request.
 
 ## 5. Phases (one PR each; merge and deploy only when the owner says)
 

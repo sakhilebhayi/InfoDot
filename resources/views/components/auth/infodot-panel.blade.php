@@ -7,7 +7,7 @@
         'login' => [
             'img' => 'auth-cafe', 'w' => 1400, 'h' => 933, 'pos' => '62% 40%',
             'alt' => 'A woman at a table in a Cape Town cafe, among the plants by the window',
-            'title' => 'A better, more connected way to build a business.',
+            'title' => 'A better, more connected way to build your business.',
             'points' => [
                 ['Your knowledge', "Your company's questions and solutions, and everything other businesses have shared."],
                 ['Your business', 'Your business page, your team, and the messages and appointments in your inbox.'],

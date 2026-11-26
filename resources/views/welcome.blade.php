@@ -44,22 +44,45 @@
     {{-- 1. The hero says what InfoDot is and what to do next. The search stays. The picture side moves through three compositions; the words never move. --}}
     @include('partials.home-hero')
 
-    {{-- 2. The reality (R-67). The owner's own heading: provocative on purpose. The list and the turn below it stand with the
-         reader: ambition is not the problem, access is. No statistics; every line is a situation an owner will recognise. --}}
+    {{-- 2. The dream (R-73): the person behind the business. The hero's line is not repeated here; this section answers it, then meets
+         the reader wherever they are starting from, and hands over to what makes building hard. --}}
+    <section class="lp-split hp-who hp-dream" id="ambition" aria-labelledby="dream-title">
+        <figure class="lp-photo" data-reveal>
+            <div class="lp-photo__frame" data-parallax>
+                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-vegetables-1200.jpg') }}" width="1200" height="800" alt="A vegetable stall at a Cape Town market: tomatoes, avocados, fennel, radishes and herbs in boxes" loading="lazy" decoding="async">
+            </div>
+        </figure>
+        <div class="lp-split__body">
+            <h2 id="dream-title" class="hp-dream__title" data-reveal>Every business starts with someone who decided to try.</h2>
+            <p class="lp-lede" data-reveal>Maybe it began as an idea you kept coming back to. A skill people were already paying you for. The wish to work for yourself, or to build something your family can be proud of. However yours began, starting took courage, and what you are building deserves the room to become what you imagine.</p>
+            <h3 class="hp-dream__sub" data-reveal>Wherever you're starting from, there's a next step.</h3>
+            <ol class="hp-who__list" role="list" data-journey data-vertical>
+                <li data-stage><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}"><strong>You have a business idea and don't know where to start</strong><span>Read the first steps other people wrote down.</span></a></li>
+                <li data-stage><a href="{{ $search('register') }}"><strong>You're starting your first business</strong><span>Registration, pricing and your first customers, in the words of people who did it.</span></a></li>
+                <li data-stage><a href="#ecosystem"><strong>You run a small business and want an affordable way to manage it</strong><span>Money, people, work and files in tools that connect.</span></a></li>
+                <li data-stage><a href="#ecosystem"><strong>Your business is growing and needs better tools and processes</strong><span>Add tools as your needs change, without starting again.</span></a></li>
+                <li data-stage><a href="{{ route('about') }}"><strong>You lead an established organisation</strong><span>One sign-in across connected tools, and knowledge your teams keep.</span></a></li>
+            </ol>
+            <p class="hp-dream__turn" data-reveal>Ambition gets a business started. Keeping it moving, day after day, is the hard part.</p>
+        </div>
+    </section>
+
+    {{-- 3. The reality (R-73, replacing R-67's heading at the owner's request). It names what makes the work hard without calling anyone
+         incapable: even businesses that are doing well lose time to these. It ends by turning towards the support that follows. --}}
     <section class="hp-reality" aria-labelledby="reality-title">
         <div class="hp-reality__head">
-            <h2 id="reality-title" class="hp-reality__title" data-reveal>The truth is, most businesses don't really know what they're doing. <span class="hp-reality__turn">InfoDot is here to change that.</span></h2>
-            <p class="lp-lede" data-reveal>Nobody hands you a manual when you start a business. So most of us learn the expensive way, one decision at a time. If you run a business, some of this will sound familiar.</p>
+            <h2 id="reality-title" class="hp-reality__title" data-reveal>You started this business to build something. Not to spend every day figuring everything out.</h2>
+            <p class="lp-lede" data-reveal>Every owner knows the feeling, and it isn't only new businesses. Even ones that are doing well lose hours to things that should be simpler. Some of this may sound familiar.</p>
         </div>
         <ul class="hp-reality__list" role="list">
-            <li data-reveal>You make big decisions without knowing who to ask, or whether the advice you found is any good.</li>
-            <li data-reveal>The business runs on spreadsheets, WhatsApp threads, email and a phone full of files.</li>
-            <li data-reveal>You fix the same problem twice, because nobody wrote down how it was solved the first time.</li>
-            <li data-reveal>You know there must be a better tool for the job. You just don't know which one.</li>
-            <li data-reveal>The supplier, partner or customer you need is out there. You can't see them from where you stand.</li>
-            <li data-reveal>You want to grow, but nobody can tell you what the next step is.</li>
+            <li data-reveal>A big decision arrives before you know who to ask, or whether the advice you found will hold up.</li>
+            <li data-reveal>What you need to know is spread across a dozen sites, and none of them knows your business.</li>
+            <li data-reveal>The work lives in spreadsheets, WhatsApp threads, email and a phone full of files.</li>
+            <li data-reveal>You know a better tool must exist. Finding the right one is a project of its own.</li>
+            <li data-reveal>The supplier, partner or customer you need is out there. You just can't see them from where you stand.</li>
+            <li data-reveal>You have plans to grow, but the next step isn't always clear.</li>
         </ul>
-        <p class="hp-reality__close" data-reveal><strong>None of this is a lack of ambition. It's a lack of access.</strong> To knowledge, to the right tools and to the people who could help. That is the gap InfoDot fills.</p>
+        <p class="hp-reality__close" data-reveal><strong>None of this means you're doing it wrong.</strong> It means the knowledge, tools and people a business needs are harder to reach than they should be. It doesn't have to be this way.</p>
     </section>
 
     {{-- 3. The answer: four things every business needs, each a tension and what InfoDot gives instead. Every promise is something that works today. --}}
@@ -92,7 +115,7 @@
                         <li>Look after your people and their records.</li>
                         <li>Plan projects, share tasks, keep documents and files.</li>
                     </ul>
-                    <p class="hp-pillar__actions" data-reveal><a href="#tools" class="ix-btn lp-btn">See the tools by goal</a></p>
+                    <p class="hp-pillar__actions" data-reveal><a href="#ecosystem" class="ix-btn lp-btn">See the tools by goal</a></p>
                 </div>
             </article>
 
@@ -163,7 +186,7 @@
     </section>
 
     {{-- 4. The tools, by what you want to get done. Names are there for recognition, not as a directory to read. --}}
-    <section class="hp-tools" id="tools" aria-labelledby="tools-title">
+    <section class="hp-tools" id="ecosystem" aria-labelledby="tools-title">
         <div class="hp-tools__head">
             <h2 id="tools-title" data-reveal>Your business. Your tools. One connected ecosystem.</h2>
             <p class="lp-lede" data-reveal>Grouped by what you want to get done, and opened with your one InfoDot account. Use the ones your business needs and add more when it needs them.</p>
@@ -241,26 +264,6 @@
             </div>
         </section>
     @endif
-
-    {{-- 6. Who it is for: every stage, no experience needed. --}}
-    <section class="lp-split hp-who" aria-labelledby="who-title">
-        <figure class="lp-photo" data-reveal>
-            <div class="lp-photo__frame" data-parallax>
-                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-vegetables-1200.jpg') }}" width="1200" height="800" alt="A vegetable stall at a Cape Town market: tomatoes, avocados, fennel, radishes and herbs in boxes" loading="lazy" decoding="async">
-            </div>
-        </figure>
-        <div class="lp-split__body">
-            <h2 id="who-title" data-reveal>Wherever you are, there's a next step.</h2>
-            <p class="lp-lede" data-reveal>You don't need a company, a plan or any experience to join. Start from where your business is today.</p>
-            <ol class="hp-who__list" role="list" data-journey data-vertical>
-                <li data-stage><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}"><strong>You have a business idea and don't know where to start</strong><span>Read the first steps other people wrote down.</span></a></li>
-                <li data-stage><a href="{{ $search('register') }}"><strong>You're starting your first business</strong><span>Registration, pricing and your first customers, in the words of people who did it.</span></a></li>
-                <li data-stage><a href="#tools"><strong>You run a small business and want an affordable way to manage it</strong><span>Money, people, work and files in tools that connect.</span></a></li>
-                <li data-stage><a href="#tools"><strong>Your business is growing and needs better tools and processes</strong><span>Add tools as your needs change, without starting again.</span></a></li>
-                <li data-stage><a href="{{ route('about') }}"><strong>You lead an established organisation</strong><span>One sign-in across connected tools, and knowledge your teams keep.</span></a></li>
-            </ol>
-        </div>
-    </section>
 
     {{-- 6b. The aim (R-70): where InfoDot is going, just before what joining opens. --}}
     @include('partials.aim', ['id' => 'aim'])
