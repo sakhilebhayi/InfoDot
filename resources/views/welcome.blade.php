@@ -262,6 +262,9 @@
         </div>
     </section>
 
+    {{-- 6b. The aim (R-70): where InfoDot is going, just before what joining opens. --}}
+    @include('partials.aim', ['id' => 'aim'])
+
     {{-- 7. The invitation: what is waiting on the other side of "Join", in one place. Only what works today; the account is free. --}}
     <section class="hp-join" id="join" aria-labelledby="join-title">
         <div class="hp-join__head">

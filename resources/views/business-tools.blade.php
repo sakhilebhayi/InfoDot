@@ -245,6 +245,9 @@
     </section>
 
     {{-- 6. The close. --}}
+    {{-- R-70: the aim, before the closing invitation. --}}
+    @include('partials.aim', ['id' => 'bt-aim'])
+
     <section class="ix-pubcta bt-cta" aria-labelledby="bt-cta-title">
         <div class="ix-pubcta__inner">
             <h2 id="bt-cta-title" data-cta-title>Your business has room to grow. Give it the tools to get there.</h2>

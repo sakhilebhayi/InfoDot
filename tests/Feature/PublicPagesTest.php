@@ -29,7 +29,8 @@ class PublicPagesTest extends TestCase
             'Join InfoDot for free', 'See how it works', 'We connect you to the knowledge, tools and business opportunities you need to start, manage and grow.',
             "The truth is, most businesses don't really know what they're doing.", 'InfoDot is here to change that.', "None of this is a lack of ambition. It's a lack of access.",
             'What a week with InfoDot can look like.', 'Your business. Your tools. One connected ecosystem.', 'What opens when you join.', 'Creating an InfoDot account is free.',
-            "Wherever you are, there's a next step.", 'Build your business with InfoDot in your corner.'] as $words) {
+            "Wherever you are, there's a next step.", 'Build your business with InfoDot in your corner.',
+            'Our aim is to help one million businesses every year reach the goals they set for themselves.'] as $words) {
             $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
         }
         // The old frame and the sections it replaced are gone, so the page does not say the same thing twice.
