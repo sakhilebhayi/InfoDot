@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * Nothing here is shown to the people in it.
  */
 /**
+ * @property list<int> $member_ids user ids in the group
  * @property Carbon|null $detected_at
  * @property Carbon|null $reviewed_at
  */

@@ -319,7 +319,8 @@ class WebsiteExtractor
         }
 
         foreach (self::SOCIAL as $slot => $hosts) {
-            if (in_array($host, $hosts, true) && in_array($slot, TeamProfile::LINK_KEYS, true)) {
+            // Every SOCIAL slot is one of TeamProfile::LINK_KEYS (PHPStan proves it), so only the host is checked.
+            if (in_array($host, $hosts, true)) {
                 return [$slot, 'https://'.$parts['host'].rtrim($path, '/')];
             }
         }
