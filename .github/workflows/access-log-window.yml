@@ -34,7 +34,7 @@ jobs:
       FROM_T: ${{ inputs.from }}
       TO_T: ${{ inputs.to }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check the inputs
         run: |
