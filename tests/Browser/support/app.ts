@@ -21,17 +21,25 @@ export function run(): { password: string; tag: string; totp: string } {
 
 /** One operation of support/e2e.php (make a person, make a business, read rows back). */
 export function op<T = any>(operation: Record<string, unknown>): T {
-    const out = artisan(['tinker', `--execute=require base_path('tests/Browser/support/e2e.php');`], {
-        E2E_OP: JSON.stringify(operation),
-        E2E_PASSWORD: fs.existsSync(runFile) ? run().password : '',
-        E2E_TOTP: fs.existsSync(runFile) ? run().totp ?? '' : '',
-    });
-    const line = out.split('\n').find((l) => l.startsWith('E2E_RESULT:'));
-    if (!line) {
+    // The browser run's processes share one SQLite file. A transaction that read first and then needs the write lock while
+    // another process holds it fails at once with "database is locked" (SQLite does not wait in that case, whatever the busy
+    // timeout). The operation was rolled back whole, so it is safe to run again after a short pause.
+    for (let attempt = 1; ; attempt++) {
+        const out = artisan(['tinker', `--execute=require base_path('tests/Browser/support/e2e.php');`], {
+            E2E_OP: JSON.stringify(operation),
+            E2E_PASSWORD: fs.existsSync(runFile) ? run().password : '',
+            E2E_TOTP: fs.existsSync(runFile) ? run().totp ?? '' : '',
+        });
+        const line = out.split('\n').find((l) => l.startsWith('E2E_RESULT:'));
+        if (line) {
+            return JSON.parse(line.slice('E2E_RESULT:'.length));
+        }
+        if (attempt < 6 && /database is locked/i.test(out)) {
+            Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 400 * attempt);
+            continue;
+        }
         throw new Error(`e2e.php gave no result for ${operation.op}: ${out}`);
     }
-
-    return JSON.parse(line.slice('E2E_RESULT:'.length));
 }
 
 export function rows<T = Record<string, any>>(table: string, where: Record<string, unknown> = {}): T[] {
