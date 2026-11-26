@@ -55,6 +55,11 @@ $check = function (string $what, bool $held, string $detail = '') use (&$failure
 $counts = function (): array {
     $counts = [];
     foreach (array_column(Schema::getTables(Schema::getCurrentSchemaName()), 'name') as $table) {
+        // R-72: the queue's own tables are not content. Mail queued about demonstration records goes to .test addresses,
+        // which are never mailed, and is dropped once those records are removed (deleteWhenMissingModels).
+        if (in_array($table, ['jobs', 'failed_jobs', 'job_batches'], true)) {
+            continue;
+        }
         $counts[$table] = DB::table($table)->count();
     }
     ksort($counts);

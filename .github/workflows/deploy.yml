@@ -281,6 +281,15 @@ jobs:
             printf '\nAPP_ENV=production\n' >> .env
           fi
           echo "== APP_ENV forced to production: $(grep '^APP_ENV=' .env | tail -1)"
+          # R-72 (E-06), owner's decision 2026-11-26: email goes through the database queue, so a page never waits on the mail
+          # server. The worker line is added to the crontab below because this is not "sync"; the jobs and failed_jobs tables
+          # are created by the migrations that run in this deploy.
+          if grep -q '^QUEUE_CONNECTION=' .env; then
+            sed -i 's/^QUEUE_CONNECTION=.*/QUEUE_CONNECTION=database/' .env
+          else
+            printf '\nQUEUE_CONNECTION=database\n' >> .env
+          fi
+          echo "== QUEUE_CONNECTION forced to database: $(grep '^QUEUE_CONNECTION=' .env | tail -1)"
           if grep -qE '^APP_URL=http://' .env; then echo "::warning::APP_URL is http://, not https://; set it to the https address."; fi
 
           # ---- frontend: swap the staged build in, keep the docroot copy in step

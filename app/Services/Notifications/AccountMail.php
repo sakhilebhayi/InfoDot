@@ -2,8 +2,10 @@
 
 namespace App\Services\Notifications;
 
+use App\Mail\AccountClosed;
 use App\Mail\MembershipChanged;
 use App\Mail\SecurityNotice;
+use App\Mail\WelcomeMail;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Mail\Mailable;
@@ -26,6 +28,63 @@ class AccountMail
     public function twoFactor(User $user, bool $enabled): void
     {
         $this->deliver($user, new SecurityNotice($enabled ? SecurityNotice::TWO_FACTOR_ON : SecurityNotice::TWO_FACTOR_OFF, $user, $this->now()), 'sec:2fa:'.($enabled ? 'on' : 'off').':'.$user->getKey(), 300);
+    }
+
+    /** R-72 (S-06): a sign-in from a browser this account has not used before. One per device label per day. */
+    public function newSignIn(User $user, string $device): void
+    {
+        $this->deliver($user, new SecurityNotice(SecurityNotice::NEW_SIGN_IN, $user, $this->now(), $device), 'sec:signin:'.$user->getKey().':'.sha1($device), 86400);
+    }
+
+    /** R-72 (E-04): InfoDot suspended the account, or opened it again. Always sent: the person must know why they cannot sign in. */
+    public function suspension(User $user, bool $suspended, ?string $reason): void
+    {
+        $this->deliver($user, new SecurityNotice($suspended ? SecurityNotice::SUSPENDED : SecurityNotice::RESTORED, $user, $this->now(), (string) $reason), 'sec:susp:'.($suspended ? 'on' : 'off').':'.$user->getKey(), 300);
+    }
+
+    /** R-72 (E-04): someone else changed the person's role in a company. */
+    public function roleChanged(User $user, Team $team, string $roleName, ?User $actor): void
+    {
+        if ($user->email_verified_at === null || ($actor !== null && $actor->is($user)) || $team->personal_team) {
+            return;
+        }
+
+        $this->deliver($user, new MembershipChanged(MembershipChanged::ROLE_CHANGED, $user, MembershipChanged::plainName($team), $roleName), 'member:role:'.$team->getKey().':'.$user->getKey().':'.sha1($roleName), 3600);
+    }
+
+    /**
+     * R-72 (E-04): a company was deleted; its other members hear it from us, not from a missing page.
+     *
+     * @param  iterable<User>  $members
+     */
+    public function companyDeleted(iterable $members, string $companyName, ?User $actor): void
+    {
+        foreach ($members as $member) {
+            if ($member->email_verified_at === null || ($actor !== null && $actor->is($member))) {
+                continue;
+            }
+            $this->deliver($member, new MembershipChanged(MembershipChanged::COMPANY_DELETED, $member, $companyName), 'member:gone:'.sha1($companyName).':'.$member->getKey(), 86400);
+        }
+    }
+
+    /** R-72 (E-04): the account was deleted. Plain strings only, because the account is gone by the time this is sent. */
+    public function accountClosed(string $email, string $name): void
+    {
+        if ($email === '') {
+            return;
+        }
+
+        try {
+            Mail::to($email)->send(new AccountClosed($name, $this->now()));
+        } catch (\Throwable $e) {
+            Log::error('account.mail_failed', ['category' => 'mail', 'mail' => AccountClosed::class, 'exception' => $e::class]);
+        }
+    }
+
+    /** R-72 (E-04): once, when the person confirms their address. */
+    public function welcome(User $user): void
+    {
+        $this->deliver($user, new WelcomeMail($user), 'welcome:'.$user->getKey(), 400 * 86400);
     }
 
     /** `$actor` is whoever made the change; someone who joined or left by their own hand is not mailed about it. */
@@ -51,12 +110,13 @@ class AccountMail
         try {
             Mail::to($user->email)->send($mail);
         } catch (\Throwable $e) {
-            Log::warning('account.mail_failed', ['mail' => $mail::class, 'exception' => $e::class]);
+            // R-72 (E-09): at error level, so the ops alert counts it; the class only, never the message (it can hold the address).
+            Log::error('account.mail_failed', ['category' => 'mail', 'mail' => $mail::class, 'exception' => $e::class]);
         }
     }
 
     private function now(): string
     {
-        return now(config('app.timezone'))->format('j F Y, H:i').' ('.config('app.timezone').')';
+        return now(config('app.display_timezone'))->format('j F Y, H:i').' (South African time)';
     }
 }

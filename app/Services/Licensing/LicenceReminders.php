@@ -178,16 +178,26 @@ class LicenceReminders
             }
         }
 
-        try {
-            foreach ($to as $user) {
-                if (blank($user->email)) {
-                    continue;
-                }
-
-                Mail::to($user->email)->send(new LicenceNotice($heading, $lines, $team, $user));
+        // R-72 (E-12): each person is sent to on their own. One address that fails no longer makes the whole reminder go again to
+        // everyone who already had it: only when nobody could be reached is the reminder left to be tried on the next run.
+        $sent = 0;
+        $failed = 0;
+        foreach ($to as $user) {
+            if (blank($user->email)) {
+                continue;
             }
-        } catch (Throwable $e) {
-            Log::warning('licence.reminder_failed', ['team' => $team->getKey(), 'kind' => $kind, 'reason' => class_basename($e)]);
+
+            try {
+                Mail::to($user->email)->send(new LicenceNotice($heading, $lines, $team, $user));
+                $sent++;
+            } catch (Throwable $e) {
+                $failed++;
+                // R-72 (E-09): at error level, so the ops alert counts it.
+                Log::error('licence.reminder_failed', ['category' => 'mail', 'team' => $team->getKey(), 'kind' => $kind, 'user_id' => $user->getKey(), 'reason' => class_basename($e)]);
+            }
+        }
+
+        if ($sent === 0 && $failed > 0) {
             $row->delete();
 
             return 0;

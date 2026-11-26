@@ -155,7 +155,6 @@ class VerificationService
                 'category' => 'mail',
                 'verification_id' => $verification->id,
                 'exception' => $e::class,
-                'reason' => mb_substr($e->getMessage(), 0, 300),
             ]);
 
             $verification->forceFill(['email_code_hash' => null, 'email_code_expires_at' => null])->save();

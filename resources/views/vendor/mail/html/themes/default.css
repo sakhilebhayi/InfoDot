@@ -36,7 +36,7 @@ blockquote {
 }
 
 a {
-    color: #d9a30f;
+    color: #8a6100;
 }
 
 a img {
@@ -186,13 +186,13 @@ img {
 }
 
 .footer p {
-    color: #7c8894;
+    color: #525d68;
     font-size: 12px;
     text-align: center;
 }
 
 .footer a {
-    color: #7c8894;
+    color: #525d68;
     text-decoration: underline;
 }
 
@@ -269,7 +269,7 @@ img {
 
 .button-red,
 .button-error {
-    background-color: #f47272;
+    background-color: #c53030;
     border-bottom: 8px solid #f47272;
     border-left: 18px solid #f47272;
     border-right: 18px solid #f47272;
@@ -278,7 +278,7 @@ img {
 }
 
 .button-fallback {
-    color: #7c8894;
+    color: #525d68;
     font-size: 12px;
     line-height: 1.5em;
     margin: 0 0 8px;
@@ -287,7 +287,7 @@ img {
 }
 
 .button-fallback a {
-    color: #7c8894;
+    color: #525d68;
 }
 
 /* Panels */

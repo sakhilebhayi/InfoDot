@@ -115,7 +115,6 @@ class User extends Authenticatable implements MustVerifyEmail
                 'category' => 'mail',
                 'user_id' => $this->getAuthIdentifier(),
                 'exception' => $e::class,
-                'reason' => mb_substr($e->getMessage(), 0, 300),
             ]);
 
             Password::broker()->deleteToken($this);

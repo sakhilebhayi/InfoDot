@@ -55,4 +55,6 @@ Open the appointment
 If the button does not open, sign in to InfoDot with this email address and open {{ $toCustomer ? 'My bookings' : 'Appointments' }}: {{ $listUrl }}
 
 The details of the appointment stay on InfoDot, behind your sign-in.
+
+[Choose which emails you get]({{ $settingsUrl }})
 @endcomponent

@@ -2,6 +2,7 @@
 
 namespace App\Models\Concerns;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
@@ -48,5 +49,23 @@ trait HasKnowledgeVisibility
     public function isPublic(): bool
     {
         return $this->visibility === self::VISIBILITY_PUBLIC;
+    }
+
+    /**
+     * R-72 (E-08): the same rule as the scope, for one person, wherever the code runs. The scope is skipped in queue workers and
+     * commands (nobody is signed in there), so anything they send about a question or solution asks this instead.
+     */
+    public function visibleTo(?User $user): bool
+    {
+        if ($this->isPublic()) {
+            return true;
+        }
+
+        if ($user === null) {
+            return false;
+        }
+
+        return (int) $this->user_id === (int) $user->getKey()
+            || ($this->team_id !== null && $user->allTeams()->contains('id', (int) $this->team_id));
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Actions\Jetstream;
 
 use App\Models\Team;
+use App\Services\Notifications\AccountMail;
 use App\Services\Participation\ParticipationClient;
 use App\Services\Privacy\BookingDataEraser;
 use App\Services\Privacy\SeminarDataEraser;
@@ -50,6 +51,10 @@ class DeleteUser implements DeletesUsers
         // Before anything is erased or cancelled: a refusal must leave the account exactly as it was.
         $this->refuseWhileOthersDependOnTheirBusinesses($user);
 
+        // R-72 (E-04): kept for the confirmation sent once the account is gone.
+        $address = (string) $user->email;
+        $name = (string) $user->name;
+
         $this->eraseFromMemory($user);
         // Upcoming seminars are cancelled and tickets refunded first: that talks to Finance, so it runs outside the transaction.
         app(SeminarDataEraser::class)->settle($user);
@@ -68,6 +73,8 @@ class DeleteUser implements DeletesUsers
             $user->tokens->each->delete();
             $user->delete();
         });
+
+        app(AccountMail::class)->accountClosed($address, $name);
     }
 
     /**

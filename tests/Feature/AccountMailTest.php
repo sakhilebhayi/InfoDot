@@ -259,12 +259,15 @@ class AccountMailTest extends TestCase
 
         Log::spy();
         $mail->failed(new \RuntimeException('x'));
-        Log::shouldHaveReceived('warning')->with('account.mail_failed', \Mockery::type('array'));
+        // R-72 (E-09): logged at error, so the ops alert counts a mail that never went.
+        Log::shouldHaveReceived('error')->with('account.mail_failed', \Mockery::type('array'));
     }
 
-    public function test_the_jobs_table_exists_for_a_database_queue_and_the_default_is_still_sync(): void
+    public function test_the_jobs_table_exists_and_production_mail_runs_on_the_database_queue(): void
     {
         $this->assertTrue(Schema::hasTable('jobs'));
-        $this->assertStringContainsString('QUEUE_CONNECTION=sync', (string) file_get_contents(base_path('.env.example')));
+        // R-72 (owner decision): mail goes through the queue; the deploy pins it on the host.
+        $this->assertStringContainsString('QUEUE_CONNECTION=database', (string) file_get_contents(base_path('.env.example')));
+        $this->assertStringContainsString('QUEUE_CONNECTION=database', (string) file_get_contents(base_path('.github/workflows/deploy.yml')));
     }
 }

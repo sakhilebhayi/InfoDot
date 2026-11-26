@@ -183,7 +183,7 @@ class AppointmentRequestTest extends TestCase
         $this->assertStringContainsString('accepted your appointment request: Wednesday 25 November 2026 at 10:00, 1 hour 30 minutes', $answer->body);
         $this->assertStringContainsString('Mbombela depot gate', $answer->body);
         $this->assertDatabaseHas('user_notices', ['user_id' => $this->customer->id, 'kind' => UserNotice::ENQUIRY_REPLY]);
-        Mail::assertSent(EnquiryActivity::class, fn ($m) => $m->hasTo($this->customer->email));
+        Mail::assertQueued(EnquiryActivity::class, fn ($m) => $m->hasTo($this->customer->email));
 
         $this->actingAs($this->customer)->get(route('inbox.show', $enquiry))->assertOk()
             ->assertSee('Accepted')->assertSee('Wednesday 25 November 2026 at 10:00');

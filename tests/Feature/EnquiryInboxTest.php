@@ -85,11 +85,11 @@ class EnquiryInboxTest extends TestCase
 
         foreach ([$this->owner, $this->admin] as $handler) {
             $this->assertDatabaseHas('user_notices', ['user_id' => $handler->id, 'kind' => UserNotice::ENQUIRY_RECEIVED, 'subject_id' => $e->id]);
-            Mail::assertSent(EnquiryActivity::class, fn (EnquiryActivity $m) => $m->hasTo($handler->email));
+            Mail::assertQueued(EnquiryActivity::class, fn (EnquiryActivity $m) => $m->hasTo($handler->email));
         }
         // An editor who was not given it is not told, and the email never carries the message.
         $this->assertDatabaseMissing('user_notices', ['user_id' => $this->editor->id]);
-        Mail::assertSent(EnquiryActivity::class, fn (EnquiryActivity $m) => ! str_contains($m->render(), 'Hazyview'));
+        Mail::assertQueued(EnquiryActivity::class, fn (EnquiryActivity $m) => ! str_contains($m->render(), 'Hazyview'));
 
         $notice = UserNotice::where('user_id', $this->owner->id)->sole();
         $words = app(InAppNotices::class)->describe($notice);
@@ -266,7 +266,7 @@ class EnquiryInboxTest extends TestCase
         $this->actingAs($this->owner)->post($this->inbox('/'.$e->uuid.'/reply'), ['body' => 'First answer.'])->assertRedirect();
         $this->actingAs($this->owner)->post($this->inbox('/'.$e->uuid.'/reply'), ['body' => 'And a second thought.'])->assertRedirect();
 
-        Mail::assertSentCount(1);
+        Mail::assertQueuedCount(1);
         $this->assertSame(2, UserNotice::where('user_id', $this->customer->id)->count(), 'the bell still shows each reply');
     }
 }
