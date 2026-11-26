@@ -1,8 +1,8 @@
-<x-public-layout title="About" reveal band="ABOUT" crumb="About" description="InfoDot is where a business writes down how it works, finds checked answers from other businesses, and opens the tools it runs on with one free account.">
+<x-public-layout title="About" reveal band="ABOUT" crumb="About" description="Most businesses are figuring it out as they go. InfoDot brings business knowledge, connected tools and other businesses together in one free account.">
     <article class="ix-prose ix-prose--ledger pg-prose">
         <span class="pg-plate" data-pg-plate>Who we are</span>
         <h1 class="ix-h1 pg-title" data-pg-in>About InfoDot</h1>
-        <p class="ix-lede" data-pg-in>InfoDot is where a business writes down how it works, finds checked answers from other businesses, and opens the tools it runs on with one account. It is free to join, and nobody has to work it all out alone.</p>
+        <p class="ix-lede" data-pg-in>Most businesses are figuring it out as they go. InfoDot brings business knowledge, connected tools and other businesses together in one account, so nobody has to build a business alone. It is free to join.</p>
 
         <figure class="pg-strip" data-pg-photo>
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/landing/market.jpg') }}" alt="Colourful shirts and dresses hanging at a market stall in Cape Town" width="1400" height="1050" loading="eager" decoding="async">
@@ -10,22 +10,23 @@
 
         <h2>Why it exists</h2>
         <p>A growing business has a sales system, an accounting package, a stock sheet, a job board and a few WhatsApp groups. Each holds a slice of the truth, and what the business has learned lives in people's heads. The people who have to decide are never quite sure the figure is current, or that anyone has solved the same problem before. InfoDot is where a business, and the businesses around it, write down what they know so the next person does not start from nothing.</p>
-        <p>It also puts the tools a business runs on within reach of the same account, so what you learn and what you do sit together.</p>
+        <p>None of this is a lack of ambition. It is a lack of access: to knowledge, to the right tools and to the people who could help. InfoDot exists to close that gap, and to put what you learn and what you do within reach of the same account.</p>
 
         <h2>What you can do here</h2>
         <ul>
-            <li><strong>Discover.</strong> Find practical answers, guides and solutions, and learn from other businesses' experience. Ask your own questions and share what you know.</li>
-            <li><strong>Manage.</strong> Open the digital tools that help you run your business, such as finance, people, projects, documents and files, with one account.</li>
-            <li><strong>Grow.</strong> Use what you learn and the tools you connect to improve how you work and to find new opportunities.</li>
+            <li><strong>Knowledge.</strong> Stop figuring it out alone. Ask questions, learn from other businesses and follow researched solutions with their sources named.</li>
+            <li><strong>Tools.</strong> Stop juggling disconnected apps. Open the Dot tools that help you run your business, such as finance, people, projects, documents and files, with one account.</li>
+            <li><strong>Connections.</strong> Stop missing what you can't see. Give your business a page, find other businesses in the directory, message them and ask for appointments.</li>
+            <li><strong>Progress.</strong> Turn what you learn into what you do. Keep what your business learns, improve it over time, and add people and tools as you grow.</li>
         </ul>
-        <p><a href="{{ route('welcome') }}#how-it-works">See how getting started works</a>.</p>
+        <p><a href="{{ route('welcome') }}#how-it-works">See what a week with InfoDot can look like</a>.</p>
 
         <h2>Who it is for</h2>
         <p>People with a business idea and no plan, people starting their first business, small businesses, growing businesses and established organisations. You do not need a company, a plan or any experience to join.</p>
-        <p>What members have in common is a habit: they write down what they know, keep their tools connected, and learn from other businesses. That is how a business keeps working when one person is away.</p>
+        <p>What members have in common is that they would rather not work it all out alone. They share what they learn, keep their tools connected and reach out to other businesses, so the business keeps moving even when one person is away.</p>
 
         <h2>Where things stand</h2>
-        <p>Today you can ask a question, answer one, write a solution as steps, have a moderator verify it, and find it again by topic or reference. One account opens the Dot platforms your business can use, grouped by what you want to get done. Which ones you can open depends on your business and how access is arranged. We describe what is there now, not what is planned.</p>
+        <p>Today you can ask a question, answer one, write a solution as steps, have a moderator verify it, and find it again by topic or reference. A business can have a page in the directory, receive messages in its inbox, and take appointment bookings or requests. One account opens the Dot platforms your business can use, grouped by what you want to get done. Which ones you can open depends on your business and how access is arranged. We describe what is there now, not what is planned.</p>
 
         <h2>How it is run</h2>
         <ul>
@@ -47,7 +48,7 @@
             <li><a href="https://unsplash.com/photos/y0njljTYxHA" rel="noopener">Market stall, Cape Town</a> by FitNish Media (home page)</li>
             <li><a href="https://unsplash.com/photos/ime_dBOnmwY" rel="noopener">Fishing boats at Kalk Bay</a> by M Lagan (home page)</li>
             <li><a href="https://unsplash.com/photos/mQ2mZMcI1dc" rel="noopener">Produce stall, Cape Town market</a> by FitNish Media (home page)</li>
-            <li><a href="https://unsplash.com/photos/hgm1xkVxsX0" rel="noopener">Outdoor cafe, Cape Town</a> by Mario Scheibl (Contact)</li>
+            <li><a href="https://unsplash.com/photos/hgm1xkVxsX0" rel="noopener">Outdoor cafe, Cape Town</a> by Mario Scheibl (Contact, home page)</li>
             <li><a href="https://unsplash.com/photos/NLVj-FTLwu4" rel="noopener">Stained glass door at a Cape Town market</a> by Amy Harrison (Businesses)</li>
             <li><a href="https://unsplash.com/photos/xvJVDUoGpoU" rel="noopener">Johannesburg views</a> by Clodagh Da Paixao (What InfoDot does)</li>
             <li><a href="https://unsplash.com/photos/D4l8jOd-7jI" rel="noopener">Bo-Kaap street and mural</a> by Nigel SB Photography (Questions people ask)</li>
