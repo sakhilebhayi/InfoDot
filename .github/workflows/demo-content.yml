@@ -125,7 +125,7 @@ jobs:
           mv demo.enc key.enc "$GITHUB_WORKSPACE/out/"
 
       - name: Upload the ciphertext
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: demo-content
           path: out/
