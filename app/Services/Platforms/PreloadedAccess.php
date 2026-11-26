@@ -70,7 +70,7 @@ class PreloadedAccess extends PlatformAccess
      */
     public function sellablePlans(string $key): Collection
     {
-        $this->plans ??= PlatformPlan::where('active', true)->orderBy('amount_minor')->get()->filter->isSellable()->groupBy('platform_key');
+        $this->plans ??= PlatformPlan::where('active', true)->orderBy('amount_minor')->get()->filter->isSellable()->toBase()->groupBy('platform_key');
 
         return $this->plans->get($key, collect())->values();
     }
