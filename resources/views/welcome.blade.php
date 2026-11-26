@@ -99,14 +99,18 @@
         </div>
         <div class="hp-journey__tabs" role="tablist" aria-label="Stages of the journey" data-journey-tabs hidden>
             @foreach ($journey as $stage)
-                <button type="button" role="tab" id="stage-tab-{{ $stage['key'] }}" aria-controls="stage-{{ $stage['key'] }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}" class="hp-journey__tab" data-journey-tab>{{ $stage['title'] }}</button>
+                <button type="button" role="tab" id="stage-tab-{{ $stage['key'] }}" aria-controls="stage-{{ $stage['key'] }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}" @class(["hp-journey__tab", "hp-journey__tab--special" => $stage["key"] === "special"]) data-journey-tab>{{ $stage["title"] }}</button>
             @endforeach
         </div>
         @foreach ($journey as $stage)
-            <section class="hp-stage" id="stage-{{ $stage['key'] }}" role="tabpanel" aria-labelledby="stage-h-{{ $stage['key'] }}" data-stage-panel>
+            @php $special = $stage['key'] === 'special'; @endphp
+            <section @class(['hp-stage', 'hp-stage--special' => $special, 'hp-stage--plain' => $stage['tools'] === [] && $stage['lead'] === null]) id="stage-{{ $stage['key'] }}" role="tabpanel" aria-labelledby="stage-h-{{ $stage['key'] }}" data-stage-panel>
                 <div class="hp-stage__intro">
-                    <h3 id="stage-h-{{ $stage['key'] }}" class="hp-stage__title">{{ $stage['title'] }}</h3>
+                    <h3 id="stage-h-{{ $stage['key'] }}" class="hp-stage__title">{{ $stage['heading'] !== '' ? $stage['heading'] : $stage['title'] }}</h3>
                     <p class="hp-stage__line">{{ $stage['line'] }}</p>
+                    @if ($stage['note'] !== '')
+                        <p class="hp-stage__note">{{ $stage['note'] }}</p>
+                    @endif
                     @if ($stage['infodot'] !== [])
                         <ul class="hp-stage__own" role="list">
                             @foreach ($stage['infodot'] as $item)
@@ -115,9 +119,26 @@
                         </ul>
                     @endif
                 </div>
-                @if ($stage['tools'] !== [])
+                @if ($stage['lead'] !== null)
+                    @php $lead = $stage['lead']; @endphp
                     <div class="hp-stage__tools">
-                        <p class="hp-stage__label">Platforms for this stage</p>
+                        <p class="hp-stage__label">Where to begin</p>
+                        <article class="hp-lead" aria-labelledby="lead-{{ $stage['key'] }}">
+                            <div class="hp-lead__head">
+                                <img src="{{ $lead['logo'] }}" alt="" width="60" height="40" loading="lazy" decoding="async">
+                                <span class="hp-tool__name" id="lead-{{ $stage['key'] }}">{{ $lead['name'] }}<span class="hp-tool__role">{{ $lead['role'] }}</span></span>
+                            </div>
+                            <p class="hp-lead__value">{{ $lead['outcome'] }}</p>
+                            <dl class="hp-tool__body">
+                                <div><dt>The problem</dt><dd>{{ $lead['problem'] }}</dd></div>
+                                <div><dt>What you can do</dt><dd>{{ $lead['why'] }}</dd></div>
+                            </dl>
+                            <a href="{{ $lead['url'] }}" class="ix-btn ix-btn--primary lp-btn">{{ $lead['cta'] }}</a>
+                        </article>
+                    </div>
+                @elseif ($stage['tools'] !== [])
+                    <div class="hp-stage__tools">
+                        <p class="hp-stage__label">{{ $special ? 'Platforms to explore' : 'Platforms for this stage' }}</p>
                         <ul class="hp-stage__list" role="list">
                             @foreach ($stage['tools'] as $tool)
                                 <li>
@@ -125,7 +146,7 @@
                                         <summary>
                                             <img src="{{ $tool['logo'] }}" alt="" width="60" height="40" loading="lazy" decoding="async">
                                             <span class="hp-tool__name">{{ $tool['name'] }}<span class="hp-tool__role">{{ $tool['role'] }}</span></span>
-                                            <span class="hp-tool__value">{{ $tool['outcome'] }}</span>
+                                            <span class="hp-tool__value">{{ $special && filled($tool['opportunity'] ?? null) ? $tool['opportunity'] : $tool['outcome'] }}</span>
                                         </summary>
                                         <dl class="hp-tool__body">
                                             <div><dt>The problem</dt><dd>{{ $tool['problem'] }}</dd></div>
@@ -144,7 +165,7 @@
             </section>
         @endforeach
         <div class="hp-journey__more" data-reveal>
-            <p>Which tools you can open depends on your business and how access is arranged. Running something specialised, like a mine or a ride-hailing operation? There are tools for that too.</p>
+            <p>Which tools you can open depends on your business and how access is arranged. Business Tools describes every platform, what it does and what it needs before you start.</p>
             <a href="{{ $tools }}" class="ix-btn lp-btn">Explore Business Tools</a>
         </div>
 

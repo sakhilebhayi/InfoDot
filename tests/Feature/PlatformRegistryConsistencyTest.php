@@ -114,10 +114,10 @@ class PlatformRegistryConsistencyTest extends TestCase
         $this->assertSame([], array_values(array_diff($names, $known)));
 
         preg_match_all('/<span class="hp-tool__name">(Dot\.[A-Za-z]+)/', $html, $shown);
-        // R-73: the journey (Start, Manage, Connect, Grow) shows every live, public platform once. Central has no agreed visitor-facing
-        // description yet; Mines and Ehail are specialised and reached through "Explore Business Tools" instead. A platform added to
-        // the registry fails here until it is placed in a stage (config/business_tools.php 'journey') or added to this short list on purpose.
-        $notOnTheHomepage = ['central', 'mines', 'ehail'];
+        // R-73/R-74: the journey (Start, Manage, Connect, Grow, Special Platforms) shows every live, public platform once. Central has no
+        // agreed visitor-facing description yet. A platform added to the registry fails here until it is placed in a stage
+        // (config/business_tools.php 'journey') or added to this short list on purpose.
+        $notOnTheHomepage = ['central'];
         $expected = collect(config('ecosystem.platforms'))
             ->filter(fn (array $p, string $key) => ($p['active'] ?? false) && ! ($p['internal'] ?? false) && ! in_array($key, ['infodot', 'agents', ...$notOnTheHomepage], true))
             ->pluck('name')->sort()->values()->all();

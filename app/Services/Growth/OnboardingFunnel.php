@@ -44,7 +44,7 @@ class OnboardingFunnel
     }
 
     /** R-73: where a sign-up came from on the homepage, and the steps after it that mean the person actually got going. */
-    public const SOURCE_LABELS = ['hero' => 'Homepage: the top button', 'close' => 'Homepage: the final call', 'other' => 'Anywhere else'];
+    public const SOURCE_LABELS = ['hero' => 'Homepage: the top button', 'start' => 'Homepage: the Start tab', 'close' => 'Homepage: the final call', 'other' => 'Anywhere else'];
 
     public const SOURCE_STEPS = ['email_verified', 'business_created', 'company_joined', 'platform_opened'];
 

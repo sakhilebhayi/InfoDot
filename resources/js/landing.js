@@ -128,10 +128,15 @@ if (tablist) {
             }
         });
         if (focus) tabs[index].focus();
+        // R-74: five tabs scroll sideways on a phone; keep the chosen one in view (never on the first paint).
+        if (focus !== null && tablist.scrollWidth > tablist.clientWidth) {
+            const tab = tabs[index];
+            tablist.scrollTo({ left: tab.offsetLeft - (tablist.clientWidth - tab.offsetWidth) / 2, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        }
     };
     tablist.hidden = false;
     document.querySelector('.hp-journey')?.classList.add('is-tabbed');
-    select(0, false);
+    select(0, null);
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => select(index, false));
         tab.addEventListener('keydown', (event) => {

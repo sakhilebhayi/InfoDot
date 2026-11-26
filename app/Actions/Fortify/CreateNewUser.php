@@ -19,7 +19,7 @@ use Laravel\Jetstream\Jetstream;
 class CreateNewUser implements CreatesNewUsers
 {
     /** R-73: the homepage buttons that lead to sign-up, recorded with the "account created" step (hero: the top; close: the final call). */
-    public const SIGNUP_SOURCES = ['hero', 'close'];
+    public const SIGNUP_SOURCES = ['hero', 'start', 'close'];
 
     use PasswordValidationRules;
 
