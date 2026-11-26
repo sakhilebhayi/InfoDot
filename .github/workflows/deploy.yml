@@ -468,7 +468,7 @@ jobs:
           fi
           QUEUE_CONN="$(grep -E '^QUEUE_CONNECTION=' .env | tail -1 | cut -d= -f2- | tr -d "\"' " || true)"
           if grep -rqE 'ShouldQueue|->queue\(|Queue::(push|later)' app && [ "${QUEUE_CONN:-database}" != "sync" ]; then
-            QUEUE_LINE="$QMIN * * * * cd $DEPLOY_PATH && exec $PHP_BIN artisan queue:work --stop-when-empty --tries=3 --timeout=90 --max-time=50 > storage/logs/cron-queue.log 2>&1 $MARK"
+            QUEUE_LINE="$QMIN * * * * cd $DEPLOY_PATH && exec $PHP_BIN artisan queue:work --stop-when-empty --tries=3 --timeout=60 --max-time=50 > storage/logs/cron-queue.log 2>&1 $MARK"
             WANT=$((WANT + 1))
             echo "== queued work present (QUEUE_CONNECTION=${QUEUE_CONN:-database}), queue worker line needed"
           else
