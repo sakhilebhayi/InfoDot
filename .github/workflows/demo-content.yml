@@ -48,7 +48,7 @@ jobs:
             echo '::error::install, rotate and remove need confirm=demo'; exit 1
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up SSH
         run: |

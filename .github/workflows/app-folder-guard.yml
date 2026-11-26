@@ -62,7 +62,7 @@ jobs:
         design:design dopemine:dopemine ehail:ehail emall:emall engage:engage finance:finance hr:hr memory:memory
         notify:notify pres:press projects:main pulse:pulse sheets:sheet tutor:tutor doc:doc
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check the inputs
         run: |
