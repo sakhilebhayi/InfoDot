@@ -33,6 +33,14 @@
     <div class="ix-shell">
         <x-ix.top-public way :search="false" />
 
+        @if ($panel ?? null)
+            {{-- R-69: InfoDot's own sign-in pages are split: a photograph with InfoDot's message on one half, the form on the other.
+                 On a phone the photograph is a short band above the form and the points follow it. --}}
+            <div class="ix-sa" data-panel="{{ $panel }}">
+                <x-auth.infodot-panel :kind="$panel" />
+                <main id="main" class="ix-sa__main ix-entry">{{ $slot }}</main>
+            </div>
+        @else
         <div class="ix-band">
             <div class="ix-band__inner">
                 <span class="ix-band__code">ACCT</span>
@@ -45,6 +53,7 @@
         </div>
 
         <main id="main" class="ix-page ix-entry">{{ $slot }}</main>
+        @endif
 
         @include('layouts.app-footer')
     </div>

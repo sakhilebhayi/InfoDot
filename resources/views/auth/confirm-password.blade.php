@@ -1,4 +1,4 @@
-<x-guest-layout title="Confirm your password">
+<x-guest-layout title="Confirm your password" :panel="($platformBranding ?? null) ? null : 'account'">
     <x-jet-authentication-card>
         <x-auth.heading title="Confirm your password" lede="This part of your account is protected. Enter your password to continue." />
 

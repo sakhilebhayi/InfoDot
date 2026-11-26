@@ -22,20 +22,38 @@ class AuthPagesTest extends TestCase
         }
     }
 
-    public function test_infodots_own_sign_in_and_registration_say_what_the_account_opens(): void
+    public function test_infodots_own_sign_in_pages_are_split_with_a_photograph_and_what_the_account_opens(): void
     {
+        // R-69: sign in, registration and the account pages are split pages: a photograph and InfoDot's message beside the form.
         $login = $this->get('/login')->assertOk()->getContent();
-        $this->assertStringContainsString('class="ix-entry__panel"', $login);
+        $this->assertStringContainsString('class="ix-sa" data-panel="login"', $login);
         $this->assertStringContainsString('A better, more connected way to build a business.', $login);
         $this->assertStringContainsString('Every Dot tool your business uses, opened with this one sign-in.', $login);
+        $this->assertStringNotContainsString('class="ix-band"', $login, 'the photograph replaces the ACCT band');
 
         $register = $this->get('/register')->assertOk()->getContent();
+        $this->assertStringContainsString('data-panel="register"', $register);
         $this->assertStringContainsString('Your first step to a better-equipped business.', $register);
         $this->assertStringContainsString('Creating an account is free. You set up your company on the next step.', $register);
         $this->assertStringContainsString('aria-describedby="email-hint"', $register);
 
-        // The panel is InfoDot's: the plainer ways in do not carry it.
-        $this->assertStringNotContainsString('class="ix-entry__panel"', $this->get('/forgot-password')->getContent());
+        $forgot = $this->get('/forgot-password')->assertOk()->getContent();
+        $this->assertStringContainsString('data-panel="account"', $forgot);
+        $this->assertStringContainsString('One account for the knowledge, tools and businesses around you.', $forgot);
+
+        // Each kind has its own photograph on disk, wired in the panel (tests run without the Vite build, so the <img> itself is not drawn here).
+        $panel = (string) file_get_contents(resource_path('views/components/auth/infodot-panel.blade.php'));
+        foreach (['auth-cafe', 'auth-start-here', 'auth-market-hall'] as $photo) {
+            $this->assertFileExists(resource_path('img/auth/'.$photo.'.jpg'));
+            $this->assertStringContainsString("'img' => '{$photo}'", $panel);
+        }
+        $this->assertStringContainsString("'../img/auth/*.jpg'", (string) file_get_contents(resource_path('js/app.js')), 'the photographs are in the build');
+
+        // Each page keeps exactly one form heading and the main landmark.
+        foreach ([$login, $register, $forgot] as $html) {
+            $this->assertSame(1, substr_count($html, '<h1'));
+            $this->assertSame(1, substr_count($html, 'id="main"'));
+        }
     }
 
     public function test_password_fields_can_be_shown_and_stay_plain_password_inputs_without_script(): void

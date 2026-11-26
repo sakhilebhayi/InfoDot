@@ -50,6 +50,9 @@
             <li><a href="https://unsplash.com/photos/mQ2mZMcI1dc" rel="noopener">Produce stall, Cape Town market</a> by FitNish Media (home page)</li>
             <li><a href="https://unsplash.com/photos/hgm1xkVxsX0" rel="noopener">Outdoor cafe, Cape Town</a> by Mario Scheibl (Contact)</li>
             <li><a href="https://unsplash.com/photos/TxoIosWDP7M" rel="noopener">Hout Bay harbour, Cape Town</a> by Gerhard Venter (home page)</li>
+            <li><a href="https://unsplash.com/photos/EdWqdnOJ4e8" rel="noopener">Cafe table, Cape Town</a> by Narissa de Villiers (Sign in)</li>
+            <li><a href="https://unsplash.com/photos/udbcIP_f6kA" rel="noopener">"Please start here", a Cape Town coffee shop</a> by Sincerely Media (Create your account)</li>
+            <li><a href="https://unsplash.com/photos/PgSm_blvwLo" rel="noopener">Rosebank Sunday Market hall, Johannesburg</a> by Vije Vijendranath (password and account pages)</li>
             <li><a href="https://unsplash.com/photos/NLVj-FTLwu4" rel="noopener">Stained glass door at a Cape Town market</a> by Amy Harrison (Businesses)</li>
             <li><a href="https://unsplash.com/photos/xvJVDUoGpoU" rel="noopener">Johannesburg views</a> by Clodagh Da Paixao (What InfoDot does)</li>
             <li><a href="https://unsplash.com/photos/D4l8jOd-7jI" rel="noopener">Bo-Kaap street and mural</a> by Nigel SB Photography (Questions people ask)</li>
