@@ -56,7 +56,7 @@ class Bookings
     /**
      * Make a booking. The details are already validated; nothing is trusted from the page except which type and which start the person asked for.
      *
-     * @param  array{name: string, email: string, phone?: ?string, company?: ?string, reason?: ?string, terms_accepted?: bool}  $details
+     * @param  array{name: string, email: string, phone?: ?string, company?: ?string, company_team?: ?Team, reason?: ?string, terms_accepted?: bool}  $details
      *
      * @throws BookingRefused
      */
@@ -109,6 +109,8 @@ class Bookings
                 throw new BookingRefused(BookingRefused::SLOT_TAKEN, 'That time has just been taken or is no longer available. Choose another time.');
             }
 
+            $companyTeam = $details['company_team'] ?? null;
+
             $booking = Booking::query()->create([
                 'team_id' => $team->getKey(),
                 'appointment_type_id' => $type->getKey(),
@@ -117,7 +119,9 @@ class Bookings
                 'customer_name' => $details['name'],
                 'customer_email' => $details['email'],
                 'customer_phone' => $details['phone'] ?? null,
-                'customer_company' => $details['company'] ?? null,
+                // A company chosen from the person's own companies (R-66) is recorded by link, and its name is kept for exports and old readers.
+                'customer_team_id' => $companyTeam?->getKey(),
+                'customer_company' => $companyTeam !== null ? $companyTeam->name : ($details['company'] ?? null),
                 'reason' => $details['reason'] ?? null,
                 'starts_at' => $slot->start,
                 'ends_at' => $slot->end,

@@ -11,6 +11,7 @@ use App\Services\Booking\Availability;
 use App\Services\Booking\BookingFeature;
 use App\Services\Booking\BookingRefused;
 use App\Services\Booking\Bookings;
+use App\Support\ActingCompany;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -132,6 +133,7 @@ class BookingPublicController extends Controller
         return view('business.book.confirm', [
             'team' => $team, 'setting' => $setting, 'zone' => $setting->timezone, 'type' => $type, 'start' => $start, 'local' => $local,
             'closed' => $closed, 'dateUrl' => $this->dateUrl($team, $type, $local), 'user' => $user,
+            'companies' => ActingCompany::options($user, $team), 'company' => ActingCompany::preselected($user, $team),
         ]);
     }
 
@@ -150,10 +152,12 @@ class BookingPublicController extends Controller
             'email' => ['required', 'email', 'max:190'],
             'phone' => ['nullable', 'string', 'max:40'],
             'company' => ['nullable', 'string', 'max:160'],
+            ActingCompany::FIELD => ['nullable', 'string', 'max:20'],
             'reason' => ['nullable', 'string', 'max:1500'],
             'terms_accepted' => $hasTerms ? ['accepted'] : ['nullable'],
         ], ['terms_accepted.accepted' => 'Please accept '.$team->name.'’s terms to book.']);
 
+        $companyTeam = ActingCompany::resolve($user, $team, $data[ActingCompany::FIELD] ?? null);
         $type = $this->type($team, (int) $data['type']);
         $start = $this->instant($data['start']);
         abort_if($start === null, 404);
@@ -163,7 +167,7 @@ class BookingPublicController extends Controller
         try {
             // Which provider takes the appointment is the engine's choice (the lowest free); a customer cannot probe or pick one by id.
             $booking = $this->bookings->book($user, $team, $type, $start, null, [
-                'name' => trim($data['name']), 'email' => trim($data['email']), 'phone' => $data['phone'] ?? null, 'company' => $data['company'] ?? null, 'reason' => $data['reason'] ?? null, 'terms_accepted' => $hasTerms,
+                'name' => trim($data['name']), 'email' => trim($data['email']), 'phone' => $data['phone'] ?? null, 'company' => $data['company'] ?? null, 'company_team' => $companyTeam, 'reason' => $data['reason'] ?? null, 'terms_accepted' => $hasTerms,
             ]);
         } catch (BookingRefused $refused) {
             // A time that is gone sends the person to that date, where the refreshed list is; anything else keeps them on the form with what they typed.

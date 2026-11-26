@@ -69,7 +69,7 @@ final class EnquiryService
     /**
      * Open an enquiry: the conversation, its first message and any files, then tell the business.
      *
-     * @param  array{subject: string, category: string, body: string}  $data
+     * @param  array{subject: string, category: string, body: string, company_team?: ?Team}  $data
      * @param  list<UploadedFile>  $files
      */
     public function start(User $customer, Team $team, array $data, array $files = []): Enquiry
@@ -84,6 +84,9 @@ final class EnquiryService
             $enquiry = new Enquiry(['subject' => $data['subject'], 'category' => $data['category']]);
             $enquiry->team_id = $team->id;
             $enquiry->user_id = $customer->id;
+            // The company the person wrote for (R-66), already checked against their own companies by the caller.
+            $companyTeam = $data['company_team'] ?? null;
+            $enquiry->customer_team_id = $companyTeam?->getKey();
             $enquiry->status = Enquiry::NEW;
             $enquiry->last_customer_message_at = now();
             $enquiry->save();

@@ -39,8 +39,11 @@
             </div>
             <div class="ix-form__row">
                 <div><label class="ix-label" for="phone">Phone <span class="ix-hint">optional</span></label><input class="ix-input" id="phone" name="phone" type="tel" maxlength="40" autocomplete="tel" value="{{ old('phone') }}"></div>
-                <div><label class="ix-label" for="company">Your business <span class="ix-hint">optional</span></label><input class="ix-input" id="company" name="company" type="text" maxlength="160" value="{{ old('company') }}"></div>
+                @if ($companies->isEmpty())
+                    <div><label class="ix-label" for="company">Your business <span class="ix-hint">optional</span></label><input class="ix-input" id="company" name="company" type="text" maxlength="160" value="{{ old('company') }}"></div>
+                @endif
             </div>
+            @include('partials.acting-company', ['companies' => $companies, 'selected' => $company, 'label' => 'Booking for', 'hint' => $team->name.' sees this booking as coming from the company you choose, with a link to its page. Choose Just me for a personal appointment.'])
             <div class="ix-form__row">
                 <div><label class="ix-label" for="reason">What is it about? <span class="ix-hint">optional</span></label><textarea class="ix-textarea" id="reason" name="reason" rows="4" maxlength="1500">{{ old('reason') }}</textarea></div>
             </div>

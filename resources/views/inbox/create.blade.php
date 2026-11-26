@@ -24,6 +24,7 @@
                     @foreach ($categories as $value => $label)<option value="{{ $value }}" @selected(old('category', 'general') === $value)>{{ $label }}</option>@endforeach
                 </select>
             </div>
+            @include('partials.acting-company', ['companies' => $companies, 'selected' => $company, 'label' => 'Sending for', 'hint' => $team->name.' sees this message as coming from the company you choose, with a link to its page.'])
             <div class="ix-form__row"><label class="ix-label" for="subject">Subject</label><input class="ix-input" id="subject" name="subject" minlength="3" maxlength="160" required value="{{ old('subject') }}" placeholder="For example: Quote for a borehole in Hazyview"></div>
             <div class="ix-form__row">
                 <label class="ix-label" for="body">Your message</label>

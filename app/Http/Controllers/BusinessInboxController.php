@@ -37,7 +37,7 @@ class BusinessInboxController extends Controller
         ]);
         $status = $f['status'] ?? 'active';
 
-        $list = $team->enquiries()->with(['customer:id,name', 'assignee:id,name'])
+        $list = $team->enquiries()->with(['customer:id,name', 'assignee:id,name', 'customerTeam:id,name'])
             ->when(! $manager, fn ($q) => $q->where('assigned_to', $user->id))
             ->when($status === 'active', fn ($q) => $q->active())
             ->when(! in_array($status, ['active', 'all'], true), fn ($q) => $q->where('status', $status))

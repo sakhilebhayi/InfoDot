@@ -46,7 +46,7 @@
                     <div><dt>Name</dt><dd>{{ $booking->customer_name }}</dd></div>
                     <div><dt>Email</dt><dd>{{ $booking->customer_email }}</dd></div>
                     @if ($booking->customer_phone)<div><dt>Phone</dt><dd>{{ $booking->customer_phone }}</dd></div>@endif
-                    @if ($booking->customer_company)<div><dt>Your business</dt><dd>{{ $booking->customer_company }}</dd></div>@endif
+                    @if ($booking->customerTeam)<div><dt>Booked for</dt><dd><a href="{{ route('business.show', $booking->customerTeam) }}">{{ $booking->customerTeam->name }}</a></dd></div>@elseif ($booking->customer_company)<div><dt>Your business</dt><dd>{{ $booking->customer_company }}</dd></div>@endif
                     @if ($booking->reason)<div><dt>Your note</dt><dd>{!! nl2br(e($booking->reason)) !!}</dd></div>@endif
                 </dl>
             </div>

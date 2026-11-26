@@ -36,7 +36,7 @@ class BookingDataEraser
     /** Takes every personal detail off one booking; the appointment itself stays. Also used by the retention rule, which also clears the free-text notes written about the customer and the link to their account (so the old appointment is anonymous, not just renamed). */
     public function scrub(Booking $booking, bool $withNotes = false): void
     {
-        $booking->forceFill(['customer_name' => self::NAME, 'customer_email' => self::EMAIL, 'customer_phone' => null, 'customer_company' => null, 'reason' => null, 'answers' => null])
+        $booking->forceFill(['customer_name' => self::NAME, 'customer_email' => self::EMAIL, 'customer_phone' => null, 'customer_company' => null, 'customer_team_id' => null, 'reason' => null, 'answers' => null])
             ->forceFill($withNotes ? ['internal_notes' => null, 'status_note' => null, 'reschedule_note' => null, 'customer_user_id' => null] : [])->save();
     }
 }
