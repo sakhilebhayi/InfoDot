@@ -168,7 +168,10 @@ jobs:
       - run: php artisan key:generate
       - run: npm ci --no-audit
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
+      - name: Chromium and its system libraries (a stale mirror index answers 404, so refresh and try once more)
+        run: |
+          sudo apt-get update -q
+          npx playwright install --with-deps chromium || { sleep 20; sudo apt-get update -q; npx playwright install --with-deps chromium; }
       - name: Accessibility scan and keyboard journeys
         run: npm run test:browser -- --project=desktop-chromium h-accessibility i-keyboard
       - uses: actions/upload-artifact@v4
