@@ -114,7 +114,7 @@ if (hd) {
 // navigation, not decoration.
 const tablist = document.querySelector('[data-journey-tabs]');
 if (tablist) {
-    const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+    const tabs = [...tablist.querySelectorAll('[data-journey-tab]')];
     const panels = tabs.map((tab) => document.getElementById(tab.getAttribute('aria-controls')));
     const select = (index, focus) => {
         tabs.forEach((tab, i) => {

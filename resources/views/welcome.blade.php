@@ -97,7 +97,7 @@
         </div>
         <div class="hp-journey__tabs" role="tablist" aria-label="Stages of the journey" data-journey-tabs hidden>
             @foreach ($journey as $stage)
-                <button type="button" role="tab" id="stage-tab-{{ $stage['key'] }}" aria-controls="stage-{{ $stage['key'] }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}" class="hp-journey__tab">{{ $stage['title'] }}</button>
+                <button type="button" role="tab" id="stage-tab-{{ $stage['key'] }}" aria-controls="stage-{{ $stage['key'] }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}" tabindex="{{ $loop->first ? '0' : '-1' }}" class="hp-journey__tab" data-journey-tab>{{ $stage['title'] }}</button>
             @endforeach
         </div>
         @foreach ($journey as $stage)
