@@ -69,7 +69,7 @@ final class EnquiryService
     /**
      * Open an enquiry: the conversation, its first message and any files, then tell the business.
      *
-     * @param  array{subject: string, category: string, body: string, company_team?: ?Team}  $data
+     * @param  array{subject: string, category: string, body: string, company_team?: ?Team, appointment?: array{on: string, time: string, minutes: int}}  $data
      * @param  list<UploadedFile>  $files
      */
     public function start(User $customer, Team $team, array $data, array $files = []): Enquiry
@@ -87,6 +87,13 @@ final class EnquiryService
             // The company the person wrote for (R-66), already checked against their own companies by the caller.
             $companyTeam = $data['company_team'] ?? null;
             $enquiry->customer_team_id = $companyTeam?->getKey();
+            // An appointment request (R-66 phase 3) carries what was asked for, already validated by AppointmentRequests.
+            if (isset($data['appointment'])) {
+                $enquiry->requested_on = Carbon::parse($data['appointment']['on']);
+                $enquiry->requested_time = $data['appointment']['time'];
+                $enquiry->requested_minutes = $data['appointment']['minutes'];
+                $enquiry->appointment_state = Enquiry::APPOINTMENT_REQUESTED;
+            }
             $enquiry->status = Enquiry::NEW;
             $enquiry->last_customer_message_at = now();
             $enquiry->save();

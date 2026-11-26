@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountsDeskController;
 use App\Http\Controllers\AchievementsController;
 use App\Http\Controllers\Analytics\AnalyticsController;
+use App\Http\Controllers\AppointmentRequestController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\BookingClosuresController;
 use App\Http\Controllers\BookingHoursController;
@@ -295,6 +296,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // The InfoDot Inbox (R-33 Phase 3): the customer's enquiries, and each business's inbox.
     Route::get('/business/{team:uuid}/message', [EnquiryController::class, 'create'])->name('business.message');
     Route::post('/business/{team:uuid}/message', [EnquiryController::class, 'store'])->middleware('throttle:6,1,enquiry.start')->name('business.message.store');
+    // R-66 phase 3: a dated appointment request to a business with no published calendar, answered from its inbox.
+    Route::get('/business/{team:uuid}/request-appointment', [AppointmentRequestController::class, 'create'])->name('business.appointment-request');
+    Route::post('/business/{team:uuid}/request-appointment', [AppointmentRequestController::class, 'store'])->middleware('throttle:6,1,enquiry.start')->name('business.appointment-request.store');
+    Route::post('/business/{team:uuid}/inbox/{enquiry:uuid}/appointment', [AppointmentRequestController::class, 'decide'])->middleware('throttle:30,1,enquiry.update')->name('business.inbox.appointment');
     Route::get('/inbox', [EnquiryController::class, 'index'])->name('inbox');
     Route::get('/inbox/{enquiry:uuid}', [EnquiryController::class, 'show'])->name('inbox.show');
     Route::post('/inbox/{enquiry:uuid}/reply', [EnquiryController::class, 'reply'])->middleware('throttle:20,1,enquiry.reply')->name('inbox.reply');
