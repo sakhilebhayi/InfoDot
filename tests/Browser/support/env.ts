@@ -27,6 +27,8 @@ export function appEnv(): NodeJS.ProcessEnv {
         APP_URL: baseURL,
         DB_CONNECTION: 'sqlite',
         DB_DATABASE: databaseFile,
+        // Several processes (the server, the tests' helpers) write the one SQLite file: wait for a lock instead of failing.
+        DB_BUSY_TIMEOUT: '10000',
         DB_URL: '',
         DATABASE_URL: '',
         MAIL_MAILER: 'log',

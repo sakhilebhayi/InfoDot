@@ -46,4 +46,20 @@ class ReleasePipelineTest extends TestCase
         $this->assertFileExists(base_path('docs/programme/RUNBOOK.md'), 'the smoke check points people at the runbook');
         $this->assertFileExists(base_path('.github/dependabot.yml'));
     }
+
+    public function test_a_queue_worker_gives_up_on_a_job_before_the_queue_hands_it_to_another(): void
+    {
+        // R-72 (R72-9, N-3): a worker's --timeout must be below the queue's retry_after, or a slow send is picked up and sent twice.
+        $retryAfter = (int) config('queue.connections.database.retry_after');
+        $deploy = (string) file_get_contents(base_path('.github/workflows/deploy.yml'));
+        $kernel = (string) file_get_contents(app_path('Console/Kernel.php'));
+
+        foreach (['deploy.yml' => $deploy, 'Kernel.php' => $kernel] as $where => $text) {
+            preg_match_all('/queue:work[^\n]*?--timeout=(\d+)/', $text, $m);
+            $this->assertNotEmpty($m[1], "$where starts a worker with an explicit --timeout");
+            foreach ($m[1] as $timeout) {
+                $this->assertLessThan($retryAfter, (int) $timeout, "$where: --timeout=$timeout must be below retry_after=$retryAfter");
+            }
+        }
+    }
 }

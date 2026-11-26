@@ -55,7 +55,7 @@ class Kernel extends ConsoleKernel
         // R-64 phase 7: with a real queue (QUEUE_CONNECTION=database), a worker started every minute by the scheduler works through what is waiting and stops
         // when the queue is empty, so no always-on process is needed. It also runs while rows are still waiting after the setting went back to "sync", so
         // nothing queued earlier is stranded. With the default "sync" queue and an empty table there is nothing to do.
-        $schedule->command('queue:work database --stop-when-empty --max-time=50 --tries=3')->everyMinute()->withoutOverlapping(10)->onOneServer()->runInBackground()
+        $schedule->command('queue:work database --stop-when-empty --max-time=50 --tries=3 --timeout=60')->everyMinute()->withoutOverlapping(10)->onOneServer()->runInBackground()
             ->when(fn () => config('queue.default') !== 'sync' || (Schema::hasTable('jobs') && DB::table('jobs')->exists()));
         $schedule->command('notices:digest')->dailyAt('07:30')->withoutOverlapping(30)->onOneServer();
         $schedule->command('booking:retention')->dailyAt('03:40')->withoutOverlapping(30)->onOneServer();

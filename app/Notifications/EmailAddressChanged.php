@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Support\MailText;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -24,7 +25,7 @@ class EmailAddressChanged extends Notification
     {
         return (new MailMessage)
             ->subject('The email address on your InfoDot account was changed')
-            ->greeting('Hello '.$this->name.',')
+            ->greeting('Hello '.MailText::safe($this->name, 'there').',')
             ->line('The email address on your InfoDot account was changed. Messages about the account now go to the new address, not to this one.')
             ->line('If you made this change, there is nothing more to do.')
             ->action('Contact support', route('contact'))

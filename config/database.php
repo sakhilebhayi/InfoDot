@@ -42,6 +42,9 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+            // R-72: how long a connection waits for another writer's lock before failing (milliseconds). The browser tests run several
+            // processes against one SQLite file; without a wait, one of them failed at once with "database is locked".
+            'busy_timeout' => env('DB_BUSY_TIMEOUT'),
         ],
 
         'mysql' => [
