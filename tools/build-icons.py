@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
 Rebuilds the browser-tab and home-screen icons from the InfoDot logo. Nothing is drawn: the mark is the "dot." disc
-cut out of the logo artwork (resources/img/brand/logo-master.png, the 1046x438 master) and given the yellow the site's
-own logo uses (resources/img/brand/logo_white.png), because the master is the grey-and-blue print version.
+cut out of the site's own yellow-and-white logo (resources/img/brand/logo_white.png). The old grey-and-blue print master
+was deleted on 2026-11-26 (owner rule: the blue-and-grey logo is never used again). The yellow-and-white file is 319 px
+wide, so a rebuild of the 512 px icon is soft; for sharp large icons, add a high-resolution yellow-and-white master and
+point SOURCE at it. The committed icons were built earlier and are already yellow.
 
 Needs Pillow (pip install pillow). Run from the repository root:  python3 tools/build-icons.py
 Writes public/favicon.ico (16, 32, 48), public/apple-touch-icon.png (180), public/icon-192.png, public/icon-512.png.
@@ -13,11 +15,12 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-MASTER = ROOT / 'resources/img/brand/logo-master.png'
+SOURCE = ROOT / 'resources/img/brand/logo_white.png'
+MASTER = SOURCE  # kept name for the functions below
 GREY, WHITE, BLUE = (188, 190, 192), (255, 255, 255), (36, 135, 212)
 YELLOW = (241, 198, 46)      # the disc in the site logo
 GRAPHITE = (27, 33, 36)      # --ix-top, the bar the logo sits on
-SEED = (700, 200)            # a point inside the disc
+SEED = (213, 79)             # a point inside the disc of logo_white.png
 
 
 def disc_circle(im):
@@ -60,7 +63,8 @@ def mark(size):
     side = round(radius * 2)
     left, top = round(cx - radius), round(cy - radius)
     disc = im.crop((left, top, left + side, top + side))
-    disc.putdata([recolour(p) for p in disc.getdata()])
+    # The yellow-and-white logo's disc is already in the site's colours: no recolouring (recolour() is kept for a
+    # grey-and-blue source and is no longer called).
     # Keep only what is inside the circle (the arrow and the f come close to it), with a smooth edge.
     big = side * 4
     mask = Image.new('L', (big, big), 0)

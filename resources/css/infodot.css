@@ -13294,7 +13294,8 @@ body[data-area="home"] .ix-btn--primary:hover,
 /* Start: InfoDot as the one place to begin, the same parts as a platform row, open and with its own call to action. */
 .hp-lead { padding: 20px 0 4px; border-top: 1px solid var(--ix-rule); }
 .hp-lead__head { display: flex; align-items: center; gap: 16px; }
-.hp-lead__head img { width: 60px; height: 40px; object-fit: contain; }
+.hp-lead__plate { display: inline-flex; align-items: center; padding: 10px 14px; border-radius: var(--ix-radius); background: var(--ix-top); }
+.hp-lead__plate img { display: block; width: auto; height: 32px; }
 .hp-lead__value { margin: 16px 0 0; color: var(--ix-text); font-weight: 600; font-size: var(--dot-text-h3-size); line-height: 1.35; text-wrap: balance; }
 .hp-lead .hp-tool__body { margin: 0; padding: 16px 0 20px; }
 .hp-lead .ix-btn { margin-bottom: 8px; }

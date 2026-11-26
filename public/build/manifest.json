@@ -4,7 +4,7 @@
     "name": "motion"
   },
   "resources/css/app.css": {
-    "file": "assets/app-D9bAXyKD.css",
+    "file": "assets/app-pGmNsom6.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -71,10 +71,6 @@
   "resources/img/apps/hr.png": {
     "file": "assets/hr-BO-2lgM3.png",
     "src": "resources/img/apps/hr.png"
-  },
-  "resources/img/apps/infodot.png": {
-    "file": "assets/infodot-Bgj5iiFj.png",
-    "src": "resources/img/apps/infodot.png"
   },
   "resources/img/apps/memory.png": {
     "file": "assets/memory-DyWZLu4o.png",
@@ -195,10 +191,6 @@
   "resources/img/landing/platforms/hr.png": {
     "file": "assets/hr-CUdojrnF.png",
     "src": "resources/img/landing/platforms/hr.png"
-  },
-  "resources/img/landing/platforms/infodot.png": {
-    "file": "assets/infodot-abSzFYkd.png",
-    "src": "resources/img/landing/platforms/infodot.png"
   },
   "resources/img/landing/platforms/memory.png": {
     "file": "assets/memory-Cp_QPlPx.png",

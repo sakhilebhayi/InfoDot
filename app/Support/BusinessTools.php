@@ -124,7 +124,8 @@ final class BusinessTools
                     'why' => (string) $l['why'],
                     'url' => route((string) $l['route'], (array) ($l['route_params'] ?? [])),
                     'cta' => (string) $l['cta'],
-                    'logo' => Vite::asset('resources/img/landing/platforms/infodot.png'),
+                    // The yellow-and-white logo only (owner rule 2026-11-26): it sits on a graphite plate on the light page.
+                    'logo' => Vite::asset('resources/img/brand/logo_white.png'),
                 ];
             }
 
