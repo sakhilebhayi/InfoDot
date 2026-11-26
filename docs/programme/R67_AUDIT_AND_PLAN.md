@@ -39,7 +39,7 @@ Repetition: "figure it out yourself" (5), "learn from other businesses" (2, 5, 9
 ## 4. The story, section by section (proposed)
 
 1. **Promise (hero, unchanged).** "A better, more connected way to build a business." See decision D3.
-2. **Reality (new problem section).** Heading, see decision D1. Below it, six short recognitions in the owner's voice, then one turn:
+2. **Reality (new problem section).** Heading per D1 (owner's wording). Below it, six short recognitions in the owner's voice, then one turn:
    - You make big decisions without knowing who to ask.
    - The business runs on spreadsheets, WhatsApp threads and a phone full of files.
    - You fix the same problem twice because nobody wrote down the answer.
@@ -80,3 +80,10 @@ Copy rules: no statistics, testimonials or user counts; no em dashes in visible 
 - **D1 Problem heading.** The brief's line is "The truth is, most businesses don't really know what they're doing." It is bold, but "don't know what they're doing" judges the reader. Recommended: **"The truth is, most of us are making it up as we go. InfoDot is here to change that."** It keeps the honesty and the turn, and "us" stands beside the owner rather than over them.
 - **D2 Pillars.** Replace Discover / Manage / Grow (R-55) with Knowledge / Tools / Connections / Progress as the brief describes. Recommended: yes.
 - **D3 Hero wording.** The brief quotes "build business"; the live, owner-approved heading (2026-11-25) is "build **a** business". Recommended: keep the live wording.
+
+### Decided by the owner, 2026-11-26
+
+- **D1:** the owner's own wording: **"The truth is, most businesses don't really know what they're doing. InfoDot is here to change that."** The supporting copy carries the warmth: it stands with the reader (ambition is not the problem, access is) so the heading provokes without humiliating.
+- **D2:** four pillars: Knowledge, Tools, Connections, Progress.
+- **D3:** keep the live hero: "A better, more connected way to build a business."
+
