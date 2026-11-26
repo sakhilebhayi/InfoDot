@@ -45,7 +45,7 @@ class BusinessDiscoveryTest extends TestCase
         $this->editor = User::factory()->withPersonalTeam()->create();
         $this->visitor = User::factory()->withPersonalTeam()->create();
         $this->reviewer = User::factory()->withPersonalTeam()->create();
-        $this->reviewer->forceFill(['is_moderator' => true])->save();
+        $this->reviewer->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         $this->acme = $this->business('Acme Boreholes', 'public', ['location' => 'Nelspruit, Mpumalanga'], $this->owner);
         $this->acme->users()->attach($this->editor, ['role' => 'editor']);
@@ -141,7 +141,7 @@ class BusinessDiscoveryTest extends TestCase
         $this->actingAs($this->reviewer)->get('/moderation/trust')->assertOk()->assertSee('New rig in Mpumalanga.');
 
         $insider = User::factory()->withPersonalTeam()->create();
-        $insider->forceFill(['is_moderator' => true])->save();
+        $insider->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $this->acme->users()->attach($insider, ['role' => 'editor']);
         $this->actingAs($insider)->post('/moderation/trust/features/'.$feature->id.'/grant', ['days' => 14, 'note' => 'Granting my own.'])->assertForbidden();
         $this->actingAs($this->reviewer)->post('/moderation/trust/features/'.$feature->id.'/grant', ['days' => 90, 'note' => 'Meets every rule.'])->assertSessionHasErrors('days');

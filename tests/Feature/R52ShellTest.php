@@ -148,7 +148,7 @@ class R52ShellTest extends TestCase
         $this->assertStringNotContainsString('Platform admin', $html);
         $this->assertStringNotContainsString('>Moderation<', $html);
 
-        $user->forceFill(['is_moderator' => true])->save();
+        $user->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $html = $this->actingAs($user->fresh())->get('/home')->assertOk()->getContent();
         $this->assertStringContainsString('>Admin<', $html);
         $this->assertStringContainsString('Moderation', $html);

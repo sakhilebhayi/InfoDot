@@ -61,7 +61,7 @@ class AnswersTest extends TestCase
 
     public function test_a_moderator_flag_cannot_be_set_by_mass_assignment(): void
     {
-        $user = User::create(['name' => 'X', 'email' => 'x@example.test', 'password' => 'secret-password', 'is_moderator' => true]);
+        $user = User::create(['name' => 'X', 'email' => 'x@example.test', 'password' => 'secret-password', 'is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()]);
 
         $this->assertFalse($user->fresh()->isModerator());
     }
@@ -171,7 +171,7 @@ class AnswersTest extends TestCase
         $answerer = $this->person();
         $stranger = $this->person();
         $moderator = $this->person();
-        $moderator->forceFill(['is_moderator' => true])->save();
+        $moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $question = $this->question($asker);
         $service = app(AnswerService::class);
         $answer = $service->publish($question, $answerer, self::GOOD);
@@ -187,7 +187,7 @@ class AnswersTest extends TestCase
     {
         $asker = $this->person();
         $moderator = $this->person();
-        $moderator->forceFill(['is_moderator' => true])->save();
+        $moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $answer = app(AnswerService::class)->publish($this->question($asker), $moderator, self::GOOD);
 
         $this->assertFalse(app(AnswerService::class)->canAccept($answer, $moderator));

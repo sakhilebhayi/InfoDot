@@ -428,7 +428,7 @@ class PlatformEntitlementScenariosTest extends PlatformTestCase
         $team = $this->company();
         $this->activatePlatforms($team, 'forms');
         $moderator = $this->person();
-        $moderator->forceFill(['is_moderator' => true])->save();
+        $moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         foreach ([$team->owner, $moderator] as $person) {
             foreach ([

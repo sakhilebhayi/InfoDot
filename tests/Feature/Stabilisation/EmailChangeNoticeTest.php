@@ -25,7 +25,7 @@ class EmailChangeNoticeTest extends TestCase
         Notification::fake();
         $user = User::factory()->create(['name' => 'Pat Example', 'email' => 'old@example.com']);
 
-        app(UpdateUserProfileInformation::class)->update($user, ['name' => 'Pat Example', 'email' => 'new@example.com']);
+        app(UpdateUserProfileInformation::class)->update($user, ['name' => 'Pat Example', 'email' => 'new@example.com', 'current_password' => 'password']);
 
         $this->assertSame('new@example.com', $user->fresh()->email);
         Notification::assertSentOnDemand(
@@ -64,7 +64,7 @@ class EmailChangeNoticeTest extends TestCase
         Log::spy();
         $user = User::factory()->create(['name' => 'Pat Example', 'email' => 'old@example.com']);
 
-        app(UpdateUserProfileInformation::class)->update($user, ['name' => 'Pat Example', 'email' => 'new@example.com']);
+        app(UpdateUserProfileInformation::class)->update($user, ['name' => 'Pat Example', 'email' => 'new@example.com', 'current_password' => 'password']);
 
         $this->assertSame('new@example.com', $user->fresh()->email);
         Log::shouldHaveReceived('error')->withArgs(fn ($message) => $message === 'profile.email_change_notice_failed')->once();

@@ -109,7 +109,7 @@ class ReservedEmailDomainsTest extends TestCase
         $this->assertSame('real@gmail.com', $user->fresh()->email);
 
         Livewire::test(UpdateProfileInformationForm::class)
-            ->set('state', ['name' => $user->name, 'email' => 'new@example.com.au'])
+            ->set('state', ['name' => $user->name, 'email' => 'new@example.com.au', 'current_password' => 'password'])
             ->call('updateProfileInformation')
             ->assertHasNoErrors();
     }

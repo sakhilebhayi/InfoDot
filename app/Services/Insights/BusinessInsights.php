@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -44,6 +45,13 @@ final class BusinessInsights
                 return;
             }
             session()->put($key, true);
+
+            // R-72 (F-02): a fresh session per request would get past the line above, so the same network address also counts once a
+            // day per business and metric. Only a hash of the address is used as a key, and it is forgotten at the end of the day.
+            $ip = request()->ip();
+            if ($ip !== null && ! Cache::add($key.'.'.hash('sha256', $ip.'|'.config('app.key')), 1, now()->endOfDay())) {
+                return;
+            }
         }
 
         $this->upsert('business_stats_daily', ['team_id' => $team->id, 'day' => now()->toDateString(), 'metric' => mb_substr($metric, 0, 24)], $by);

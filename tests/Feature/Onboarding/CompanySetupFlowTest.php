@@ -95,7 +95,7 @@ class CompanySetupFlowTest extends TestCase
 
     public function test_the_growth_centre_counts_how_companies_were_set_up(): void
     {
-        $admin = User::factory()->create(['is_platform_admin' => true, 'email_verified_at' => now()]);
+        $admin = User::factory()->create(['is_platform_admin' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now(), 'email_verified_at' => now()]);
         $user = $this->person();
         $this->actingAs($user)->post(route('onboarding.business.store'), $this->payload())->assertRedirect();
         CompanyProfileImport::create(['user_id' => $user->id, 'source' => 'website', 'status' => 'draft']);

@@ -259,7 +259,7 @@ class SeminarTicketSalesTest extends TestCase
         $buyer = $this->person('Buyer');
         $visitor = $this->person('Visitor');
         $moderator = $this->person('Moderator');
-        $moderator->forceFill(['is_moderator' => true])->save();
+        $moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
         $this->buy($seminar, $buyer);
 
         $pages = [

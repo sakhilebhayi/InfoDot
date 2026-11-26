@@ -77,7 +77,7 @@ class AccountSuspension
             return 'This is your own account. Nobody can suspend or restore themselves.';
         }
 
-        if ($account->isModerator()) {
+        if ($account->hasModeratorRole()) {
             return $account->name.' is a moderator. One moderator cannot suspend or restore another: that decision is the owner\'s, made with the account:suspend command.';
         }
 

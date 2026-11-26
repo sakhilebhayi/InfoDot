@@ -116,7 +116,7 @@ class OnboardingInsightsTest extends TestCase
 
     public function test_the_funnel_tab_shows_the_new_panels_and_nothing_invented(): void
     {
-        $admin = User::factory()->create(['is_platform_admin' => true, 'email_verified_at' => now()]);
+        $admin = User::factory()->create(['is_platform_admin' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now(), 'email_verified_at' => now()]);
 
         $this->actingAs($admin)->get('/admin/growth/funnel')->assertOk()
             ->assertSee('Where people stopped')->assertSee('Time from account to first company')->assertSee('What reading a website found')->assertSee('People coming back')

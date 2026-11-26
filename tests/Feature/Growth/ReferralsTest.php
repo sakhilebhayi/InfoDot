@@ -172,7 +172,7 @@ class ReferralsTest extends TestCase
 
     public function test_admin_can_change_tiers_and_it_is_logged(): void
     {
-        $admin = User::factory()->create(['is_platform_admin' => true, 'email_verified_at' => now()]);
+        $admin = User::factory()->create(['is_platform_admin' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now(), 'email_verified_at' => now()]);
         $tier = ReferralTier::where('referrals_required', 5)->first();
 
         $this->actingAs($admin)->get('/admin/growth/referrals')->assertOk();

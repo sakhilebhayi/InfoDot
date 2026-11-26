@@ -16,7 +16,7 @@ class GrowthCentreTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create(['is_platform_admin' => true, 'email_verified_at' => now()]);
+        return User::factory()->create(['is_platform_admin' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now(), 'email_verified_at' => now()]);
     }
 
     public function test_only_platform_administrators_see_it(): void

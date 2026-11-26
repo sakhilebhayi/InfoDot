@@ -93,7 +93,7 @@ class ModerationAppealsTest extends TestCase
     {
         [$author, $hider, $question] = $this->hidden();
         $appeal = $this->moderation->fileAppeal($question, $author, 'It is about registering a business, which is on topic.');
-        $authorAsModerator = $author->forceFill(['is_moderator' => true]);
+        $authorAsModerator = $author->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()]);
 
         $this->assertFalse($this->moderation->canDecide($appeal, $hider));
         $this->assertFalse($this->moderation->canDecide($appeal, $authorAsModerator));

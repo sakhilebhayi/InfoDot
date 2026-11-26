@@ -46,7 +46,7 @@ class PlatformAdministrators
 
     private function set(User $user, bool $now): bool
     {
-        $was = $user->isPlatformAdmin();
+        $was = $user->hasPlatformAdminRole();
 
         if ($was === $now) {
             return false;

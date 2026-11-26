@@ -129,7 +129,7 @@ class BusinessDirectoryTest extends TestCase
         $members = $this->business('Members Only Mining', 'members');
         $private = $this->business('Hidden Holdings', 'private', [], $insider = User::factory()->withPersonalTeam()->create());
         $moderator = User::factory()->withPersonalTeam()->create();
-        $moderator->forceFill(['is_moderator' => true])->save();
+        $moderator->forceFill(['is_moderator' => true, 'two_factor_secret' => encrypt('test-secret'), 'two_factor_confirmed_at' => now()])->save();
 
         $this->get('/business/'.$this->acme->uuid)->assertOk()->assertSee('Acme Boreholes');
         $this->get('/business/'.$members->uuid)->assertNotFound();
