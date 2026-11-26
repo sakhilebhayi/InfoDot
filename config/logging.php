@@ -60,12 +60,15 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            // Owner-only (2026-11-26): the log sits under the web root on the host; the web server must never be able to send it.
+            'permission' => 0600,
         ],
 
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            'permission' => 0600,
             'days' => (int) env('LOG_DAILY_DAYS', 14),
             // LOG_FORMAT=json writes one JSON object per line (message, context incl. request_id, level, time) for a log reader or a grep -F;
             // the default stays the readable plain text.
