@@ -89,6 +89,40 @@ final class BusinessTools
     }
 
     /**
+     * R-73: the homepage journey (Start, Manage, Connect, Grow). Each stage carries InfoDot's own features and its live platforms, built
+     * with the same tool() data the Business Tools page uses, so the homepage and that page can never describe a platform differently.
+     * A platform that is not shown() is left out; a stage left with nothing at all is dropped.
+     *
+     * @return list<array{key: string, title: string, line: string, infodot: list<array{title: string, body: string, url: string}>, tools: list<array<string, mixed>>}>
+     */
+    public static function journey(): array
+    {
+        $copy = (array) config('business_tools');
+        $stages = [];
+
+        foreach ((array) ($copy['journey'] ?? []) as $key => $stage) {
+            $tools = [];
+            foreach ((array) ($stage['tools'] ?? []) as $toolKey) {
+                if (self::shown($toolKey) && isset($copy['tools'][$toolKey])) {
+                    $tools[] = self::tool($toolKey, (array) $copy['tools'][$toolKey]);
+                }
+            }
+            $infodot = array_map(fn (array $item): array => [
+                'title' => (string) $item['title'],
+                'body' => (string) $item['body'],
+                'url' => route((string) $item['route']),
+            ], (array) ($stage['infodot'] ?? []));
+
+            if ($tools === [] && $infodot === []) {
+                continue;
+            }
+            $stages[] = ['key' => (string) $key, 'title' => (string) $stage['title'], 'line' => (string) $stage['line'], 'infodot' => $infodot, 'tools' => $tools];
+        }
+
+        return $stages;
+    }
+
+    /**
      * @param  array<string, mixed>  $words  the marketing layer for this platform
      * @return array<string, mixed>
      */

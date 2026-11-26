@@ -90,6 +90,49 @@ return [
     ],
 
     /* "What does your business need help with?": every need points at platforms whose catalogue capabilities cover it. */
+    /*
+     * R-73: the homepage's "imagine what your business could become" journey. Each stage says what a business is trying to do, what
+     * InfoDot itself does there (only features that work today, linked to a page a visitor can open, or to sign-up when the feature
+     * needs an account), and which platforms belong to it. Platform facts are not restated: names, problems, what each does, its value
+     * and any limit come from the 'tools' entries below and the catalogue, and a platform appears only when BusinessTools::shown() allows.
+     */
+    'journey' => [
+        'start' => [
+            'title' => 'Start',
+            'line' => 'Find your footing. Answers, researched steps and people who have done it before you.',
+            'infodot' => [
+                ['title' => 'Ask in plain words', 'body' => 'Describe what you are stuck on and hear from people who have been there. The answer that solved it is stamped, so the next person sees it first.', 'route' => 'solution_search_results'],
+                ['title' => 'Follow researched steps', 'body' => 'Solutions written as numbered steps, from sources that are named and dated: registering, tax, pricing, hiring your first person.', 'route' => 'solution_search_results'],
+            ],
+            'tools' => ['tutor'],
+        ],
+        'manage' => [
+            'title' => 'Manage',
+            'line' => 'Run the day to day. Money, people, work and information, in tools that know about each other.',
+            'infodot' => [
+                ['title' => 'One sign-in for every tool', 'body' => 'Open the tools your business uses with your InfoDot account. Nobody keeps a separate password for each, and people leave the business in one step.', 'route' => 'business-tools'],
+            ],
+            'tools' => ['finance', 'hr', 'projects', 'tasks', 'files', 'docs', 'sheet', 'forms', 'notify'],
+        ],
+        'connect' => [
+            'title' => 'Connect',
+            'line' => 'Be easy to find, and find the businesses you need.',
+            'infodot' => [
+                ['title' => 'A page people can find', 'body' => 'Give your business a page with what you offer and where you work, listed in a directory people search by need and by place.', 'route' => 'businesses.index'],
+                ['title' => 'Messages and appointments', 'body' => 'Customers and other businesses message you from your page or ask for an appointment, and every reply lands in one inbox.', 'route' => 'businesses.index'],
+            ],
+            'tools' => ['pulse', 'engage'],
+        ],
+        'grow' => [
+            'title' => 'Grow',
+            'line' => 'See what is working, reach new customers and present your business at its best.',
+            'infodot' => [
+                ['title' => 'Knowledge that adds up', 'body' => 'What your business learns is kept with your company and improved over time, with earlier versions kept, so the next person starts from the answer.', 'route' => 'register'],
+            ],
+            'tools' => ['analytics', 'charts', 'emall', 'auction', 'press', 'design'],
+        ],
+    ],
+
     'needs' => [
         ['label' => 'I want to understand my business performance', 'tools' => ['analytics', 'sheet']],
         ['label' => 'I need to manage my finances', 'tools' => ['finance', 'sheet']],
