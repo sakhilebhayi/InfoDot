@@ -18,6 +18,7 @@ use App\Services\Booking\BookingFeature;
 use App\Services\Booking\Bookings;
 use App\Services\Directory\BusinessDirectory;
 use App\Services\Directory\FeaturedPlacement;
+use App\Services\Enquiries\AppointmentRequests;
 use App\Services\Growth\OnboardingEvents;
 use App\Services\Insights\BusinessInsights;
 use Illuminate\Http\Request;
@@ -82,6 +83,8 @@ class BusinessProfileController extends Controller
             'ownScheduleUrl' => $this->ownScheduleUrl($team, $user, $preview),
             // R-63 phase 3: the public "Book an appointment" button, only when a customer could really book here.
             'bookable' => $this->bookable($team),
+            // R-66 phase 3: with no published calendar, people outside the business can still ask for an appointment.
+            'requestable' => app(AppointmentRequests::class)->offered($team),
             'preview' => $preview,
             'announcements' => $team->announcements()->showing()->limit(5)->get(),
             'offeringPictures' => $team->mediaByRef('offering')->map(fn ($pictures) => $pictures->filter->onDisk()->values()),

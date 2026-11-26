@@ -20,6 +20,13 @@ use Illuminate\Support\Str;
  * @property int $team_id
  * @property int|null $user_id
  * @property int|null $customer_team_id
+ * @property Carbon|null $requested_on
+ * @property string|null $requested_time
+ * @property int|null $requested_minutes
+ * @property string|null $appointment_state
+ * @property Carbon|null $appointment_at
+ * @property int|null $appointment_minutes
+ * @property Carbon|null $appointment_decided_at
  * @property string $subject
  * @property string $category
  * @property string $status
@@ -46,6 +53,25 @@ class Enquiry extends Model
     public const RESOLVED = 'resolved';
 
     public const CLOSED = 'closed';
+
+    /** R-66 phase 3: the category of an appointment request, sent to a business with no published calendar. Not offered in the message form. */
+    public const APPOINTMENT = 'appointment';
+
+    public const APPOINTMENT_REQUESTED = 'requested';
+
+    public const APPOINTMENT_ACCEPTED = 'accepted';
+
+    public const APPOINTMENT_DECLINED = 'declined';
+
+    /** The parts of the day a person may ask for instead of a set time. */
+    public const PARTS_OF_DAY = [
+        'any' => 'Any time',
+        'morning' => 'Morning',
+        'afternoon' => 'Afternoon',
+    ];
+
+    /** Lengths a person may ask for, in minutes. */
+    public const LENGTHS = [15, 30, 45, 60, 90, 120, 180];
 
     /** How the business sees each status. */
     public const STATUSES = [
@@ -78,6 +104,9 @@ class Enquiry extends Model
             'follow_up_on' => 'date',
             'follow_up_notified_at' => 'datetime',
             'closed_at' => 'datetime',
+            'requested_on' => 'date',
+            'appointment_at' => 'datetime',
+            'appointment_decided_at' => 'datetime',
         ];
     }
 
@@ -157,7 +186,57 @@ class Enquiry extends Model
 
     public function categoryLabel(): string
     {
+        if ($this->isAppointmentRequest()) {
+            return 'An appointment request';
+        }
+
         return config('enquiries.categories.'.$this->category, 'Enquiry');
+    }
+
+    public function isAppointmentRequest(): bool
+    {
+        return $this->category === self::APPOINTMENT;
+    }
+
+    /** The time asked for, in words: "Morning", "Any time" or "14:30". */
+    public function requestedTimeLabel(): string
+    {
+        return self::PARTS_OF_DAY[$this->requested_time] ?? (string) $this->requested_time;
+    }
+
+    /** "Tuesday 2 December 2026, morning, about 60 minutes". */
+    public function requestedSummary(): string
+    {
+        $parts = [$this->requested_on?->format('l j F Y'), mb_strtolower($this->requestedTimeLabel())];
+        if ($this->requested_minutes) {
+            $parts[] = 'about '.self::lengthLabel($this->requested_minutes);
+        }
+
+        return implode(', ', array_filter($parts));
+    }
+
+    /** "Tuesday 2 December 2026 at 10:00, 1 hour", once accepted, in the business's own time zone. */
+    public function appointmentSummary(): ?string
+    {
+        if ($this->appointment_at === null) {
+            return null;
+        }
+
+        $local = $this->appointment_at->copy()->setTimezone($this->team !== null ? BookingSetting::forTeam($this->team)->zone() : BookingSetting::DEFAULT_TIMEZONE);
+
+        return $local->format('l j F Y \a\t H:i').($this->appointment_minutes ? ', '.self::lengthLabel($this->appointment_minutes) : '');
+    }
+
+    public static function lengthLabel(int $minutes): string
+    {
+        if ($minutes < 60) {
+            return $minutes.' minutes';
+        }
+
+        $hours = intdiv($minutes, 60);
+        $rest = $minutes % 60;
+
+        return $hours.' '.($hours === 1 ? 'hour' : 'hours').($rest ? ' '.$rest.' minutes' : '');
     }
 
     /** Whether the business side has something this person has not opened yet. */

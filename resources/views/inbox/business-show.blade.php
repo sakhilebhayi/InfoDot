@@ -27,6 +27,47 @@
         </div>
 
         <aside class="ix-convo__rail" aria-label="Handling">
+            @include('inbox._appointment')
+            @if ($enquiry->isAppointmentRequest() && $enquiry->appointment_state === \App\Models\Enquiry::APPOINTMENT_REQUESTED && $enquiry->customer)
+                <section class="ix-biz__card" aria-labelledby="appt-answer-h">
+                    <h2 id="appt-answer-h">Answer the request</h2>
+                    <form method="post" action="{{ route('business.inbox.appointment', [$team, $enquiry]) }}" class="ix-form">
+                        @csrf
+                        <input type="hidden" name="decision" value="accept">
+                        <div class="ix-field">
+                            <label class="ix-label" for="appt_on">Date</label>
+                            <input class="ix-input" type="date" id="appt_on" name="on" required min="{{ now()->toDateString() }}" value="{{ old('on', $enquiry->requested_on?->isPast() && ! $enquiry->requested_on?->isToday() ? null : $enquiry->requested_on?->toDateString()) }}">
+                        </div>
+                        <div class="ix-field">
+                            <label class="ix-label" for="appt_at">Time</label>
+                            <input class="ix-input" type="time" id="appt_at" name="at" required step="900" value="{{ old('at', preg_match('/^\d{2}:\d{2}$/', (string) $enquiry->requested_time) ? $enquiry->requested_time : null) }}">
+                        </div>
+                        <div class="ix-field">
+                            <label class="ix-label" for="appt_minutes">How long</label>
+                            <select class="ix-select" id="appt_minutes" name="minutes" required>
+                                @foreach (\App\Models\Enquiry::LENGTHS as $m)<option value="{{ $m }}" @selected((int) old('minutes', $enquiry->requested_minutes ?? 60) === $m)>{{ \App\Models\Enquiry::lengthLabel($m) }}</option>@endforeach
+                            </select>
+                        </div>
+                        <div class="ix-field">
+                            <label class="ix-label" for="appt_note">Note <span class="ix-hint">optional, for example where to meet</span></label>
+                            <textarea class="ix-textarea" id="appt_note" name="note" rows="2" maxlength="1000">{{ old('note') }}</textarea>
+                        </div>
+                        <button type="submit" class="ix-btn ix-btn--primary"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>Accept</button>
+                    </form>
+                    <details class="ix-vgap"><summary class="ix-btn ix-btn--sm">Decline</summary>
+                        <form method="post" action="{{ route('business.inbox.appointment', [$team, $enquiry]) }}" class="ix-form ix-vgap">
+                            @csrf
+                            <input type="hidden" name="decision" value="decline">
+                            <div class="ix-field">
+                                <label class="ix-label" for="appt_reason">Reason <span class="ix-hint">{{ $enquiry->customer->name }} reads this</span></label>
+                                <textarea class="ix-textarea" id="appt_reason" name="reason" rows="3" minlength="5" maxlength="1000" required>{{ old('reason') }}</textarea>
+                            </div>
+                            <button type="submit" class="ix-btn ix-btn--danger ix-btn--sm">Decline the request</button>
+                        </form>
+                    </details>
+                    <p class="ix-hint">Accepting records the time here and tells {{ $enquiry->customer->name }}. It does not block time in a calendar.</p>
+                </section>
+            @endif
             <section class="ix-biz__card">
                 <h2>Handling</h2>
                 <form method="post" action="{{ route('business.inbox.update', [$team, $enquiry]) }}" class="ix-form">
