@@ -2212,12 +2212,17 @@ td .ix-prog,
 
 .ix-filters {
     display: inline-flex;
+    /* R-72 (R72-5): on a phone the pills and filter fields wrap to a second row instead of running off a page that clips them. */
+    flex-wrap: wrap;
+    max-width: 100%;
     gap: 2px;
     margin-bottom: 16px;
     padding: 3px;
     background: var(--ix-sunken);
     border-radius: var(--ix-radius);
 }
+
+.ix-filters > * { min-width: 0; max-width: 100%; }
 
 .ix-pill {
     display: inline-flex;
@@ -9000,7 +9005,8 @@ body {
 .ix-meter__bar { display: block; height: 8px; border-radius: 4px; background: var(--ix-sunken); overflow: hidden; }
 .ix-meter__bar > span { display: block; height: 100%; background: var(--area); border-radius: 4px; }
 .ix-meter b { font-variant-numeric: tabular-nums; }
-.ix-inboxstats .ix-hint { margin: 6px 0 0; }
+/* R-72: a hint under a figure is its own dd (a dl group holds only dt and dd), so it is reset to hint type, not the figure's. */
+.ix-inboxstats dd.ix-hint { margin: 6px 0 0; font-family: inherit; font-weight: 400; font-size: var(--dot-text-body-sm-size); line-height: 1.4; color: var(--ix-text-3); }
 @media (prefers-reduced-motion: reduce) { .ix-trend__tip { transition: none; } }
 
 /* ---------------------------------------------------------------- R-49: the way in, first steps, and the design pass */
@@ -11911,6 +11917,8 @@ button.ix-avatar,
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: clamp(28px, 4vw, 64px);
     align-items: center;
+    /* R-72 (R72-5): the directory's first section no longer sits against the filters or the photograph. */
+    margin-bottom: clamp(32px, 4vw, 56px);
 }
 
 .pg-dir .ix-dir__head { margin: 0; }
@@ -11967,7 +11975,8 @@ button.ix-avatar,
     .pg-dir,
     .pg-split { grid-template-columns: 1fr; }
     .pg-hero__title { max-width: 20ch; }
-    .pg-photo { aspect-ratio: 16 / 10; }
+    .pg-photo,
+    .pg-dir .pg-photo { aspect-ratio: 16 / 10; }
     .pg-strip { aspect-ratio: 16 / 9; }
 }
 

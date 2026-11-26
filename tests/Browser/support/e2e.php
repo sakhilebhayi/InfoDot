@@ -9,14 +9,19 @@
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Jetstream\CreateTeam;
+use App\Models\Booking;
+use App\Models\BookingSetting;
+use App\Models\PlatformFeature;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\WorkingHour;
 use App\Services\Seminars\SeminarService;
 use App\Services\Trust\BusinessTrustService;
 use App\Services\Verification\VerificationService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 $connection = DB::connection();
 $database = (string) $connection->getDatabaseName();
@@ -51,10 +56,11 @@ $result = match ($op['op']) {
         $user->forceFill([
             'email_verified_at' => now(),
             'is_moderator' => (bool) ($op['moderator'] ?? false),
+            'is_platform_admin' => (bool) ($op['platform_admin'] ?? false),
         ])->save();
 
         // R-72 (S-02): a moderator's powers need two-factor, so a moderator made for the run has it, with the run's own secret.
-        if ($user->is_moderator && $totpSecret !== '') {
+        if (($user->is_moderator || $user->is_platform_admin) && $totpSecret !== '') {
             $user->forceFill(['two_factor_secret' => encrypt($secretFor($user->email)), 'two_factor_confirmed_at' => now()])->save();
         }
 
@@ -144,6 +150,31 @@ $result = match ($op['op']) {
         }
 
         return ['count' => $count];
+    })(),
+
+    // R-72 (R72-5): a business that takes bookings, with one appointment type, a provider and a customer's confirmed booking, so the
+    // booking screens are seen with something on them.
+    'make-booking' => (function () use ($op) {
+        PlatformFeature::where('platform_key', 'infodot')->where('key', 'bookings')->update(['state' => 'available']);
+        $team = Team::findOrFail($op['business_id']);
+        $customer = User::where('email', $op['customer'])->firstOrFail();
+        BookingSetting::firstOrNew(['team_id' => $team->id])->forceFill(['team_id' => $team->id, 'enabled' => true, 'calendar_published' => true, 'approval_mode' => 'approval', 'timezone' => 'Africa/Johannesburg', 'min_notice_minutes' => 60, 'horizon_days' => 365, 'cancel_cutoff_hours' => 24])->save();
+        foreach ([1, 2, 3, 4, 5] as $weekday) {
+            if (! WorkingHour::where('team_id', $team->id)->where('weekday', $weekday)->whereNull('booking_provider_id')->exists()) {
+                WorkingHour::forceCreate(['team_id' => $team->id, 'weekday' => $weekday, 'starts_at' => '09:00', 'ends_at' => '17:00']);
+            }
+        }
+        $type = $team->appointmentTypes()->firstOrCreate(['name' => 'Bookkeeping consultation'], ['duration_minutes' => 60, 'slot_interval_minutes' => 60, 'active' => true]);
+        $provider = $team->bookingProviders()->firstOrCreate(['user_id' => $team->user_id], ['public_name' => $team->owner->name, 'active' => true]);
+        $type->providers()->syncWithoutDetaching([$provider->id]);
+        $start = now()->addDays(7)->startOfDay()->setTime(9, 0);
+        $booking = Booking::create([
+            'reference' => 'DF-B-'.strtoupper(Str::random(10)), 'team_id' => $team->id, 'appointment_type_id' => $type->id, 'booking_provider_id' => $provider->id,
+            'customer_user_id' => $customer->id, 'customer_name' => $customer->name, 'customer_email' => $customer->email, 'reason' => 'Year-end books',
+            'starts_at' => $start, 'ends_at' => $start->copy()->addHour(), 'blocks_from' => $start, 'blocks_until' => $start->copy()->addHour(), 'status' => Booking::CONFIRMED,
+        ]);
+
+        return ['booking' => $booking->id, 'reference' => $booking->reference, 'type' => $type->id, 'provider' => $provider->id];
     })(),
 
     // R-72 (S-02): every moderator and platform administrator already on the scratch database (the demonstration moderator)
