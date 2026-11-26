@@ -77,6 +77,7 @@
                 <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/market-jars-800.jpg') }}" width="800" height="532" alt="Jars of home-made sauces and bottles of chilli sauce set out on a stall's table at an outdoor market" loading="lazy" decoding="async">
             </figure>
         </div>
+        <div class="hp-support__body">
         <ul class="hp-support__list" role="list">
             <li class="hp-support__item" style="--tone: var(--ix-knowledge)" data-reveal><h3>Knowledge you can act on</h3><p>Questions answered by people who have been there, and researched solutions with their sources named.</p></li>
             <li class="hp-support__item" style="--tone: var(--ix-platforms)" data-reveal><h3>Tools for the work itself</h3><p>Money, people, projects, documents and files, each in a tool built for the job.</p></li>
@@ -85,6 +86,7 @@
             <li class="hp-support__item" style="--tone: var(--ix-analytics)" data-reveal><h3>Room to learn and keep going</h3><p>Seminars, shared knowledge and a record of what your business has learned, so each step builds on the last.</p></li>
         </ul>
         <p class="hp-support__close" data-reveal>This isn't a pile of separate apps. It's one connected place: one account, one sign-in, and tools and knowledge that know about each other, whatever stage your business is at.</p>
+        </div>
     </section>
 
     {{-- 5. The possibility (R-73). The ecosystem by the journey a business is on: Start, Manage, Connect, Grow. Each stage shows what
@@ -204,7 +206,7 @@
             <div class="lp-library__head">
                 <div>
                     <h2 id="library-title" data-reveal>A library you can act on</h2>
-                    <p class="ix-pubsec__lede" data-reveal>Researched business solutions, published under InfoDot's official account: numbered steps you can follow, written from sources that are named and dated — SARS, National Treasury, the Information Regulator, and the people who study each subject. Where a figure changes yearly, the entry says so and shows when it was last verified.</p>
+                    <p class="ix-pubsec__lede" data-reveal>Researched business solutions, published under InfoDot's official account: numbered steps you can follow, written from sources that are named and dated: SARS, National Treasury, the Information Regulator, and the people who study each subject. Where a figure changes yearly, the entry says so and shows when it was last verified.</p>
                 </div>
                 <p class="lp-library__tally" data-reveal><span class="ix-stencil-num lp-library__num">{{ $libraryCount }}</span><span class="lp-library__word">researched<br>entries</span></p>
             </div>
@@ -224,7 +226,7 @@
             </ol>
             <div class="lp-library__foot" data-reveal>
                 <a href="{{ route('solutions') }}" class="ix-btn lp-btn">Browse all solutions</a>
-                <p class="lp-library__note">Reading one asks you to sign in first — the account is free, and you come straight back to the entry.</p>
+                <p class="lp-library__note">Reading one asks you to sign in first. The account is free, and you come straight back to the entry.</p>
             </div>
         </section>
     @endif
