@@ -410,6 +410,23 @@ jobs:
           $PHP artisan view:cache
           $PHP artisan event:cache
 
+          # ---- owner-only secrets and live state (2026-11-26)
+          # The docroot .htaccess refuses these paths, but on two releases that day the web server answered 200 for
+          # /main/.env, artisan and the composer files for a few seconds right after the release, and those requests never
+          # reached the access log. A file only the account can read cannot be sent by the web server at all, whatever
+          # the .htaccess is doing. PHP, cron and the queue run as the account (storage/oauth-private.key has been 600
+          # since R-20 and the live SSO signs with it), so the application still reads them.
+          OWNER_ONLY=0
+          for f in .env .env.bak-secrets bootstrap/cache/config.php database/database.sqlite storage/oauth-private.key; do
+            if [ -f "$f" ]; then chmod 600 "$f"; OWNER_ONLY=$((OWNER_ONLY + 1)); fi
+          done
+          find storage/logs -maxdepth 1 -type f -name '*.log' -exec chmod 600 {} + 2>/dev/null || true
+          echo "== owner-only (600): $OWNER_ONLY secret or state file(s), and every log in storage/logs"
+          # A canary the probe step requests from outside: same mode, in the docroot, harmless content. If the web server
+          # ever answers 200 for it, owner-only files are NOT protected on this host and the run says so.
+          printf 'owner-only canary, written by deploy.yml\n' > "$DOCROOT/dot-owner-only-canary.txt"
+          chmod 600 "$DOCROOT/dot-owner-only-canary.txt"
+
           $PHP artisan up
           trap - ERR
           echo "== Deployed: $(git rev-parse --short HEAD)"
@@ -570,21 +587,37 @@ jobs:
           echo "== Smoke check passed."
 
       - name: Probe the application folder from outside
-        # Public requests only (no SSH, nothing is read): InfoDot's app folder (~/public_html/main) sits INSIDE the
-        # web root, so every plain file under it is a URL unless the docroot's .htaccess refuses it. Found serving
-        # its Laravel log (37 MB), artisan, composer files and vendor/autoload.php on 2026-10-27 (SECURITY_ASSESSMENT
-        # S-2h); the rule now lives at the top of ~/public_html/.htaccess. A 200 on any of these turns the run red.
+        # Public requests only (no SSH): InfoDot's app folder (~/public_html/main) sits INSIDE the web root, so every plain
+        # file under it is a URL unless the docroot's .htaccess refuses it. Found serving its Laravel log (37 MB), artisan,
+        # composer files and vendor/autoload.php on 2026-10-27 (SECURITY_ASSESSMENT S-2h); the rule now lives at the top of
+        # ~/public_html/.htaccess. A 200 on any of these turns the run red.
+        # 2026-11-26: twice that day these paths answered 200 for a few seconds after the release, and the access log held
+        # none of the probe's requests, so nobody could tell whether the real files went out. Now, for a 200, the body is
+        # streamed through a counter and thrown away (never saved, never printed): its size and how many lines look like
+        # KEY=value settings or log entries say whether it was the real file. Three passes, 20 s apart, time the window.
+        # The deploy also makes these files owner-only (600) and writes a canary with the same mode; it must never answer 200.
         run: |
           set -uo pipefail
           EXPOSED=0; UNREACHED=0
-          for P in .env artisan composer.json composer.lock package.json phpunit.xml vendor/autoload.php storage/logs/laravel.log database/database.sqlite; do
-            CODE=$(curl -s -o /dev/null -m 15 -w '%{http_code}' "$SITE_URL/main/$P" || true)
-            case "$CODE" in
-              200|206) echo "::error::EXPOSED /main/$P answered $CODE"; EXPOSED=1 ;;
-              000) echo "000 /main/$P (no answer)"; UNREACHED=$((UNREACHED + 1)) ;;
-              *) echo "$CODE /main/$P" ;;
-            esac
+          shape() { curl -s -m 15 "$1" | awk '/^[A-Z][A-Z0-9_]*=/{kv++} /^\[[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] /{lg++} {b+=length($0)+1} END{printf "%d bytes, %d KEY=value line(s), %d log line(s)", b, kv, lg}'; }
+          for PASS in 1 2 3; do
+            [ "$PASS" -gt 1 ] && sleep 20
+            LINE="pass $PASS:"
+            for P in .env artisan composer.json composer.lock package.json phpunit.xml vendor/autoload.php storage/logs/laravel.log database/database.sqlite bootstrap/cache/config.php; do
+              CODE=$(curl -s -o /dev/null -m 15 -w '%{http_code}' "$SITE_URL/main/$P" || true)
+              case "$CODE" in
+                200|206) echo "::error::EXPOSED pass $PASS /main/$P answered $CODE ($(shape "$SITE_URL/main/$P"))"; EXPOSED=1 ;;
+                000) LINE="$LINE $P=000"; UNREACHED=$((UNREACHED + 1)) ;;
+                *) LINE="$LINE $P=$CODE" ;;
+              esac
+            done
+            echo "$LINE"
           done
+          CANARY=$(curl -s -o /dev/null -m 15 -w '%{http_code}' "$SITE_URL/dot-owner-only-canary.txt" || true)
+          case "$CANARY" in
+            200|206) echo "::error::The owner-only canary answered $CANARY: on this host a file with mode 600 is still sent by the web server, so owner-only does not protect .env. Read docs/deployment-cpanel.md and the host's PHP handler."; EXPOSED=1 ;;
+            *) echo "== Owner-only canary refused by the web server ($CANARY): files with mode 600 cannot be sent over HTTP." ;;
+          esac
           [ "$UNREACHED" -eq 0 ] || echo "::warning::$UNREACHED probe request(s) got no answer; those paths are unverified."
-          [ "$EXPOSED" -eq 0 ] || { echo "::error::InfoDot's app folder is readable over HTTP. Restore the rule block '# BEGIN dot-app-folder-guard main' at the top of ~/public_html/.htaccess (docs/deployment-cpanel.md)."; exit 1; }
-          echo "== App-folder probe: no sensitive path answered 200 or 206."
+          [ "$EXPOSED" -eq 0 ] || { echo "::error::InfoDot's app folder is readable over HTTP. Restore the rule block '# BEGIN dot-app-folder-guard main' at the top of ~/public_html/.htaccess (docs/deployment-cpanel.md), and treat any EXPOSED line whose body had KEY=value lines as a leak: rotate those secrets."; exit 1; }
+          echo "== App-folder probe: no sensitive path answered 200 or 206 in three passes."
