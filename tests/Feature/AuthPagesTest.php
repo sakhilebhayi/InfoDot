@@ -27,7 +27,7 @@ class AuthPagesTest extends TestCase
         // R-69: sign in, registration and the account pages are split pages: a photograph and InfoDot's message beside the form.
         $login = $this->get('/login')->assertOk()->getContent();
         $this->assertStringContainsString('class="ix-sa" data-panel="login"', $login);
-        $this->assertStringContainsString('A better, more connected way to build a business.', $login);
+        $this->assertStringContainsString('A better, more connected way to build your business.', $login);
         $this->assertStringContainsString('Every Dot tool your business uses, opened with this one sign-in.', $login);
         $this->assertStringNotContainsString('class="ix-band"', $login, 'the photograph replaces the ACCT band');
 
