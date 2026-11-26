@@ -1,5 +1,10 @@
 # InfoDot Deployment Guide
 
+> **Superseded (R-72, O-11, 2026-11-26).** This guide describes an early target stack (PostgreSQL, Redis, Octane, Supervisor,
+> S3, Meilisearch) that InfoDot does not run on. Production is Laravel on shared cPanel hosting with MySQL, the database queue
+> and cache, and cron, released only by `.github/workflows/deploy.yml`. Follow **`docs/programme/RUNBOOK.md`** for releases,
+> backups, rollback and incidents. The text below is kept for history only; do not follow it.
+
 ## Purpose
 
 This guide covers the steps to deploy InfoDot to production, manage environment configuration, run long-lived processes, and perform zero-downtime releases. It also documents how to roll back safely.

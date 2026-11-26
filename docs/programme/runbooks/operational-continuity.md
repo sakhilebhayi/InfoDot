@@ -8,7 +8,7 @@ no secret values appear in this document or anywhere in the repository.**
 
 | System | What it controls | Access lives in |
 |---|---|---|
-| Domain (infodot.co.za) | everything — expires 2026-11-27 unless renewed | the hosting reseller account (registrar of record: Key-Systems GmbH via the reseller); credentials: owner's password manager |
+| Domain (infodot.co.za) | everything — renewed to 2027-11-27 (whois checked 2026-11-26); renew before then | the hosting reseller account (registrar of record: Key-Systems GmbH via the reseller); credentials: owner's password manager |
 | cPanel / shared host | the live apps, databases, mail, DNS zone, cron | reseller/cPanel login; SSH deploy keys live ONLY in each repo's GitHub Actions secrets (DEPLOY_SSH_KEY etc.) |
 | GitHub (sakhilebhayi) | all source, CI/CD, Actions secrets | owner's GitHub account (2FA); a recovery admin needs org/repo access granted by the owner |
 | Backup encryption | restoring ANY backup | passphrase file on the host at `~/.dot-backup/passphrase` AND a copy the owner holds offline; without it backups are unreadable — this is the single most important secret |
