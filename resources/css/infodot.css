@@ -12732,9 +12732,8 @@ body[data-area="home"] .ix-btn--primary:hover,
 }
 
 .hp-support__close {
-    grid-column: 2;
     max-width: 58ch;
-    margin: 16px 0 0;
+    margin: 32px 0 0;
     color: var(--ix-text);
     font-weight: 600;
     font-size: var(--dot-text-body-lg-size);
@@ -13005,7 +13004,6 @@ body[data-area="home"] .ix-btn--primary:hover,
     .hp-support,
     .hp-stage { grid-template-columns: minmax(0, 1fr); }
     .hp-support__head { position: static; }
-    .hp-support__close { grid-column: auto; }
 }
 
 @media (max-width: 640px) {
