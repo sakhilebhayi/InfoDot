@@ -4,6 +4,7 @@
 // highlight on the platform a "what does your business need" link lands on.
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { arrive, arriveEach } from './motion.js';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -62,28 +63,19 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     // Whatever comes into view rises into place, grouped so a section's parts arrive one after another.
     // Content starts arriving the moment its top edge is on screen and is fully there within about half a second, so a normal scroll
     // never lands on blank space. A group that arrives together shares at most 0.3s of stagger, however many parts it has.
-    ScrollTrigger.batch('[data-reveal]', {
-        start: 'top 98%',
-        once: true,
-        onEnter: (els) => gsap.fromTo(els, { y: 16, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.5, stagger: Math.min(0.06, 0.3 / els.length), ease: 'power3.out', overwrite: true }),
-    });
+    // R-68: only what is still below the screen is hidden, each part arrives once and stays (motion.js).
+    arriveEach(ScrollTrigger, '[data-reveal]');
 
     // Discover, Manage, Grow: each coloured plate wipes in from the left.
     gsap.utils.toArray('[data-pillar]').forEach((pillar) => {
         const plate = pillar.querySelector('.bt-pillar__word');
         if (!plate) return;
-        gsap.fromTo(plate, { clipPath: 'inset(0 100% 0 0)' }, {
-            clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath',
-            scrollTrigger: { trigger: pillar, start: 'top 98%', once: true },
-        });
+        arrive(ScrollTrigger, pillar, plate, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.7, ease: 'expo.out', clearProps: 'clipPath' });
     });
 
     // Each group opens with its stencilled plate stamped in.
     gsap.utils.toArray('.bt-plate--lg').forEach((plate) => {
-        gsap.fromTo(plate, { clipPath: 'inset(0 100% 0 0)' }, {
-            clipPath: 'inset(0 0% 0 0)', duration: 0.8, ease: 'expo.out', clearProps: 'clipPath',
-            scrollTrigger: { trigger: plate, start: 'top 98%', once: true },
-        });
+        arrive(ScrollTrigger, plate, plate, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.8, ease: 'expo.out', clearProps: 'clipPath' });
     });
 
     // Every platform is its own bay: its screen is uncovered from the side its text is not on, the picture settles as you pass,
@@ -94,10 +86,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         const variant = [...tool.classList].find((c) => c.startsWith('bt-tool--'))?.slice(9);
         const from = variant === 'a' ? 'inset(0 100% 0 0)' : variant === 'b' ? 'inset(0 0 0 100%)' : 'inset(100% 0 0 0)';
         if (frame) {
-            gsap.fromTo(frame, { clipPath: from }, {
-                clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'expo.out', clearProps: 'clipPath',
-                scrollTrigger: { trigger: tool, start: 'top 98%', once: true },
-            });
+            arrive(ScrollTrigger, tool, frame, { clipPath: from }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.8, ease: 'expo.out', clearProps: 'clipPath' });
         }
         if (img) {
             gsap.fromTo(img, { scale: 1.12 }, {
@@ -107,17 +96,13 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         }
         const parts = tool.querySelectorAll('.bt-tool__body > *');
         if (parts.length) {
-            gsap.fromTo(parts, { y: 22, autoAlpha: 0 }, {
-                y: 0, autoAlpha: 1, duration: 0.5, stagger: Math.min(0.05, 0.3 / parts.length), ease: 'power3.out', clearProps: 'transform',
-                scrollTrigger: { trigger: tool, start: 'top 98%', once: true },
-            });
+            arrive(ScrollTrigger, tool, parts, { y: 22, autoAlpha: 0 },
+                { y: 0, autoAlpha: 1, duration: 0.5, stagger: Math.min(0.05, 0.3 / parts.length), ease: 'power3.out', clearProps: 'transform' });
         }
         const lines = tool.querySelectorAll('.bt-tool__caps li');
         if (lines.length) {
-            gsap.fromTo(lines, { clipPath: 'inset(0 0 100% 0)' }, {
-                clipPath: 'inset(0 0 0% 0)', duration: 0.5, stagger: Math.min(0.05, 0.3 / lines.length), ease: 'power3.out', clearProps: 'clipPath', delay: 0.1,
-                scrollTrigger: { trigger: tool, start: 'top 98%', once: true },
-            });
+            arrive(ScrollTrigger, tool, lines, { clipPath: 'inset(0 0 100% 0)' },
+                { clipPath: 'inset(0 0 0% 0)', duration: 0.5, stagger: Math.min(0.05, 0.3 / lines.length), ease: 'power3.out', clearProps: 'clipPath', delay: 0.1 });
         }
     });
 
@@ -139,10 +124,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
     // The closing line is written across the page once.
     const ctaTitle = document.querySelector('[data-cta-title]');
     if (ctaTitle) {
-        gsap.fromTo(ctaTitle, { clipPath: 'inset(0 100% 0 0)' }, {
-            clipPath: 'inset(0 0% 0 0)', duration: 1.1, ease: 'expo.out', clearProps: 'clipPath',
-            scrollTrigger: { trigger: '.bt-cta', start: 'top 98%', once: true },
-        });
+        arrive(ScrollTrigger, document.querySelector('.bt-cta'), ctaTitle, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1.1, ease: 'expo.out', clearProps: 'clipPath' });
     }
 
     window.addEventListener('load', () => ScrollTrigger.refresh());

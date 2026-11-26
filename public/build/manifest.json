@@ -1,10 +1,10 @@
 {
-  "_ScrollTrigger-Bit5KH_K.js": {
-    "file": "assets/ScrollTrigger-Bit5KH_K.js",
-    "name": "ScrollTrigger"
+  "_motion-DC9j2D52.js": {
+    "file": "assets/motion-DC9j2D52.js",
+    "name": "motion"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DffGniOm.css",
+    "file": "assets/app-BNZ3tMP-.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -313,7 +313,7 @@
     "src": "resources/img/platforms/files.png"
   },
   "resources/js/analytics-chart.js": {
-    "file": "assets/analytics-chart-CT01Wp-3.js",
+    "file": "assets/analytics-chart-Ih4g0tQ2.js",
     "name": "analytics-chart",
     "src": "resources/js/analytics-chart.js",
     "isDynamicEntry": true,
@@ -322,7 +322,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BW-CojF0.js",
+    "file": "assets/app-B_GQYDdJ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -331,21 +331,21 @@
     ]
   },
   "resources/js/landing.js": {
-    "file": "assets/landing-43pSYXFy.js",
+    "file": "assets/landing-BaEvjzAv.js",
     "name": "landing",
     "src": "resources/js/landing.js",
     "isEntry": true,
     "imports": [
-      "_ScrollTrigger-Bit5KH_K.js"
+      "_motion-DC9j2D52.js"
     ]
   },
   "resources/js/pages.js": {
-    "file": "assets/pages-DQg5WABL.js",
+    "file": "assets/pages-CvpLp_QQ.js",
     "name": "pages",
     "src": "resources/js/pages.js",
     "isEntry": true,
     "imports": [
-      "_ScrollTrigger-Bit5KH_K.js"
+      "_motion-DC9j2D52.js"
     ]
   },
   "resources/js/seminar-p2p.js": {
@@ -361,12 +361,12 @@
     "isEntry": true
   },
   "resources/js/tools.js": {
-    "file": "assets/tools-DL7ny7Dk.js",
+    "file": "assets/tools-BOVw_KIN.js",
     "name": "tools",
     "src": "resources/js/tools.js",
     "isEntry": true,
     "imports": [
-      "_ScrollTrigger-Bit5KH_K.js"
+      "_motion-DC9j2D52.js"
     ]
   }
 }
