@@ -96,40 +96,63 @@ return [
      * needs an account), and which platforms belong to it. Platform facts are not restated: names, problems, what each does, its value
      * and any limit come from the 'tools' entries below and the catalogue, and a platform appears only when BusinessTools::shown() allows.
      */
+    // R-74 (owner brief 2026-11-26): five journeys. Start begins with InfoDot itself; Manage, Connect and Special Platforms
+    // follow the owner's exact lists and order; Grow holds every other live platform. A platform shows only when
+    // BusinessTools::shown() allows it (live, public, catalogued, with its logo and screen), so nothing unfinished is promoted.
     'journey' => [
         'start' => [
             'title' => 'Start',
-            'line' => 'Find your footing. Answers, researched steps and people who have done it before you.',
+            'line' => 'Build your business. Begin with InfoDot: answers, researched steps, resources and the people and tools around you.',
             'infodot' => [
                 ['title' => 'Ask in plain words', 'body' => 'Describe what you are stuck on and hear from people who have been there. The answer that solved it is stamped, so the next person sees it first.', 'route' => 'solution_search_results'],
                 ['title' => 'Follow researched steps', 'body' => 'Solutions written as numbered steps, from sources that are named and dated: registering, tax, pricing, hiring your first person.', 'route' => 'solution_search_results'],
             ],
-            'tools' => ['tutor'],
+            'lead' => [
+                'name' => 'InfoDot',
+                'role' => 'Where your business starts',
+                'outcome' => 'Knowledge, resources and the whole ecosystem behind one account.',
+                'problem' => 'A new business has a hundred questions and no obvious place to ask them. Advice is scattered, and every tool needs its own account.',
+                'why' => 'InfoDot puts business knowledge, researched step-by-step solutions, a directory of businesses and a page of your own in one place, and the same account opens every Dot platform when you need it.',
+                'route' => 'register',
+                'cta' => 'Join InfoDot for free',
+            ],
+            'tools' => [],
         ],
         'manage' => [
             'title' => 'Manage',
-            'line' => 'Run the day to day. Money, people, work and information, in tools that know about each other.',
+            'line' => 'Run your business. Money, people, work and information, in tools that know about each other.',
             'infodot' => [
                 ['title' => 'One sign-in for every tool', 'body' => 'Open the tools your business uses with your InfoDot account. Nobody keeps a separate password for each, and people leave the business in one step.', 'route' => 'business-tools'],
             ],
-            'tools' => ['finance', 'hr', 'projects', 'tasks', 'files', 'docs', 'sheet', 'forms', 'notify'],
+            'tools' => ['finance', 'hr', 'projects', 'files', 'tasks', 'docs', 'press', 'forms', 'sheet'],
         ],
         'connect' => [
             'title' => 'Connect',
-            'line' => 'Be easy to find, and find the businesses you need.',
+            'line' => 'Build relationships and visibility. Reach the people who matter, and see how your business is doing.',
             'infodot' => [
                 ['title' => 'A page people can find', 'body' => 'Give your business a page with what you offer and where you work, listed in a directory people search by need and by place.', 'route' => 'businesses.index'],
                 ['title' => 'Messages and appointments', 'body' => 'Customers and other businesses message you from your page or ask for an appointment, and every reply lands in one inbox.', 'route' => 'businesses.index'],
             ],
-            'tools' => ['pulse', 'engage'],
+            'tools' => ['notify', 'pulse', 'engage', 'analytics'],
         ],
         'grow' => [
             'title' => 'Grow',
-            'line' => 'See what is working, reach new customers and present your business at its best.',
+            'line' => 'Develop and expand your business: take bookings, see what brings people to you and keep learning.',
             'infodot' => [
+                ['title' => 'Take bookings online', 'body' => 'Publish your appointment types and opening hours, and customers book a time straight from your business page.', 'route' => 'register'],
+                ['title' => 'See what brings people to you', 'body' => 'Your page’s insights show its views, the searches that found you and the enquiries that followed, day by day.', 'route' => 'register'],
+                ['title' => 'Learn and share at seminars', 'body' => 'Join seminars to learn from other businesses, or run one to share what you know.', 'route' => 'register'],
                 ['title' => 'Knowledge that adds up', 'body' => 'What your business learns is kept with your company and improved over time, with earlier versions kept, so the next person starts from the answer.', 'route' => 'register'],
             ],
-            'tools' => ['analytics', 'charts', 'emall', 'auction', 'press', 'design'],
+            'tools' => [],
+        ],
+        'special' => [
+            'title' => 'Special Platforms',
+            'heading' => 'Not every opportunity starts with a business idea.',
+            'line' => 'Explore specialised platforms that open up different ways to earn, create, offer services, develop skills and make the most of your opportunities.',
+            'note' => 'What you earn depends on you, your market and the platform’s own rules. Signing up is a start, not a promise of income, work or customers.',
+            'infodot' => [],
+            'tools' => ['mines', 'tutor', 'design', 'auction', 'emall', 'ehail', 'charts'],
         ],
     ],
 
@@ -163,6 +186,7 @@ return [
             'why' => 'Dot.Charts runs a strategy against historical prices and reports the result with its drawdown and risk notes, so you can see how a rule would have behaved before you rely on it.',
             'growth' => 'For anyone who studies markets, a hunch becomes a tested rule that you can refine, and the saved results let you compare one version with the next.',
             'outcome' => 'Evidence before commitment.',
+            'opportunity' => 'Study the markets: test a trading rule against past prices before you put money behind it.',
             'note' => 'A backtest describes the past. It does not predict what will happen, and it is not financial advice.',
         ],
         'finance' => [
@@ -256,6 +280,7 @@ return [
             'why' => 'Dot.Design is a studio in the browser. Start from a brief or a template, pick a format, edit and export. Brand kits keep your colours, fonts and logos consistent, and designs carry versions, comments and review.',
             'growth' => 'A consistent look makes a small business easier to recognise, and staff can produce what they need without waiting for someone else.',
             'outcome' => 'A consistent brand. Made in-house.',
+            'opportunity' => 'Offer design work: posters, social posts and brand kits for clients, made in a studio in your browser.',
         ],
         'notify' => [
             'pillars' => ['manage'],
@@ -292,6 +317,7 @@ return [
             'why' => 'Dot.Emall is a multi-seller marketplace. A seller opens a storefront, lists products with variants and stock, and fulfils orders from a seller desk. Buyers search, check out with or without an account, and can follow orders, returns and refunds.',
             'growth' => 'You reach online buyers from the start, and the orders and sales ledger show you what sells.',
             'outcome' => 'A storefront from day one.',
+            'opportunity' => 'Sell products online from your own storefront, without building or paying for a shop first.',
         ],
         'auction' => [
             'pillars' => ['grow'],
@@ -301,6 +327,7 @@ return [
             'why' => 'On Dot.Auction a seller lists lots with a starting price, an optional reserve and a closing time, and buyers browse, watch and bid. The reserve is never shown to buyers, bids are kept in an append-only record, and the winner settles the sale after the auction closes.',
             'growth' => 'A timed sale brings bidders to your lots at a set time and leaves a clear record for both sides.',
             'outcome' => 'Competitive bidding. A clear record.',
+            'opportunity' => 'Sell items you own or source by timed auction, with a starting price, an optional reserve and every bid on record.',
         ],
         'mines' => [
             'pillars' => ['manage'],
@@ -310,6 +337,7 @@ return [
             'why' => 'Dot.Mines holds machines, positions and telemetry, fuel, maintenance, geofences and operators, and shows them on a live map. Other systems read the same records through an API.',
             'growth' => 'Current records let a fleet controller catch maintenance and fuel issues earlier and keep operators and their licences in order.',
             'outcome' => 'One current fleet record.',
+            'opportunity' => 'If you run or service a mining fleet, keep machines, fuel, maintenance and operators on one live record.',
         ],
         'ehail' => [
             'pillars' => ['manage', 'grow'],
@@ -319,6 +347,7 @@ return [
             'why' => 'On Dot.Ehail passengers request a ride and see the fare before booking, drivers receive ride offers one at a time, and the operator watches rides, drivers and incidents from an operations desk. Drivers need approved documents before they can go online.',
             'growth' => 'An operator can add drivers and vehicles without losing sight of safety, because verification and incidents are part of the same system.',
             'outcome' => 'Bookings, drivers and safety in one place.',
+            'opportunity' => 'Run a ride-hailing operation: take bookings, approve drivers and handle safety from one desk.',
             'note' => 'Fares need a routing service and a published tariff, which the operator sets up.',
         ],
         'tutor' => [
@@ -329,6 +358,7 @@ return [
             'why' => 'On Dot.Tutor learners search by subject and level, book lessons and attend them in an online classroom. Tutors publish their offerings, courses and resources. Guardians approve bookings and purchases for younger learners, and tutors are reviewed before they are listed.',
             'growth' => 'Learners find tutors they can check, and tutors run their teaching from one place, with courses and quizzes alongside lessons.',
             'outcome' => 'Learning that is easy to find and easy to run.',
+            'opportunity' => 'Teach what you know. Once you are reviewed, publish lessons and courses and take bookings from learners.',
         ],
     ],
 ];

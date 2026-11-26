@@ -89,11 +89,11 @@ final class BusinessTools
     }
 
     /**
-     * R-73: the homepage journey (Start, Manage, Connect, Grow). Each stage carries InfoDot's own features and its live platforms, built
+     * R-73/R-74: the homepage journey (Start, Manage, Connect, Grow, Special Platforms). Start leads with InfoDot itself. Each stage carries InfoDot's own features and its live platforms, built
      * with the same tool() data the Business Tools page uses, so the homepage and that page can never describe a platform differently.
      * A platform that is not shown() is left out; a stage left with nothing at all is dropped.
      *
-     * @return list<array{key: string, title: string, line: string, infodot: list<array{title: string, body: string, url: string}>, tools: list<array<string, mixed>>}>
+     * @return list<array{key: string, title: string, heading: string, line: string, note: string, infodot: list<array{title: string, body: string, url: string}>, lead: array<string, string>|null, tools: list<array<string, mixed>>}>
      */
     public static function journey(): array
     {
@@ -113,10 +113,34 @@ final class BusinessTools
                 'url' => route((string) $item['route']),
             ], (array) ($stage['infodot'] ?? []));
 
-            if ($tools === [] && $infodot === []) {
+            $lead = null;
+            if (is_array($stage['lead'] ?? null)) {
+                $l = $stage['lead'];
+                $lead = [
+                    'name' => (string) $l['name'],
+                    'role' => (string) $l['role'],
+                    'outcome' => (string) $l['outcome'],
+                    'problem' => (string) $l['problem'],
+                    'why' => (string) $l['why'],
+                    'url' => route((string) $l['route']),
+                    'cta' => (string) $l['cta'],
+                    'logo' => Vite::asset('resources/img/landing/platforms/infodot.png'),
+                ];
+            }
+
+            if ($tools === [] && $infodot === [] && $lead === null) {
                 continue;
             }
-            $stages[] = ['key' => (string) $key, 'title' => (string) $stage['title'], 'line' => (string) $stage['line'], 'infodot' => $infodot, 'tools' => $tools];
+            $stages[] = [
+                'key' => (string) $key,
+                'title' => (string) $stage['title'],
+                'heading' => (string) ($stage['heading'] ?? ''),
+                'line' => (string) $stage['line'],
+                'note' => (string) ($stage['note'] ?? ''),
+                'infodot' => $infodot,
+                'lead' => $lead,
+                'tools' => $tools,
+            ];
         }
 
         return $stages;

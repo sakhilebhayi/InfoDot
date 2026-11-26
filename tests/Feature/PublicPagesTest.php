@@ -105,13 +105,24 @@ class PublicPagesTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
         $journey = BusinessTools::journey();
 
-        $this->assertSame(['start', 'manage', 'connect', 'grow'], array_column($journey, 'key'));
+        // R-74: five journeys, Special Platforms last, in the owner's exact order.
+        $this->assertSame(['start', 'manage', 'connect', 'grow', 'special'], array_column($journey, 'key'));
+        $order = collect($journey)->mapWithKeys(fn (array $s) => [$s['key'] => array_column($s['tools'], 'key')]);
+        $this->assertSame([], $order['start'], 'Start begins with InfoDot itself, not another platform');
+        $this->assertSame(['finance', 'hr', 'projects', 'files', 'tasks', 'docs', 'press', 'forms', 'sheet'], $order['manage']);
+        $this->assertSame(['notify', 'pulse', 'engage', 'analytics'], $order['connect']);
+        $this->assertSame(['mines', 'tutor', 'design', 'auction', 'emall', 'ehail', 'charts'], $order['special']);
+        $this->assertSame('Not every opportunity starts with a business idea.', $journey[4]['heading']);
+        $this->assertStringContainsString('not a promise of income, work or customers', $html, 'Special Platforms promises no earnings');
+        $this->assertNotNull($journey[0]['lead']);
+        $this->assertStringContainsString('Where your business starts', $html);
         foreach ($journey as $stage) {
             $this->assertStringContainsString('id="stage-'.$stage['key'].'"', $html);
             foreach ($stage['tools'] as $tool) {
                 $this->assertTrue(BusinessTools::shown($tool['key']), $tool['key'].' is shown only when it is live and public');
                 $this->assertStringContainsString(e($tool['problem']), $html, $tool['key'].' says the problem it addresses');
-                $this->assertStringContainsString(e($tool['outcome']), $html, $tool['key'].' says the value it offers');
+                $value = $stage['key'] === 'special' ? $tool['opportunity'] : $tool['outcome'];
+                $this->assertStringContainsString(e($value), $html, $tool['key'].' says the value it offers');
                 $this->assertStringContainsString(route('business-tools').'#tool-'.$tool['key'], $html, $tool['key'].' links to its own entry');
                 if (filled($tool['note'] ?? null)) {
                     $this->assertStringContainsString(e($tool['note']), $html, $tool['key'].' shows its limit before anyone signs up');
@@ -132,8 +143,8 @@ class PublicPagesTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
 
         $this->assertMatchesRegularExpression('/role="tablist"[^>]*data-journey-tabs hidden/', $html, 'the tab row only appears once the script turns the stages into tabs');
-        preg_match_all('/<section class="hp-stage"[^>]*>/', $html, $panels);
-        $this->assertCount(4, $panels[0]);
+        preg_match_all('/<section class="hp-stage[^"]*"[^>]*>/', $html, $panels);
+        $this->assertCount(5, $panels[0]);
         foreach ($panels[0] as $panel) {
             $this->assertStringNotContainsString(' hidden', $panel, 'no stage is hidden in the page as sent');
         }

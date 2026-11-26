@@ -13249,3 +13249,62 @@ body[data-area="home"] .ix-btn--primary:hover,
     .hp-access { padding: 64px 16px 16px; }
     .hp-cta__inner { padding-top: 56px; padding-bottom: 56px; }
 }
+
+/* R-74: the fifth journey, Special Platforms, and InfoDot as the lead of Start. -------------------------------------- */
+/* Five tabs: on a narrow screen the row scrolls sideways (the script brings the chosen tab into view) instead of wrapping. */
+.hp-journey__tab { white-space: nowrap; }
+.hp-journey__tab--special { display: inline-flex; align-items: center; gap: 8px; }
+.hp-journey__tab--special::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ix-stencil); box-shadow: 0 0 0 2px var(--ix-top); }
+
+@media (max-width: 640px) {
+    .hp-journey__tabs { position: relative; flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .hp-journey__tabs::-webkit-scrollbar { display: none; }
+    .hp-journey__tab, .hp-journey__tab--special { flex: 0 0 auto; padding: 0 16px; scroll-snap-align: start; }
+}
+
+/* Special Platforms: a different audience, so its intro is a graphite plate with a stencil-gold rule and its own heading;
+   the platform rows stay the same rows as every other stage. */
+.hp-stage--special { border-top-color: var(--ix-stencil); }
+.hp-stage--special .hp-stage__intro {
+    align-self: start;
+    padding: 28px 28px 30px;
+    border-radius: var(--ix-radius);
+    background: var(--ix-top);
+    color: var(--ix-top-ink);
+}
+.is-tabbed .hp-stage--special .hp-stage__title,
+.hp-stage--special .hp-stage__title {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    margin: 0 0 14px;
+    color: var(--ix-top-ink);
+    font-size: var(--dot-text-h2-size);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+}
+.hp-stage--special .hp-stage__line { margin: 0 0 18px; color: var(--ix-top-ink); font-weight: 400; font-size: var(--dot-text-body-lg-size); line-height: 1.55; }
+.hp-stage__note { margin: 0; padding-top: 14px; border-top: 1px solid rgb(255 255 255 / 0.16); color: var(--ix-top-ink-2); font-size: var(--dot-text-body-sm-size); line-height: 1.5; }
+.hp-stage--special .hp-tool__value { color: var(--ix-text); }
+
+/* Start: InfoDot as the one place to begin, the same parts as a platform row, open and with its own call to action. */
+.hp-lead { padding: 20px 0 4px; border-top: 1px solid var(--ix-rule); }
+.hp-lead__head { display: flex; align-items: center; gap: 16px; }
+.hp-lead__head img { width: 60px; height: 40px; object-fit: contain; }
+.hp-lead__value { margin: 16px 0 0; color: var(--ix-text); font-weight: 600; font-size: var(--dot-text-h3-size); line-height: 1.35; text-wrap: balance; }
+.hp-lead .hp-tool__body { margin: 0; padding: 16px 0 20px; }
+.hp-lead .ix-btn { margin-bottom: 8px; }
+
+@media (max-width: 640px) {
+    .hp-stage--special .hp-stage__intro { padding: 22px 20px 24px; }
+}
+
+/* A stage with InfoDot's own features and no platform row (Grow): the features use the full width, two to a row. */
+.hp-stage--plain { grid-template-columns: minmax(0, 1fr); }
+.hp-stage--plain .hp-stage__line { max-width: 40ch; }
+.hp-stage--plain .hp-stage__own { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 48px; }
+@media (max-width: 760px) { .hp-stage--plain .hp-stage__own { grid-template-columns: minmax(0, 1fr); } }
