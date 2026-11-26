@@ -86,7 +86,10 @@
                                 @elseif ($b->status === 'ended'){{ __('Ended :date.', ['date' => $day($b->period_end)]) }}@endif
                                 @if ($b->quantity_next) {{ __('From the next renewal: :n licences.', ['n' => $b->quantity_next]) }}@endif
                             </span>
-                            @if ($isOwner && $b->status === 'active' && $b->cancelled_at === null)
+                            @if ($isOwner && $b->status === 'active' && $b->cancelled_at === null && ! app(\App\Services\Licensing\FinanceCheckout::class)->cancelEnabled())
+                                {{-- R-72 (F-01): until the payment service can change a renewal, say how instead of offering buttons that lead nowhere. --}}
+                                <p class="ix-hint" style="margin-top:8px" data-renewal-by-request>{{ __('To renew with fewer licences or stop renewing, ask us') }}@if (filled(config('licensing.reminders.support_email'))) {{ __('at') }} <a href="mailto:{{ config('licensing.reminders.support_email') }}">{{ config('licensing.reminders.support_email') }}</a>@endif{{ __(' before :date. Nothing changes until then.', ['date' => $row['renews'] ? $day($row['renews']) : __('the renewal')]) }}</p>
+                            @elseif ($isOwner && $b->status === 'active' && $b->cancelled_at === null)
                                 <div class="ix-actions" style="margin-top:8px">
                                     @if ($b->quantity > 1)
                                         <form method="get" action="{{ route('licences.confirm', ['team' => $team->uuid, 'action' => 'reduce']) }}" class="ix-actions">

@@ -127,12 +127,60 @@ jobs:
       - name: Summarise
         run: |
           { echo '### Line coverage of app/'; echo; grep -m1 -E '^\s*Lines:' coverage.txt || tail -n 12 coverage.txt; } >> "$GITHUB_STEP_SUMMARY"
+      # R-72 (O-07): line coverage may not fall below the floor in coverage-floor.txt (93.9% on main when it was set; raise
+      # the floor as coverage grows, never lower it to let a change through). The job keeps its old name because the name
+      # is a required check on main; renaming it is a branch-protection change for the owner.
+      - name: Line coverage stays above the floor
+        run: |
+          floor="$(tr -d '[:space:]' < coverage-floor.txt)"
+          lines="$(grep -m1 -E '^\s*Lines:' coverage.txt | sed -E 's/.*Lines: *([0-9.]+)%.*/\1/')"
+          echo "line coverage ${lines}% (floor ${floor}%)"
+          awk -v l="$lines" -v f="$floor" 'BEGIN { exit !(l + 0 >= f + 0) }' || { echo "::error::Line coverage ${lines}% is below the floor ${floor}%"; exit 1; }
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-report
           path: |
             coverage.xml
             coverage.txt
+
+  browser-accessibility:
+    # R-72 (O-06): the accessibility scan (axe-core) and the keyboard-only journeys in a real Chromium, on every change.
+    # Not yet a required check: the owner adds it to branch protection once it has been green for a while.
+    name: browser accessibility and keyboard (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          tools: composer:v2
+          coverage: none
+          extensions: sqlite3, pdo_sqlite
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Prepare Environment
+        run: cp .env.example .env
+      - run: composer install --no-interaction --prefer-dist
+      - run: php artisan key:generate
+      - run: npm ci --no-audit
+      - run: npm run build
+      - name: Chromium and its system libraries (a stale mirror index answers 404, so refresh and try once more)
+        run: |
+          sudo apt-get update -q
+          npx playwright install --with-deps chromium || { sleep 20; sudo apt-get update -q; npx playwright install --with-deps chromium; }
+      - name: Accessibility scan and keyboard journeys
+        run: npm run test:browser -- --project=desktop-chromium h-accessibility i-keyboard
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-accessibility-report
+          path: |
+            tests/Browser/playwright-report
+            tests/Browser/test-results
 
   cron-runner:
     name: cron runner (fake host)

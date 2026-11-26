@@ -9,6 +9,7 @@ use App\Models\BusinessService;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\UserNotice;
+use App\Services\Directory\BusinessDirectory;
 use App\Services\Knowledge\InAppNotices;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -123,6 +124,21 @@ class BusinessDiscoveryTest extends TestCase
             ->assertSee('Browse by place')->assertSee('Mbombela')->assertSee('Nelspruit')->assertSee('Mpumalanga')
             ->assertDontSee('Hiddenville');
         $this->get('/businesses?location=Mbombela')->assertSee('Acme Boreholes');
+    }
+
+    public function test_business_size_is_one_of_the_bands_and_the_filter_lists_only_bands_in_use(): void
+    {
+        // R-72 (F-04).
+        $this->acme->profile->forceFill(['size' => 'about a dozen'])->save();
+        $this->actingAs($this->owner)->get(route('business.edit', $this->acme))->assertOk()->assertSee('about a dozen (as given before)')->assertSee('11 to 50 people');
+        $this->actingAs($this->owner)->post(route('business.update', $this->acme), ['size' => 'about a dozen'])->assertSessionHasNoErrors();
+        $this->actingAs($this->owner)->post(route('business.update', $this->acme), ['size' => 'Huge'])->assertSessionHasErrors('size');
+        $this->actingAs($this->owner)->post(route('business.update', $this->acme), ['size' => '11 to 50 people'])->assertSessionHasNoErrors();
+        $this->assertSame('11 to 50 people', $this->acme->profile->fresh()->size);
+
+        $this->business('Big Drill Co', 'public', ['size' => 'More than 500 people']);
+        $this->business('Odd Size Co', 'public', ['size' => 'loads']);
+        $this->assertSame(['11 to 50 people', 'More than 500 people'], app(BusinessDirectory::class)->sizes(null)->all());
     }
 
     public function test_featuring_follows_the_published_rules_and_is_labelled(): void

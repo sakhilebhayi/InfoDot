@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Solutions;
+use App\Models\User;
 use App\Support\Reference;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -52,7 +53,9 @@ MD);
             ->assertSee('A library you can act on')
             ->assertSee('Keep cash under control from week one')
             ->assertSee(Reference::for($entry))
-            ->assertSee(route('solutions.view', $entry->id));
+            ->assertSee(route('solutions.view', $entry->id))
+            // R-72 (F-05): a visitor is told before following a link that reading asks them to sign in.
+            ->assertSee('Reading one asks you to sign in first');
     }
 
     public function test_the_hero_panel_shows_a_real_entry_and_its_own_steps_as_example_tasks(): void
@@ -111,5 +114,10 @@ MD);
         $this->assertStringNotContainsString('Step 1', $panel);
         $this->assertStringContainsString('Write the steps', $panel);
         $this->assertStringContainsString('Example', $html);
+        // R-72 (F-05): a visitor is told that reading it asks them to sign in; a signed-in person is not.
+        $this->assertStringContainsString('Reading it asks you to sign in; the account is free.', $panel);
+        $this->assertStringContainsString('sign in to read', $html);
+        $signedIn = $this->actingAs(User::factory()->create(['email_verified_at' => now()]))->get('/')->getContent();
+        $this->assertStringNotContainsString('Reading it asks you to sign in', $signedIn);
     }
 }

@@ -31,10 +31,14 @@ if ($connection->getDriverName() !== 'sqlite'
 /** @var array<string, mixed> $op */
 $op = json_decode((string) getenv('E2E_OP'), true, 512, JSON_THROW_ON_ERROR);
 $password = (string) getenv('E2E_PASSWORD');
+$totpSecret = (string) getenv('E2E_TOTP');
+
+/** Each account's own two-factor secret, from the run's secret and its address (support/totp.ts makes the same one). */
+$secretFor = fn (string $email): string => strtr(substr(hash('sha256', $totpSecret.'|'.mb_strtolower($email)), 0, 32), '0123456789abcdef', 'ABCDEFGHIJKLMNOP');
 
 $result = match ($op['op']) {
     // A verified person, made the way the sign-up form makes one (personal team included).
-    'make-user' => (function () use ($op, $password) {
+    'make-user' => (function () use ($op, $password, $totpSecret, $secretFor) {
         $user = User::where('email', $op['email'])->first()
             ?? app(CreateNewUser::class)->create([
                 'name' => $op['name'],
@@ -48,6 +52,11 @@ $result = match ($op['op']) {
             'email_verified_at' => now(),
             'is_moderator' => (bool) ($op['moderator'] ?? false),
         ])->save();
+
+        // R-72 (S-02): a moderator's powers need two-factor, so a moderator made for the run has it, with the run's own secret.
+        if ($user->is_moderator && $totpSecret !== '') {
+            $user->forceFill(['two_factor_secret' => encrypt($secretFor($user->email)), 'two_factor_confirmed_at' => now()])->save();
+        }
 
         if (! $user->currentTeam) {
             $user->switchTeam($user->personalTeam());
@@ -135,6 +144,17 @@ $result = match ($op['op']) {
         }
 
         return ['count' => $count];
+    })(),
+
+    // R-72 (S-02): every moderator and platform administrator already on the scratch database (the demonstration moderator)
+    // signs in with two-factor, using the run's own secret (support/totp.ts answers the challenge).
+    'secure-privileged' => (function () use ($secretFor) {
+        $users = User::where('is_moderator', true)->orWhere('is_platform_admin', true)->get();
+        foreach ($users as $user) {
+            $user->forceFill(['two_factor_secret' => encrypt($secretFor($user->email)), 'two_factor_confirmed_at' => now()])->save();
+        }
+
+        return ['count' => $users->count()];
     })(),
 
     // The sign-in and sign-up limits count per source address, and a browser run is dozens of people at one address.

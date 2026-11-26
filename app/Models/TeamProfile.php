@@ -42,6 +42,9 @@ class TeamProfile extends Model
     /** The social/professional link slots the profile form offers. */
     public const LINK_KEYS = ['linkedin', 'facebook', 'instagram', 'x', 'youtube'];
 
+    /** R-72 (F-04): the business sizes a profile can choose, so the directory's size filter stays consistent. */
+    public const SIZE_BANDS = ['Just me', '2 to 10 people', '11 to 50 people', '51 to 200 people', '201 to 500 people', 'More than 500 people'];
+
     /** The contact details a business may show or keep off its page. */
     public const CONTACT_FIELDS = ['phone' => 'Business phone', 'email' => 'Business email', 'website' => 'Website', 'links' => 'Social and professional links'];
 

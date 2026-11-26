@@ -210,12 +210,13 @@ final class BusinessDirectory
         return ['towns' => $count($towns)->take(12)->values()->all(), 'provinces' => $count(collect($provinces->all()))->take(9)->values()->all()];
     }
 
-    /** The sizes listed businesses actually gave, for the size filter. @return Collection<int, string> */
+    /** The size bands listed businesses actually chose, smallest first, for the size filter. @return Collection<int, string> */
     public function sizes(?User $viewer): Collection
     {
-        return TeamProfile::query()->whereIn('team_id', Team::query()->listedFor($viewer)->select('id'))
-            ->whereNotNull('size')->where('size', '!=', '')
-            ->distinct()->orderBy('size')->limit(20)->pluck('size');
+        $used = TeamProfile::query()->whereIn('team_id', Team::query()->listedFor($viewer)->select('id'))
+            ->whereIn('size', TeamProfile::SIZE_BANDS)->distinct()->pluck('size')->all();
+
+        return collect(TeamProfile::SIZE_BANDS)->filter(fn (string $band) => in_array($band, $used, true))->values();
     }
 
     /** "Mining equipment suppliers in Mpumalanga" → (['mining', 'equipment', 'supplier'], 'Mpumalanga'). @return array{0: list<string>, 1: ?string} */

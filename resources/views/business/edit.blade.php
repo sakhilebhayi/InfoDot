@@ -145,7 +145,19 @@
                     <div class="ix-form__row"><label class="ix-label" for="registration_number">Business registration number</label><input class="ix-input" id="registration_number" name="registration_number" maxlength="60" value="{{ old('registration_number', $profile->registration_number) }}" placeholder="Where applicable"></div>
                     <div class="ix-form__row"><label class="ix-label" for="registration_country">Country of registration</label><input class="ix-input" id="registration_country" name="registration_country" maxlength="60" value="{{ old('registration_country', $profile->registration_country) }}"></div>
                     <div class="ix-form__row"><label class="ix-label" for="established_on">Established</label><input class="ix-input" type="date" id="established_on" name="established_on" max="{{ now()->toDateString() }}" value="{{ old('established_on', $profile->established_on?->toDateString()) }}"></div>
-                    <div class="ix-form__row"><label class="ix-label" for="size">Business size</label><input class="ix-input" id="size" name="size" maxlength="40" value="{{ old('size', $profile->size) }}" placeholder="For example: 1–10 people"></div>
+                    <div class="ix-form__row">
+                        <label class="ix-label" for="size">Business size</label>
+                        <select class="ix-select" id="size" name="size">
+                            <option value="">Not given</option>
+                            @if (filled($profile->size) && ! in_array($profile->size, \App\Models\TeamProfile::SIZE_BANDS, true))
+                                <option value="{{ $profile->size }}" @selected(old('size', $profile->size) === $profile->size)>{{ $profile->size }} (as given before)</option>
+                            @endif
+                            @foreach (\App\Models\TeamProfile::SIZE_BANDS as $band)
+                                <option value="{{ $band }}" @selected(old('size', $profile->size) === $band)>{{ $band }}</option>
+                            @endforeach
+                        </select>
+                        <p class="ix-hint">People who work for the business, including you. The directory lets visitors filter by it.</p>
+                    </div>
 
                     <h2 id="contact">Contact and links</h2>
                     <p class="ix-hint">Only the business’s own details belong here, never a person’s private number. Untick a detail to keep it on record but off the business page.</p>

@@ -7,7 +7,7 @@
                     <a href="{{ route('solutions.view', $entry->id) }}">
                         <span class="ix-ref">{{ \App\Support\Reference::for($entry) }}</span>
                         <strong>{{ $entry->solution_title }}</strong>
-                        <span class="hx-ledger__meta">{{ $entry->steps }} steps</span>
+                        <span class="hx-ledger__meta">{{ $entry->steps }} steps @guest· sign in to read @endguest</span>
                     </a>
                 </li>
             @endforeach

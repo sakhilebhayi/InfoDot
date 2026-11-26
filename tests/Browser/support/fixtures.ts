@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { op, run, unique, verificationLink } from './app';
+import { secretFor, totpCode } from './totp';
 import { baseURL, dataDir, screensDir } from './env';
 
 type Stored = { status: number; headers: Record<string, string>; body: Buffer };
@@ -113,6 +114,20 @@ export async function signIn(page: Page, email: string): Promise<void> {
         }
         break;
     }
+    // R-72 (S-02): moderators and administrators have two-factor on; the run answers the challenge with its own secret.
+    // Each account has its own secret. A code is accepted once, so a second sign-in by the same account inside the same
+    // 30 seconds tries the next step's code, and failing that waits for a fresh step.
+    for (const offset of [0, 30_000, 'wait'] as const) {
+        if (!/\/two-factor-challenge$/.test(page.url())) {
+            break;
+        }
+        if (offset === 'wait') {
+            await page.waitForTimeout(30_000 - (Date.now() % 30_000) + 500);
+        }
+        await page.locator('#code').fill(totpCode(secretFor(run().totp, email), Date.now() + (offset === 'wait' ? 30_000 : offset)));
+        await page.getByRole('button', { name: 'Sign in' }).click();
+        await page.waitForLoadState('load');
+    }
     await expect(page).toHaveURL(/\/home$/);
 }
 
@@ -130,7 +145,7 @@ export async function signOut(page: Page): Promise<void> {
 }
 
 /**
- * Fill in and send the sign-up form; the person lands on "Verify your email". The app allows ten sign-ups in ten
+ * Fill in and send the sign-up form; the person lands on "One last step" (verify your email). The app allows ten sign-ups in ten
  * minutes from one address, and the whole matrix makes more than that, so the counters are emptied once if it answers.
  */
 export async function register(page: Page, name: string): Promise<string> {
@@ -154,7 +169,7 @@ export async function register(page: Page, name: string): Promise<string> {
         }
         break;
     }
-    await expect(page.getByRole('heading', { name: 'Verify your email' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'One last step' })).toBeVisible();
 
     return email;
 }

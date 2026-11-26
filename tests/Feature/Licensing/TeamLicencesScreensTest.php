@@ -374,6 +374,22 @@ class TeamLicencesScreensTest extends LicenceTestCase
         $this->assertNull($fresh->cancelled_at);
     }
 
+    public function test_the_company_page_offers_renewal_changes_only_when_they_can_be_made_online(): void
+    {
+        // R-72 (F-01): no button that leads to a page where nothing can be done.
+        config(['licensing.reminders.support_email' => 'support@infodot.co.za']);
+        $team = $this->company();
+        $this->paid($team, 3);
+
+        $this->actingAs($team->owner)->get('/teams/'.$team->id)->assertOk()
+            ->assertDontSee('Reduce at renewal')->assertDontSee('Stop renewing')
+            ->assertSee('To renew with fewer licences or stop renewing, ask us')->assertSee('mailto:support@infodot.co.za', false);
+
+        config(['licensing.finance.cancel_enabled' => true]);
+        $this->actingAs($team->owner)->get('/teams/'.$team->id)->assertOk()
+            ->assertSee('Reduce at renewal')->assertSee('Stop renewing')->assertDontSee('ask us at');
+    }
+
     public function test_when_enabled_finance_is_told_first_and_a_failure_changes_nothing(): void
     {
         config(['licensing.finance.cancel_enabled' => true]);
