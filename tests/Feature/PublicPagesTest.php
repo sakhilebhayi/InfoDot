@@ -86,7 +86,7 @@ class PublicPagesTest extends TestCase
         $faqs = strip_tags(str_replace('&#039;', "'", $this->get('/faqs')->assertOk()->getContent()));
 
         // R-67: Knowledge, Tools, Connections and Progress are the frame everywhere, and nobody is told they need a company or experience to join.
-        foreach (['Knowledge.', 'Tools.', 'Connections.', 'Progress.', 'You do not need a company, a plan or any experience to join.', "None of this is a lack of ambition. It is a lack of access", 'Most businesses are figuring it out as they go.'] as $words) {
+        foreach (['Knowledge.', 'Tools.', 'Connections.', 'Progress.', 'You do not need a company, a plan or any experience to join.', 'None of this is a lack of ambition. It is a lack of access', 'Most businesses are figuring it out as they go.'] as $words) {
             $this->assertStringContainsString($words, $about, $words);
         }
         foreach (['Knowledge: stop figuring it out alone', 'Tools: stop juggling disconnected apps', "Connections: stop missing what you can't see", 'Progress: turn what you learn into what you do', 'Company first, public by choice', 'not every tool comes with every account'] as $words) {
