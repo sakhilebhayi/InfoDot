@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload the result
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: access-log-review
           path: access-log-review.txt

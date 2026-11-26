@@ -136,7 +136,7 @@ jobs:
           lines="$(grep -m1 -E '^\s*Lines:' coverage.txt | sed -E 's/.*Lines: *([0-9.]+)%.*/\1/')"
           echo "line coverage ${lines}% (floor ${floor}%)"
           awk -v l="$lines" -v f="$floor" 'BEGIN { exit !(l + 0 >= f + 0) }' || { echo "::error::Line coverage ${lines}% is below the floor ${floor}%"; exit 1; }
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: coverage-report
@@ -174,7 +174,7 @@ jobs:
           npx playwright install --with-deps chromium || { sleep 20; sudo apt-get update -q; npx playwright install --with-deps chromium; }
       - name: Accessibility scan, keyboard journeys, and every signed-in screen at three widths
         run: npm run test:browser -- --project=desktop-chromium h-accessibility i-keyboard n-signed-in-sweep
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: browser-accessibility-report
