@@ -52,7 +52,7 @@ Problems in today's page the brief asks to remove:
 
 | Step | Section | Heading (approved message, lightly edited only where noted) | Built from |
 |---|---|---|---|
-| 1 The promise | Hero | A better, more connected way to build a business. *Supporting:* That business you've been dreaming about? Let's give it somewhere to grow. | Hero today |
+| 1 The promise | Hero | A better, more connected way to build your business. *Supporting:* That business you've been dreaming about? Let's give it somewhere to grow. | Hero today |
 | 2 The dream | Ambition | A new heading of its own (see decision 2), so the hero's line is not repeated. It speaks to the person, celebrates starting, and moves through "wherever you are starting from". | `hp-who` |
 | 3 The reality | Challenges | You started this business to build something. Not to spend every day figuring everything out. | `hp-reality`, reworded |
 | 4 The support | Ecosystem, explained | Behind every business is a dream. Behind every growing business is the right support. | `hp-pillars`, reworked |
@@ -64,17 +64,15 @@ Problems in today's page the brief asks to remove:
 Transitions: each section ends with a short line that hands over to the next (for example the challenges end on "it
 doesn't have to be this hard", which the support section answers). This is the "one continuous story" requirement.
 
-## 4. Decisions for the owner before phase 1
+## 4. Owner decisions (2026-11-26)
 
-1. **Hero wording.** The brief writes "to build business". The live hero, approved in R-65, says "to build **a**
-   business". Recommended: keep the live wording.
-2. **Section 2 heading.** The brief gives the hero and Section 2 the same line, and also says not to repeat it.
-   Recommended: the line stays in the hero; Section 2 gets its own heading in the same spirit. Draft:
-   "Every business starts with someone who decided to try." (Owner may supply their own.)
-3. **The reality heading.** "The truth is, most businesses don't really know what they're doing" was the owner's own
-   heading (R-67). The new brief's tone rule conflicts with it. Recommended: replace it with the Section 3 message.
-4. **The week.** Keep "What a week with InfoDot can look like" inside Section 5, or drop it. Recommended: keep a
-   shortened form, because it is the most concrete proof the page has.
+1. **Hero wording:** "A better, more connected way to build **your** business." (the owner's answer; neither the brief's
+   "build business" nor the live "build a business").
+2. **Section 2 heading:** its own heading; the dream line stays in the hero only. Draft for phase 1: "Every business starts
+   with someone who decided to try." (open to the owner's wording at review).
+3. **Reality heading:** replaced by "You started this business to build something. Not to spend every day figuring
+   everything out."
+4. **The week:** kept, shortened, inside Section 5 as the concrete example.
 
 ## 5. Phases (one PR each; merge and deploy only when the owner says)
 
