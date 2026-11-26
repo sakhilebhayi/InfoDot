@@ -21,6 +21,7 @@ export function appEnv(): NodeJS.ProcessEnv {
     return {
         ...process.env,
         ...blankedServiceSecrets(),
+        ...registryAddresses(),
         APP_ENV: 'local',
         APP_DEBUG: 'false',
         APP_URL: baseURL,
@@ -68,4 +69,26 @@ function blankedServiceSecrets(): Record<string, string> {
     }
 
     return blanks;
+}
+
+/**
+ * R-72 (B-03): a developer's .env often points the platforms at local copies (http://localhost:...), which the launch
+ * refuses as untrusted, so every platform journey answered 503. The run puts each one back on its own https address
+ * under infodot.co.za; the browsers block those hosts, so nothing is ever sent there.
+ */
+function registryAddresses(): Record<string, string> {
+    const file = path.join(repoRoot, '.env');
+    if (!fs.existsSync(file)) {
+        return {};
+    }
+
+    const addresses: Record<string, string> = {};
+    for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
+        const match = line.split('=')[0].trim().match(/^DOT_([A-Z0-9]+)_URL$/);
+        if (match) {
+            addresses[match[0]] = `https://${match[1].toLowerCase()}.infodot.co.za`;
+        }
+    }
+
+    return { ...addresses, ECOSYSTEM_TRUSTED_DOMAINS: 'infodot.co.za', ECOSYSTEM_ALLOW_INSECURE_HANDOFF: 'false' };
 }

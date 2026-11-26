@@ -16,9 +16,9 @@
     <aside class="hd__panel" aria-label="A checked answer, and the work it becomes" data-hd-panel>
         <div class="hdp__answer">
             <p class="hdp__meta"><span class="ix-ref">{{ \App\Support\Reference::for($panelEntry) }}</span>
-                <span class="pg-plate pg-plate--mustard" style="--pg-tone: var(--ix-knowledge)">{{ $panelEntry->isVerified() ? 'Verified' : 'Published' }}</span></p>
+                <span class="pg-plate" style="--pg-tone: var(--ix-knowledge)">{{ $panelEntry->isVerified() ? 'Verified' : 'Published' }}</span></p>
             <h2 class="hdp__title"><a href="{{ route('solutions.view', $panelEntry->id) }}">{{ $panelEntry->solution_title }}</a></h2>
-            <p class="hdp__note">A solution is written as steps anyone can follow. Where a moderator who did not write it has checked it, it is marked verified.</p>
+            <p class="hdp__note">A solution is written as steps anyone can follow. Where a moderator who did not write it has checked it, it is marked verified.@guest Reading it asks you to sign in; the account is free.@endguest</p>
         </div>
         <div class="hdp__tasks">
             <p class="hdp__label">The same steps as tasks <span>Example</span></p>

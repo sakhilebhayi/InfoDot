@@ -25,7 +25,9 @@ export default async function globalSetup(): Promise<void> {
     // Generated here, kept only in the ignored .data folder, never written into a spec.
     // Made fresh for every run (mixed case, a digit and a dash to satisfy the sign-up rules); nothing is fixed here.
     const made = ['E2e', crypto.randomBytes(12).toString('base64url'), '9a'].join('-');
-    fs.writeFileSync(runFile, JSON.stringify({ password: made, tag: crypto.randomBytes(3).toString('hex') }));
+    // R-72: the two-factor secret the run's moderators sign in with (base32, as an authenticator app reads it).
+    const totp = Array.from(crypto.randomBytes(16), (b) => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[b % 32]).join('');
+    fs.writeFileSync(runFile, JSON.stringify({ password: made, tag: crypto.randomBytes(3).toString('hex'), totp }));
 
     op({ op: 'write-ahead-log' });
     artisan(['migrate:fresh', '--force', '--seed']);
@@ -36,5 +38,6 @@ export default async function globalSetup(): Promise<void> {
     // Its accounts get one-time passwords that are only printed; the run gives them its own instead.
     artisan(['demo:install', '--with-moderator']);
     op({ op: 'reset-passwords', emails: [...seededAccounts, ...Object.values(demo)] });
+    op({ op: 'secure-privileged' });
     op({ op: 'fixtures', dir: path.join(dataDir, 'fixtures') });
 }

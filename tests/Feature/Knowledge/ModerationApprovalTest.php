@@ -53,12 +53,18 @@ class ModerationApprovalTest extends TestCase
         $asker = $this->person();
         foreach (range(1, 12) as $n) {
             $this->question($asker, 'public', 'Question number '.$n.' about starting up');
+            // R-72 (O-05): the last one a second later, as happens on a slow run. The page's "New in" panel then lists it,
+            // so the list is checked on its own, not the whole page.
+            if ($n === 11) {
+                $this->travel(1)->seconds();
+            }
         }
 
-        $this->actingAs($mod)->get('/moderation?tab=approvals')->assertOk()
-            ->assertSee('Question number 1 about')->assertDontSee('Question number 12 about')
-            ->assertSee('12 waiting')->assertSee('aria-current="page"', false);
-        $this->actingAs($mod)->get('/moderation?tab=approvals&page=2')->assertOk()->assertSee('Question number 12 about');
+        $this->actingAs($mod)->get('/moderation?tab=approvals')->assertOk()->assertSee('12 waiting')->assertSee('aria-current="page"', false);
+        Livewire::actingAs($mod)->withQueryParams(['tab' => 'approvals'])->test(Queue::class)
+            ->assertSee('Question number 1 about')->assertDontSee('Question number 12 about');
+        Livewire::actingAs($mod)->withQueryParams(['tab' => 'approvals', 'page' => 2])->test(Queue::class)
+            ->assertSee('Question number 12 about')->assertDontSee('Question number 1 about starting');
     }
 
     public function test_a_moderator_approves_from_the_desk_once_and_it_is_written_to_the_trail(): void

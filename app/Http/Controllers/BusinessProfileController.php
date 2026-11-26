@@ -199,7 +199,8 @@ class BusinessProfileController extends Controller
             'billing_country' => ['nullable', 'string', 'max:60'],
             'vat_number' => ['nullable', 'string', 'max:30', 'regex:/^[A-Za-z0-9 .\\-]+$/'],
             'established_on' => ['nullable', 'date', 'before_or_equal:today'],
-            'size' => ['nullable', 'string', 'max:40'],
+            // An older free-text size may be kept as it is; any change is to one of the bands.
+            'size' => ['nullable', 'string', 'max:40', Rule::in(array_filter([...TeamProfile::SIZE_BANDS, $team->profile?->size]))],
             'links' => ['nullable', 'array'],
             'links.*' => ['nullable', 'url:http,https', 'max:255'],
             'industries_served' => ['nullable', 'string', 'max:300'],

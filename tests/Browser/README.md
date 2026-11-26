@@ -2,7 +2,7 @@
 
 Real-browser journeys through InfoDot, written with Playwright. They click and type the way a person does, on desktop, phone and tablet sizes, in Chromium, Firefox and WebKit (the engine Safari uses), and they scan the pages for accessibility problems with axe-core.
 
-They are not part of `php artisan test` and CI does not run them: three browsers are a heavy download. Run them on your own machine before a demonstration or after a change to a journey.
+They are not part of `php artisan test`. CI runs the accessibility scan (H) and the keyboard-only journeys (I) in Chromium on every change (the `browser accessibility and keyboard` job); the rest need three browsers, a heavy download, so run them on your own machine before a demonstration or after a change to a journey.
 
 ## Run them
 
@@ -39,7 +39,9 @@ The HTML report is in `tests/Browser/playwright-report/` (`npx playwright show-r
 - Mail goes to `storage/logs/laravel.log`. Uploaded files go to `storage/app`, as they do in development.
 - No request goes to the live Dot hosts: the browsers block `*.infodot.co.za`, and the per-platform secrets are blanked for the run.
 - The current build loads nothing from another host. Should a page ever do so, the first run fetches that file once per browser engine and keeps it in `tests/Browser/.data/elsewhere/`; later runs replay the kept copy, so a slow third-party host cannot stall a run. Delete that folder to fetch the files again.
-- Test accounts share one password, generated for each run and kept in `tests/Browser/.data/run.json`. It is never written into a spec.
+- Test accounts share one password, generated for each run and kept in `tests/Browser/.data/run.json`. It is never written into a spec. Moderators and platform administrators must sign in with two-factor (R-72), so the run also makes a two-factor secret, gives it to them, and `signIn()` answers the code prompt with `support/totp.ts`.
+
+A developer's `.env` often points the platforms at local copies; the run puts every `DOT_*_URL` back on its `https://<name>.infodot.co.za` address so the launch pages behave as they do on the live site (the browsers still block those hosts).
 
 Everything a run writes inside `tests/Browser` (`.data/`, `screens/`, `test-results/`, `playwright-report/`) is ignored by git.
 

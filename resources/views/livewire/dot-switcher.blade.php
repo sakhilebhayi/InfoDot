@@ -7,7 +7,9 @@
 {{-- R-52: the platform and entitlement logic is untouched (Dot Apps lists only what the company holds and the person may open). The panel is the
      same full-width map under the bar on a tablet and a desktop; under 640px it is a bottom sheet with a scrim, a close button, 44px controls
      and a locked page behind it (infodot.css). --}}
-<div x-data="{ open: @entangle('open'), q: '' }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }" x-effect="document.documentElement.classList.toggle('dot-scroll-locked', open && window.matchMedia('(max-width: 639px)').matches)" class="ix-yardwrap">
+{{-- R-72 (B-02): open/closed lives only in the browser. It was entangled with the server, so a reply that arrived after Escape could
+     open the menu again and trap keyboard users in it. --}}
+<div x-data="{ open: false, q: '' }" @click.outside="open = false" @keydown.escape="if (open) { open = false; $el.querySelector('button').focus() }" x-effect="document.documentElement.classList.toggle('dot-scroll-locked', open && window.matchMedia('(max-width: 639px)').matches)" class="ix-yardwrap">
     <button type="button" class="ix-btn" @click="open = !open; if (open) $nextTick(() => $refs.f.focus())" :aria-expanded="open" aria-haspopup="true" aria-controls="ix-yardmap" aria-label="Dot Apps" title="Switch Dot platform">
         <span class="material-symbols-rounded" aria-hidden="true">apps</span>
         <span class="ix-yardlabel">Dot Apps</span>

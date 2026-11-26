@@ -15,7 +15,7 @@ export function artisan(args: string[], extraEnv: Record<string, string> = {}): 
 }
 
 /** What global-setup generated for this run: the password every test account uses, and a tag that keeps names unique. */
-export function run(): { password: string; tag: string } {
+export function run(): { password: string; tag: string; totp: string } {
     return JSON.parse(fs.readFileSync(runFile, 'utf8'));
 }
 
@@ -24,6 +24,7 @@ export function op<T = any>(operation: Record<string, unknown>): T {
     const out = artisan(['tinker', `--execute=require base_path('tests/Browser/support/e2e.php');`], {
         E2E_OP: JSON.stringify(operation),
         E2E_PASSWORD: fs.existsSync(runFile) ? run().password : '',
+        E2E_TOTP: fs.existsSync(runFile) ? run().totp ?? '' : '',
     });
     const line = out.split('\n').find((l) => l.startsWith('E2E_RESULT:'));
     if (!line) {
