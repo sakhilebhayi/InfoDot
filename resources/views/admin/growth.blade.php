@@ -66,6 +66,22 @@
         </section>
         <p class="ix-hint">Steps are counted from the day recording began. People who joined earlier are not in these counts.</p>
 
+        {{-- R-73: which homepage button people signed up from, and whether they then got going. People, not clicks. --}}
+        <section class="ix-panel ix-panel--clip ix-vgap" aria-label="Sign-ups by homepage button">
+            <div class="ix-panel__head"><h2>Sign-ups by homepage button</h2></div>
+            <div class="ix-tablewrap">
+                <table class="ix-table ix-adm__table">
+                    <thead><tr><th>Came from</th><th class="num">Accounts</th>@foreach (\App\Services\Growth\OnboardingFunnel::SOURCE_STEPS as $step)<th class="num">{{ config('onboarding.steps.'.$step) }}</th>@endforeach</tr></thead>
+                    <tbody>
+                        @foreach ($sources as $row)
+                            <tr><td class="title">{{ $row['label'] }}</td><td class="num">{{ number_format($row['accounts']) }}</td>@foreach ($row['steps'] as $people)<td class="num">{{ number_format($people) }}</td>@endforeach</tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        <p class="ix-hint">Recorded from the homepage's two "Join InfoDot for free" buttons since R-73. "Anywhere else" is every other way people signed up.</p>
+
         <section class="ix-panel ix-panel--clip ix-vgap" aria-label="How companies were set up">
             <div class="ix-panel__head"><h2>How companies were set up</h2></div>
             <div class="ix-tablewrap">

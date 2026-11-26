@@ -19,7 +19,7 @@
                     <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary lp-btn">Ask a question</a>
                     <a href="{{ route('dashboard') }}" class="ix-btn lp-btn">Go to your Home</a>
                 @else
-                    <a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for free</a>
+                    <a href="{{ route('register', ['from' => 'hero']) }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for free</a>
                     <a href="#ecosystem" class="ix-btn lp-btn">Explore the ecosystem</a>
                 @endauth
             </div>
