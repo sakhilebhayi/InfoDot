@@ -48,6 +48,12 @@ class GrowthMetrics
         return $this->funnel->steps($from, $to);
     }
 
+    /** @return list<array{source: string, label: string, accounts: int, steps: array<string, int>}> */
+    public function signupSources(?CarbonInterface $from, ?CarbonInterface $to): array
+    {
+        return $this->funnel->bySignupSource($from, $to);
+    }
+
     /** @return array{rows: list<array{channel: string, people: int, share: float}>, known: int, unknown: int} */
     public function channels(?CarbonInterface $from, ?CarbonInterface $to): array
     {

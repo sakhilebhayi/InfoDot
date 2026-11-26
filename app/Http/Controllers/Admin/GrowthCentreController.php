@@ -35,6 +35,7 @@ class GrowthCentreController extends Controller
             'unmeasured' => $metrics->unmeasured(),
             'funnel' => $tab === 'funnel' ? $metrics->funnel($from, $to) : null,
             'capture' => $tab === 'funnel' ? $metrics->captureMethods($from, $to) : null,
+            'sources' => $tab === 'funnel' ? $metrics->signupSources($from, $to) : null,
             'insights' => $tab === 'funnel' ? [
                 'website' => $insights->websiteFields($from, $to),
                 'time' => $insights->timeToFirstCompany($from, $to),

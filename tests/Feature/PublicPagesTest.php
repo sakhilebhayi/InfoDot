@@ -35,8 +35,10 @@ class PublicPagesTest extends TestCase
             'Join InfoDot for free', 'Explore the ecosystem', "Give the business you've been dreaming about a place to grow, get it right the first time.",
             'Every business starts with someone who decided to try.', "Wherever you're starting from, there's a next step.",
             'You started this business to build something. Not to spend every day figuring everything out.', "None of this means you're doing it wrong.",
-            'What opens when you join.', 'Creating an InfoDot account is free.',
-            'Build your business with InfoDot in your corner.',
+            // R-73 phase 3: the opportunity, and the close in the owner's words.
+            'You deserve access to the knowledge, resources and opportunities that help businesses move forward.', 'Whatever your size',
+            "Wherever you're starting from", 'Whatever you already know',
+            "Your business has a future. Let's help you build towards it.", 'What opens when you join', 'Creating an account is free.',
             'Our aim is to help one million businesses every year reach the goals they set for themselves.'] as $words) {
             $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
         }
@@ -54,7 +56,9 @@ class PublicPagesTest extends TestCase
             // The owner's tagline replaced the dream question and the line that followed it.
             "That business you've been dreaming about? Let's give it somewhere to grow.", 'InfoDot brings business knowledge, tools and other businesses together in one free account.',
             // R-73 phase 2: the pillar cards, the five-day week and the logo wall are replaced by the support and the journey.
-            'Four things every business needs. One place to find them.', 'What a week with InfoDot can look like.', 'Your business. Your tools. One connected ecosystem.'] as $old) {
+            'Four things every business needs. One place to find them.', 'What a week with InfoDot can look like.', 'Your business. Your tools. One connected ecosystem.',
+            // R-73 phase 3: the separate join section and the old close are folded into the final call.
+            'Build your business with InfoDot in your corner.', 'Creating an InfoDot account is free.'] as $old) {
             $this->assertStringNotContainsString($old, strip_tags(str_replace('&#039;', "'", $html)), $old);
         }
         $this->assertStringContainsString(route('register'), $html);

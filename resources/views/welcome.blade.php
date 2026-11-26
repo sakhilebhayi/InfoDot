@@ -157,7 +157,21 @@
         </div>
     </section>
 
-    {{-- 5. The proof: how a question becomes something a business can rely on, and the researched library. --}}
+    {{-- 6. The opportunity (R-73). Access, not a promise of outcomes: what InfoDot puts within reach, for any size and stage. The knowledge
+         chain, the researched library and the aim that follow are the evidence for it. --}}
+    <section class="hp-access" id="access" aria-labelledby="access-title">
+        <div class="hp-access__head">
+            <h2 id="access-title" data-reveal>You deserve access to the knowledge, resources and opportunities that help businesses move forward.</h2>
+            <p class="lp-lede" data-reveal>Good advice, useful tools and the right contacts shouldn't depend on who you already know or how big you are. InfoDot can't promise how things turn out. What it can do is put more of what helps within your reach.</p>
+        </div>
+        <dl class="hp-access__list">
+            <div data-reveal><dt>Whatever your size</dt><dd>A sole trader and a company of hundreds search the same knowledge and the same directory.</dd></div>
+            <div data-reveal><dt>Wherever you're starting from</dt><dd>You don't need a company, a plan or any experience to join.</dd></div>
+            <div data-reveal><dt>Whatever you already know</dt><dd>Ask in plain words. Every answer shows how it earned its place, so you know how far to rely on it.</dd></div>
+        </dl>
+    </section>
+
+    {{-- 6a. The evidence: how a question becomes something a business can rely on, and the researched library. --}}
     <section class="hp-chain" id="how-knowledge-grows" aria-labelledby="chain-title">
         <div class="hp-chain__head">
             <h2 id="chain-title" data-reveal>How a question becomes knowledge</h2>
@@ -218,24 +232,6 @@
     {{-- 6b. The aim (R-70): where InfoDot is going, just before what joining opens. --}}
     @include('partials.aim', ['id' => 'aim'])
 
-    {{-- 7. The invitation: what is waiting on the other side of "Join", in one place. Only what works today; the account is free. --}}
-    <section class="hp-join" id="join" aria-labelledby="join-title">
-        <div class="hp-join__head">
-            <h2 id="join-title" data-reveal>What opens when you join.</h2>
-            <p class="lp-lede" data-reveal>Creating an InfoDot account is free. This is what is waiting on the other side.</p>
-            @guest
-                <p class="hp-join__actions" data-reveal><a href="{{ route('register') }}" class="ix-btn ix-btn--primary lp-btn">Join InfoDot for free</a><a href="{{ route('login') }}" class="hp-textlink">I already have an account</a></p>
-            @endguest
-        </div>
-        <dl class="hp-join__list">
-            <div data-reveal><dt>Answers when you need them</dt><dd>Ask questions, search what other businesses learned and follow researched solutions.</dd></div>
-            <div data-reveal><dt>Your business, easy to find</dt><dd>A business page with your logo, photographs and what you offer, listed in the directory.</dd></div>
-            <div data-reveal><dt>Your team in one place</dt><dd>Bring in the people who work with you, each with a login of their own.</dd></div>
-            <div data-reveal><dt>A way to reach other businesses</dt><dd>Message businesses, book or request appointments, and keep every reply in your inbox.</dd></div>
-            <div data-reveal><dt>One sign-in for the Dot tools</dt><dd>Open the tools your business uses without creating a new account for each one.</dd></div>
-        </dl>
-    </section>
-
     {{-- 8. Trust: what is true today, in plain words. Detail lives on the pages linked below. --}}
     <section class="ix-pubsec ix-pubsec--tint hp-trust" aria-labelledby="trust-title">
         <h2 id="trust-title" data-reveal>A place you can rely on</h2>
@@ -254,20 +250,36 @@
         </ul>
     </section>
 
-    {{-- 9. The close: the promise, made personal. --}}
-    <section class="ix-pubcta hp-cta" aria-labelledby="cta-title">
-        <div class="ix-pubcta__inner">
-            <h2 id="cta-title" data-cta-title>Build your business with InfoDot in your corner.</h2>
-            <p class="hp-cta__lede" data-reveal>You won't have every answer on day one. Nobody does. But you won't have to find them alone.</p>
-            <div class="ix-pubhero__actions" data-reveal>
-                @auth
-                    <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">Ask a question</a>
-                @else
-                    <a href="{{ route('register') }}" class="ix-btn ix-btn--primary">Join InfoDot for free</a>
-                    <a href="{{ route('login') }}" class="ix-btn">Sign in</a>
-                @endauth
+    {{-- 7. The action (R-73): the story's last step, in the owner's words. What joining opens is said here once, beside the two choices:
+         join, or keep exploring. Each join link says which part of the page it came from (?from=), counted with the sign-up. --}}
+    <section class="ix-pubcta hp-cta" id="join" aria-labelledby="cta-title">
+        <div class="ix-pubcta__inner hp-cta__inner">
+            <div class="hp-cta__main">
+                <h2 id="cta-title" data-cta-title>Your business has a future. Let's help you build towards it.</h2>
+                <p class="hp-cta__lede" data-reveal>Start with one question, one tool or one connection. Wherever you begin, you won't be building it alone.</p>
+                <div class="ix-pubhero__actions" data-reveal>
+                    @auth
+                        <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">Ask a question</a>
+                        <a href="#ecosystem" class="ix-btn">Explore the ecosystem</a>
+                    @else
+                        <a href="{{ route('register', ['from' => 'close']) }}" class="ix-btn ix-btn--primary">Join InfoDot for free</a>
+                        <a href="#ecosystem" class="ix-btn">Explore the ecosystem</a>
+                    @endauth
+                </div>
+                @guest
+                    <p class="hp-cta__support" data-reveal>Creating an account is free. Already have one? <a href="{{ route('login') }}">Sign in</a>.</p>
+                @endguest
             </div>
-            <p class="hp-cta__support" data-reveal>Free to join. Start where you are.</p>
+            <div class="hp-cta__opens">
+                <h3>What opens when you join</h3>
+                <dl class="hp-cta__list">
+                    <div data-reveal><dt>Answers when you need them</dt><dd>Ask questions, search what other businesses learned and follow researched solutions.</dd></div>
+                    <div data-reveal><dt>Your business, easy to find</dt><dd>A business page with your logo, photographs and what you offer, listed in the directory.</dd></div>
+                    <div data-reveal><dt>Your team in one place</dt><dd>Bring in the people who work with you, each with a login of their own.</dd></div>
+                    <div data-reveal><dt>A way to reach other businesses</dt><dd>Message businesses, book or request appointments, and keep every reply in your inbox.</dd></div>
+                    <div data-reveal><dt>One sign-in for the Dot tools</dt><dd>Open the tools your business uses without creating a new account for each one.</dd></div>
+                </dl>
+            </div>
         </div>
     </section>
 

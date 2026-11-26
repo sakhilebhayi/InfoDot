@@ -18,6 +18,9 @@ use Laravel\Jetstream\Jetstream;
 
 class CreateNewUser implements CreatesNewUsers
 {
+    /** R-73: the homepage buttons that lead to sign-up, recorded with the "account created" step (hero: the top; close: the final call). */
+    public const SIGNUP_SOURCES = ['hero', 'close'];
+
     use PasswordValidationRules;
 
     /**
@@ -52,7 +55,9 @@ class CreateNewUser implements CreatesNewUsers
                 });
             });
 
-            app(OnboardingEvents::class)->record($user, 'account_created');
+            // R-73: the homepage button the person came from, when they came from one.
+            $from = session()->pull('signup.from');
+            app(OnboardingEvents::class)->record($user, 'account_created', null, in_array($from, self::SIGNUP_SOURCES, true) ? ['from' => $from] : []);
             app(Referrals::class)->attribute($user);
 
             return $user;

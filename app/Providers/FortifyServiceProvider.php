@@ -82,6 +82,13 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         Fortify::registerView(function () {
+            // R-73: which homepage button brought the person here (only these values; anything else is ignored). Kept in the session,
+            // which already exists, and stored with the "account created" step, so no new cookie or consent is needed.
+            $from = request()->query('from');
+            if (is_string($from) && in_array($from, CreateNewUser::SIGNUP_SOURCES, true)) {
+                session()->put('signup.from', $from);
+            }
+
             return view('auth.register');
         });
 
