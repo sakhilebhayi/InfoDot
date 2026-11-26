@@ -1,4 +1,4 @@
-<x-guest-layout title="Verify your email">
+<x-guest-layout title="Verify your email" :panel="($platformBranding ?? null) ? null : 'account'">
     <x-jet-authentication-card>
         <x-auth.heading title="One last step" :lede="'We sent a link to '.(auth()->user()?->email ?? 'your email address').'. Open it to confirm the address and '.($platformBranding ? 'you will carry on to '.$platformBranding->name : 'InfoDot takes you straight on to the next step').'. We check it first because every Dot platform you open trusts it. If it has not arrived in a few minutes, look in your spam folder or send it again.'" />
 

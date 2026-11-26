@@ -1,4 +1,4 @@
-<x-guest-layout title="Choose a new password">
+<x-guest-layout title="Choose a new password" :panel="($platformBranding ?? null) ? null : 'account'">
     <x-jet-authentication-card>
         <x-auth.heading title="Choose a new password" lede="Pick one you do not use anywhere else. Once it is saved, sign in with it and carry on where you left off." />
 

@@ -1,5 +1,5 @@
-<x-guest-layout title="Sign in">
-    <x-jet-authentication-card :panel="$platformBranding ? null : 'login'">
+<x-guest-layout title="Sign in" :panel="$platformBranding ? null : 'login'">
+    <x-jet-authentication-card>
         <x-auth.heading :title="$platformBranding ? 'Sign in' : 'Welcome back'" kind="login" :brand="$platformBranding" :lede="$platformBranding ? 'Sign in with your InfoDot account. One account opens every Dot platform you are allowed to use.' : 'Sign in to pick up where you left off: your questions, your team and your tools.'" />
 
         <x-jet-validation-errors />

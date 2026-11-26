@@ -1,4 +1,4 @@
-<x-guest-layout title="Reset your password">
+<x-guest-layout title="Reset your password" :panel="($platformBranding ?? null) ? null : 'account'">
     <x-jet-authentication-card>
         <x-auth.heading title="Reset your password" lede="It happens. Enter the email address of your account and we will send a link for choosing a new password. The link works for an hour." />
 

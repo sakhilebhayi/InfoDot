@@ -1,5 +1,5 @@
-<x-guest-layout title="Create your account">
-    <x-jet-authentication-card :panel="$platformBranding ? null : 'register'">
+<x-guest-layout title="Create your account" :panel="$platformBranding ? null : 'register'">
+    <x-jet-authentication-card>
         <x-auth.heading title="Create your free InfoDot account" kind="register" :brand="$platformBranding" lede="One account for the knowledge, tools and businesses on InfoDot. It takes a minute." />
 
         <x-jet-validation-errors />

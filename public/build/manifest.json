@@ -4,7 +4,7 @@
     "name": "motion"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BNZ3tMP-.css",
+    "file": "assets/app-CnyVLwBd.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -115,6 +115,18 @@
   "resources/img/arrow-mask.png": {
     "file": "assets/arrow-mask-BvtlvTEr.png",
     "src": "resources/img/arrow-mask.png"
+  },
+  "resources/img/auth/auth-cafe.jpg": {
+    "file": "assets/auth-cafe-BZPazWGT.jpg",
+    "src": "resources/img/auth/auth-cafe.jpg"
+  },
+  "resources/img/auth/auth-market-hall.jpg": {
+    "file": "assets/auth-market-hall-DSb0KaFv.jpg",
+    "src": "resources/img/auth/auth-market-hall.jpg"
+  },
+  "resources/img/auth/auth-start-here.jpg": {
+    "file": "assets/auth-start-here-D4zObs-z.jpg",
+    "src": "resources/img/auth/auth-start-here.jpg"
   },
   "resources/img/brand/logo_white.png": {
     "file": "assets/logo_white-C3-KiFFF.png",

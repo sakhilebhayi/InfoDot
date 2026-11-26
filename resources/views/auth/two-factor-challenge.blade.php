@@ -1,4 +1,4 @@
-<x-guest-layout title="Check it is you">
+<x-guest-layout title="Check it is you" :panel="($platformBranding ?? null) ? null : 'account'">
     <x-jet-authentication-card>
         <x-auth.heading title="Check it is you" />
 
