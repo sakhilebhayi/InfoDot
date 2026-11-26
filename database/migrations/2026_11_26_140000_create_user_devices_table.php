@@ -14,7 +14,9 @@ return new class extends Migration
     {
         Schema::create('user_devices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            // users.id is an unsigned int (increments), so the column matches it for MySQL's foreign key.
+            $table->unsignedInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->char('fingerprint', 64);
             $table->string('label', 120);
             $table->timestamp('first_seen_at');
