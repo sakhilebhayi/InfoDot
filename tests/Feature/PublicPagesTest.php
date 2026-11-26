@@ -85,15 +85,20 @@ class PublicPagesTest extends TestCase
         $features = strip_tags($this->get('/features')->assertOk()->getContent());
         $faqs = strip_tags(str_replace('&#039;', "'", $this->get('/faqs')->assertOk()->getContent()));
 
-        // R-55: Discover, Manage and Grow are the frame everywhere, and nobody is told they need a company or experience to join.
-        foreach (['Discover.', 'Manage.', 'Grow.', 'You do not need a company, a plan or any experience to join.', 'writes down how it works', 'a business keeps working when one person is away'] as $words) {
+        // R-67: Knowledge, Tools, Connections and Progress are the frame everywhere, and nobody is told they need a company or experience to join.
+        foreach (['Knowledge.', 'Tools.', 'Connections.', 'Progress.', 'You do not need a company, a plan or any experience to join.', 'None of this is a lack of ambition. It is a lack of access', 'Most businesses are figuring it out as they go.'] as $words) {
             $this->assertStringContainsString($words, $about, $words);
         }
-        foreach (['Discover: learn what works', 'Manage: run your business', 'Grow: build your future', 'Company first, public by choice', 'not every tool comes with every account'] as $words) {
+        foreach (['Knowledge: stop figuring it out alone', 'Tools: stop juggling disconnected apps', "Connections: stop missing what you can't see", 'Progress: turn what you learn into what you do', 'Company first, public by choice', 'not every tool comes with every account'] as $words) {
             $this->assertStringContainsString($words, $features, $words);
         }
         foreach (['What can I do with InfoDot?', 'Which business tools can I use?', 'What does it cost to join?', 'Creating an account is free.', 'writes down how it works'] as $words) {
             $this->assertStringContainsString($words, $faqs, $words);
+        }
+        foreach ([$about, $features] as $page) {
+            foreach (['Discover: learn what works', 'Grow: build your future', 'Discover. Find practical answers'] as $old) {
+                $this->assertStringNotContainsString($old, $page, $old);
+            }
         }
         // The old positioning (a question-and-answer knowledge base with a list of platforms) is gone from all three.
         foreach ([$about, $features, $faqs] as $page) {

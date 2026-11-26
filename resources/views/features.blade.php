@@ -1,8 +1,8 @@
-<x-public-layout title="What InfoDot does" reveal band="WHAT IT DOES" crumb="What InfoDot does" description="What InfoDot does today: find checked answers from other businesses, write down how your business works, and run it from connected tools with one free account.">
+<x-public-layout title="What InfoDot does" reveal band="WHAT IT DOES" crumb="What InfoDot does" description="What InfoDot does today: business knowledge, connected tools, a way to reach other businesses, and somewhere to keep what you learn, with one free account.">
     <article class="ix-prose ix-prose--ledger pg-prose">
         <span class="pg-plate" data-pg-plate>What it does</span>
         <h1 class="ix-h1 pg-title" data-pg-in>What InfoDot does</h1>
-        <p class="ix-lede" data-pg-in>Everything on this page works today. InfoDot has three jobs: help you discover what works, manage your business with connected tools, and grow with what you learn, so the business keeps working when one person is away.</p>
+        <p class="ix-lede" data-pg-in>Everything on this page works today. It is organised around the four things every business needs: knowledge, tools, connections, and a way to turn what you learn into progress.</p>
 
         <figure class="pg-strip" data-pg-photo>
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-1600.jpg') }}" alt="The Johannesburg city centre at sunset, seen from above" width="1600" height="1067" loading="eager" decoding="async">
@@ -23,7 +23,7 @@
             </li>
         </ul>
 
-        <h2>Discover: learn what works</h2>
+        <h2>Knowledge: stop figuring it out alone</h2>
 
         <h3>Ask and answer</h3>
         <p>Ask in plain words, and say what you tried. Anyone allowed to see the question can answer. The person who asked accepts the answer that solved it and the question is stamped SOLVED. You can comment to ask for more detail, and the author is told.</p>
@@ -37,10 +37,10 @@
         <h3>The verified library</h3>
         <p>Answers and solutions that members of the community vouched for and a moderator then adopted. What you read is the live page: if it changes or is hidden, the library follows.</p>
 
-        <h3>Notifications</h3>
-        <p>You are told when someone answers your question or comments on it, accepts your answer, verifies your solution or adds your work to the library. You can turn this off, and nothing nags you to come back.</p>
+        <h3>Researched solutions</h3>
+        <p>InfoDot's official account publishes researched solutions on subjects such as registration, tax, hiring and pricing, written as steps from sources that are named and dated. Where a figure changes yearly, the entry says when it was last checked.</p>
 
-        <h2>Manage: run your business</h2>
+        <h2>Tools: stop juggling disconnected apps</h2>
 
         <h3>One account for your business tools</h3>
         <p>Sign in once and open the tools your business can use without signing in again. The handoff is single-use and expires within a minute.</p>
@@ -51,13 +51,27 @@
         <h3>People and companies</h3>
         <p>An account belongs to one or more companies, with roles that decide who can invite and manage. Every company has its own workspace.</p>
 
-        <h2>Grow: build your future</h2>
+        <h2>Connections: stop missing what you can't see</h2>
+
+        <h3>Business pages and the directory</h3>
+        <p>A business can set up a page with its logo, photographs and what it offers, and choose who may see it. Businesses that choose to be public can be found in the <a href="{{ route('businesses.index') }}">business directory</a>, by what they do and where they work.</p>
+
+        <h3>The inbox</h3>
+        <p>Message a business from its page, as yourself or for one of your companies. The business answers as the business, from an inbox its owner and administrators share, and the conversation stays in one place.</p>
+
+        <h3>Appointments</h3>
+        <p>Where a business has published a booking calendar, you choose a time on it. Where it has not, you request an appointment with a date that suits you, and the business accepts or declines it.</p>
+
+        <h2>Progress: turn what you learn into what you do</h2>
+
+        <h3>Knowledge that improves</h3>
+        <p>Solutions can be improved over time, and the earlier versions are kept, so the next person starts from the best answer so far.</p>
 
         <h3>Knowledge health</h3>
         <p>An analytics view shows what was asked, what was solved and how many replies each question gets, so a company can see where its knowledge has gaps.</p>
 
-        <h3>Business profiles and the directory</h3>
-        <p>A business can set up a profile and choose who may see it. Businesses that choose to be public can be found in the <a href="{{ route('businesses.index') }}">business directory</a>.</p>
+        <h3>Notifications</h3>
+        <p>You are told when someone answers your question or comments on it, accepts your answer, verifies your solution or adds your work to the library. You can turn this off, and nothing nags you to come back.</p>
 
         <h2>Trust you can check</h2>
 
@@ -67,7 +81,7 @@
         <h3>Moderation you can see</h3>
         <p>Moderators can hide, verify and adopt content. Every action is recorded with a reason, authors can appeal, and moderators cannot act on their own work.</p>
 
-        <p><a href="{{ route('register') }}" class="ix-btn ix-btn--primary">Join InfoDot for Free</a> <a href="{{ route('solution_search_results') }}" class="ix-btn">Browse public answers</a></p>
+        <p><a href="{{ route('register') }}" class="ix-btn ix-btn--primary">Join InfoDot for free</a> <a href="{{ route('solution_search_results') }}" class="ix-btn">Browse public answers</a></p>
 
     </article>
 </x-public-layout>
