@@ -19,6 +19,13 @@ class AcquisitionCaptureTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // R-71: dot_src is optional and only set after the visitor accepts it; these tests cover what happens once they have.
+        $this->withCookie((string) config('acquisition.consent_cookie'), 'accepted');
+    }
+
     /** The value the browser holds, as the page set it: decrypted, without the framework's integrity prefix. */
     private function plain(Cookie $cookie): string
     {

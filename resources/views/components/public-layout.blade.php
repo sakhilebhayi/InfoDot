@@ -38,6 +38,7 @@
 
     <div class="ix-shell">
         <x-ix.top-public :landing="$landing" />
+        @include('partials.cookie-banner')
 
         @if ($band)
             <div class="ix-band">

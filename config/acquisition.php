@@ -10,6 +10,12 @@ return [
     'cookie' => 'dot_src',
     'days' => 30,
 
+    // R-71: dot_src is not strictly necessary, so it is only set after the visitor accepts it in the cookie banner. Until they choose, a
+    // tagged arrival waits in the visit's own session; Decline discards it. The choice itself is kept in this strictly necessary cookie.
+    'consent_cookie' => 'dot_consent',
+    'consent_days' => 365,
+    'pending_key' => 'acquisition.pending',
+
     // A referral code: letters, digits and hyphens. (Codes are issued in Phase 1C; until then an unknown code is recorded as text only.)
     'ref_pattern' => '/^[A-Za-z0-9-]{4,32}$/',
 
