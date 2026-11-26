@@ -63,7 +63,8 @@ class SendNoticeEmail implements ShouldQueue
             return;
         }
 
-        if (in_array($notice->kind, self::QUEUE_KINDS, true) && ! Cache::add('notice-mail:'.$user->id.':'.$notice->kind, 1, now()->addMinutes(30))) {
+        $throttle = in_array($notice->kind, self::QUEUE_KINDS, true) ? 'notice-mail:'.$user->id.':'.$notice->kind : null;
+        if ($throttle !== null && ! Cache::add($throttle, 1, now()->addMinutes(30))) {
             return;
         }
 
@@ -72,7 +73,16 @@ class SendNoticeEmail implements ShouldQueue
             return;
         }
 
-        Mail::to($user)->send(new NoticeMail($user, (string) $described['text'], $described['url'] ?? null, $security));
+        try {
+            Mail::to($user)->send(new NoticeMail($user, (string) $described['text'], $described['url'] ?? null, $security));
+        } catch (\Throwable $e) {
+            // R-72 (R72-9, N-2): a send that failed did not use up the half hour, or the retry would find it taken and send nothing.
+            if ($throttle !== null) {
+                Cache::forget($throttle);
+            }
+
+            throw $e;
+        }
     }
 
     public function failed(\Throwable $e): void

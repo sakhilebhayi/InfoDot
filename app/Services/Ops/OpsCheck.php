@@ -184,7 +184,9 @@ class OpsCheck
 
     public function beat(): void
     {
-        Cache::put(self::HEARTBEAT_KEY, now()->timestamp, 7200);
+        // R-72 (R72-9, N-1): kept without expiry. With a two-hour lifetime a scheduler that had died disappeared from the cache and read
+        // as "never seen", so /ready went green again on its own after two hours. A stale beat now stays stale until the scheduler runs.
+        Cache::forever(self::HEARTBEAT_KEY, now()->timestamp);
     }
 
     /** Minutes since the scheduler last ran; null when it has never been seen (a fresh install or a cleared cache). */
