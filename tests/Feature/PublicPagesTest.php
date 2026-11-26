@@ -33,6 +33,13 @@ class PublicPagesTest extends TestCase
             'Our aim is to help one million businesses every year reach the goals they set for themselves.'] as $words) {
             $this->assertStringContainsString($words, strip_tags(str_replace('&#039;', "'", $html)), $words);
         }
+        // R-71: the hero's third picture labels its tiles with the same words as the pillars.
+        foreach (['>Knowledge</span>', '>Tools</span>', '>Connections</span>', 'Picture 3 of 3: knowledge, tools and connections'] as $tile) {
+            $this->assertStringContainsString($tile, $html, $tile);
+        }
+        foreach (['>Discover</span>', '>Manage</span>', '>Grow</span>', 'Discover, Manage and Grow'] as $old) {
+            $this->assertStringNotContainsString($old, $html, $old);
+        }
         // The old frame and the sections it replaced are gone, so the page does not say the same thing twice.
         foreach (['Most small businesses run on memory and chat.', "You don't have to figure it all out yourself.", 'Getting started with InfoDot is simple.', 'Your business journey starts here.', 'Learn what works'] as $old) {
             $this->assertStringNotContainsString($old, strip_tags(str_replace('&#039;', "'", $html)), $old);
