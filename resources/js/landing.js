@@ -28,7 +28,7 @@ if (input && !reduce) {
     input.addEventListener('input', () => { if (timer && input.value !== '') window.clearInterval(timer); }, { once: true });
 }
 
-// The hero's picture side moves through three compositions (the market photograph, the library beside it, Discover, Manage and Grow).
+// The hero's picture side moves through three compositions (the market photograph, the library beside it, Knowledge, Tools and Connections).
 // The words and the search never move. Nothing changes by itself when the visitor has asked for reduced motion; the buttons still work.
 const hd = document.querySelector('[data-hd]');
 if (hd) {
@@ -166,7 +166,7 @@ if (root.classList.contains('has-motion') && !reduce && !shownAlready) {
         });
     });
 
-    // Discover, Manage, Grow: the coloured plate wipes in from the left, then the points under it appear one line at a time.
+    // Knowledge, Tools, Connections, Progress: the coloured plate wipes in from the left, then the points under it appear one line at a time.
     gsap.utils.toArray('[data-pillar]').forEach((pillar) => {
         const plate = pillar.querySelector('.hp-pillar__plate');
         const lines = pillar.querySelectorAll('.hp-pillar__list li');
