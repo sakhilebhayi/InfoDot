@@ -13309,3 +13309,143 @@ body[data-area="home"] .ix-btn--primary:hover,
 .hp-stage--plain .hp-stage__line { max-width: 40ch; }
 .hp-stage--plain .hp-stage__own { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 48px; }
 @media (max-width: 760px) { .hp-stage--plain .hp-stage__own { grid-template-columns: minmax(0, 1fr); } }
+
+/* R-75 add-on messages (2026-11-27). Additions to the R-67/R-73 homepage, nothing replaced.
+   The promise band is said once, on the same graphite as the closing section, under a stencil rule. */
+.hp-promise {
+    background: var(--ix-top);
+    color: var(--ix-top-ink);
+}
+
+.hp-promise__inner {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding: 96px 24px;
+}
+
+.hp-promise__turn { display: block; color: var(--ix-stencil); }
+
+.hp-promise__title {
+    position: relative;
+    margin-block: 0;
+    font-weight: 700;
+    font-size: var(--dot-text-display-size);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+}
+
+.hp-promise__title::before {
+    content: "";
+    display: block;
+    width: 72px;
+    height: 4px;
+    margin-bottom: 28px;
+    background: var(--ix-stencil);
+}
+
+.hp-promise__line {
+    margin-block: 20px 0;
+    color: var(--ix-top-ink-2);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.6;
+    max-width: 60ch;
+}
+
+/* One feeling per journey stage, under the stage's own line. */
+.hp-stage__feel {
+    margin: -12px 0 24px;
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.5;
+    text-wrap: pretty;
+}
+
+.hp-stage--special .hp-stage__feel { color: var(--ix-top-ink-2); }
+
+/* "Check InfoDot first": four everyday needs, each a real door. */
+.hp-first { margin-top: 72px; }
+
+.hp-first__title {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--dot-text-h2-size);
+    line-height: 1.2;
+    text-wrap: balance;
+}
+
+.hp-first__list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0 32px;
+    margin: 32px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hp-first__list li { margin: 0; }
+
+.hp-first__list a {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    height: 100%;
+    padding: 18px 0 20px;
+    border-top: 2px solid var(--ix-rule);
+    color: var(--ix-text);
+    text-decoration: none;
+    transition: border-color var(--ix-dur-fast) var(--ix-ease-out);
+}
+
+.hp-first__need {
+    color: var(--ix-text-2);
+    font-size: var(--dot-text-body-sm-size);
+    line-height: 1.4;
+}
+
+.hp-first__go {
+    display: block;
+    font-weight: 600;
+    font-size: var(--dot-text-h3-size);
+    line-height: 1.3;
+}
+
+.hp-first__go .material-symbols-rounded {
+    display: inline;
+    position: relative;
+    left: 0;
+    margin-left: 6px;
+    vertical-align: -0.18em;
+    font-size: 1.1em;
+    transition: left var(--ix-dur-fast) var(--ix-ease-out);
+}
+
+.hp-first__list a:hover,
+.hp-first__list a:focus-visible { border-top-color: var(--ix-stencil); }
+
+.hp-first__list a:hover .material-symbols-rounded,
+.hp-first__list a:focus-visible .material-symbols-rounded { left: 4px; }
+
+@media (max-width: 1099px) {
+    .hp-first__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 639px) {
+    .hp-promise__inner { padding-block: 64px; }
+    .hp-first__list { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hp-first__go .material-symbols-rounded { transition: none; }
+}
+
+/* The closing invitation sits under the closing lede, on the closing section's graphite. */
+.hp-cta__invite {
+    flex: 1 1 100%;
+    max-width: 60ch;
+    margin: 0;
+    color: var(--ix-top-ink);
+    font-weight: 600;
+    font-size: var(--dot-text-body-lg-size);
+    line-height: 1.5;
+}

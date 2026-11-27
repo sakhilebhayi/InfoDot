@@ -1,10 +1,10 @@
 {
-  "_motion-DC9j2D52.js": {
-    "file": "assets/motion-DC9j2D52.js",
+  "_motion-BYw-2Uji.js": {
+    "file": "assets/motion-BYw-2Uji.js",
     "name": "motion"
   },
   "resources/css/app.css": {
-    "file": "assets/app-C3nlPoFf.css",
+    "file": "assets/app-BniYOW-D.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -321,7 +321,7 @@
     "src": "resources/img/platforms/files.png"
   },
   "resources/js/analytics-chart.js": {
-    "file": "assets/analytics-chart-DshRq_rj.js",
+    "file": "assets/analytics-chart-NFgaJoOd.js",
     "name": "analytics-chart",
     "src": "resources/js/analytics-chart.js",
     "isDynamicEntry": true,
@@ -330,7 +330,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DceE0jUR.js",
+    "file": "assets/app-CftO4clZ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -339,21 +339,21 @@
     ]
   },
   "resources/js/landing.js": {
-    "file": "assets/landing-41Zc_fQl.js",
+    "file": "assets/landing-CE0I0znc.js",
     "name": "landing",
     "src": "resources/js/landing.js",
     "isEntry": true,
     "imports": [
-      "_motion-DC9j2D52.js"
+      "_motion-BYw-2Uji.js"
     ]
   },
   "resources/js/pages.js": {
-    "file": "assets/pages-CvpLp_QQ.js",
+    "file": "assets/pages-aSwIpfCy.js",
     "name": "pages",
     "src": "resources/js/pages.js",
     "isEntry": true,
     "imports": [
-      "_motion-DC9j2D52.js"
+      "_motion-BYw-2Uji.js"
     ]
   },
   "resources/js/seminar-p2p.js": {
@@ -363,18 +363,18 @@
     "isEntry": true
   },
   "resources/js/seminar-room.js": {
-    "file": "assets/seminar-room-D59fAbVh.js",
+    "file": "assets/seminar-room-xQZwqk5Z.js",
     "name": "seminar-room",
     "src": "resources/js/seminar-room.js",
     "isEntry": true
   },
   "resources/js/tools.js": {
-    "file": "assets/tools-BOVw_KIN.js",
+    "file": "assets/tools-BK762dNM.js",
     "name": "tools",
     "src": "resources/js/tools.js",
     "isEntry": true,
     "imports": [
-      "_motion-DC9j2D52.js"
+      "_motion-BYw-2Uji.js"
     ]
   }
 }
