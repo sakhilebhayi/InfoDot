@@ -39,11 +39,11 @@
             <p class="lp-lede" data-reveal>Maybe it began as an idea you kept coming back to. A skill people were already paying you for. The wish to work for yourself, or to build something your family can be proud of. However yours began, starting took courage, and what you are building deserves the room to become what you imagine.</p>
             <h3 class="hp-dream__sub" data-reveal>Wherever you're starting from, there's a next step.</h3>
             <ol class="hp-who__list" role="list" data-journey data-vertical>
-                <li data-stage><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}"><strong>You have a business idea and don't know where to start</strong><span>Read the first steps other people wrote down.</span></a></li>
+                <li data-stage><a href="{{ route('solution_search_results', ['topic' => 'starting-a-business']) }}"><strong>You have a business idea and don't know where to start</strong><span>Read the first steps other people wrote down.</span></a></li>
                 <li data-stage><a href="{{ $search('register') }}"><strong>You're starting your first business</strong><span>Registration, pricing and your first customers, in the words of people who did it.</span></a></li>
                 <li data-stage><a href="#ecosystem"><strong>You run a small business and want an affordable way to manage it</strong><span>Money, people, work and files in tools that connect.</span></a></li>
                 <li data-stage><a href="#ecosystem"><strong>Your business is growing and needs better tools and processes</strong><span>Add tools as your needs change, without starting again.</span></a></li>
-                <li data-stage><a href="{{ route('about') }}"><strong>You lead an established organisation</strong><span>One sign-in across connected tools, and knowledge your teams keep.</span></a></li>
+                <li data-stage><a href="{{ $tools }}"><strong>You lead an established organisation</strong><span>One sign-in across connected tools, and knowledge your teams keep.</span></a></li>
                 <li data-stage><a href="{{ route('solution_search_results') }}"><strong>You're not sure what you need yet</strong><span>Ask in plain words, or see what other businesses needed first.</span></a></li>
             </ol>
             <p class="hp-dream__turn" data-reveal>Ambition gets a business started. Keeping it moving, day after day, is the hard part.</p>
@@ -199,7 +199,7 @@
                 <li data-reveal><a href="{{ route('solution_search_results') }}"><span class="hp-first__need">A business question</span><span class="hp-first__go">Search the answers<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
                 <li data-reveal><a href="{{ $tools }}"><span class="hp-first__need">A tool for the work</span><span class="hp-first__go">Explore Business Tools<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
                 <li data-reveal><a href="{{ route('businesses.index') }}"><span class="hp-first__need">A supplier or partner</span><span class="hp-first__go">Browse businesses<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
-                <li data-reveal><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}"><span class="hp-first__need">Not sure what comes next</span><span class="hp-first__go">Start with the first steps<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
+                <li data-reveal><a href="{{ route('solution_search_results', ['topic' => 'starting-a-business']) }}"><span class="hp-first__need">Not sure what comes next</span><span class="hp-first__go">Start with the first steps<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
             </ul>
         </section>
     </section>

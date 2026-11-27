@@ -50,7 +50,7 @@
         <p>Sign in once and open the tools your business can use without signing in again. The handoff is single-use and expires within a minute.</p>
 
         <h3>Tools, by what you want to get done</h3>
-        <p>The tools are grouped by goal: understanding your business, managing your money and your people, organising your work, creating and collaborating, managing information, communicating, and specialised solutions. Which ones you can open depends on your business, who you are and how access is arranged, and not every tool comes with every account. <a href="{{ route('welcome') }}#tools">See the tools by goal</a>.</p>
+        <p>The tools are grouped by goal: understanding your business, managing your money and your people, organising your work, creating and collaborating, managing information, communicating, and specialised solutions. Which ones you can open depends on your business, who you are and how access is arranged, and not every tool comes with every account. <a href="{{ route('business-tools') }}">See the tools by goal</a>.</p>
 
         <h3>People and companies</h3>
         <p>An account belongs to one or more companies, with roles that decide who can invite and manage. Every company has its own workspace.</p>
