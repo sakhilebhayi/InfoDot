@@ -55,7 +55,7 @@ class HomepageAddOnMessagesTest extends TestCase
         $html = $this->html();
 
         $this->assertStringContainsString('When something comes up, check InfoDot first.', $html);
-        $this->assertSame(1, preg_match('#<div class="hp-first".*?</div>#s', $html, $strip));
+        $this->assertSame(1, preg_match('#<section class="hp-first".*?</section>#s', $html, $strip));
 
         foreach ([route('solution_search_results'), route('business-tools'), route('businesses.index'), route('solution_search_results', ['topic' => 'getting-started'])] as $url) {
             $this->assertStringContainsString('href="'.$url.'"', $strip[0]);

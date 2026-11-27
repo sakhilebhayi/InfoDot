@@ -193,7 +193,7 @@
         </div>
 
         {{-- R-75 add-on: the habit the week above shows, made explicit. Four everyday needs, each a real door. --}}
-        <div class="hp-first" aria-labelledby="first-title">
+        <section class="hp-first" aria-labelledby="first-title">
             <h3 id="first-title" class="hp-first__title" data-reveal>When something comes up, check InfoDot first.</h3>
             <ul class="hp-first__list" role="list">
                 <li data-reveal><a href="{{ route('solution_search_results') }}"><span class="hp-first__need">A business question</span><span class="hp-first__go">Search the answers<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
@@ -201,7 +201,7 @@
                 <li data-reveal><a href="{{ route('businesses.index') }}"><span class="hp-first__need">A supplier or partner</span><span class="hp-first__go">Browse businesses<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
                 <li data-reveal><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}"><span class="hp-first__need">Not sure what comes next</span><span class="hp-first__go">Start with the first steps<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
             </ul>
-        </div>
+        </section>
     </section>
 
     {{-- 6. The opportunity (R-73). Access, not a promise of outcomes: what InfoDot puts within reach, for any size and stage. The knowledge
