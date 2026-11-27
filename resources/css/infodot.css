@@ -13449,3 +13449,22 @@ body[data-area="home"] .ix-btn--primary:hover,
     font-size: var(--dot-text-body-lg-size);
     line-height: 1.5;
 }
+
+/* R-75 phase 2 add-ons (public pages). */
+.ix-entry__next { margin-top: 4px; }
+
+.pg-promise strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--ix-text);
+    font-size: var(--dot-text-h3-size);
+    line-height: 1.3;
+    text-wrap: balance;
+}
+
+.ix-foot__promise {
+    flex: 1 1 100%;
+    order: -1;
+    color: var(--ix-text-2);
+    font-weight: 600;
+}

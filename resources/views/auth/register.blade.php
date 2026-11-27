@@ -1,6 +1,8 @@
 <x-guest-layout title="Create your account" :panel="$platformBranding ? null : 'register'">
     <x-jet-authentication-card>
         <x-auth.heading title="Create your free InfoDot account" kind="register" :brand="$platformBranding" lede="One account for the knowledge, tools and businesses on InfoDot. It takes a minute." />
+        {{-- R-75 add-on: what happens next, so joining feels like opening a door, not starting a project. --}}
+        <p class="ix-entry__lede ix-entry__next">Nothing to set up first. Once you're in, ask a question, read a solution or open a tool.</p>
 
         <x-jet-validation-errors />
 

@@ -9,6 +9,7 @@
         </figure>
 
         <h2>Why it exists</h2>
+        <p class="pg-promise"><strong>Business is hard enough. Getting the support you need shouldn't be.</strong> We can't make running a business easy. We can make the help easier to reach.</p>
         <p>A growing business has a sales system, an accounting package, a stock sheet, a job board and a few WhatsApp groups. Each holds a slice of the truth, and what the business has learned lives in people's heads. The people who have to decide are never quite sure the figure is current, or that anyone has solved the same problem before. InfoDot is where a business, and the businesses around it, write down what they know so the next person does not start from nothing.</p>
         <p>None of this is a lack of ambition. It is a lack of access: to knowledge, to the right tools and to the people who could help. InfoDot exists to close that gap, and to put what you learn and what you do within reach of the same account.</p>
 

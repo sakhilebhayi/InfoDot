@@ -4,6 +4,7 @@
     $faqs = [
         ['What is InfoDot?', 'A place where a business writes down how it works, finds checked answers from other businesses, and opens the tools it runs on with one account. It brings together practical business knowledge, people who share what works, and digital tools that help you start, manage and grow.'],
         ['What can I do with InfoDot?', 'Discover answers and solutions from other businesses, manage your business with connected tools, and grow with what you learn. Start with whichever you need today.'],
+        ['I don\'t know what I need yet. Where do I start?', 'Start small. Search the public answers in plain words and see what other businesses asked first. If you are at the very beginning, read the getting-started steps. If you run a business already, Business Tools shows what each platform does and what it needs. You do not need everything figured out before you join.'],
         ['What does it cost to join?', 'Creating an account is free. Which tools your business can open depends on your business, who you are and how access is arranged, and not every tool comes with every account.'],
         ['Who is it for?', 'Anyone with a business idea, a new business or an established one, and the people who work for them. You do not need a company, a plan or any experience to join.'],
         ['Do I need an account?', 'You can search the public questions and solutions without one. To open a result in full, ask, answer, see your company\'s work or open other platforms, you need an account.'],

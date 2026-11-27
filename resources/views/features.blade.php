@@ -2,7 +2,7 @@
     <article class="ix-prose ix-prose--ledger pg-prose">
         <span class="pg-plate" data-pg-plate>What it does</span>
         <h1 class="ix-h1 pg-title" data-pg-in>What InfoDot does</h1>
-        <p class="ix-lede" data-pg-in>Everything on this page works today. It is organised around the four things every business needs: knowledge, tools, connections, and a way to turn what you learn into progress.</p>
+        <p class="ix-lede" data-pg-in>Everything on this page works today. It is organised around the four things every business needs: knowledge, tools, connections, and a way to turn what you learn into progress. Start with whichever one you need first.</p>
 
         <figure class="pg-strip" data-pg-photo>
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-1600.jpg') }}" alt="The Johannesburg city centre at sunset, seen from above" width="1600" height="1067" loading="eager" decoding="async">
