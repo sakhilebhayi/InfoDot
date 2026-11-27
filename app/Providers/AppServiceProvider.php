@@ -39,6 +39,7 @@ use App\Services\Platforms\PlatformNotices;
 use App\Services\Sso\PlatformContext;
 use App\Services\Web\SafeFetcher;
 use App\Support\CanonicalUrl;
+use App\Support\EssentialCron;
 use App\Support\Input;
 use App\Support\LazyLoadLog;
 use App\Support\PlatformSecret;
@@ -102,6 +103,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        EssentialCron::listen();
+
         // R-72 (S-03): every new or changed password is at least 12 characters and not one found in a public breach.
         Password::defaults(fn () => Password::min(12)->uncompromised());
 
