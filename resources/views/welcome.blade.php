@@ -178,7 +178,7 @@
             </section>
         @endforeach
         <div class="hp-journey__more" data-reveal>
-            <p>Which tools you can open depends on your business and how access is arranged. Business Tools describes every platform, what it does and what it needs before you start.</p>
+            <p>Which tools you can open depends on your business and how access is arranged. Business Tools describes every platform, what it does and what it needs before you start. To ask what your business can open, <a href="{{ route('contact') }}">use the contact form</a>.</p>
             <a href="{{ $tools }}" class="ix-btn lp-btn">Explore Business Tools</a>
         </div>
 

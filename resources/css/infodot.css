@@ -13472,3 +13472,17 @@ body[data-area="home"] .ix-btn--primary:hover,
 /* R-75 P3: the WebP <picture> wrappers must not change the layout of the images they hold. */
 .hd__scene--a picture,
 .pg-strip picture { display: contents; }
+
+/* R-75 (owner, 2026-11-27): one plain line under the hero's dream line saying what InfoDot is. It follows the hero's ink so it
+   reads on both scenes; the dream line gives up a little of its gap to keep the pair together. */
+.hd .lp-hero__sub.hd__dream:has(+ .lp-hero__what) { margin-bottom: 12px; }
+.lp-hero__what {
+    margin: 0 0 28px;
+    max-width: 52ch;
+    color: var(--hd-ink-2, var(--ix-text-2));
+    font-size: var(--dot-text-body-size);
+    line-height: 1.5;
+    text-wrap: pretty;
+    transition: color var(--ix-dur-scene-slow) var(--ix-ease);
+}
+@media (prefers-reduced-motion: reduce) { .lp-hero__what { transition: none; } }

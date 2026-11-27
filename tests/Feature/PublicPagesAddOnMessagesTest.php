@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -51,11 +50,10 @@ class PublicPagesAddOnMessagesTest extends TestCase
         $this->assertMatchesRegularExpression('/"name":\s*"I don\\\\u0027t know what I need yet|"name":\s*"I don\'t know what I need yet/', $decoded, 'The FAQ structured data carries the new question too.');
     }
 
-    public function test_the_footer_carries_the_promise_for_visitors_only(): void
+    public function test_the_footer_no_longer_repeats_the_promise(): void
     {
-        $this->assertStringContainsString(self::PROMISE, $this->text('/faqs'));
-
-        $this->actingAs(User::factory()->withPersonalTeam()->create());
+        // Owner, 2026-11-27: the promise is said by the homepage band and About; the footer line was one repeat too many.
         $this->assertStringNotContainsString(self::PROMISE, $this->text('/faqs'));
+        $this->assertStringContainsString(self::PROMISE, $this->text('/about'));
     }
 }

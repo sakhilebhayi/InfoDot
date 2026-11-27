@@ -32,7 +32,7 @@ class PublicPagesTest extends TestCase
             'Other businesses within reach', 'Resources ready to use', 'Room to learn and keep going',
             'Imagine what your business could become with the right things behind it.', 'An ordinary week can look like this.',
             // R-73 phase 1: the promise, the dream it is for, and the reality, in the owner's approved words.
-            'Join InfoDot for free', 'Explore the ecosystem', "Give the business you've been dreaming about a place to grow, get it right the first time.",
+            'Join InfoDot for free', 'Explore the ecosystem', "Give the business you've been dreaming about a place to grow, and get more of it right the first time.", 'InfoDot: free business answers, connected tools and a directory of businesses, in one account.',
             'Every business starts with someone who decided to try.', "Wherever you're starting from, there's a next step.",
             'You started this business to build something. Not to spend every day figuring everything out.', "None of this means you're doing it wrong.",
             // R-73 phase 3: the opportunity, and the close in the owner's words.

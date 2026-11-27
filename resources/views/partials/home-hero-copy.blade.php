@@ -4,7 +4,9 @@
                 <p class="lp-hero__sub" data-hero>What do you want to solve today?</p>
             @else
                 {{-- R-73: the promise, then the dream it is for (the owner's wording). --}}
-                <p class="lp-hero__sub hd__dream" data-hero>Give the business you've been dreaming about a place to grow, get it right the first time.</p>
+                <p class="lp-hero__sub hd__dream" data-hero>Give the business you've been dreaming about a place to grow, and get more of it right the first time.</p>
+                {{-- R-75 (owner, 2026-11-27): the first screen says plainly what InfoDot is. --}}
+                <p class="lp-hero__what" data-hero>InfoDot: free business answers, connected tools and a directory of businesses, in one account.</p>
             @endif
 
             <form class="lp-search" action="{{ route('solution_search_results') }}" method="GET" role="search" data-hero>
