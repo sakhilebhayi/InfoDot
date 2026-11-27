@@ -13468,3 +13468,7 @@ body[data-area="home"] .ix-btn--primary:hover,
     color: var(--ix-text-2);
     font-weight: 600;
 }
+
+/* R-75 P3: the WebP <picture> wrappers must not change the layout of the images they hold. */
+.hd__scene--a picture,
+.pg-strip picture { display: contents; }
