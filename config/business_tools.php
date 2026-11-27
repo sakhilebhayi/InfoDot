@@ -103,6 +103,8 @@ return [
         'start' => [
             'title' => 'Start',
             'line' => 'Build your business. Begin with InfoDot: answers, researched steps, resources and the people and tools around you.',
+            // R-75 add-on: how this stage should feel, one sentence under the line.
+            'feel' => "You don't need everything figured out before you begin.",
             'infodot' => [
                 ['title' => 'Ask in plain words', 'body' => 'Describe what you are stuck on and hear from people who have been there. The answer that solved it is stamped, so the next person sees it first.', 'route' => 'solution_search_results'],
                 ['title' => 'Follow researched steps', 'body' => 'Solutions written as numbered steps, from sources that are named and dated: registering, tax, pricing, hiring your first person.', 'route' => 'solution_search_results'],
@@ -122,6 +124,8 @@ return [
         'manage' => [
             'title' => 'Manage',
             'line' => 'Run your business. Money, people, work and information, in tools that know about each other.',
+            // R-75 add-on: how this stage should feel, one sentence under the line.
+            'feel' => 'Fewer places to look, so the day-to-day feels more organised.',
             'infodot' => [
                 ['title' => 'One sign-in for every tool', 'body' => 'Open the tools your business uses with your InfoDot account. Nobody keeps a separate password for each, and people leave the business in one step.', 'route' => 'business-tools'],
             ],
@@ -130,6 +134,8 @@ return [
         'connect' => [
             'title' => 'Connect',
             'line' => 'Build relationships and visibility. Reach the people who matter, and keep in touch with them.',
+            // R-75 add-on: how this stage should feel, one sentence under the line.
+            'feel' => "The people you need are easier to find when they're in one place.",
             'infodot' => [
                 ['title' => 'A page people can find', 'body' => 'Give your business a page with what you offer and where you work, listed in a directory people search by need and by place.', 'route' => 'businesses.index'],
                 ['title' => 'Messages and appointments', 'body' => 'Customers and other businesses message you from your page or ask for an appointment, and every reply lands in one inbox.', 'route' => 'businesses.index'],
@@ -139,6 +145,8 @@ return [
         'grow' => [
             'title' => 'Grow',
             'line' => 'Develop and expand your business: know your numbers, take bookings, see what brings people to you and keep learning.',
+            // R-75 add-on: how this stage should feel, one sentence under the line.
+            'feel' => 'Progress one step at a time, with the numbers that matter in view.',
             'infodot' => [
                 ['title' => 'Take bookings online', 'body' => 'Publish your appointment types and opening hours, and customers book a time straight from your business page.', 'route' => 'register'],
                 ['title' => 'See what brings people to you', 'body' => 'Your page’s insights show its views, the searches that found you and the enquiries that followed, day by day.', 'route' => 'register'],
@@ -151,6 +159,8 @@ return [
             'title' => 'Special Platforms',
             'heading' => 'Not every opportunity starts with a business idea.',
             'line' => 'Explore specialised platforms that open up different ways to earn, create, offer services, develop skills and make the most of your opportunities.',
+            // R-75 add-on: how this stage should feel, one sentence under the line.
+            'feel' => 'Ways to put your skills to work, without needing a business plan first.',
             'note' => 'What you earn depends on you, your market and the platform’s own rules. Signing up is a start, not a promise of income, work or customers.',
             'infodot' => [],
             'tools' => ['mines', 'tutor', 'design', 'auction', 'emall', 'ehail', 'charts'],

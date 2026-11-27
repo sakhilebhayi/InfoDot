@@ -44,6 +44,7 @@
                 <li data-stage><a href="#ecosystem"><strong>You run a small business and want an affordable way to manage it</strong><span>Money, people, work and files in tools that connect.</span></a></li>
                 <li data-stage><a href="#ecosystem"><strong>Your business is growing and needs better tools and processes</strong><span>Add tools as your needs change, without starting again.</span></a></li>
                 <li data-stage><a href="{{ route('about') }}"><strong>You lead an established organisation</strong><span>One sign-in across connected tools, and knowledge your teams keep.</span></a></li>
+                <li data-stage><a href="{{ route('solution_search_results') }}"><strong>You're not sure what you need yet</strong><span>Ask in plain words, or see what other businesses needed first.</span></a></li>
             </ol>
             <p class="hp-dream__turn" data-reveal>Ambition gets a business started. Keeping it moving, day after day, is the hard part.</p>
         </div>
@@ -65,6 +66,15 @@
             <li data-reveal>You have plans to grow, but the next step isn't always clear.</li>
         </ul>
         <p class="hp-reality__close" data-reveal><strong>None of this means you're doing it wrong.</strong> It means the knowledge, tools and people a business needs are harder to reach than they should be. It doesn't have to be this way.</p>
+    </section>
+
+    {{-- R-75 add-on: the brand promise, said once, between the reality and the support that answers it. Honest by design: it does
+         not promise that business gets easy, only that the help gets easier to reach. --}}
+    <section class="hp-promise" aria-labelledby="promise-title">
+        <div class="hp-promise__inner">
+            <h2 id="promise-title" class="hp-promise__title" data-reveal>Business is hard enough. <span class="hp-promise__turn">Getting the support you need shouldn't be.</span></h2>
+            <p class="hp-promise__line" data-reveal>We can't make running a business easy. We can make it easier to find the help that moves it forward.</p>
+        </div>
     </section>
 
     {{-- 4. The support (R-73). The answer to the reality above: what a connected ecosystem gives a business, by what it helps it do, not by
@@ -108,6 +118,9 @@
                 <div class="hp-stage__intro">
                     <h3 id="stage-h-{{ $stage['key'] }}" class="hp-stage__title">{{ $stage['heading'] !== '' ? $stage['heading'] : $stage['title'] }}</h3>
                     <p class="hp-stage__line">{{ $stage['line'] }}</p>
+                    @if ($stage['feel'] !== '')
+                        <p class="hp-stage__feel">{{ $stage['feel'] }}</p>
+                    @endif
                     @if ($stage['note'] !== '')
                         <p class="hp-stage__note">{{ $stage['note'] }}</p>
                     @endif
@@ -178,6 +191,17 @@
                 <li data-stage><span class="hp-steps__n" aria-hidden="true">Fri</span><h4><span class="ix-sr">Friday: </span>Write it down.</h4><p>You record how you solved this week's tricky question, so nobody solves it twice.</p></li>
             </ol>
         </div>
+
+        {{-- R-75 add-on: the habit the week above shows, made explicit. Four everyday needs, each a real door. --}}
+        <section class="hp-first" aria-labelledby="first-title">
+            <h3 id="first-title" class="hp-first__title" data-reveal>When something comes up, check InfoDot first.</h3>
+            <ul class="hp-first__list" role="list">
+                <li data-reveal><a href="{{ route('solution_search_results') }}"><span class="hp-first__need">A business question</span><span class="hp-first__go">Search the answers<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
+                <li data-reveal><a href="{{ $tools }}"><span class="hp-first__need">A tool for the work</span><span class="hp-first__go">Explore Business Tools<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
+                <li data-reveal><a href="{{ route('businesses.index') }}"><span class="hp-first__need">A supplier or partner</span><span class="hp-first__go">Browse businesses<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
+                <li data-reveal><a href="{{ route('solution_search_results', ['topic' => 'getting-started']) }}"><span class="hp-first__need">Not sure what comes next</span><span class="hp-first__go">Start with the first steps<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></span></a></li>
+            </ul>
+        </section>
     </section>
 
     {{-- 6. The opportunity (R-73). Access, not a promise of outcomes: what InfoDot puts within reach, for any size and stage. The knowledge
@@ -280,6 +304,7 @@
             <div class="hp-cta__main">
                 <h2 id="cta-title" data-cta-title>Your business has a future. Let's help you build towards it.</h2>
                 <p class="hp-cta__lede" data-reveal>Start with one question, one tool or one connection. Wherever you begin, you won't be building it alone.</p>
+                <p class="hp-cta__invite" data-reveal>Whatever stage your business is at, InfoDot is a good place to start.</p>
                 <div class="ix-pubhero__actions" data-reveal>
                     @auth
                         <a href="{{ route('seek') }}" class="ix-btn ix-btn--primary">Ask a question</a>

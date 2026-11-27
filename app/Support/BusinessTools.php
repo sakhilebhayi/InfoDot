@@ -138,6 +138,7 @@ final class BusinessTools
                 'title' => (string) $stage['title'],
                 'heading' => (string) ($stage['heading'] ?? ''),
                 'line' => (string) $stage['line'],
+                'feel' => (string) ($stage['feel'] ?? ''),
                 'note' => (string) ($stage['note'] ?? ''),
                 'infodot' => $infodot,
                 'lead' => $lead,
