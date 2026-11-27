@@ -19,7 +19,7 @@
                 <x-jet-label for="last_name" value="{{ __('Last name') }}" />
                 <x-jet-input id="last_name" type="text" name="last_name" :value="old('last_name')" required maxlength="120" autocomplete="family-name" />
             </div>
-            <p class="ix-hint">You are creating your own login. You will set up your company next.</p>
+            <p class="ix-hint">You are creating your own login. Next, you'll set up your company on InfoDot: it can be just you, and it doesn't need to be registered.</p>
 
             <div class="ix-field">
                 <x-jet-label for="email" value="{{ __('Email') }}" />

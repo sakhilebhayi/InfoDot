@@ -27,7 +27,7 @@
         <p>What members have in common is that they would rather not work it all out alone. They share what they learn, keep their tools connected and reach out to other businesses, so the business keeps moving even when one person is away.</p>
 
         <h2>Where things stand</h2>
-        <p>Today you can ask a question, answer one, write a solution as steps, have a moderator verify it, and find it again by topic or reference. A business can have a page in the directory, receive messages in its inbox, and take appointment bookings or requests. One account opens the Dot platforms your business can use, grouped by what you want to get done. Which ones you can open depends on your business and how access is arranged. We describe what is there now, not what is planned.</p>
+        <p>Today you can ask a question, answer one, write a solution as steps, have a moderator verify it, and find it again by topic or reference. A business can have a page in the directory, receive messages in its inbox, and take appointment bookings or requests. One account opens the Dot platforms your business can use, grouped by what you want to get done. Which ones you can open depends on your business and how access is arranged; to ask what yours can open, <a href="{{ route('contact') }}">use the contact form</a>. We describe what is there now, not what is planned.</p>
 
         <h2>How it is run</h2>
         <ul>

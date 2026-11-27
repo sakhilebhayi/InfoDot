@@ -12,7 +12,7 @@
         ['How do I know an answer is any good?', 'Each answer shows how it earned its place: accepted by the person who asked, or verified by a moderator who did not write it. Content a moderator has hidden is recorded with the reason.'],
         ['Does AI write the answers?', 'No. Answers come from people. Where InfoDot\'s tools use automation to suggest something, such as pointing a moderator to a good answer, a person decides and the record shows who.'],
         ['Is this legal, tax or financial advice?', 'No. It is shared experience. Check anything that affects your legal, tax or financial position with a qualified professional before you rely on it.'],
-        ['Which business tools can I use?', 'The ones your business has access to, with the same account. Which tools you can open depends on your business, who you are and how access is arranged, and not every tool comes with every account. After you sign in, the Platforms page lists yours and opens each one signed in.'],
+        ['Which business tools can I use?', 'The ones your business has access to, with the same account. Which tools you can open depends on your business, who you are and how access is arranged, and not every tool comes with every account. After you sign in, the Platforms page lists yours and opens each one signed in. To ask what your business can open, use the contact form.'],
         ['How is my personal information handled?', 'Read the privacy policy and the cookie policy. For requests about your information, write to privacy@infodot.co.za.'],
         ['Something is wrong, or I need help.', 'Use the contact form. To report a question or answer, use the report link on it. To raise a complaint, see how to complain.'],
     ];
