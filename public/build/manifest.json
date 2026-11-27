@@ -4,7 +4,7 @@
     "name": "motion"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BaEQLMnk.css",
+    "file": "assets/app-k8fdQ1M_.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -260,17 +260,33 @@
     "file": "assets/jhb-city-1600-BLguxLno.jpg",
     "src": "resources/img/pages/jhb-city-1600.jpg"
   },
+  "resources/img/pages/jhb-city-1600.webp": {
+    "file": "assets/jhb-city-1600-DyGdT7no.webp",
+    "src": "resources/img/pages/jhb-city-1600.webp"
+  },
   "resources/img/pages/jhb-city-800.jpg": {
     "file": "assets/jhb-city-800-EefOTQB1.jpg",
     "src": "resources/img/pages/jhb-city-800.jpg"
+  },
+  "resources/img/pages/jhb-city-800.webp": {
+    "file": "assets/jhb-city-800-yUUfOtQi.webp",
+    "src": "resources/img/pages/jhb-city-800.webp"
   },
   "resources/img/pages/jhb-skyline-1920.jpg": {
     "file": "assets/jhb-skyline-1920-CMrK0gfF.jpg",
     "src": "resources/img/pages/jhb-skyline-1920.jpg"
   },
+  "resources/img/pages/jhb-skyline-1920.webp": {
+    "file": "assets/jhb-skyline-1920-C73dHRf3.webp",
+    "src": "resources/img/pages/jhb-skyline-1920.webp"
+  },
   "resources/img/pages/jhb-skyline-960.jpg": {
     "file": "assets/jhb-skyline-960-BUiVDxop.jpg",
     "src": "resources/img/pages/jhb-skyline-960.jpg"
+  },
+  "resources/img/pages/jhb-skyline-960.webp": {
+    "file": "assets/jhb-skyline-960-5CwfxfW2.webp",
+    "src": "resources/img/pages/jhb-skyline-960.webp"
   },
   "resources/img/pages/kalkbay-boats-800.jpg": {
     "file": "assets/kalkbay-boats-800-CVvZ-ML8.jpg",

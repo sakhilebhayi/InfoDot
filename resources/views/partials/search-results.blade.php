@@ -39,7 +39,7 @@
         @else
             <section class="ix-empty" aria-labelledby="search-empty">
                 <h2 id="search-empty">Nothing has been shared publicly yet</h2>
-                <p>@guest Public questions and solutions will be listed here. Sign in to see and search what your company has written. @else Questions and solutions you are allowed to see will be listed here. @endguest</p>
+                <p>@guest Public questions and solutions will be listed here. Sign in to see and search what your company has written. Or try a word such as register, tax or pricing to search InfoDot's researched solutions. @else Questions and solutions you are allowed to see will be listed here. @endguest</p>
                 @guest
                     <a href="{{ route('login') }}" class="ix-btn ix-btn--primary">Sign in</a>
                 @else

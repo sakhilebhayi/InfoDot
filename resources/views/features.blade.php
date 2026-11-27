@@ -5,7 +5,11 @@
         <p class="ix-lede" data-pg-in>Everything on this page works today. It is organised around the four things every business needs: knowledge, tools, connections, and a way to turn what you learn into progress. Start with whichever one you need first.</p>
 
         <figure class="pg-strip" data-pg-photo>
-            <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-1600.jpg') }}" alt="The Johannesburg city centre at sunset, seen from above" width="1600" height="1067" loading="eager" decoding="async">
+            {{-- R-75 P3: phones get the 800px image and WebP comes first; the 1600px JPEG stays the fallback. --}}
+            <picture>
+                <source type="image/webp" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-800.webp') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-1600.webp') }} 1600w" sizes="(max-width: 900px) 100vw, 1232px">
+                <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-1600.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-800.jpg') }} 800w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-city-1600.jpg') }} 1600w" sizes="(max-width: 900px) 100vw, 1232px" alt="The Johannesburg city centre at sunset, seen from above" width="1600" height="1067" loading="eager" decoding="async">
+            </picture>
         </figure>
 
         <ul class="pg-vignettes" role="list" aria-label="Three things you will see on InfoDot">
@@ -46,7 +50,7 @@
         <p>Sign in once and open the tools your business can use without signing in again. The handoff is single-use and expires within a minute.</p>
 
         <h3>Tools, by what you want to get done</h3>
-        <p>The tools are grouped by goal: understanding your business, managing your money and your people, organising your work, creating and collaborating, managing information, communicating, and specialised solutions. Which ones you can open depends on your business, who you are and how access is arranged, and not every tool comes with every account. <a href="{{ route('welcome') }}#tools">See the tools by goal</a>.</p>
+        <p>The tools are grouped by goal: understanding your business, managing your money and your people, organising your work, creating and collaborating, managing information, communicating, and specialised solutions. Which ones you can open depends on your business, who you are and how access is arranged, and not every tool comes with every account. <a href="{{ route('business-tools') }}">See the tools by goal</a>.</p>
 
         <h3>People and companies</h3>
         <p>An account belongs to one or more companies, with roles that decide who can invite and manage. Every company has its own workspace.</p>

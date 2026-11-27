@@ -1,7 +1,11 @@
 <section class="lp-hero hd" data-hd data-scene="b" aria-labelledby="hero-title">
     <div class="hd__stage" aria-hidden="true">
         <div class="hd__scene hd__scene--a" data-scene-id="a">
+            {{-- R-75 P3: WebP first (about 60% lighter on a shared host that serves files slowly), the JPEG stays the fallback. --}}
+            <picture>
+            <source type="image/webp" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-skyline-960.webp') }} 960w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-skyline-1920.webp') }} 1920w" sizes="100vw">
             <img src="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-skyline-1920.jpg') }}" srcset="{{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-skyline-960.jpg') }} 960w, {{ \Illuminate\Support\Facades\Vite::asset('resources/img/pages/jhb-skyline-1920.jpg') }} 1920w" sizes="100vw" alt="" width="1920" height="1280" decoding="async">
+            </picture>
         </div>
         <div class="hd__scene hd__scene--b" data-scene-id="b">
             <div class="hd__ground">
